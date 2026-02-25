@@ -7,6 +7,7 @@
   --figata-border: rgba(240, 239, 237, 0.18);
   --figata-shadow: 0 14px 32px rgba(0, 0, 0, 0.28);
   --navbar-height: 76px;
+  --hero-bottom-tone: rgba(8, 7, 6, 0.96);
 }
 
 *,
@@ -398,6 +399,51 @@ img {
   height: 18px;
 }
 
+#mas-pedidas {
+  --mas-pedidas-overlap: clamp(92px, 9vw, 136px);
+  --mas-pedidas-bridge-height: clamp(144px, 18vw, 228px);
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  min-height: clamp(420px, 58vw, 680px);
+  margin-top: calc(-1 * var(--mas-pedidas-overlap));
+  padding-top: var(--mas-pedidas-overlap);
+  background-image: url("assets/slate.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  isolation: isolate;
+  overflow: visible;
+}
+
+#mas-pedidas::before {
+  content: "";
+  position: absolute;
+  top: -16px;
+  left: -2%;
+  width: 104%;
+  height: calc(var(--mas-pedidas-bridge-height) + 32px);
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(140% 90% at 50% 4%, rgba(20, 15, 12, 0.34), transparent 68%),
+    linear-gradient(
+      180deg,
+      var(--hero-bottom-tone) 0%,
+      rgba(8, 7, 6, 0.88) 26%,
+      rgba(8, 7, 6, 0.58) 52%,
+      rgba(8, 7, 6, 0.22) 78%,
+      rgba(8, 7, 6, 0) 100%
+    );
+  filter: blur(10px);
+  opacity: 0.95;
+}
+
+#mas-pedidas > * {
+  position: relative;
+  z-index: 1;
+}
+
 @media (max-width: 1024px) {
   .navbar__links {
     gap: 12px;
@@ -409,6 +455,11 @@ img {
 
   .hero {
     background-position: 58% center;
+  }
+
+  #mas-pedidas {
+    --mas-pedidas-overlap: clamp(80px, 8vw, 112px);
+    --mas-pedidas-bridge-height: clamp(132px, 16vw, 196px);
   }
 }
 
@@ -426,6 +477,10 @@ img {
     padding-top: calc(var(--navbar-height) + 44px);
     padding-bottom: 56px;
     background-position: 62% center;
+  }
+
+  #mas-pedidas {
+    min-height: clamp(340px, 64vw, 520px);
   }
 
   .hero__content {
@@ -471,6 +526,12 @@ img {
     padding-top: calc(var(--navbar-height) + 32px);
     padding-bottom: 44px;
     background-position: 68% center;
+  }
+
+  #mas-pedidas {
+    --mas-pedidas-overlap: 64px;
+    --mas-pedidas-bridge-height: 132px;
+    min-height: 300px;
   }
 
   .hero__eyebrow {
