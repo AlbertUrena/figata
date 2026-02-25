@@ -62,18 +62,32 @@ img {
 }
 
 .navbar__brand {
-  justify-self: start;
-  display: inline-flex;
+  justify-self: stretch;
+  display: flex;
+  justify-content: flex-start;
   align-items: center;
   gap: 8px;
-  height: 24px;
-  min-width: max-content;
+  width: 100%;
+  height: 30px;
+  min-width: 0;
 }
 
-.navbar__brand-icon,
+.navbar__brand-icon {
+  width: 30px;
+  height: 30px;
+  aspect-ratio: 1 / 1;
+  flex: 0 0 30px;
+  display: block;
+  overflow: visible;
+  opacity: 0.98;
+}
+
 .navbar__brand-text {
-  height: 24px;
   width: auto;
+  height: 20px;
+  aspect-ratio: 375 / 83.25;
+  flex: 0 0 auto;
+  display: block;
   opacity: 0.98;
 }
 
@@ -326,7 +340,7 @@ img {
   }
 
   .navbar__brand {
-    height: 24px;
+    height: 30px;
   }
 
   .cta-button--nav {
