@@ -9,13 +9,39 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <svg aria-hidden="true" focusable="false" width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden">
+  <svg width="0" height="0" style="position:absolute; left:-9999px; top:-9999px;" aria-hidden="true">
     <defs>
-      <filter id="liquidDisplace" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
-        <feTurbulence type="fractalNoise" baseFrequency="0.85 0.55" numOctaves="2" seed="11" stitchTiles="stitch" result="liquidNoise"></feTurbulence>
-        <feColorMatrix in="liquidNoise" type="matrix" values="2 0 0 0 -0.5 0 2 0 0 -0.5 0 0 2 0 -0.5 0 0 0 1 0" result="liquidNoiseContrast"></feColorMatrix>
-        <feGaussianBlur in="liquidNoiseContrast" stdDeviation="0.45" result="liquidNoiseSoft"></feGaussianBlur>
-        <feDisplacementMap in="SourceGraphic" in2="liquidNoiseSoft" scale="54" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap>
+      <filter id="liquidDisplace" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise"
+                      baseFrequency="0.028 0.018"
+                      numOctaves="3"
+                      seed="2"
+                      result="noiseBase"></feTurbulence>
+        <feTurbulence type="fractalNoise"
+                      baseFrequency="0.075 0.058"
+                      numOctaves="1"
+                      seed="9"
+                      result="noiseDetail"></feTurbulence>
+        <feBlend in="noiseBase" in2="noiseDetail" mode="screen" result="noise"></feBlend>
+        <feColorMatrix in="noise" type="matrix"
+                       values="
+                         2.05 0 0 0 -0.52
+                         0 2.05 0 0 -0.52
+                         0 0 1 0 0
+                         0 0 0 1 0"
+                       result="noiseContrast"></feColorMatrix>
+        <feComponentTransfer in="noiseContrast" result="noiseMapped">
+          <feFuncR type="gamma" amplitude="1.05" exponent="0.68"></feFuncR>
+          <feFuncG type="gamma" amplitude="1.05" exponent="0.68"></feFuncG>
+        </feComponentTransfer>
+        <feGaussianBlur in="noiseMapped" stdDeviation="0.16" result="noiseSoft"></feGaussianBlur>
+        <feDisplacementMap in="SourceGraphic"
+                           in2="noiseSoft"
+                           scale="60"
+                           xChannelSelector="R"
+                           yChannelSelector="G"
+                           result="displaced"></feDisplacementMap>
+        <feComposite in="displaced" in2="SourceGraphic" operator="over"></feComposite>
       </filter>
     </defs>
   </svg>
