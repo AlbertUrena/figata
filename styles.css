@@ -389,43 +389,44 @@ img {
 }
 
 #mas-pedidas {
-  --mas-pedidas-overlap: clamp(92px, 9vw, 136px);
-  --mas-pedidas-bridge-height: clamp(144px, 18vw, 228px);
+  --mas-pedidas-bridge-height: clamp(120px, 14vw, 170px);
   position: relative;
   z-index: 0;
   width: 100%;
   min-height: clamp(420px, 58vw, 680px);
-  margin-top: calc(-1 * var(--mas-pedidas-overlap));
-  padding-top: var(--mas-pedidas-overlap);
   background-image: url("assets/slate.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   isolation: isolate;
-  overflow: visible;
+  overflow: hidden;
 }
 
 #mas-pedidas::before {
   content: "";
   position: absolute;
-  top: -16px;
-  left: -2%;
-  width: 104%;
-  height: calc(var(--mas-pedidas-bridge-height) + 32px);
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: 100%;
+  height: var(--mas-pedidas-bridge-height);
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(140% 90% at 50% 4%, rgba(20, 15, 12, 0.34), transparent 68%),
+    radial-gradient(135% 72% at 50% 0%, rgba(22, 17, 13, 0.18), transparent 66%),
+    radial-gradient(88% 46% at 18% 6%, rgba(255, 224, 188, 0.035), transparent 72%),
+    radial-gradient(92% 50% at 82% 8%, rgba(197, 119, 41, 0.03), transparent 72%),
     linear-gradient(
       180deg,
       var(--hero-bottom-tone) 0%,
-      rgba(8, 7, 6, 0.88) 26%,
-      rgba(8, 7, 6, 0.58) 52%,
-      rgba(8, 7, 6, 0.22) 78%,
+      rgba(8, 7, 6, 0.62) 14%,
+      rgba(8, 7, 6, 0.34) 34%,
+      rgba(8, 7, 6, 0.14) 58%,
+      rgba(8, 7, 6, 0.05) 78%,
       rgba(8, 7, 6, 0) 100%
     );
-  filter: blur(10px);
-  opacity: 0.95;
+  opacity: 0.82;
 }
 
 #mas-pedidas > * {
@@ -447,8 +448,7 @@ img {
   }
 
   #mas-pedidas {
-    --mas-pedidas-overlap: clamp(80px, 8vw, 112px);
-    --mas-pedidas-bridge-height: clamp(132px, 16vw, 196px);
+    --mas-pedidas-bridge-height: clamp(112px, 14vw, 156px);
   }
 }
 
@@ -518,8 +518,7 @@ img {
   }
 
   #mas-pedidas {
-    --mas-pedidas-overlap: 64px;
-    --mas-pedidas-bridge-height: 132px;
+    --mas-pedidas-bridge-height: 108px;
     min-height: 300px;
   }
 
