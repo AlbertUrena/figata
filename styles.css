@@ -525,9 +525,9 @@ img {
 .footer-banner-title {
   margin: 14px 0 0;
   color: #ffffff;
-  font-size: clamp(2rem, 3vw, 2.75rem);
+  font-size: 32px;
   line-height: 1.03;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.03em;
   text-wrap: balance;
 }
