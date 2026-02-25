@@ -725,16 +725,16 @@ img {
   transform: scaleX(1);
 }
 
-/* Dim siblings only within the hovered/focused footer section */
-.footer-links:hover a,
-.footer-links:focus-within a {
+/* Dim siblings only when a specific link is hovered/focused */
+.footer-links:has(a:hover) a,
+.footer-links:has(a:focus-visible) a {
   opacity: 0.7;
 }
 
-.footer-links:hover a:hover,
-.footer-links:hover a:focus-visible,
-.footer-links:focus-within a:hover,
-.footer-links:focus-within a:focus-visible {
+.footer-links:has(a:hover) a:hover,
+.footer-links:has(a:hover) a:focus-visible,
+.footer-links:has(a:focus-visible) a:hover,
+.footer-links:has(a:focus-visible) a:focus-visible {
   opacity: 1;
 }
 
