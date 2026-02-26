@@ -30,8 +30,9 @@
   let raf = 0;
 
   const STIFFNESS = 380;
-  const DAMPING = 42;
+  const DAMPING = 48;
   const MASS = 1;
+  const SPRING_TIME_SCALE = 0.35;
 
   const setProgressCSSVars = (value) => {
     const safeValue = Math.max(0, Math.min(1, value));
@@ -175,7 +176,7 @@
   };
 
   function tick() {
-    const dt = 1 / 60; // fijo, consistente
+    const dt = (1 / 60) * SPRING_TIME_SCALE; // fijo, consistente (ralentizado)
     const displacement = target - progress;
     const springForce = STIFFNESS * displacement;
     const dampingForce = -DAMPING * velocity;
