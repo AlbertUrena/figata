@@ -173,7 +173,10 @@ html.nav--collapsed .navbar__inner {
   height: 36px;
   padding: 0 8px;
   opacity: 0.96;
-  transition: opacity 160ms ease;
+  transform-origin: center;
+  transition:
+    opacity 0.25s ease-out,
+    transform 0.25s ease-out;
 }
 
 .navbar__links a::after {
@@ -192,7 +195,12 @@ html.nav--collapsed .navbar__inner {
 
 .navbar__links a:hover,
 .navbar__links a:focus-visible {
+  transform: scale(1.08);
   opacity: 1;
+}
+
+.navbar__links:hover:has(a:hover) a:not(:hover) {
+  opacity: 0.4;
 }
 
 .navbar__links a:hover::after,
