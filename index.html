@@ -74,8 +74,6 @@
 
   <main>
     <section class="hero" id="inicio" aria-labelledby="hero-title">
-      <div class="hero__overlay" aria-hidden="true"></div>
-
       <div class="hero__content">
         <a class="cta-button btn-liquid-glass cta-button--eyebrow hero__eyebrow" href="#menu">
           <span>Nuestra selecci&oacute;n de maridajes</span>
@@ -98,10 +96,6 @@
         </a>
       </div>
     </section>
-
-    <div class="mas-pedidas-bar" aria-label="Las más pedidas">
-      <p class="mas-pedidas-bar__title">Las más pedidas</p>
-    </div>
 
     <section id="mas-pedidas" aria-label="Las más pedidas">
       <div class="mas-pedidas__container">
@@ -189,12 +183,12 @@
               </div>
 
               <!-- Socials -->
-              <div class="footer-col">
+              <div class="footer-col footer-col--socials">
                 <p class="footer-col-title">Socials</p>
                 <ul class="footer-links">
-                  <li><a href="#" target="_blank" rel="noopener"><span>Instagram</span><img class="footer-link-icon" src="assets/open-link-icon.svg" alt="" aria-hidden="true"></a></li>
-                  <li><a href="#" target="_blank" rel="noopener"><span>TikTok</span><img class="footer-link-icon" src="assets/open-link-icon.svg" alt="" aria-hidden="true"></a></li>
-                  <li><a href="#" target="_blank" rel="noopener"><span>Trip Advisor</span><img class="footer-link-icon" src="assets/open-link-icon.svg" alt="" aria-hidden="true"></a></li>
+                  <li><a class="footer-social-link footer-social-link--instagram" href="#" target="_blank" rel="noopener"><span>Instagram</span><img class="footer-link-icon" src="assets/open-link-icon.svg" alt="" aria-hidden="true"></a></li>
+                  <li><a class="footer-social-link footer-social-link--tiktok" href="#" target="_blank" rel="noopener"><span>TikTok</span><img class="footer-link-icon" src="assets/open-link-icon.svg" alt="" aria-hidden="true"></a></li>
+                  <li><a class="footer-social-link footer-social-link--tripadvisor" href="#" target="_blank" rel="noopener"><span>Trip Advisor</span><img class="footer-link-icon" src="assets/open-link-icon.svg" alt="" aria-hidden="true"></a></li>
                 </ul>
               </div>
 
@@ -231,9 +225,47 @@
                 <strong>La Frame</strong>
 
                 <div class="footer-icons">
-                  <a href="#" aria-label="Instagram"><img src="assets/instagram.svg" alt="" aria-hidden="true"></a>
-                  <a href="#" aria-label="TikTok"><img src="assets/tiktok.svg" alt="" aria-hidden="true"></a>
-                  <a href="#" aria-label="TripAdvisor"><img src="assets/trip-advisor.svg" alt="" aria-hidden="true"></a>
+                  <a href="#" aria-label="Instagram" class="footer-icon-trigger footer-icon-trigger--instagram">
+                    <svg class="footer-social-icon footer-social-icon--instagram" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+                      <defs>
+                        <linearGradient id="footer-instagram-gradient" x1="0" y1="32" x2="32" y2="0" gradientUnits="userSpaceOnUse">
+                          <stop offset="0%" stop-color="#405DE6"></stop>
+                          <stop offset="11.111%" stop-color="#5851DB"></stop>
+                          <stop offset="22.222%" stop-color="#833AB4"></stop>
+                          <stop offset="33.333%" stop-color="#C13584"></stop>
+                          <stop offset="44.444%" stop-color="#E1306C"></stop>
+                          <stop offset="55.555%" stop-color="#FD1D1D"></stop>
+                          <stop offset="66.666%" stop-color="#F56040"></stop>
+                          <stop offset="77.777%" stop-color="#F77737"></stop>
+                          <stop offset="88.888%" stop-color="#FCAF45"></stop>
+                          <stop offset="100%" stop-color="#FFDC80"></stop>
+                        </linearGradient>
+                      </defs>
+
+                      <g class="instagram-icon instagram-icon--mono">
+                        <path d="M22.3,8.4c-0.8,0-1.4,0.6-1.4,1.4c0,0.8,0.6,1.4,1.4,1.4c0.8,0,1.4-0.6,1.4-1.4C23.7,9,23.1,8.4,22.3,8.4z"></path>
+                        <path d="M16,10.2c-3.3,0-5.9,2.7-5.9,5.9s2.7,5.9,5.9,5.9s5.9-2.7,5.9-5.9S19.3,10.2,16,10.2z M16,19.9c-2.1,0-3.8-1.7-3.8-3.8c0-2.1,1.7-3.8,3.8-3.8c2.1,0,3.8,1.7,3.8,3.8C19.8,18.2,18.1,19.9,16,19.9z"></path>
+                        <path d="M20.8,4h-9.5C7.2,4,4,7.2,4,11.2v9.5c0,4,3.2,7.2,7.2,7.2h9.5c4,0,7.2-3.2,7.2-7.2v-9.5C28,7.2,24.8,4,20.8,4z M25.7,20.8c0,2.7-2.2,5-5,5h-9.5c-2.7,0-5-2.2-5-5v-9.5c0-2.7,2.2-5,5-5h9.5c2.7,0,5,2.2,5,5V20.8z"></path>
+                      </g>
+
+                      <g class="instagram-icon instagram-icon--gradient">
+                        <path d="M22.3,8.4c-0.8,0-1.4,0.6-1.4,1.4c0,0.8,0.6,1.4,1.4,1.4c0.8,0,1.4-0.6,1.4-1.4C23.7,9,23.1,8.4,22.3,8.4z"></path>
+                        <path d="M16,10.2c-3.3,0-5.9,2.7-5.9,5.9s2.7,5.9,5.9,5.9s5.9-2.7,5.9-5.9S19.3,10.2,16,10.2z M16,19.9c-2.1,0-3.8-1.7-3.8-3.8c0-2.1,1.7-3.8,3.8-3.8c2.1,0,3.8,1.7,3.8,3.8C19.8,18.2,18.1,19.9,16,19.9z"></path>
+                        <path d="M20.8,4h-9.5C7.2,4,4,7.2,4,11.2v9.5c0,4,3.2,7.2,7.2,7.2h9.5c4,0,7.2-3.2,7.2-7.2v-9.5C28,7.2,24.8,4,20.8,4z M25.7,20.8c0,2.7-2.2,5-5,5h-9.5c-2.7,0-5-2.2-5-5v-9.5c0-2.7,2.2-5,5-5h9.5c2.7,0,5,2.2,5,5V20.8z"></path>
+                      </g>
+                    </svg>
+                  </a>
+                  <a href="#" aria-label="TikTok" class="footer-icon-trigger footer-icon-trigger--tiktok footer-icon-swap footer-icon-swap--tiktok">
+                    <img class="footer-icon-swap__img footer-icon-swap__img--default" src="assets/tiktok.svg" alt="" aria-hidden="true">
+                    <img class="footer-icon-swap__img footer-icon-swap__img--hover" src="assets/tiktok-hover.svg" alt="" aria-hidden="true">
+                  </a>
+                  <a href="#" aria-label="TripAdvisor" class="footer-icon-trigger footer-icon-trigger--tripadvisor">
+                    <svg class="footer-social-icon footer-social-icon--tripadvisor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      <path d="M8.311 10.278a2.496 2.496 0 1 0 0 4.992 2.496 2.496 0 0 0 0-4.992zm1.309 2.497a1.309 1.309 0 1 1-1.309-1.309c.723 0 1.309.586 1.309 1.309zm6.069-2.497a2.496 2.496 0 1 0 2.496 2.496 2.497 2.497 0 0 0-2.496-2.496zm1.308 2.497a1.309 1.309 0 1 1-1.309-1.309c.724 0 1.309.586 1.309 1.309z"></path>
+                      <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm3.689 14.464a3.678 3.678 0 0 1-2.506-.982l-1.182 1.286-1.183-1.287-.006.006a3.69 3.69 0 0 1-4.986-5.439L4.618 8.735h2.683a8.36 8.36 0 0 1 9.406 0h2.676l-1.207 1.313a3.69 3.69 0 0 1-2.487 6.416z"></path>
+                      <path d="M9.23 9.048c1.576.603 2.771 2.012 2.771 3.655 0-1.643 1.195-3.052 2.77-3.655a7.202 7.202 0 0 0-5.541 0z"></path>
+                    </svg>
+                  </a>
                 </div>
               </div>
             </div>
