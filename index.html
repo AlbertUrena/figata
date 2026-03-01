@@ -73,61 +73,108 @@
   </header>
 
   <main>
-    <section class="hero" id="inicio" aria-labelledby="hero-title">
-      <div class="hero__content">
-        <a class="cta-button btn-liquid-glass cta-button--eyebrow hero__eyebrow" href="#menu">
-          <span>Nuestra selecci&oacute;n de maridajes</span>
-          <img src="assets/arrow-icon.svg" alt="" aria-hidden="true">
-        </a>
+    <div class="top-bg">
+      <section class="hero" id="inicio" aria-labelledby="hero-title">
+        <div class="hero__content">
+          <a class="cta-button btn-liquid-glass cta-button--eyebrow hero__eyebrow" href="#menu">
+            <span>Nuestra selecci&oacute;n de maridajes</span>
+            <img src="assets/arrow-icon.svg" alt="" aria-hidden="true">
+          </a>
 
-        <h1 class="hero__title" id="hero-title">
-          El nuevo est&aacute;ndar<br>
-          de las pizzas
-        </h1>
+          <h1 class="hero__title" id="hero-title">
+            El nuevo est&aacute;ndar<br>
+            de las pizzas
+          </h1>
 
-        <p class="hero__subtitle">
-          Pizzas napoletanas al horno de le&ntilde;a, con masa madre centenaria
-          y una carta curada de vinos y cervezas italianas.
-        </p>
+          <p class="hero__subtitle">
+            Pizzas napoletanas al horno de le&ntilde;a, con masa madre centenaria
+            y una carta curada de vinos y cervezas italianas.
+          </p>
 
-        <a class="cta-button btn-liquid-glass cta-button--hero" href="#menu">
-          <span>Men&uacute;</span>
-          <img src="assets/menu-icon.svg" alt="" aria-hidden="true">
-        </a>
-      </div>
-    </section>
+          <a class="cta-button btn-liquid-glass cta-button--hero" href="#menu">
+            <span>Men&uacute;</span>
+            <img src="assets/menu-icon.svg" alt="" aria-hidden="true">
+          </a>
+        </div>
+      </section>
 
-    <section id="mas-pedidas" aria-label="Las más pedidas">
-      <div class="mas-pedidas__container">
-        <div class="mas-pedidas__header">
-          <p class="mas-pedidas__headline">Intentamos no tener favoritos, pero...</p>
-          <a class="mas-pedidas__link" href="#" aria-disabled="true">Ver todos</a>
+      <section id="mas-pedidas" aria-label="Las más pedidas">
+        <div class="mas-pedidas__container">
+          <div class="mas-pedidas__header">
+            <p class="mas-pedidas__headline">Intentamos no tener favoritos, pero...</p>
+            <a class="mas-pedidas__link" href="#" aria-disabled="true">Ver todos</a>
+          </div>
+
+          <div class="mas-pedidas__grid" id="mas-pedidas-grid"></div>
         </div>
 
-        <div class="mas-pedidas__grid" id="mas-pedidas-grid"></div>
+        <template id="mas-pedidas-card-template">
+          <article class="mas-pedidas-card">
+            <div class="mas-pedidas-card__media">
+              <img class="mas-pedidas-card__image mas-pedidas-card__image--base" alt="">
+              <img class="mas-pedidas-card__image mas-pedidas-card__image--hover" alt="" aria-hidden="true">
+            </div>
+
+            <div class="mas-pedidas-card__body">
+              <h3 class="mas-pedidas-card__title"></h3>
+              <p class="mas-pedidas-card__description"></p>
+            </div>
+
+            <div class="mas-pedidas-card__footer">
+              <p class="mas-pedidas-card__price"></p>
+              <button class="mas-pedidas-card__button" type="button">
+                <span>Detalles</span>
+                <img src="assets/info.svg" alt="" aria-hidden="true">
+              </button>
+            </div>
+          </article>
+        </template>
+      </section>
+    </div>
+
+    <section class="delivery-section" aria-label="Delivery &amp; Takeout">
+      <div class="delivery-shell">
+        <div class="delivery-card">
+          <div class="delivery-left">
+            <p class="delivery-eyebrow">&mdash; Delivery &amp; Takeout &mdash;</p>
+            <h2 class="delivery-title">Figata en tu casa</h2>
+            <p class="delivery-subtitle">
+              Pide por nuestras plataformas oficiales y recibe la pizza reci&eacute;n horneada donde est&eacute;s, o para llevar.
+            </p>
+
+            <div class="delivery-actions" role="group" aria-label="Plataformas de delivery">
+              <a class="delivery-action" href="#" aria-label="Pedir por PedidosYa">
+                <img src="assets/pedidosya.svg" alt="PedidosYa">
+              </a>
+              <a class="delivery-action" href="#" aria-label="Pedir por Uber Eats">
+                <img class="delivery-action-uber-eats" src="assets/uber-eats.svg" alt="Uber Eats">
+              </a>
+            </div>
+
+            <div class="delivery-pills" aria-label="Datos de delivery">
+              <p class="delivery-pill">
+                <span class="delivery-pill-icon delivery-pill-icon--eta" aria-hidden="true"></span>
+                <span>35-55 min aprox</span>
+              </p>
+              <p class="delivery-pill">
+                <span class="delivery-pill-icon delivery-pill-icon--fire" aria-hidden="true"></span>
+                <span>Reci&eacute;n horneada</span>
+              </p>
+              <p class="delivery-pill delivery-pill--zone">
+                <span class="delivery-pill-icon delivery-pill-icon--pin" aria-hidden="true"></span>
+                <span>Zona: Alma Rosa - Ensanche Ozama</span>
+                <span class="delivery-pill-plus" aria-hidden="true"></span>
+              </p>
+            </div>
+
+            <p class="delivery-note">Disponibilidad y tiempos sujetos a la plataforma.</p>
+          </div>
+
+          <div class="delivery-right">
+            <img class="delivery-box-image" src="assets/caja.png" alt="Caja Figata para delivery y takeout">
+          </div>
+        </div>
       </div>
-
-      <template id="mas-pedidas-card-template">
-        <article class="mas-pedidas-card">
-          <div class="mas-pedidas-card__media">
-            <img class="mas-pedidas-card__image mas-pedidas-card__image--base" alt="">
-            <img class="mas-pedidas-card__image mas-pedidas-card__image--hover" alt="" aria-hidden="true">
-          </div>
-
-          <div class="mas-pedidas-card__body">
-            <h3 class="mas-pedidas-card__title"></h3>
-            <p class="mas-pedidas-card__description"></p>
-          </div>
-
-          <div class="mas-pedidas-card__footer">
-            <p class="mas-pedidas-card__price"></p>
-            <button class="mas-pedidas-card__button" type="button">
-              <span>Detalles</span>
-              <img src="assets/info.svg" alt="" aria-hidden="true">
-            </button>
-          </div>
-        </article>
-      </template>
     </section>
 
     <!-- Secciones futuras del home -->
