@@ -177,6 +177,53 @@
       </div>
     </section>
 
+    <section id="testimonials" class="testimonials-section" aria-label="Testimonials">
+      <div class="testimonials-shell">
+        <div class="testimonials-container">
+          <div class="testimonials-header">
+            <h2>
+              La experiencia habla
+              <span>por s&iacute; sola</span>
+            </h2>
+            <p>Conoce por qu&eacute; nuestros invitados siempre regresan</p>
+          </div>
+
+          <div class="testimonials-grid">
+            <div class="masonry">
+              <div class="masonry-grid" id="testimonials-grid">
+                <div class="column"></div>
+                <div class="column"></div>
+                <div class="column"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <template id="testimonial-card-template">
+        <div class="card-wrapper">
+          <article class="card">
+            <div class="card-main">
+              <div class="card-quote">
+                <img src="assets/quotes.svg" alt="" aria-hidden="true" width="24" height="24">
+              </div>
+              <p class="card-text"></p>
+            </div>
+            <div class="card-footer">
+              <div class="user">
+                <div class="avatar"></div>
+                <div class="user-meta">
+                  <div class="user-name"></div>
+                  <div class="user-role"></div>
+                </div>
+              </div>
+              <div class="stars" aria-label="5 out of 5 stars"></div>
+            </div>
+          </article>
+        </div>
+      </template>
+    </section>
+
     <!-- Secciones futuras del home -->
   </main>
 
@@ -324,5 +371,6 @@
   </div>
   <script src="js/navbar-collapse.js" defer></script>
   <script src="js/mas-pedidas.js" defer></script>
+  <script src="js/testimonials.js" defer></script>
 </body>
 </html>
