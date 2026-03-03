@@ -646,6 +646,10 @@ html.nav--collapsed .navbar__actions .cta-button--nav.btn-liquid-glass:active {
 .preview-overlay__root {
   position: fixed;
   inset: 20px;
+  width: auto;
+  height: auto;
+  max-width: none;
+  margin: 0;
   border-radius: 28px;
   padding: 100px;
   border: 1px solid rgba(255, 255, 255, 0.12);

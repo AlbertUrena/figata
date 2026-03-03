@@ -9,6 +9,9 @@
   let isPreviewOpen = false;
   let isCoverTransitionRunning = false;
   let coverRafId = 0;
+  let previewBaseImageSrc = "";
+  let previewHoverImageSrc = "";
+  let hasPreviewHoverImage = false;
 
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -45,8 +48,102 @@
   previewShell.className = "preview-overlay__shell";
 
   const previewCard = document.createElement("article");
-  previewCard.className = "preview-overlay__card mas-pedidas-card";
+  previewCard.className = "preview-overlay__card preview-overlay__root mas-pedidas-card";
   previewCard.setAttribute("aria-hidden", "true");
+
+  const previewMediaStage = document.createElement("section");
+  previewMediaStage.className = "preview-overlay__media";
+
+  const previewImage = document.createElement("img");
+  previewImage.className = "preview-overlay__image mas-pedidas-card__image";
+  previewImage.alt = "";
+  previewImage.loading = "eager";
+  previewMediaStage.appendChild(previewImage);
+
+  const previewInfo = document.createElement("aside");
+  previewInfo.className = "preview-overlay__info";
+
+  const previewCloseIcon = document.createElement("button");
+  previewCloseIcon.type = "button";
+  previewCloseIcon.className = "preview-overlay__close-icon";
+  previewCloseIcon.setAttribute("aria-label", "Cerrar preview");
+  previewCloseIcon.textContent = "×";
+
+  const previewRatingRow = document.createElement("div");
+  previewRatingRow.className = "preview-overlay__rating-row";
+
+  const previewStars = document.createElement("div");
+  previewStars.className = "preview-overlay__stars";
+
+  for (let i = 0; i < 5; i += 1) {
+    const star = document.createElement("img");
+    star.className = "preview-overlay__star";
+    star.src = "assets/star.svg";
+    star.alt = "";
+    star.setAttribute("aria-hidden", "true");
+    previewStars.appendChild(star);
+  }
+
+  const previewReviews = document.createElement("p");
+  previewReviews.className = "preview-overlay__reviews";
+  previewReviews.textContent = "221 reseñas";
+
+  previewRatingRow.appendChild(previewStars);
+  previewRatingRow.appendChild(previewReviews);
+
+  const previewHeader = document.createElement("header");
+  previewHeader.className = "preview-overlay__header";
+
+  const previewTitle = document.createElement("h2");
+  previewTitle.className = "preview-overlay__title";
+
+  const previewPrice = document.createElement("p");
+  previewPrice.className = "preview-overlay__price mas-pedidas-card__price";
+
+  previewHeader.appendChild(previewTitle);
+  previewHeader.appendChild(previewPrice);
+
+  const previewDescription = document.createElement("p");
+  previewDescription.className = "preview-overlay__description";
+
+  const previewIngredientsSection = document.createElement("section");
+  previewIngredientsSection.className = "preview-overlay__ingredients";
+
+  const previewIngredientsTitle = document.createElement("h3");
+  previewIngredientsTitle.className = "preview-overlay__ingredients-title";
+  previewIngredientsTitle.textContent = "Ingredientes";
+
+  const previewIngredientsList = document.createElement("ul");
+  previewIngredientsList.className = "preview-overlay__ingredients-list";
+
+  previewIngredientsSection.appendChild(previewIngredientsTitle);
+  previewIngredientsSection.appendChild(previewIngredientsList);
+
+  const previewActions = document.createElement("div");
+  previewActions.className = "preview-overlay__actions";
+
+  const previewPrimaryCta = document.createElement("button");
+  previewPrimaryCta.type = "button";
+  previewPrimaryCta.className = "preview-overlay__button preview-overlay__button--primary";
+  previewPrimaryCta.textContent = "Añadir al pedido";
+
+  const previewSecondaryCta = document.createElement("button");
+  previewSecondaryCta.type = "button";
+  previewSecondaryCta.className = "preview-overlay__button preview-overlay__button--secondary";
+  previewSecondaryCta.textContent = "Cerrar";
+
+  previewActions.appendChild(previewPrimaryCta);
+  previewActions.appendChild(previewSecondaryCta);
+
+  previewInfo.appendChild(previewCloseIcon);
+  previewInfo.appendChild(previewRatingRow);
+  previewInfo.appendChild(previewHeader);
+  previewInfo.appendChild(previewDescription);
+  previewInfo.appendChild(previewIngredientsSection);
+  previewInfo.appendChild(previewActions);
+
+  previewCard.appendChild(previewMediaStage);
+  previewCard.appendChild(previewInfo);
 
   previewShell.appendChild(previewCard);
   previewOverlay.appendChild(previewShell);
@@ -206,6 +303,61 @@
     }
   };
 
+  const setPreviewImageSource = (src) => {
+    previewImage.src = src;
+    previewImage.hidden = false;
+  };
+
+  const setPreviewImage = (card) => {
+    if (!card.slug) {
+      previewBaseImageSrc = "";
+      previewHoverImageSrc = "";
+      hasPreviewHoverImage = false;
+      previewImage.removeAttribute("src");
+      previewImage.hidden = true;
+      return;
+    }
+
+    previewBaseImageSrc = `assets/${card.slug}.png`;
+    previewHoverImageSrc = getHoverImageSrc(previewBaseImageSrc);
+    hasPreviewHoverImage = false;
+
+    setPreviewImageSource(previewBaseImageSrc);
+    previewImage.alt = card.title;
+
+    const hoverProbe = new Image();
+    hoverProbe.onload = () => {
+      hasPreviewHoverImage = true;
+    };
+    hoverProbe.onerror = () => {
+      hasPreviewHoverImage = false;
+    };
+    hoverProbe.src = previewHoverImageSrc;
+  };
+
+  const setPreviewIngredients = (ingredients) => {
+    previewIngredientsList.replaceChildren();
+
+    const fragment = document.createDocumentFragment();
+
+    ingredients.forEach((ingredient) => {
+      const li = document.createElement("li");
+      li.textContent = ingredient;
+      fragment.appendChild(li);
+    });
+
+    previewIngredientsList.appendChild(fragment);
+  };
+
+  const hydratePreviewContent = (card) => {
+    previewReviews.textContent = card.reviews || "221 reseñas";
+    previewTitle.textContent = card.title;
+    previewPrice.textContent = card.price;
+    previewDescription.textContent = card.previewDescription || card.description;
+    setPreviewIngredients(card.ingredients || []);
+    setPreviewImage(card);
+  };
+
   const playCoverTransition = () =>
     new Promise((resolve) => {
       if (coverRafId) {
@@ -290,11 +442,12 @@
       coverRafId = window.requestAnimationFrame(tick);
     });
 
-  const openPreview = async () => {
+  const openPreview = async (card) => {
     if (isPreviewOpen || isCoverTransitionRunning) {
       return;
     }
 
+    hydratePreviewContent(card);
     syncPreviewCardStyles();
 
     if (prefersReducedMotion.matches) {
@@ -322,6 +475,35 @@
     }
   });
 
+  previewCloseIcon.addEventListener("click", closePreview);
+  previewSecondaryCta.addEventListener("click", closePreview);
+
+  previewMediaStage.addEventListener("pointerenter", () => {
+    if (!hasPreviewHoverImage || !previewHoverImageSrc) {
+      return;
+    }
+
+    setPreviewImageSource(previewHoverImageSrc);
+  });
+
+  previewMediaStage.addEventListener("pointerleave", () => {
+    if (!previewBaseImageSrc) {
+      return;
+    }
+
+    setPreviewImageSource(previewBaseImageSrc);
+  });
+
+  previewImage.addEventListener("error", () => {
+    if (previewImage.src.includes("-hover.png") && previewBaseImageSrc) {
+      hasPreviewHoverImage = false;
+      setPreviewImageSource(previewBaseImageSrc);
+      return;
+    }
+
+    previewImage.hidden = true;
+  });
+
   document.addEventListener("keydown", (event) => {
     if (!isPreviewOpen || event.key !== "Escape") {
       return;
@@ -341,6 +523,16 @@
       title: "Quattro Formaggi",
       description:
         "Una mezcla cremosa y poderosa de cuatro quesos italianos que se funden en cada bocado.",
+      previewDescription:
+        "Mezcla cremosa de cuatro quesos italianos sobre masa madre, horneada al estilo napolitano.",
+      ingredients: [
+        "Mozzarella fior di latte",
+        "Gorgonzola",
+        "Parmigiano Reggiano",
+        "Ricotta",
+        "Aceite de oliva extra virgen",
+      ],
+      reviews: "221 reseñas",
       price: "RD$1,150.00",
     },
     {
@@ -348,6 +540,13 @@
       title: "Margherita",
       description:
         "La reina napolitana. Pomodoro San Marzano, mozzarella fresca y albahaca sobre masa madre.",
+      ingredients: [
+        "Pomodoro San Marzano",
+        "Mozzarella fresca",
+        "Albahaca",
+        "Aceite de oliva extra virgen",
+      ],
+      reviews: "198 reseñas",
       price: "RD$600.00",
     },
     {
@@ -355,6 +554,13 @@
       title: "Sourdough Ciabatta",
       description:
         "Pan de masa madre crujiente por fuera, suave por dentro. Ideal para compartir...",
+      ingredients: [
+        "Harina de trigo",
+        "Masa madre",
+        "Aceite de oliva",
+        "Sal marina",
+      ],
+      reviews: "74 reseñas",
       price: "RD$200.00",
     },
     {
@@ -362,6 +568,13 @@
       title: "Tiramisú",
       description:
         "Capas delicadas de café y mascarpone que se deshacen suavemente. El final perfecto, al estilo italiano.",
+      ingredients: [
+        "Mascarpone",
+        "Bizcocho de soletilla",
+        "Café espresso",
+        "Cacao en polvo",
+      ],
+      reviews: "132 reseñas",
       price: "RD$350.00",
     },
     {
@@ -369,6 +582,13 @@
       title: "Diavola",
       description:
         "Salammino piccante y mozzarella fundida sobre pomodoro vibrante. Un delicioso toque picante.",
+      ingredients: [
+        "Pomodoro San Marzano",
+        "Mozzarella",
+        "Salammino piccante",
+        "Orégano",
+      ],
+      reviews: "166 reseñas",
       price: "RD$850.00",
     },
     {
@@ -376,6 +596,13 @@
       title: "Bruschetta",
       description:
         "Pan tostado de masa madre con tomate fresco y pesto. Ligera, fresca y llena de sabor mediterráneo.",
+      ingredients: [
+        "Pan de masa madre",
+        "Tomate fresco",
+        "Pesto de albahaca",
+        "Aceite de oliva",
+      ],
+      reviews: "91 reseñas",
       price: "RD$500.00",
     },
     {
@@ -383,6 +610,13 @@
       title: "Schiacciata sándwich",
       description:
         "Crujiente, generosa y llena de carácter. Una combinación irresistible entre tradición y street food.",
+      ingredients: [
+        "Pan schiacciata",
+        "Mozzarella",
+        "Jamón italiano",
+        "Rúcula",
+      ],
+      reviews: "88 reseñas",
       price: "RD$950.00",
     },
     {
@@ -390,6 +624,13 @@
       title: "Margherita Sbagliata",
       description:
         "La versión intensa de la clásica. Más sabor, más personalidad, más Figata.",
+      ingredients: [
+        "Pomodoro San Marzano",
+        "Mozzarella",
+        "Queso curado",
+        "Albahaca",
+      ],
+      reviews: "143 reseñas",
       price: "RD$750.00",
     },
   ];
@@ -458,7 +699,7 @@
     }
 
     detailsButton.addEventListener("click", () => {
-      void openPreview();
+      void openPreview(card);
     });
 
     fragment.appendChild(node);
