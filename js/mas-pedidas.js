@@ -17,10 +17,12 @@
 
   const COVER_IN_DURATION_MS = 900;
   const COVER_IN_MORPH_DURATION_MS = 1200;
-  const COVER_HOLD_DURATION_MS = 500;
+  const COVER_HOLD_DURATION_MS = 0;
   const COVER_OUT_DURATION_MS = 1000;
   const COVER_OUT_MORPH_DURATION_MS = 800;
   const PREVIEW_RISE_DURATION_MS = 1000;
+  const PAGE_PUSH_DURATION_MS = 1000;
+  const PAGE_PUSH_Y_PX = -200;
   const COVER_EXIT_Y_PERCENT = -100.2;
   const COVER_COLOR = "#143f2b";
 
@@ -163,6 +165,7 @@
   document.body.appendChild(previewTransitionCover);
 
   const previewTransitionPath = previewTransitionCover.querySelector(".preview-transition-cover__bg");
+  const pagePushTarget = document.querySelector("main");
 
   const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
   const lerp = (from, to, progress) => from + (to - from) * progress;
@@ -270,6 +273,14 @@
 
     previewTransitionPath.setAttribute("d", d);
     previewTransitionPath.setAttribute("fill", COVER_COLOR);
+  };
+
+  const setPagePush = (offsetY) => {
+    if (!pagePushTarget) {
+      return;
+    }
+
+    pagePushTarget.style.transform = `translate3d(0, ${formatNumber(offsetY)}px, 0)`;
   };
 
   const resetPreviewCardAnimation = () => {
@@ -383,6 +394,7 @@
         previewTransitionCover.hidden = true;
         setCoverTransform(COVER_EXIT_Y_PERCENT);
         setCoverPath(buildTopBlobPath(0));
+        setPagePush(PAGE_PUSH_Y_PX);
         previewCard.style.transform = "translate3d(0, 0, 0)";
         previewCard.style.opacity = "1";
         isCoverTransitionRunning = false;
@@ -404,6 +416,13 @@
         }
 
         setCoverTransform(coverTranslateY);
+
+        if (elapsed <= PAGE_PUSH_DURATION_MS) {
+          const pagePushProgress = easeCoverEnter(elapsed / PAGE_PUSH_DURATION_MS);
+          setPagePush(lerp(0, PAGE_PUSH_Y_PX, pagePushProgress));
+        } else {
+          setPagePush(PAGE_PUSH_Y_PX);
+        }
 
         if (elapsed <= COVER_IN_MORPH_DURATION_MS) {
           const localProgress = clamp(elapsed / COVER_IN_MORPH_DURATION_MS);
@@ -465,6 +484,7 @@
       return;
     }
 
+    setPagePush(0);
     setPreviewOpen(false);
     resetPreviewCardAnimation();
   };
@@ -514,6 +534,7 @@
 
   setCoverTransform(COVER_EXIT_Y_PERCENT);
   setCoverPath(buildTopBlobPath(0));
+  setPagePush(0);
 
   const getHoverImageSrc = (src) => src.replace(/\.png$/i, "-hover.png");
 
