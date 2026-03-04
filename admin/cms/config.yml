@@ -494,3 +494,184 @@ collections:
               - label: Announcements
                 name: announcements
                 widget: boolean
+  - name: restaurant
+    label: Restaurant
+    files:
+      - label: Restaurant Data
+        name: restaurant_data
+        file: data/restaurant.json
+        format: json
+        fields:
+          - label: Version
+            name: version
+            widget: number
+            value_type: int
+          - label: Schema
+            name: schema
+            widget: string
+          - label: Updated At
+            name: updatedAt
+            widget: string
+            required: false
+          - label: Updated By
+            name: updatedBy
+            widget: string
+            required: false
+          - label: Name
+            name: name
+            widget: string
+          - label: Brand
+            name: brand
+            widget: string
+            required: false
+          - label: Tagline
+            name: tagline
+            widget: text
+            required: false
+          - label: Currency
+            name: currency
+            widget: string
+            required: false
+          - label: Phone
+            name: phone
+            widget: string
+            required: false
+          - label: WhatsApp URL
+            name: whatsapp
+            widget: string
+            required: false
+          - label: Reservation URL
+            name: reservationUrl
+            widget: string
+            required: false
+          - label: Google Maps URL
+            name: googleMapsUrl
+            widget: string
+            required: false
+          - label: Address
+            name: address
+            widget: object
+            fields:
+              - label: Line 1
+                name: line1
+                widget: string
+              - label: Line 2
+                name: line2
+                widget: string
+                required: false
+              - label: City
+                name: city
+                widget: string
+              - label: Area
+                name: area
+                widget: string
+                required: false
+              - label: Country
+                name: country
+                widget: string
+              - label: Postal Code
+                name: postalCode
+                widget: string
+                required: false
+          - label: Opening Hours
+            name: openingHours
+            widget: object
+            fields:
+              - label: Monday
+                name: mon
+                widget: string
+                required: false
+              - label: Tuesday
+                name: tue
+                widget: string
+                required: false
+              - label: Wednesday
+                name: wed
+                widget: string
+                required: false
+              - label: Thursday
+                name: thu
+                widget: string
+                required: false
+              - label: Friday
+                name: fri
+                widget: string
+                required: false
+              - label: Saturday
+                name: sat
+                widget: string
+                required: false
+              - label: Sunday
+                name: sun
+                widget: string
+                required: false
+          - label: Opening Hours Exceptions
+            name: openingHoursExceptions
+            widget: list
+            required: false
+            summary: "{{fields.date}}"
+            fields:
+              - label: Date
+                name: date
+                widget: string
+              - label: Open
+                name: open
+                widget: string
+                required: false
+              - label: Close
+                name: close
+                widget: string
+                required: false
+              - label: Note
+                name: note
+                widget: text
+                required: false
+          - label: Social
+            name: social
+            widget: object
+            fields:
+              - label: Instagram
+                name: instagram
+                widget: string
+                required: false
+              - label: TikTok
+                name: tiktok
+                widget: string
+                required: false
+              - label: TripAdvisor
+                name: tripadvisor
+                widget: string
+                required: false
+          - label: SEO
+            name: seo
+            widget: object
+            fields:
+              - label: Title
+                name: title
+                widget: string
+                required: false
+              - label: Description
+                name: description
+                widget: text
+                required: false
+              - label: URL
+                name: url
+                widget: string
+                required: false
+              - label: Image
+                name: image
+                widget: string
+                required: false
+  - name: media
+    label: Media
+    files:
+      - label: Media JSON (Raw)
+        name: media_data
+        file: data/media.json
+        fields:
+          - label: Raw JSON
+            name: body
+            widget: code
+            default_language: json
+            output_code_only: true
+            hint: "Edita el JSON completo de media.json aqui."
