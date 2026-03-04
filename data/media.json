@@ -24,9 +24,9 @@
       "version": 1
     },
     "bruschetta_classica": {
-      "card": "assets/bruschetta.png",
-      "hover": "assets/bruschetta-hover.png",
-      "modal": "assets/bruschetta.png",
+      "card": "menu/bruschetta.webp",
+      "hover": "menu/hover/bruschetta-hover.webp",
+      "modal": "menu/bruschetta.webp",
       "gallery": [],
       "alt": "Bruschetta Classica",
       "dominantColor": "",
@@ -78,18 +78,18 @@
       "version": 1
     },
     "focaccia_rellena": {
-      "card": "assets/schiacciata-sandwich.png",
-      "hover": "assets/schiacciata-sandwich-hover.png",
-      "modal": "assets/schiacciata-sandwich.png",
+      "card": "menu/schiacciata-sandwich.webp",
+      "hover": "menu/hover/schiacciata-sandwich-hover.webp",
+      "modal": "menu/schiacciata-sandwich.webp",
       "gallery": [],
       "alt": "Focaccia rellena",
       "dominantColor": "",
       "version": 1
     },
     "margherita": {
-      "card": "assets/margherita.png",
-      "hover": "assets/margherita-hover.png",
-      "modal": "assets/margherita.png",
+      "card": "menu/margherita.webp",
+      "hover": "menu/hover/margherita-hover.webp",
+      "modal": "menu/margherita.webp",
       "gallery": [],
       "alt": "Margherita",
       "dominantColor": "",
@@ -123,9 +123,9 @@
       "version": 1
     },
     "diavola": {
-      "card": "assets/diavola.png",
-      "hover": "assets/diavola-hover.png",
-      "modal": "assets/diavola.png",
+      "card": "menu/diavola.webp",
+      "hover": "menu/hover/diavola-hover.webp",
+      "modal": "menu/diavola.webp",
       "gallery": [],
       "alt": "Diavola",
       "dominantColor": "",
@@ -186,9 +186,9 @@
       "version": 1
     },
     "margherita_sbagliata": {
-      "card": "assets/margherita-sbagliata.png",
-      "hover": "assets/margherita-sbagliata-hover.png",
-      "modal": "assets/margherita-sbagliata.png",
+      "card": "menu/margherita-sbagliata.webp",
+      "hover": "menu/hover/margherita-sbagliata-hover.webp",
+      "modal": "menu/margherita-sbagliata.webp",
       "gallery": [],
       "alt": "Margherita Sbagliata",
       "dominantColor": "",
@@ -204,9 +204,9 @@
       "version": 1
     },
     "quattro_formaggi_truffle": {
-      "card": "assets/quattroformaggi.png",
-      "hover": "assets/quattroformaggi-hover.png",
-      "modal": "assets/quattroformaggi.png",
+      "card": "menu/quattroformaggi.webp",
+      "hover": "menu/hover/quattroformaggi-hover.webp",
+      "modal": "menu/quattroformaggi.webp",
       "gallery": [],
       "alt": "Quattro Formaggi y Black Truffle",
       "dominantColor": "",
@@ -312,9 +312,9 @@
       "version": 1
     },
     "tiramisu": {
-      "card": "assets/tiramisu.png",
-      "hover": "assets/tiramisu-hover.png",
-      "modal": "assets/tiramisu.png",
+      "card": "menu/tiramisu.webp",
+      "hover": "menu/hover/tiramisu-hover.webp",
+      "modal": "menu/tiramisu.webp",
       "gallery": [],
       "alt": "Tiramisú artesanal",
       "dominantColor": "",
@@ -384,9 +384,9 @@
       "version": 1
     },
     "pan_ciabatta": {
-      "card": "assets/sourdough-ciabatta.png",
-      "hover": "assets/sourdough-ciabatta-hover.png",
-      "modal": "assets/sourdough-ciabatta.png",
+      "card": "menu/sourdough-ciabatta.webp",
+      "hover": "menu/hover/sourdough-ciabatta-hover.webp",
+      "modal": "menu/sourdough-ciabatta.webp",
       "gallery": [],
       "alt": "Pan ciabatta de masa madre",
       "dominantColor": "",

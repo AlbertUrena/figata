@@ -1,10 +1,4 @@
 (() => {
-  const TAB_DATA = [
-    { videoSrc: "/videos/tab0.mp4" },
-    { videoSrc: "/videos/tab1.mp4" },
-    { videoSrc: "/videos/tab2.mp4" }
-  ];
-
   const PROGRESS_MS = 4000;
   const STACKED_QUERY = window.matchMedia("(max-width: 900px)");
 
@@ -16,7 +10,6 @@
   const tabs = Array.from(root.querySelectorAll(".feature-tab[role='tab']"));
   const bars = tabs.map((tab) => tab.querySelector(".feature-tab-progress"));
   const panel = root.querySelector(".feature-card[role='tabpanel']");
-  const video = root.querySelector(".feature-card-video");
 
   if (!tabsWrap || !pill || !tabs.length) return;
 
@@ -66,18 +59,6 @@
     });
   }
 
-  function updateMedia(index) {
-    if (!video) return;
-    const nextSrc = TAB_DATA[index] ? TAB_DATA[index].videoSrc : "";
-    if (!nextSrc || video.getAttribute("src") === nextSrc) return;
-
-    video.setAttribute("src", nextSrc);
-    video.load();
-
-    const p = video.play();
-    if (p && typeof p.catch === "function") p.catch(() => {});
-  }
-
   function setActive(index, options = { animatePill: true }) {
     if (index < 0 || index >= tabs.length) return;
 
@@ -95,7 +76,6 @@
 
     updatePillPosition(index, options.animatePill && changed);
     startProgress(index);
-    updateMedia(index);
 
     if (panel) panel.setAttribute("data-active-tab", String(index));
   }
@@ -142,5 +122,4 @@
 
   updatePillPosition(activeIndex, false);
   startProgress(activeIndex);
-  updateMedia(activeIndex);
 })();

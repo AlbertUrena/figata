@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "basePath": "/assets/ingredients/",
+  "basePath": "/assets/Ingredients/",
   "allergens": {
     "milk": { "id": "milk", "label": "Lácteos" },
     "nuts": { "id": "nuts", "label": "Frutos secos" },
@@ -17,107 +17,107 @@
   },
   "icons": {
     "aceituna": {
-      "icon": "/assets/ingredients/aceituna.png",
+      "icon": "/assets/Ingredients/aceituna.webp",
       "label": "Aceituna",
       "covers": ["aceitunas"]
     },
     "ajo": {
-      "icon": "/assets/ingredients/ajo.png",
+      "icon": "/assets/Ingredients/ajo.webp",
       "label": "Ajo",
       "covers": ["ajo"]
     },
     "albahaca": {
-      "icon": "/assets/ingredients/albahaca.png",
+      "icon": "/assets/Ingredients/albahaca.webp",
       "label": "Albahaca",
       "covers": ["albahaca"]
     },
     "alcaparra": {
-      "icon": "/assets/ingredients/alcaparra.png",
+      "icon": "/assets/Ingredients/alcaparra.webp",
       "label": "Alcaparra",
       "covers": ["alcaparras"]
     },
     "bacon": {
-      "icon": "/assets/ingredients/bacon.png",
+      "icon": "/assets/Ingredients/bacon.webp",
       "label": "Bacon",
       "covers": ["bacon"]
     },
     "berenjena": {
-      "icon": "/assets/ingredients/berenjena.png",
+      "icon": "/assets/Ingredients/berenjena.webp",
       "label": "Berenjena",
       "covers": ["berenjena"]
     },
     "burrata": {
-      "icon": "/assets/ingredients/burrata.png",
+      "icon": "/assets/Ingredients/burrata.webp",
       "label": "Burrata",
       "covers": ["burrata_fresca"]
     },
     "cebolla": {
-      "icon": "/assets/ingredients/cebolla.png",
+      "icon": "/assets/Ingredients/cebolla.webp",
       "label": "Cebolla",
       "covers": ["cebolla"]
     },
     "chile": {
-      "icon": "/assets/ingredients/chile.png",
+      "icon": "/assets/Ingredients/chile.webp",
       "label": "Picante",
       "covers": ["peperoncino", "chili_flakes", "nduja"]
     },
     "hongo": {
-      "icon": "/assets/ingredients/hongo.png",
+      "icon": "/assets/Ingredients/hongo.webp",
       "label": "Hongos",
       "covers": ["porcini"]
     },
     "jamon_curado": {
-      "icon": "/assets/ingredients/jamon-curado.png",
+      "icon": "/assets/Ingredients/jamon-curado.webp",
       "label": "Curados",
       "covers": ["prosciutto_di_parma", "bresaola", "mortadella"]
     },
     "menta": {
-      "icon": "/assets/ingredients/menta.png",
+      "icon": "/assets/Ingredients/menta.webp",
       "label": "Menta",
       "covers": ["menta"]
     },
     "mermelada": {
-      "icon": "/assets/ingredients/mermelada.png",
+      "icon": "/assets/Ingredients/mermelada.webp",
       "label": "Mermelada",
       "covers": ["mermelada_de_tomate"]
     },
     "miel": {
-      "icon": "/assets/ingredients/miel.png",
+      "icon": "/assets/Ingredients/miel.webp",
       "label": "Miel",
       "covers": ["miel"]
     },
     "oliva": {
-      "icon": "/assets/ingredients/oliva.png",
+      "icon": "/assets/Ingredients/oliva.webp",
       "label": "Aceite de oliva",
       "covers": ["aceite_de_oliva_evoo"]
     },
     "oregano": {
-      "icon": "/assets/ingredients/oregano.png",
+      "icon": "/assets/Ingredients/oregano.webp",
       "label": "Orégano",
       "covers": ["oregano"]
     },
     "pancetta": {
-      "icon": "/assets/ingredients/pancetta.png",
+      "icon": "/assets/Ingredients/pancetta.webp",
       "label": "Pancetta",
       "covers": ["pancetta"]
     },
     "pescado": {
-      "icon": "/assets/ingredients/pescado.png",
+      "icon": "/assets/Ingredients/pescado.webp",
       "label": "Pescado",
       "covers": ["atun"]
     },
     "pesto": {
-      "icon": "/assets/ingredients/pesto.png",
+      "icon": "/assets/Ingredients/pesto.webp",
       "label": "Pestos",
       "covers": ["pesto_de_albahaca", "pesto_de_rucula", "pesto_de_pistacho"]
     },
     "pistacho": {
-      "icon": "/assets/ingredients/pistacho.png",
+      "icon": "/assets/Ingredients/pistacho.webp",
       "label": "Pistacho",
       "covers": ["pistachos"]
     },
     "queso": {
-      "icon": "/assets/ingredients/queso.png",
+      "icon": "/assets/Ingredients/queso.webp",
       "label": "Quesos",
       "covers": [
         "mozzarella",
@@ -133,47 +133,47 @@
       ]
     },
     "romero": {
-      "icon": "/assets/ingredients/romero.png",
+      "icon": "/assets/Ingredients/romero.webp",
       "label": "Romero",
       "covers": ["romero"]
     },
     "rucula": {
-      "icon": "/assets/ingredients/rucula.png",
+      "icon": "/assets/Ingredients/rucula.webp",
       "label": "Rúcula",
       "covers": ["rucula"]
     },
     "salami": {
-      "icon": "/assets/ingredients/salami.png",
+      "icon": "/assets/Ingredients/salami.webp",
       "label": "Salami",
       "covers": ["salamino_piccante", "soppressata"]
     },
     "salchicha": {
-      "icon": "/assets/ingredients/salchicha.png",
+      "icon": "/assets/Ingredients/salchicha.webp",
       "label": "Salsiccia",
       "covers": ["salsiccia"]
     },
     "san_marzano": {
-      "icon": "/assets/ingredients/san-marzano.png",
+      "icon": "/assets/Ingredients/san-marzano.webp",
       "label": "San Marzano",
       "covers": ["san_marzano_dop"]
     },
     "stracciatella": {
-      "icon": "/assets/ingredients/stracciatella.png",
+      "icon": "/assets/Ingredients/stracciatella.webp",
       "label": "Stracciatella",
       "covers": ["stracciatella"]
     },
     "tomate_cherry": {
-      "icon": "/assets/ingredients/tomate-cherry.png",
+      "icon": "/assets/Ingredients/tomate-cherry.webp",
       "label": "Tomate cherry",
       "covers": ["tomate_cherry"]
     },
     "tomate": {
-      "icon": "/assets/ingredients/tomate.png",
+      "icon": "/assets/Ingredients/tomate.webp",
       "label": "Tomate",
       "covers": ["pomodoro", "salsa_de_tomate"]
     },
     "trufa": {
-      "icon": "/assets/ingredients/trufa.png",
+      "icon": "/assets/Ingredients/trufa.webp",
       "label": "Trufa",
       "covers": ["crema_de_trufa"]
     }

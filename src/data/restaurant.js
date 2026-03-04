@@ -54,7 +54,7 @@
       description:
         'Pizzas napolitanas al horno de lena, vino y una experiencia premium en Santo Domingo Este.',
       url: '/',
-      image: 'assets/location.png',
+      image: 'assets/home/location.webp',
     },
   };
 

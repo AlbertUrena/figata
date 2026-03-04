@@ -4,7 +4,7 @@
   "hero": {
     "title": "Pizza napolitana autentica",
     "subtitle": "Horneada en horno de lena, con ingredientes seleccionados y maridajes de la casa.",
-    "backgroundImage": "assets/seamless-bg.png",
+    "backgroundImage": "assets/home/seamless-bg.webp",
     "ctaPrimary": {
       "label": "Ver menu",
       "url": "#menu"
@@ -41,31 +41,28 @@
       {
         "id": "celebraciones_in_house",
         "title": "Celebraciones In-House",
-        "subtitle": "Celebra tu evento en nuestro local",
-        "video": "/videos/tab0.mp4"
+        "subtitle": "Celebra tu evento en nuestro local"
       },
       {
         "id": "pizza_party_domicilio",
         "title": "Pizza Party a Domicilio",
-        "subtitle": "Experiencia Figata donde estes",
-        "video": "/videos/tab1.mp4"
+        "subtitle": "Experiencia Figata donde estes"
       },
       {
         "id": "noches_especiales",
         "title": "Noches Especiales",
-        "subtitle": "Catas y eventos privados en Figata",
-        "video": "/videos/tab2.mp4"
+        "subtitle": "Catas y eventos privados en Figata"
       }
     ]
   },
   "delivery": {
-    "title": "Pide desde casa",
+    "title": "Figata en tu casa",
     "subtitle": "Pide por nuestras plataformas oficiales y recibe la pizza recien horneada donde estes, o para llevar.",
     "links": {
-      "pedidosya": "",
-      "ubereats": "",
-      "takeout": "/menu",
-      "whatsapp": "https://wa.me/18090000000"
+      "pedidosya": "#",
+      "ubereats": "#",
+      "takeout": "",
+      "whatsapp": ""
     }
   },
   "reservation": {

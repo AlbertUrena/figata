@@ -71,7 +71,7 @@
   for (let i = 0; i < 5; i += 1) {
     const star = document.createElement("img");
     star.className = "preview-overlay__star";
-    star.src = "assets/star.svg";
+    star.src = "assets/svg-icons/star.svg";
     star.alt = "";
     star.setAttribute("aria-hidden", "true");
     previewStars.appendChild(star);

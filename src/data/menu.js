@@ -528,6 +528,7 @@
     const { limit, featuredIds } = resolveFeaturedSelectionOptions(optionsOrLimit);
     const { menu, items, byId } = await loadMenuStore();
     const requestedIds = selectFeaturedIds(menu, items, featuredIds);
+    const shouldAutofill = requestedIds.length === 0;
     const selected = [];
     const seen = new Set();
 
@@ -540,7 +541,7 @@
       seen.add(id);
     });
 
-    if (selected.length < limit) {
+    if (shouldAutofill && selected.length < limit) {
       items.forEach((item) => {
         if (selected.length >= limit || seen.has(item.id)) {
           return;

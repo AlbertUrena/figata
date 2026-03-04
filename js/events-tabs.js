@@ -9,8 +9,6 @@
 
   const rail = root.querySelector('.events-tabs-rail');
   const pill = root.querySelector('.events-tabs-pill');
-  const video = document.querySelector('#eventos-tabs .events-card-video');
-
   if (!rail || !pill) {
     return;
   }
@@ -99,7 +97,6 @@
     }
 
     activeIndex = nextIndex;
-    syncVideoForTab(tabs[nextIndex]);
 
     if (focus) {
       tabs[nextIndex].focus();
@@ -187,39 +184,6 @@
       spacer.className = 'events-tabs-spacer';
       spacer.style.left = `calc((100% / ${tabCount}) * ${index})`;
       rail.appendChild(spacer);
-    }
-  }
-
-  function syncVideoForTab(tab) {
-    if (!video || !tab) {
-      return;
-    }
-
-    const source = (tab.getAttribute('data-video') || '').trim();
-
-    if (!source) {
-      video.pause();
-      video.removeAttribute('src');
-      video.hidden = true;
-      video.load();
-      return;
-    }
-
-    const currentSource = video.getAttribute('src') || '';
-
-    if (currentSource !== source) {
-      video.setAttribute('src', source);
-      video.load();
-    }
-
-    video.hidden = false;
-
-    if (typeof video.play === 'function') {
-      const playPromise = video.play();
-
-      if (playPromise && typeof playPromise.catch === 'function') {
-        playPromise.catch(() => {});
-      }
     }
   }
 

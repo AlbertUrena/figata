@@ -18,7 +18,7 @@
       quote:
         "We ordered for delivery, it was 10 out of 10 it’s the best pizza I have tried in Santo Domingo! Great ingredients, real Neapolitan pizza from wood oven! Also I was surprised to see the message in the pizza box, little details that makes the difference.",
       name: "Awilda Suero",
-      avatarSrc: "/assets/awilda.png",
+      avatarSrc: "/assets/reviews/awilda.png",
       rating: 5,
     },
     {
@@ -26,7 +26,7 @@
       quote:
         "Sus pizzas son excelentes, hechas con ingredientes de alta calidad, estilo napolitano auténtico, tienen una amplia selección de cervezas a elegir y probar. El local tiene un muy buen ambiente.",
       name: "Fabio Reyes",
-      avatarSrc: "/assets/fabio.png",
+      avatarSrc: "/assets/reviews/fabio.png",
       rating: 5,
     },
     {
@@ -34,7 +34,7 @@
       quote:
         "La pizza es artesanal para los amantes de este tipo, es un lugar pequeño pero bien distribuido, si te gusta probar cervezas diferentes es el lugar de elección. Parqueo limitado",
       name: "Karla Villar",
-      avatarSrc: "/assets/karla.png",
+      avatarSrc: "/assets/reviews/karla.png",
       rating: 4,
     },
     {
@@ -42,7 +42,7 @@
       quote:
         "Tienen una variedad deliciosa e interesante de pizza y unas berengenas riquísimas. El café es muy rico y tienen variedad de cócteles.",
       name: "Liecel Franco",
-      avatarSrc: "/assets/liecel.png",
+      avatarSrc: "/assets/reviews/liecel.png",
       rating: 5,
     },
     {
@@ -50,7 +50,7 @@
       quote:
         "Es la mejor pizza napolitana que he probado, textura y grosor perfecto, no era ni muy finita ni muy gordita la masa, era perfecta. Llena bastante. Tienen una gran variedad de cervezas y vinos. Probamos la sweet goat y la de burrata con pesto y prosciutto, excelentes las dos. Volvería una y mil veces. 😻🥰",
       name: "Prysla Rodríguez",
-      avatarSrc: "/assets/prysla.png",
+      avatarSrc: "/assets/reviews/prysla.png",
       rating: 5,
     },
     {
@@ -58,7 +58,7 @@
       quote:
         "Al abrir la puerta el rico olor a pizza te invita a continuar y tomar asiento, el servicio es excepcional y las pizzas espectaculares.",
       name: "Angel Tejeda Piña",
-      avatarSrc: "/assets/angel.png",
+      avatarSrc: "/assets/reviews/angel.png",
       rating: 5,
     },
     {
@@ -66,7 +66,7 @@
       quote:
         "Mi resturante favorito en Santo Domingo Este, las pizzas son buenisimas, excelente servicio y ambiente. El take out tambien funciona de maravilla. 10/10 en todo! Recomendadisimo.",
       name: "Massiel Beltre",
-      avatarSrc: "/assets/massiel.png",
+      avatarSrc: "/assets/reviews/massiel.png",
       rating: 5,
     },
     {
@@ -74,7 +74,7 @@
       quote:
         "10/10 Un cóctel riquísimo, pizzas que wow, llenas de sabor con una auténtica masa que te transporta y el tiramisu DIOS MIO QUE BUENO!! He probado 3 pizzas y todas me han encantado. Los recomiendo 100%",
       name: "Vianneris Morillo",
-      avatarSrc: "/assets/vianneris.png",
+      avatarSrc: "/assets/reviews/vianneris.png",
       rating: 5,
     },
     {
@@ -82,7 +82,7 @@
       quote:
         "Their pizzas are awesome and very good value. They also have a great beer selection to accompany your pizzas. Staff is very attentive and has a great disposition, service was very good across all the times I’ve visited. Try their Sweet Goat and Figata pizzas.\n\nThey have espanded seating lately, but parking can still be an issue sometimes as the spot the restaurant is in has few slots available.",
       name: "Ricardo Restituyo",
-      avatarSrc: "/assets/ricardo.png",
+      avatarSrc: "/assets/reviews/ricardo.png",
       rating: 5,
     },
   ];
@@ -117,7 +117,7 @@
     for (let index = 0; index < 5; index += 1) {
       const star = document.createElement("img");
       star.className = index < safeRating ? "star" : "star star--muted";
-      star.src = "assets/star.svg";
+      star.src = "assets/svg-icons/star.svg";
       star.alt = "";
       star.width = 16;
       star.height = 16;

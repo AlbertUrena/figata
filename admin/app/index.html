@@ -37,46 +37,156 @@
           <div class="session-box">
             <p class="session-label">Sesion activa</p>
             <p id="session-email" class="session-email">-</p>
-            <button id="logout-button" class="btn btn-ghost" type="button">Logout</button>
+            <div class="session-actions">
+              <button id="refresh-data-button" class="btn btn-ghost" type="button">
+                Recargar data
+              </button>
+              <button id="logout-button" class="btn btn-ghost" type="button">Logout</button>
+            </div>
           </div>
         </header>
 
-        <section class="cards-grid" aria-label="Accesos rapidos">
-          <a class="dash-card" href="/admin/cms/#/collections/menu">
-            <p class="dash-card__eyebrow">Contenido</p>
-            <h2>Menu</h2>
-            <p>Items, precios y textos.</p>
-          </a>
+        <p id="data-status" class="data-status" role="status" aria-live="polite">
+          Cargando datos...
+        </p>
 
-          <a class="dash-card" href="/admin/cms/#/collections/home">
-            <p class="dash-card__eyebrow">Homepage</p>
-            <h2>Home</h2>
-            <p>Hero, featured y links.</p>
-          </a>
+        <section id="dashboard-panel" aria-label="Accesos rapidos">
+          <section class="cards-grid">
+            <article class="dash-card dash-card--interactive">
+              <p class="dash-card__eyebrow">Contenido</p>
+              <h2>Menu</h2>
+              <p id="metric-menu" class="dash-card__metric">0 items</p>
+              <p>Editor visual para crear, editar o eliminar productos.</p>
+              <div class="dash-card__actions">
+                <button id="open-menu-editor-button" class="btn btn-inline" type="button">
+                  Abrir editor
+                </button>
+                <a href="/admin/cms/#/collections/menu">Decap fallback</a>
+              </div>
+            </article>
 
-          <a class="dash-card" href="/admin/cms/#/collections/availability">
-            <p class="dash-card__eyebrow">Operacion</p>
-            <h2>Availability</h2>
-            <p>Disponibilidad y notas.</p>
-          </a>
+            <a class="dash-card" href="/admin/cms/#/collections/home">
+              <p class="dash-card__eyebrow">Homepage</p>
+              <h2>Home</h2>
+              <p id="metric-home" class="dash-card__metric">-</p>
+              <p>Hero, featured y links.</p>
+            </a>
 
-          <a class="dash-card" href="/admin/cms/#/collections/categories">
-            <p class="dash-card__eyebrow">Estructura</p>
-            <h2>Categories</h2>
-            <p>Categorias y orden de secciones.</p>
-          </a>
+            <a class="dash-card" href="/admin/cms/#/collections/availability">
+              <p class="dash-card__eyebrow">Operacion</p>
+              <h2>Availability</h2>
+              <p id="metric-availability" class="dash-card__metric">-</p>
+              <p>Disponibilidad y notas.</p>
+            </a>
 
-          <a class="dash-card" href="/admin/cms/#/collections/restaurant">
-            <p class="dash-card__eyebrow">Negocio</p>
-            <h2>Restaurant</h2>
-            <p>Telefono, horario y datos generales.</p>
-          </a>
+            <a class="dash-card" href="/admin/cms/#/collections/categories">
+              <p class="dash-card__eyebrow">Estructura</p>
+              <h2>Categories</h2>
+              <p id="metric-categories" class="dash-card__metric">-</p>
+              <p>Categorias y orden de secciones.</p>
+            </a>
 
-          <a class="dash-card" href="/admin/cms/#/collections/media">
-            <p class="dash-card__eyebrow">Activos</p>
-            <h2>Media</h2>
-            <p>JSON de imagenes y variantes.</p>
-          </a>
+            <a class="dash-card" href="/admin/cms/#/collections/restaurant">
+              <p class="dash-card__eyebrow">Negocio</p>
+              <h2>Restaurant</h2>
+              <p id="metric-restaurant" class="dash-card__metric">-</p>
+              <p>Telefono, horarios y datos generales.</p>
+            </a>
+
+            <a class="dash-card" href="/admin/cms/#/collections/media">
+              <p class="dash-card__eyebrow">Activos</p>
+              <h2>Media</h2>
+              <p id="metric-media" class="dash-card__metric">-</p>
+              <p>Mapa completo de imagenes por item.</p>
+            </a>
+          </section>
+        </section>
+
+        <section id="menu-editor-panel" class="menu-editor is-hidden" aria-label="Menu Editor">
+          <div class="menu-editor__header">
+            <div>
+              <p class="kicker">Editor custom</p>
+              <h2>Menu Editor</h2>
+              <p class="menu-editor__subtitle">
+                Gestion visual de <code>data/menu.json</code> sin tocar JSON manualmente.
+              </p>
+            </div>
+            <div class="menu-editor__toolbar">
+              <button id="menu-editor-back-button" class="btn btn-ghost" type="button">
+                Volver al dashboard
+              </button>
+              <button id="menu-add-item-button" class="btn btn-primary" type="button">
+                Nuevo item
+              </button>
+              <button id="menu-copy-json-button" class="btn btn-ghost" type="button">
+                Copiar JSON
+              </button>
+              <button id="menu-download-json-button" class="btn btn-ghost" type="button">
+                Descargar JSON
+              </button>
+            </div>
+          </div>
+
+          <p id="menu-editor-status" class="status-message" role="status" aria-live="polite"></p>
+
+          <div class="menu-editor__layout">
+            <aside class="menu-list card">
+              <div class="menu-list__top">
+                <label class="field">
+                  <span>Seccion</span>
+                  <select id="menu-section-filter"></select>
+                </label>
+              </div>
+              <ul id="menu-items-list" class="menu-items-list"></ul>
+            </aside>
+
+            <section class="menu-form card">
+              <h3 id="menu-form-title">Editar item</h3>
+              <form id="menu-item-form">
+                <label class="field">
+                  <span>Seccion</span>
+                  <select id="menu-field-section" required></select>
+                </label>
+
+                <label class="field">
+                  <span>ID</span>
+                  <input id="menu-field-id" type="text" required />
+                </label>
+
+                <label class="field">
+                  <span>Nombre</span>
+                  <input id="menu-field-name" type="text" required />
+                </label>
+
+                <label class="field">
+                  <span>Precio (DOP)</span>
+                  <input id="menu-field-price" type="number" min="0" step="1" required />
+                </label>
+
+                <label class="field">
+                  <span>Categoria</span>
+                  <input id="menu-field-category" type="text" />
+                </label>
+
+                <label class="field">
+                  <span>Ingredientes (separados por coma)</span>
+                  <textarea id="menu-field-ingredients" rows="3"></textarea>
+                </label>
+
+                <label class="field">
+                  <span>Tags (separados por coma)</span>
+                  <textarea id="menu-field-tags" rows="2"></textarea>
+                </label>
+
+                <div class="menu-form__actions">
+                  <button class="btn btn-primary" type="submit">Guardar item</button>
+                  <button id="menu-delete-item-button" class="btn btn-danger" type="button">
+                    Eliminar item
+                  </button>
+                </div>
+              </form>
+            </section>
+          </div>
         </section>
       </section>
     </main>

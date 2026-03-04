@@ -42,6 +42,7 @@
   const PAGE_PUSH_DURATION_MS = 1000;
   const PAGE_PUSH_Y_PX = -200;
   const COVER_EXIT_Y_PERCENT = -100.2;
+  const HOME_FEATURED_LIMIT = 8;
   const COVER_COLOR = "#143f2b";
   const POWER3_OUT_EASING = "cubic-bezier(0.215, 0.61, 0.355, 1)";
 
@@ -109,7 +110,7 @@
   for (let i = 0; i < 5; i += 1) {
     const star = document.createElement("img");
     star.className = "preview-overlay__star";
-    star.src = "assets/star.svg";
+    star.src = "assets/svg-icons/star.svg";
     star.alt = "";
     star.setAttribute("aria-hidden", "true");
     previewStars.appendChild(star);
@@ -481,9 +482,12 @@
       return;
     }
 
+    const itemsToPrefetch = items.slice(0, HOME_FEATURED_LIMIT);
+
     const execute = () => {
-      items.forEach((item) => {
+      itemsToPrefetch.forEach((item) => {
         mediaApi.prefetch(item.id, "modal");
+        mediaApi.prefetch(item.id, "hover");
       });
     };
 
@@ -859,7 +863,7 @@
   const resolvePopularSelection = async () => {
     const fallback = {
       featuredIds: [],
-      limit: 8,
+      limit: HOME_FEATURED_LIMIT,
     };
 
     if (!homeApi?.getHomeConfig) {
@@ -870,9 +874,11 @@
       const home = await homeApi.getHomeConfig();
       const popular = home?.popular || {};
       const configuredLimit = Number(popular.limit);
-      const limit = Number.isFinite(configuredLimit) && configuredLimit > 0
-        ? Math.round(configuredLimit)
-        : fallback.limit;
+      const normalizedLimit =
+        Number.isFinite(configuredLimit) && configuredLimit > 0
+          ? Math.round(configuredLimit)
+          : fallback.limit;
+      const limit = Math.min(normalizedLimit, HOME_FEATURED_LIMIT);
 
       return {
         featuredIds: normalizeFeaturedIds(popular.featuredIds),
@@ -906,6 +912,8 @@
       return;
     }
 
+    featuredItems = featuredItems.slice(0, HOME_FEATURED_LIMIT);
+
     const fragment = document.createDocumentFragment();
 
     featuredItems.forEach((item) => {
@@ -918,7 +926,6 @@
       const hoverImage = node.querySelector(".mas-pedidas-card__image--hover");
       const title = node.querySelector(".mas-pedidas-card__title");
       const description = node.querySelector(".mas-pedidas-card__description");
-      const availabilityBadge = node.querySelector(".mas-pedidas-card__availability-badge");
       const price = node.querySelector(".mas-pedidas-card__price");
       const detailsButton = node.querySelector(".mas-pedidas-card__button");
 
@@ -929,7 +936,6 @@
         !hoverImage ||
         !title ||
         !description ||
-        !availabilityBadge ||
         !price ||
         !detailsButton
       ) {
@@ -940,15 +946,6 @@
       description.textContent = card.description;
       price.textContent = card.price;
       article.classList.toggle("is-unavailable", !card.available);
-
-      if (card.available) {
-        availabilityBadge.hidden = true;
-        availabilityBadge.textContent = "";
-      } else {
-        availabilityBadge.hidden = false;
-        availabilityBadge.textContent = "No disponible";
-        availabilityBadge.title = card.soldOutReason || DEFAULT_SOLD_OUT_REASON;
-      }
 
       const detailsLabel = detailsButton.querySelector("span");
       if (detailsLabel) {

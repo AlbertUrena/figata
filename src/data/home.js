@@ -2,7 +2,7 @@
   const HOME_URL = new URL('data/home.json', window.location.href);
   const MENU_URL = new URL('data/menu.json', window.location.href);
 
-  const DEFAULT_HERO_BACKGROUND = 'assets/seamless-bg.png';
+  const DEFAULT_HERO_BACKGROUND = 'assets/home/seamless-bg.webp';
   const DEFAULT_POPULAR_LIMIT = 8;
   const DEFAULT_EVENTS_LIMIT = 3;
   const DEFAULT_FEATURED_IDS = [
@@ -19,19 +19,16 @@
       id: 'celebraciones_in_house',
       title: 'Celebraciones In-House',
       subtitle: 'Celebra tu evento en nuestro local',
-      video: '/videos/tab0.mp4',
     },
     {
       id: 'pizza_party_domicilio',
       title: 'Pizza Party a Domicilio',
       subtitle: 'Experiencia Figata donde estes',
-      video: '/videos/tab1.mp4',
     },
     {
       id: 'noches_especiales',
       title: 'Noches Especiales',
       subtitle: 'Catas y eventos privados en Figata',
-      video: '/videos/tab2.mp4',
     },
   ];
 
@@ -68,14 +65,14 @@
       items: DEFAULT_EVENTS_ITEMS.slice(),
     },
     delivery: {
-      title: 'Pide desde casa',
+      title: 'Figata en tu casa',
       subtitle:
         'Pide por nuestras plataformas oficiales y recibe la pizza recien horneada donde estes, o para llevar.',
       links: {
-        pedidosya: '',
-        ubereats: '',
-        takeout: '/menu',
-        whatsapp: 'https://wa.me/18090000000',
+        pedidosya: '#',
+        ubereats: '#',
+        takeout: '',
+        whatsapp: '',
       },
     },
     reservation: {
@@ -239,7 +236,6 @@
         normalizeText(item?.subtitle) ||
         normalizeText(defaultItem.subtitle) ||
         '',
-      video: normalizeText(item?.video) || normalizeText(defaultItem.video),
     };
   };
 

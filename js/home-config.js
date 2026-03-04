@@ -51,6 +51,28 @@
     }
   };
 
+  const ensureHeroImagePreload = (imagePath) => {
+    const normalizedPath = typeof imagePath === 'string' ? imagePath.trim() : '';
+
+    if (!normalizedPath) {
+      return;
+    }
+
+    const existing = document.querySelector('link[data-hero-preload]');
+    const preload =
+      existing instanceof HTMLLinkElement ? existing : document.createElement('link');
+
+    preload.rel = 'preload';
+    preload.as = 'image';
+    preload.href = normalizedPath;
+    preload.setAttribute('fetchpriority', 'high');
+    preload.setAttribute('data-hero-preload', 'true');
+
+    if (!existing) {
+      document.head.appendChild(preload);
+    }
+  };
+
   const applyHero = (hero, fallbackBackground) => {
     const topBackground = document.querySelector('.top-bg');
     const title = document.getElementById('hero-title');
@@ -64,9 +86,15 @@
     if (topBackground) {
       const imagePath = (hero?.backgroundImage || fallbackBackground || '').trim();
       const defaultPath = (fallbackBackground || '').trim();
+      const criticalHeroImagePath = imagePath || defaultPath;
+
+      ensureHeroImagePreload(criticalHeroImagePath);
 
       if (imagePath) {
         const probe = new Image();
+        probe.decoding = 'async';
+        probe.loading = 'eager';
+        probe.fetchPriority = 'high';
         probe.onload = () => {
           topBackground.style.backgroundImage = `url("${imagePath}")`;
         };
@@ -128,36 +156,6 @@
     });
   };
 
-  const updateEventsVideo = (video, source) => {
-    if (!video) {
-      return;
-    }
-
-    if (!source) {
-      video.pause();
-      video.removeAttribute('src');
-      video.hidden = true;
-      video.load();
-      return;
-    }
-
-    const currentSource = video.getAttribute('src') || '';
-
-    if (currentSource !== source) {
-      video.setAttribute('src', source);
-      video.load();
-    }
-
-    video.hidden = false;
-
-    if (typeof video.play === 'function') {
-      const playPromise = video.play();
-      if (playPromise && typeof playPromise.catch === 'function') {
-        playPromise.catch(() => {});
-      }
-    }
-  };
-
   const syncEventsRailSpacers = (rail, tabCount) => {
     if (!rail) {
       return;
@@ -188,7 +186,6 @@
     const tabRoot = section.querySelector('.events-tabs[role="tablist"]');
     const rail = tabRoot?.querySelector('.events-tabs-rail');
     const tabContainers = Array.from(section.querySelectorAll('.events-tab-container'));
-    const video = section.querySelector('.events-card-video');
 
     setText(title, eventsPreview?.title || '');
     setText(subtitle, eventsPreview?.subtitle || '');
@@ -213,12 +210,6 @@
       container.hidden = false;
       setText(titleElement, item.title || '');
       setText(subtitleElement, item.subtitle || '');
-
-      if (item.video) {
-        tab.setAttribute('data-video', item.video);
-      } else {
-        tab.removeAttribute('data-video');
-      }
     });
 
     const visibleTabs = tabContainers
@@ -233,9 +224,6 @@
 
     syncEventsRailSpacers(rail, tabCount);
     setInitialEventsTabSelection(visibleTabs);
-
-    const firstVideo = renderedItems[0]?.video || '';
-    updateEventsVideo(video, firstVideo);
 
     return {
       hasRenderableEvents: renderedItems.length > 0,
@@ -344,7 +332,7 @@
 
     try {
       const home = await homeApi.getHomeConfig();
-      const fallbackBackground = homeApi.DEFAULT_HERO_BACKGROUND || 'assets/seamless-bg.png';
+      const fallbackBackground = homeApi.DEFAULT_HERO_BACKGROUND || 'assets/home/seamless-bg.webp';
 
       applyHero(home.hero, fallbackBackground);
       applyPopular(home.popular);

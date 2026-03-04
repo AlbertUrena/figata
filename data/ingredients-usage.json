@@ -2,7 +2,7 @@
   "schema": "figata.menu.index.v1",
   "generatedFrom": "Menú Figata (2).pdf",
   "paths": {
-    "ingredientIconsBase": "assets/ingredients"
+    "ingredientIconsBase": "assets/Ingredients"
   },
   "sections": [
     { "id": "entradas", "label": "Entradas", "order": 1 },
@@ -14,7 +14,7 @@
     "aceituna": {
       "id": "aceituna",
       "name": "Aceituna",
-      "icon": "assets/ingredients/aceituna.png",
+      "icon": "assets/Ingredients/aceituna.webp",
       "covers": ["aceitunas"],
       "aliases": ["aceituna", "aceitunas", "olive", "olives"],
       "tags": ["vegano", "sin_gluten"]
@@ -22,7 +22,7 @@
     "ajo": {
       "id": "ajo",
       "name": "Ajo",
-      "icon": "assets/ingredients/ajo.png",
+      "icon": "assets/Ingredients/ajo.webp",
       "covers": ["ajo"],
       "aliases": ["ajo", "garlic"],
       "tags": ["vegano", "sin_gluten"]
@@ -30,7 +30,7 @@
     "albahaca": {
       "id": "albahaca",
       "name": "Albahaca",
-      "icon": "assets/ingredients/albahaca.png",
+      "icon": "assets/Ingredients/albahaca.webp",
       "covers": ["albahaca"],
       "aliases": ["albahaca", "basil"],
       "tags": ["vegano", "sin_gluten"]
@@ -38,7 +38,7 @@
     "alcaparra": {
       "id": "alcaparra",
       "name": "Alcaparra",
-      "icon": "assets/ingredients/alcaparra.png",
+      "icon": "assets/Ingredients/alcaparra.webp",
       "covers": ["alcaparra", "alcaparras"],
       "aliases": ["alcaparra", "alcaparras", "caper", "capers"],
       "tags": ["vegano", "sin_gluten"]
@@ -46,7 +46,7 @@
     "bacon": {
       "id": "bacon",
       "name": "Bacon",
-      "icon": "assets/ingredients/bacon.png",
+      "icon": "assets/Ingredients/bacon.webp",
       "covers": ["bacon"],
       "aliases": ["bacon"],
       "tags": ["carne", "cerdo", "sin_gluten"]
@@ -54,7 +54,7 @@
     "berenjena": {
       "id": "berenjena",
       "name": "Berenjena",
-      "icon": "assets/ingredients/berenjena.png",
+      "icon": "assets/Ingredients/berenjena.webp",
       "covers": ["berenjena"],
       "aliases": ["berenjena", "eggplant", "aubergine"],
       "tags": ["vegano", "sin_gluten"]
@@ -62,7 +62,7 @@
     "burrata": {
       "id": "burrata",
       "name": "Burrata",
-      "icon": "assets/ingredients/burrata.png",
+      "icon": "assets/Ingredients/burrata.webp",
       "covers": ["burrata fresca"],
       "aliases": ["burrata", "burrata fresca"],
       "tags": ["lacteo", "alergenos:lactosa", "sin_gluten"]
@@ -70,7 +70,7 @@
     "cebolla": {
       "id": "cebolla",
       "name": "Cebolla",
-      "icon": "assets/ingredients/cebolla.png",
+      "icon": "assets/Ingredients/cebolla.webp",
       "covers": ["cebolla"],
       "aliases": ["cebolla", "onion"],
       "tags": ["vegano", "sin_gluten"]
@@ -78,7 +78,7 @@
     "chile": {
       "id": "chile",
       "name": "Picante",
-      "icon": "assets/ingredients/chile.png",
+      "icon": "assets/Ingredients/chile.webp",
       "covers": ["peperoncino", "chili flakes", "nduja (crema picante)"],
       "aliases": ["peperoncino", "chile", "chili", "chili flakes", "nduja", "picante"],
       "tags": ["picante", "sin_gluten"]
@@ -86,7 +86,7 @@
     "hongo": {
       "id": "hongo",
       "name": "Hongos",
-      "icon": "assets/ingredients/hongo.png",
+      "icon": "assets/Ingredients/hongo.webp",
       "covers": ["hongos porcini", "porcini"],
       "aliases": ["hongo", "hongos", "porcini", "mushroom", "mushrooms"],
       "tags": ["vegano", "sin_gluten"]
@@ -94,7 +94,7 @@
     "jamon-curado": {
       "id": "jamon-curado",
       "name": "Jamón curado",
-      "icon": "assets/ingredients/jamon-curado.png",
+      "icon": "assets/Ingredients/jamon-curado.webp",
       "covers": ["prosciutto di parma", "bresaola", "mortadella"],
       "aliases": ["prosciutto", "prosciutto di parma", "bresaola", "mortadella", "jamón curado"],
       "tags": ["carne", "sin_gluten"]
@@ -102,7 +102,7 @@
     "menta": {
       "id": "menta",
       "name": "Menta",
-      "icon": "assets/ingredients/menta.png",
+      "icon": "assets/Ingredients/menta.webp",
       "covers": ["menta"],
       "aliases": ["menta", "mint"],
       "tags": ["vegano", "sin_gluten"]
@@ -110,7 +110,7 @@
     "mermelada": {
       "id": "mermelada",
       "name": "Mermelada",
-      "icon": "assets/ingredients/mermelada.png",
+      "icon": "assets/Ingredients/mermelada.webp",
       "covers": ["mermelada de tomate"],
       "aliases": ["mermelada", "mermelada de tomate", "jam"],
       "tags": ["vegano", "sin_gluten"]
@@ -118,7 +118,7 @@
     "miel": {
       "id": "miel",
       "name": "Miel",
-      "icon": "assets/ingredients/miel.png",
+      "icon": "assets/Ingredients/miel.webp",
       "covers": ["miel"],
       "aliases": ["miel", "honey"],
       "tags": ["no_vegano", "sin_gluten"]
@@ -126,7 +126,7 @@
     "oliva": {
       "id": "oliva",
       "name": "Aceite de oliva (EVOO)",
-      "icon": "assets/ingredients/oliva.png",
+      "icon": "assets/Ingredients/oliva.webp",
       "covers": ["aceite de oliva extra virgen", "EVOO"],
       "aliases": ["aceite de oliva", "evoo", "olive oil"],
       "tags": ["vegano", "sin_gluten"]
@@ -134,7 +134,7 @@
     "oregano": {
       "id": "oregano",
       "name": "Orégano",
-      "icon": "assets/ingredients/oregano.png",
+      "icon": "assets/Ingredients/oregano.webp",
       "covers": ["orégano"],
       "aliases": ["oregano", "orégano"],
       "tags": ["vegano", "sin_gluten"]
@@ -142,7 +142,7 @@
     "pancetta": {
       "id": "pancetta",
       "name": "Pancetta",
-      "icon": "assets/ingredients/pancetta.png",
+      "icon": "assets/Ingredients/pancetta.webp",
       "covers": ["pancetta"],
       "aliases": ["pancetta"],
       "tags": ["carne", "cerdo", "sin_gluten"]
@@ -150,7 +150,7 @@
     "pescado": {
       "id": "pescado",
       "name": "Pescado",
-      "icon": "assets/ingredients/pescado.png",
+      "icon": "assets/Ingredients/pescado.webp",
       "covers": ["atún"],
       "aliases": ["atun", "atún", "tuna"],
       "tags": ["pescado", "sin_gluten"]
@@ -158,7 +158,7 @@
     "pesto": {
       "id": "pesto",
       "name": "Pesto",
-      "icon": "assets/ingredients/pesto.png",
+      "icon": "assets/Ingredients/pesto.webp",
       "covers": ["pesto de albahaca", "pesto de rúcula", "pesto de pistacho"],
       "aliases": ["pesto", "pesto de albahaca", "pesto de rúcula", "pesto de pistacho"],
       "tags": ["puede_contener_lacteos", "puede_contener_frutos_secos"]
@@ -166,7 +166,7 @@
     "pistacho": {
       "id": "pistacho",
       "name": "Pistacho",
-      "icon": "assets/ingredients/pistacho.png",
+      "icon": "assets/Ingredients/pistacho.webp",
       "covers": ["pistachos"],
       "aliases": ["pistacho", "pistachos", "pistachio"],
       "tags": ["fruto_seco", "alergenos:frutos_secos", "sin_gluten"]
@@ -174,7 +174,7 @@
     "queso": {
       "id": "queso",
       "name": "Queso",
-      "icon": "assets/ingredients/queso.png",
+      "icon": "assets/Ingredients/queso.webp",
       "covers": [
         "mozzarella",
         "parmigiano reggiano",
@@ -204,7 +204,7 @@
     "romero": {
       "id": "romero",
       "name": "Romero",
-      "icon": "assets/ingredients/romero.png",
+      "icon": "assets/Ingredients/romero.webp",
       "covers": ["romero"],
       "aliases": ["romero", "rosemary"],
       "tags": ["vegano", "sin_gluten"]
@@ -212,7 +212,7 @@
     "rucula": {
       "id": "rucula",
       "name": "Rúcula",
-      "icon": "assets/ingredients/rucula.png",
+      "icon": "assets/Ingredients/rucula.webp",
       "covers": ["rúcula"],
       "aliases": ["rucula", "rúcula", "arugula"],
       "tags": ["vegano", "sin_gluten"]
@@ -220,7 +220,7 @@
     "salami": {
       "id": "salami",
       "name": "Salami",
-      "icon": "assets/ingredients/salami.png",
+      "icon": "assets/Ingredients/salami.webp",
       "covers": ["salamino piccante", "soppressata"],
       "aliases": ["salami", "salamino", "salamino piccante", "soppressata"],
       "tags": ["carne", "cerdo", "sin_gluten"]
@@ -228,7 +228,7 @@
     "salchicha": {
       "id": "salchicha",
       "name": "Salchicha italiana",
-      "icon": "assets/ingredients/salchicha.png",
+      "icon": "assets/Ingredients/salchicha.webp",
       "covers": ["salsiccia"],
       "aliases": ["salsiccia", "salchicha italiana"],
       "tags": ["carne", "cerdo", "sin_gluten"]
@@ -236,7 +236,7 @@
     "san-marzano": {
       "id": "san-marzano",
       "name": "Tomate San Marzano DOP",
-      "icon": "assets/ingredients/san-marzano.png",
+      "icon": "assets/Ingredients/san-marzano.webp",
       "covers": ["pomodoro San Marzano DOP"],
       "aliases": ["san marzano", "san-marzano", "pomodoro san marzano", "san marzano dop"],
       "tags": ["vegano", "sin_gluten"]
@@ -244,7 +244,7 @@
     "stracciatella": {
       "id": "stracciatella",
       "name": "Stracciatella",
-      "icon": "assets/ingredients/stracciatella.png",
+      "icon": "assets/Ingredients/stracciatella.webp",
       "covers": ["stracciatella"],
       "aliases": ["stracciatella"],
       "tags": ["lacteo", "alergenos:lactosa", "sin_gluten"]
@@ -252,7 +252,7 @@
     "tomate-cherry": {
       "id": "tomate-cherry",
       "name": "Tomate cherry",
-      "icon": "assets/ingredients/tomate-cherry.png",
+      "icon": "assets/Ingredients/tomate-cherry.webp",
       "covers": ["tomate cherry"],
       "aliases": ["tomate cherry", "cherry tomato", "cherry"],
       "tags": ["vegano", "sin_gluten"]
@@ -260,7 +260,7 @@
     "tomate": {
       "id": "tomate",
       "name": "Tomate (pomodoro / salsa)",
-      "icon": "assets/ingredients/tomate.png",
+      "icon": "assets/Ingredients/tomate.webp",
       "covers": ["pomodoro", "salsa de tomate"],
       "aliases": ["tomate", "pomodoro", "salsa de tomate"],
       "tags": ["vegano", "sin_gluten"]
@@ -268,7 +268,7 @@
     "trufa": {
       "id": "trufa",
       "name": "Trufa",
-      "icon": "assets/ingredients/trufa.png",
+      "icon": "assets/Ingredients/trufa.webp",
       "covers": ["crema de trufa"],
       "aliases": ["trufa", "crema de trufa", "black truffle"],
       "tags": ["vegano", "sin_gluten"]
