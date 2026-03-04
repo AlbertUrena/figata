@@ -1,0 +1,584 @@
+{
+  "schema": "figata.menu.index.v1",
+  "generatedFrom": "Menú Figata (2).pdf",
+  "paths": {
+    "ingredientIconsBase": "assets/ingredients"
+  },
+  "sections": [
+    { "id": "entradas", "label": "Entradas", "order": 1 },
+    { "id": "pizzas_classicas", "label": "Pizzas clásicas", "order": 2 },
+    { "id": "pizzas_autor", "label": "Pizzas de autor", "order": 3 },
+    { "id": "productos", "label": "Productos", "order": 4 }
+  ],
+  "ingredients": {
+    "aceituna": {
+      "id": "aceituna",
+      "name": "Aceituna",
+      "icon": "assets/ingredients/aceituna.png",
+      "covers": ["aceitunas"],
+      "aliases": ["aceituna", "aceitunas", "olive", "olives"],
+      "tags": ["vegano", "sin_gluten"]
+    },
+    "ajo": {
+      "id": "ajo",
+      "name": "Ajo",
+      "icon": "assets/ingredients/ajo.png",
+      "covers": ["ajo"],
+      "aliases": ["ajo", "garlic"],
+      "tags": ["vegano", "sin_gluten"]
+    },
+    "albahaca": {
+      "id": "albahaca",
+      "name": "Albahaca",
+      "icon": "assets/ingredients/albahaca.png",
+      "covers": ["albahaca"],
+      "aliases": ["albahaca", "basil"],
+      "tags": ["vegano", "sin_gluten"]
+    },
+    "alcaparra": {
+      "id": "alcaparra",
+      "name": "Alcaparra",
+      "icon": "assets/ingredients/alcaparra.png",
+      "covers": ["alcaparra", "alcaparras"],
+      "aliases": ["alcaparra", "alcaparras", "caper", "capers"],
+      "tags": ["vegano", "sin_gluten"]
+    },
+    "bacon": {
+      "id": "bacon",
+      "name": "Bacon",
+      "icon": "assets/ingredients/bacon.png",
+      "covers": ["bacon"],
+      "aliases": ["bacon"],
+      "tags": ["carne", "cerdo", "sin_gluten"]
+    },
+    "berenjena": {
+      "id": "berenjena",
+      "name": "Berenjena",
+      "icon": "assets/ingredients/berenjena.png",
+      "covers": ["berenjena"],
+      "aliases": ["berenjena", "eggplant", "aubergine"],
+      "tags": ["vegano", "sin_gluten"]
+    },
+    "burrata": {
+      "id": "burrata",
+      "name": "Burrata",
+      "icon": "assets/ingredients/burrata.png",
+      "covers": ["burrata fresca"],
+      "aliases": ["burrata", "burrata fresca"],
+      "tags": ["lacteo", "alergenos:lactosa", "sin_gluten"]
+    },
+    "cebolla": {
+      "id": "cebolla",
+      "name": "Cebolla",
+      "icon": "assets/ingredients/cebolla.png",
+      "covers": ["cebolla"],
+      "aliases": ["cebolla", "onion"],
+      "tags": ["vegano", "sin_gluten"]
+    },
+    "chile": {
+      "id": "chile",
+      "name": "Picante",
+      "icon": "assets/ingredients/chile.png",
+      "covers": ["peperoncino", "chili flakes", "nduja (crema picante)"],
+      "aliases": ["peperoncino", "chile", "chili", "chili flakes", "nduja", "picante"],
+      "tags": ["picante", "sin_gluten"]
+    },
+    "hongo": {
+      "id": "hongo",
+      "name": "Hongos",
+      "icon": "assets/ingredients/hongo.png",
+      "covers": ["hongos porcini", "porcini"],
+      "aliases": ["hongo", "hongos", "porcini", "mushroom", "mushrooms"],
+      "tags": ["vegano", "sin_gluten"]
+    },
+    "jamon-curado": {
+      "id": "jamon-curado",
+      "name": "Jamón curado",
+      "icon": "assets/ingredients/jamon-curado.png",
+      "covers": ["prosciutto di parma", "bresaola", "mortadella"],
+      "aliases": ["prosciutto", "prosciutto di parma", "bresaola", "mortadella", "jamón curado"],
+      "tags": ["carne", "sin_gluten"]
+    },
+    "menta": {
+      "id": "menta",
+      "name": "Menta",
+      "icon": "assets/ingredients/menta.png",
+      "covers": ["menta"],
+      "aliases": ["menta", "mint"],
+      "tags": ["vegano", "sin_gluten"]
+    },
+    "mermelada": {
+      "id": "mermelada",
+      "name": "Mermelada",
+      "icon": "assets/ingredients/mermelada.png",
+      "covers": ["mermelada de tomate"],
+      "aliases": ["mermelada", "mermelada de tomate", "jam"],
+      "tags": ["vegano", "sin_gluten"]
+    },
+    "miel": {
+      "id": "miel",
+      "name": "Miel",
+      "icon": "assets/ingredients/miel.png",
+      "covers": ["miel"],
+      "aliases": ["miel", "honey"],
+      "tags": ["no_vegano", "sin_gluten"]
+    },
+    "oliva": {
+      "id": "oliva",
+      "name": "Aceite de oliva (EVOO)",
+      "icon": "assets/ingredients/oliva.png",
+      "covers": ["aceite de oliva extra virgen", "EVOO"],
+      "aliases": ["aceite de oliva", "evoo", "olive oil"],
+      "tags": ["vegano", "sin_gluten"]
+    },
+    "oregano": {
+      "id": "oregano",
+      "name": "Orégano",
+      "icon": "assets/ingredients/oregano.png",
+      "covers": ["orégano"],
+      "aliases": ["oregano", "orégano"],
+      "tags": ["vegano", "sin_gluten"]
+    },
+    "pancetta": {
+      "id": "pancetta",
+      "name": "Pancetta",
+      "icon": "assets/ingredients/pancetta.png",
+      "covers": ["pancetta"],
+      "aliases": ["pancetta"],
+      "tags": ["carne", "cerdo", "sin_gluten"]
+    },
+    "pescado": {
+      "id": "pescado",
+      "name": "Pescado",
+      "icon": "assets/ingredients/pescado.png",
+      "covers": ["atún"],
+      "aliases": ["atun", "atún", "tuna"],
+      "tags": ["pescado", "sin_gluten"]
+    },
+    "pesto": {
+      "id": "pesto",
+      "name": "Pesto",
+      "icon": "assets/ingredients/pesto.png",
+      "covers": ["pesto de albahaca", "pesto de rúcula", "pesto de pistacho"],
+      "aliases": ["pesto", "pesto de albahaca", "pesto de rúcula", "pesto de pistacho"],
+      "tags": ["puede_contener_lacteos", "puede_contener_frutos_secos"]
+    },
+    "pistacho": {
+      "id": "pistacho",
+      "name": "Pistacho",
+      "icon": "assets/ingredients/pistacho.png",
+      "covers": ["pistachos"],
+      "aliases": ["pistacho", "pistachos", "pistachio"],
+      "tags": ["fruto_seco", "alergenos:frutos_secos", "sin_gluten"]
+    },
+    "queso": {
+      "id": "queso",
+      "name": "Queso",
+      "icon": "assets/ingredients/queso.png",
+      "covers": [
+        "mozzarella",
+        "parmigiano reggiano",
+        "pecorino",
+        "provola",
+        "ricotta",
+        "queso de cabra",
+        "gorgonzola",
+        "pecorino trufado",
+        "quesos del tagliere"
+      ],
+      "aliases": [
+        "queso",
+        "mozzarella",
+        "fior di latte",
+        "parmigiano",
+        "parmesano",
+        "pecorino",
+        "provola",
+        "ricotta",
+        "gorgonzola",
+        "chevre",
+        "cabra"
+      ],
+      "tags": ["lacteo", "alergenos:lactosa", "sin_gluten"]
+    },
+    "romero": {
+      "id": "romero",
+      "name": "Romero",
+      "icon": "assets/ingredients/romero.png",
+      "covers": ["romero"],
+      "aliases": ["romero", "rosemary"],
+      "tags": ["vegano", "sin_gluten"]
+    },
+    "rucula": {
+      "id": "rucula",
+      "name": "Rúcula",
+      "icon": "assets/ingredients/rucula.png",
+      "covers": ["rúcula"],
+      "aliases": ["rucula", "rúcula", "arugula"],
+      "tags": ["vegano", "sin_gluten"]
+    },
+    "salami": {
+      "id": "salami",
+      "name": "Salami",
+      "icon": "assets/ingredients/salami.png",
+      "covers": ["salamino piccante", "soppressata"],
+      "aliases": ["salami", "salamino", "salamino piccante", "soppressata"],
+      "tags": ["carne", "cerdo", "sin_gluten"]
+    },
+    "salchicha": {
+      "id": "salchicha",
+      "name": "Salchicha italiana",
+      "icon": "assets/ingredients/salchicha.png",
+      "covers": ["salsiccia"],
+      "aliases": ["salsiccia", "salchicha italiana"],
+      "tags": ["carne", "cerdo", "sin_gluten"]
+    },
+    "san-marzano": {
+      "id": "san-marzano",
+      "name": "Tomate San Marzano DOP",
+      "icon": "assets/ingredients/san-marzano.png",
+      "covers": ["pomodoro San Marzano DOP"],
+      "aliases": ["san marzano", "san-marzano", "pomodoro san marzano", "san marzano dop"],
+      "tags": ["vegano", "sin_gluten"]
+    },
+    "stracciatella": {
+      "id": "stracciatella",
+      "name": "Stracciatella",
+      "icon": "assets/ingredients/stracciatella.png",
+      "covers": ["stracciatella"],
+      "aliases": ["stracciatella"],
+      "tags": ["lacteo", "alergenos:lactosa", "sin_gluten"]
+    },
+    "tomate-cherry": {
+      "id": "tomate-cherry",
+      "name": "Tomate cherry",
+      "icon": "assets/ingredients/tomate-cherry.png",
+      "covers": ["tomate cherry"],
+      "aliases": ["tomate cherry", "cherry tomato", "cherry"],
+      "tags": ["vegano", "sin_gluten"]
+    },
+    "tomate": {
+      "id": "tomate",
+      "name": "Tomate (pomodoro / salsa)",
+      "icon": "assets/ingredients/tomate.png",
+      "covers": ["pomodoro", "salsa de tomate"],
+      "aliases": ["tomate", "pomodoro", "salsa de tomate"],
+      "tags": ["vegano", "sin_gluten"]
+    },
+    "trufa": {
+      "id": "trufa",
+      "name": "Trufa",
+      "icon": "assets/ingredients/trufa.png",
+      "covers": ["crema de trufa"],
+      "aliases": ["trufa", "crema de trufa", "black truffle"],
+      "tags": ["vegano", "sin_gluten"]
+    }
+  },
+  "ingredientAliasesToIcon": {
+    "aceite de oliva": "oliva",
+    "evoo": "oliva",
+    "pomodoro": "tomate",
+    "salsa de tomate": "tomate",
+    "tomate": "tomate",
+    "tomate cherry": "tomate-cherry",
+    "san marzano": "san-marzano",
+    "san marzano dop": "san-marzano",
+    "mozzarella": "queso",
+    "parmigiano": "queso",
+    "parmigiano reggiano": "queso",
+    "pecorino": "queso",
+    "pecorino trufado": "queso",
+    "provola": "queso",
+    "ricotta": "queso",
+    "gorgonzola": "queso",
+    "queso de cabra": "queso",
+    "quesos del tagliere": "queso",
+    "prosciutto": "jamon-curado",
+    "prosciutto di parma": "jamon-curado",
+    "bresaola": "jamon-curado",
+    "mortadella": "jamon-curado",
+    "salamino piccante": "salami",
+    "soppressata": "salami",
+    "salsiccia": "salchicha",
+    "porcini": "hongo",
+    "hongos porcini": "hongo",
+    "atun": "pescado",
+    "atún": "pescado",
+    "peperoncino": "chile",
+    "chili flakes": "chile",
+    "nduja": "chile",
+    "pesto de albahaca": "pesto",
+    "pesto de rúcula": "pesto",
+    "pesto de pistacho": "pesto",
+    "mermelada de tomate": "mermelada"
+  },
+  "items": {
+    "entradas": [
+      {
+        "id": "berenjenas_parmesana",
+        "name": "Berenjenas a la Parmesana",
+        "type": "entrada",
+        "ingredients": ["berenjena", "tomate", "queso", "albahaca"],
+        "tags": ["vegetariano", "contiene_lacteos"]
+      },
+      {
+        "id": "focaccia_parmigiano",
+        "name": "Focaccia al horno con parmigiano",
+        "type": "entrada",
+        "ingredients": ["romero", "oliva", "queso"],
+        "tags": ["vegetariano", "contiene_lacteos"]
+      },
+      {
+        "id": "bruschetta_classica",
+        "name": "Bruschetta Classica",
+        "type": "entrada",
+        "ingredients": ["tomate", "pesto", "oliva"],
+        "tags": ["vegetariano"]
+      },
+      {
+        "id": "insalata_caprese",
+        "name": "Insalata Caprese",
+        "type": "entrada",
+        "ingredients": ["queso", "tomate", "oliva", "pesto"],
+        "tags": ["vegetariano", "contiene_lacteos"]
+      },
+      {
+        "id": "carpaccio_bresaola",
+        "name": "Carpaccio di Bresaola",
+        "type": "entrada",
+        "ingredients": ["jamon-curado", "tomate-cherry", "rucula", "pesto"],
+        "tags": ["contiene_carne"]
+      },
+      {
+        "id": "salsiccia_vino_miele",
+        "name": "Salsiccia vino e miele",
+        "type": "entrada",
+        "ingredients": ["salchicha", "miel", "romero"],
+        "tags": ["contiene_carne", "contiene_miel"]
+      },
+      {
+        "id": "burrata_prosciutto",
+        "name": "Burrata con Prosciutto",
+        "type": "entrada",
+        "ingredients": ["burrata", "jamon-curado", "tomate-cherry", "pesto"],
+        "tags": ["contiene_carne", "contiene_lacteos"]
+      },
+      {
+        "id": "tagliere_misto",
+        "name": "Tagliere Misto",
+        "type": "entrada",
+        "ingredients": ["queso", "jamon-curado", "pesto", "mermelada"],
+        "tags": ["contiene_carne", "contiene_lacteos"]
+      },
+      {
+        "id": "focaccia_rellena",
+        "name": "Focaccia rellena",
+        "type": "entrada",
+        "ingredients": ["jamon-curado", "stracciatella", "pesto"],
+        "tags": ["contiene_carne", "contiene_lacteos"]
+      }
+    ],
+    "pizzas_classicas": [
+      {
+        "id": "margherita",
+        "name": "Margherita",
+        "type": "pizza",
+        "ingredients": ["queso", "tomate", "albahaca"],
+        "tags": ["vegetariano", "contiene_lacteos"]
+      },
+      {
+        "id": "marinara",
+        "name": "Marinara",
+        "type": "pizza",
+        "ingredients": ["tomate", "ajo", "oliva", "oregano"],
+        "tags": ["vegetariano"]
+      },
+      {
+        "id": "cacio_pepe",
+        "name": "Cacio e Pepe",
+        "type": "pizza",
+        "ingredients": ["queso", "albahaca"],
+        "tags": ["vegetariano", "contiene_lacteos"]
+      },
+      {
+        "id": "margherita_fume",
+        "name": "Margherita Fumé",
+        "type": "pizza",
+        "ingredients": ["queso", "tomate", "albahaca", "oliva"],
+        "tags": ["vegetariano", "contiene_lacteos"]
+      },
+      {
+        "id": "diavola",
+        "name": "Diavola",
+        "type": "pizza",
+        "ingredients": ["queso", "tomate", "salami"],
+        "tags": ["contiene_carne", "contiene_lacteos"]
+      },
+      {
+        "id": "filetti",
+        "name": "Filetti",
+        "type": "pizza",
+        "ingredients": ["queso", "tomate-cherry", "ajo", "oliva", "albahaca"],
+        "tags": ["vegetariano", "contiene_lacteos"]
+      },
+      {
+        "id": "sweet_goat",
+        "name": "Sweet Goat",
+        "type": "pizza",
+        "ingredients": ["queso", "bacon", "miel"],
+        "tags": ["contiene_carne", "contiene_lacteos", "contiene_miel"]
+      },
+      {
+        "id": "mamma",
+        "name": "Mamma",
+        "type": "pizza",
+        "ingredients": ["queso", "salami", "mermelada", "menta"],
+        "tags": ["contiene_carne", "contiene_lacteos"]
+      },
+      {
+        "id": "tonno",
+        "name": "Tonno",
+        "type": "pizza",
+        "ingredients": ["queso", "tomate", "pescado", "cebolla"],
+        "tags": ["contiene_pescado", "contiene_lacteos"]
+      },
+      {
+        "id": "puta",
+        "name": "Puta",
+        "type": "pizza",
+        "ingredients": ["tomate", "alcaparra", "aceituna", "pancetta", "queso", "chile"],
+        "tags": ["contiene_carne", "picante", "contiene_lacteos"]
+      },
+      {
+        "id": "figata",
+        "name": "Figata",
+        "type": "pizza",
+        "ingredients": ["queso", "jamon-curado", "trufa"],
+        "tags": ["contiene_carne", "contiene_lacteos"]
+      },
+      {
+        "id": "margherita_sbagliata",
+        "name": "Margherita Sbagliata",
+        "type": "pizza",
+        "ingredients": ["queso", "san-marzano", "pesto"],
+        "tags": ["vegetariano", "contiene_lacteos"]
+      }
+    ],
+    "pizzas_autor": [
+      {
+        "id": "macellaio",
+        "name": "Macellaio",
+        "type": "pizza",
+        "ingredients": ["queso", "tomate", "salchicha", "pancetta", "salami"],
+        "tags": ["contiene_carne", "contiene_lacteos"]
+      },
+      {
+        "id": "quattro_formaggi_truffle",
+        "name": "Quattro Formaggi y Black Truffle",
+        "type": "pizza",
+        "ingredients": ["queso", "trufa"],
+        "tags": ["vegetariano", "contiene_lacteos"]
+      },
+      {
+        "id": "boscaiola",
+        "name": "Boscaiola",
+        "type": "pizza",
+        "ingredients": ["queso", "salchicha", "hongo"],
+        "tags": ["contiene_carne", "contiene_lacteos"]
+      },
+      {
+        "id": "calzone",
+        "name": "Calzone",
+        "type": "pizza",
+        "ingredients": ["queso", "tomate", "jamon-curado", "hongo"],
+        "tags": ["contiene_carne", "contiene_lacteos"]
+      },
+      {
+        "id": "corazon_burrata",
+        "name": "Corazón de Burrata",
+        "type": "pizza",
+        "ingredients": ["queso", "pesto", "albahaca", "jamon-curado", "burrata"],
+        "tags": ["contiene_carne", "contiene_lacteos"]
+      },
+      {
+        "id": "fantasia_pistachos",
+        "name": "Fantasía de Pistachos",
+        "type": "pizza",
+        "ingredients": ["queso", "pesto", "stracciatella", "jamon-curado", "pistacho"],
+        "tags": ["contiene_carne", "contiene_lacteos", "contiene_frutos_secos"]
+      },
+      {
+        "id": "vulcano",
+        "name": "Vulcano",
+        "type": "pizza",
+        "ingredients": ["queso", "chile", "tomate-cherry"],
+        "tags": ["picante", "contiene_lacteos"]
+      },
+      {
+        "id": "bellezza",
+        "name": "Bellezza",
+        "type": "pizza",
+        "ingredients": ["queso", "tomate", "jamon-curado", "hongo", "aceituna", "albahaca"],
+        "tags": ["contiene_carne", "contiene_lacteos"]
+      },
+      {
+        "id": "passione_del_sud",
+        "name": "Passione del Sud",
+        "type": "pizza",
+        "ingredients": ["tomate", "chile", "salami", "stracciatella", "pesto"],
+        "tags": ["contiene_carne", "picante", "contiene_lacteos"]
+      },
+      {
+        "id": "soppressata_pizza",
+        "name": "Soppressata",
+        "type": "pizza",
+        "ingredients": ["queso", "tomate", "salami", "cebolla", "miel"],
+        "tags": ["contiene_carne", "contiene_lacteos", "contiene_miel"]
+      },
+      {
+        "id": "parmesana_pizza",
+        "name": "Parmesana",
+        "type": "pizza",
+        "ingredients": ["queso", "tomate", "berenjena", "albahaca"],
+        "tags": ["vegetariano", "contiene_lacteos"]
+      },
+      {
+        "id": "prosciutto_rucula",
+        "name": "Prosciutto y Rúcula",
+        "type": "pizza",
+        "ingredients": ["queso", "tomate", "jamon-curado", "rucula", "pesto"],
+        "tags": ["contiene_carne", "contiene_lacteos"]
+      }
+    ],
+    "productos": [
+      {
+        "id": "mermelada_della_mamma",
+        "name": "Mermelada della Mamma",
+        "type": "producto",
+        "ingredients": ["mermelada", "menta"],
+        "tags": ["vegetariano"]
+      },
+      {
+        "id": "burrata_fresca_producto",
+        "name": "Burrata fresca",
+        "type": "producto",
+        "ingredients": ["burrata"],
+        "tags": ["contiene_lacteos"]
+      },
+      {
+        "id": "aceite_evoo_aromatizado",
+        "name": "Aceite EVOO aromatizado",
+        "type": "producto",
+        "ingredients": ["oliva", "trufa", "chile", "hongo"],
+        "tags": ["vegetariano"]
+      },
+      {
+        "id": "pesto_artesanal",
+        "name": "Pesto artesanal",
+        "type": "producto",
+        "ingredients": ["pesto"],
+        "tags": ["vegetariano"]
+      }
+    ]
+  }
+}

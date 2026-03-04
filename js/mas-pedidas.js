@@ -6,6 +6,17 @@
     return;
   }
 
+  const menuApi = window.FigataData?.menu;
+  const ingredientIconRowApi = window.FigataData?.ingredientIconRow;
+
+  if (!menuApi?.getFeaturedMenuItems || !ingredientIconRowApi?.renderIngredientIconRow) {
+    console.error("[mas-pedidas] APIs de datos no disponibles.");
+    return;
+  }
+
+  const { getFeaturedMenuItems } = menuApi;
+  const { renderIngredientIconRow } = ingredientIconRowApi;
+
   let isPreviewOpen = false;
   let isCoverTransitionRunning = false;
   let coverRafId = 0;
@@ -416,7 +427,7 @@
   };
 
   const setPreviewImage = (card) => {
-    if (!card.slug) {
+    if (!card.image) {
       previewBaseImageSrc = "";
       previewHoverImageSrc = "";
       hasPreviewHoverImage = false;
@@ -425,7 +436,7 @@
       return;
     }
 
-    previewBaseImageSrc = `assets/${card.slug}.png`;
+    previewBaseImageSrc = card.image;
     previewHoverImageSrc = getHoverImageSrc(previewBaseImageSrc);
     hasPreviewHoverImage = false;
 
@@ -442,26 +453,21 @@
     hoverProbe.src = previewHoverImageSrc;
   };
 
-  const setPreviewIngredients = (ingredients) => {
-    previewIngredientsList.replaceChildren();
-
-    const fragment = document.createDocumentFragment();
-
-    ingredients.forEach((ingredient) => {
-      const li = document.createElement("li");
-      li.textContent = ingredient;
-      fragment.appendChild(li);
-    });
-
-    previewIngredientsList.appendChild(fragment);
+  const setPreviewIngredients = async (ingredients) => {
+    try {
+      await renderIngredientIconRow(previewIngredientsList, ingredients);
+    } catch (error) {
+      previewIngredientsList.replaceChildren();
+      console.error("[mas-pedidas] No se pudieron renderizar ingredientes del preview", error);
+    }
   };
 
-  const hydratePreviewContent = (card) => {
+  const hydratePreviewContent = async (card) => {
     previewReviews.textContent = card.reviews || "221 reseñas";
     previewTitle.textContent = card.title;
     previewPrice.textContent = card.price;
     previewDescription.textContent = card.previewDescription || card.description;
-    setPreviewIngredients(card.ingredients || []);
+    await setPreviewIngredients(card.ingredients || []);
     setPreviewImage(card);
   };
 
@@ -654,7 +660,7 @@
       return;
     }
 
-    hydratePreviewContent(card);
+    await hydratePreviewContent(card);
     syncPreviewCardStyles();
 
     if (prefersReducedMotion.matches) {
@@ -732,193 +738,108 @@
 
   const getHoverImageSrc = (src) => src.replace(/\.png$/i, "-hover.png");
 
-  const cards = [
-    {
-      slug: "quattroformaggi",
-      title: "Quattro Formaggi",
-      description:
-        "Una mezcla cremosa y poderosa de cuatro quesos italianos que se funden en cada bocado.",
-      previewDescription:
-        "Mezcla cremosa de cuatro quesos italianos sobre masa madre, horneada al estilo napolitano.",
-      ingredients: [
-        "Mozzarella fior di latte",
-        "Gorgonzola",
-        "Parmigiano Reggiano",
-        "Ricotta",
-        "Aceite de oliva extra virgen",
-      ],
-      reviews: "221 reseñas",
-      price: "RD$1,150.00",
-    },
-    {
-      slug: "margherita",
-      title: "Margherita",
-      description:
-        "La reina napolitana. Pomodoro San Marzano, mozzarella fresca y albahaca sobre masa madre.",
-      ingredients: [
-        "Pomodoro San Marzano",
-        "Mozzarella fresca",
-        "Albahaca",
-        "Aceite de oliva extra virgen",
-      ],
-      reviews: "198 reseñas",
-      price: "RD$600.00",
-    },
-    {
-      slug: "sourdough-ciabatta",
-      title: "Sourdough Ciabatta",
-      description:
-        "Pan de masa madre crujiente por fuera, suave por dentro. Ideal para compartir...",
-      ingredients: [
-        "Harina de trigo",
-        "Masa madre",
-        "Aceite de oliva",
-        "Sal marina",
-      ],
-      reviews: "74 reseñas",
-      price: "RD$200.00",
-    },
-    {
-      slug: "tiramisu",
-      title: "Tiramisú",
-      description:
-        "Capas delicadas de café y mascarpone que se deshacen suavemente. El final perfecto, al estilo italiano.",
-      ingredients: [
-        "Mascarpone",
-        "Bizcocho de soletilla",
-        "Café espresso",
-        "Cacao en polvo",
-      ],
-      reviews: "132 reseñas",
-      price: "RD$350.00",
-    },
-    {
-      slug: "diavola",
-      title: "Diavola",
-      description:
-        "Salammino piccante y mozzarella fundida sobre pomodoro vibrante. Un delicioso toque picante.",
-      ingredients: [
-        "Pomodoro San Marzano",
-        "Mozzarella",
-        "Salammino piccante",
-        "Orégano",
-      ],
-      reviews: "166 reseñas",
-      price: "RD$850.00",
-    },
-    {
-      slug: "bruschetta",
-      title: "Bruschetta",
-      description:
-        "Pan tostado de masa madre con tomate fresco y pesto. Ligera, fresca y llena de sabor mediterráneo.",
-      ingredients: [
-        "Pan de masa madre",
-        "Tomate fresco",
-        "Pesto de albahaca",
-        "Aceite de oliva",
-      ],
-      reviews: "91 reseñas",
-      price: "RD$500.00",
-    },
-    {
-      slug: "schiacciata-sandwich",
-      title: "Schiacciata sándwich",
-      description:
-        "Crujiente, generosa y llena de carácter. Una combinación irresistible entre tradición y street food.",
-      ingredients: [
-        "Pan schiacciata",
-        "Mozzarella",
-        "Jamón italiano",
-        "Rúcula",
-      ],
-      reviews: "88 reseñas",
-      price: "RD$950.00",
-    },
-    {
-      slug: "margherita-sbagliata",
-      title: "Margherita Sbagliata",
-      description:
-        "La versión intensa de la clásica. Más sabor, más personalidad, más Figata.",
-      ingredients: [
-        "Pomodoro San Marzano",
-        "Mozzarella",
-        "Queso curado",
-        "Albahaca",
-      ],
-      reviews: "143 reseñas",
-      price: "RD$750.00",
-    },
-  ];
+  const toCardViewModel = (item) => ({
+    id: item.id,
+    slug: item.slug,
+    title: item.name || item.id,
+    description: item.descriptionShort || "",
+    previewDescription: item.descriptionLong || item.descriptionShort || "",
+    ingredients: Array.isArray(item.ingredients) ? item.ingredients : [],
+    reviews: item.reviews || "",
+    price: item.priceFormatted || "",
+    image: item.image || "",
+  });
 
-  const fragment = document.createDocumentFragment();
+  const renderFeaturedCards = async () => {
+    let featuredItems = [];
 
-  cards.forEach((card) => {
-    const node = template.content.cloneNode(true);
-    const article = node.querySelector(".mas-pedidas-card");
-    const media = node.querySelector(".mas-pedidas-card__media");
-    const baseImage = node.querySelector(".mas-pedidas-card__image--base");
-    const hoverImage = node.querySelector(".mas-pedidas-card__image--hover");
-    const title = node.querySelector(".mas-pedidas-card__title");
-    const description = node.querySelector(".mas-pedidas-card__description");
-    const price = node.querySelector(".mas-pedidas-card__price");
-    const detailsButton = node.querySelector(".mas-pedidas-card__button");
-
-    if (
-      !article ||
-      !media ||
-      !baseImage ||
-      !hoverImage ||
-      !title ||
-      !description ||
-      !price ||
-      !detailsButton
-    ) {
+    try {
+      featuredItems = await getFeaturedMenuItems(8);
+    } catch (error) {
+      console.error("[mas-pedidas] No se pudo cargar featured items desde menu.json", error);
       return;
     }
 
-    title.textContent = card.title;
-    description.textContent = card.description;
-    price.textContent = card.price;
+    const fragment = document.createDocumentFragment();
 
-    const imageSrc = card.slug ? `assets/${card.slug}.png` : "";
+    featuredItems.forEach((item) => {
+      const card = toCardViewModel(item);
+      const node = template.content.cloneNode(true);
+      const article = node.querySelector(".mas-pedidas-card");
+      const media = node.querySelector(".mas-pedidas-card__media");
+      const baseImage = node.querySelector(".mas-pedidas-card__image--base");
+      const hoverImage = node.querySelector(".mas-pedidas-card__image--hover");
+      const title = node.querySelector(".mas-pedidas-card__title");
+      const description = node.querySelector(".mas-pedidas-card__description");
+      const price = node.querySelector(".mas-pedidas-card__price");
+      const detailsButton = node.querySelector(".mas-pedidas-card__button");
 
-    if (imageSrc) {
-      const hoverSrc = getHoverImageSrc(imageSrc);
+      if (
+        !article ||
+        !media ||
+        !baseImage ||
+        !hoverImage ||
+        !title ||
+        !description ||
+        !price ||
+        !detailsButton
+      ) {
+        return;
+      }
 
-      baseImage.src = imageSrc;
-      baseImage.alt = card.title;
-      baseImage.loading = "lazy";
-      baseImage.addEventListener("error", () => {
+      title.textContent = card.title;
+      description.textContent = card.description;
+      price.textContent = card.price;
+
+      const detailsLabel = detailsButton.querySelector("span");
+      if (detailsLabel) {
+        detailsLabel.textContent = "Detalles";
+      } else {
+        detailsButton.textContent = "Detalles";
+      }
+
+      const imageSrc = card.image;
+
+      if (imageSrc) {
+        const hoverSrc = getHoverImageSrc(imageSrc);
+
+        baseImage.src = imageSrc;
+        baseImage.alt = card.title;
+        baseImage.loading = "lazy";
+        baseImage.addEventListener("error", () => {
+          baseImage.hidden = true;
+          hoverImage.hidden = true;
+          article.classList.remove("has-hover-image");
+          media.classList.add("is-empty");
+        });
+
+        hoverImage.src = hoverSrc;
+        hoverImage.alt = "";
+        hoverImage.loading = "lazy";
+        hoverImage.addEventListener("load", () => {
+          if (!hoverImage.hidden) {
+            article.classList.add("has-hover-image");
+          }
+        });
+        hoverImage.addEventListener("error", () => {
+          hoverImage.hidden = true;
+          article.classList.remove("has-hover-image");
+        });
+      } else {
         baseImage.hidden = true;
         hoverImage.hidden = true;
-        article.classList.remove("has-hover-image");
         media.classList.add("is-empty");
+      }
+
+      detailsButton.addEventListener("click", () => {
+        void openPreview(card);
       });
 
-      hoverImage.src = hoverSrc;
-      hoverImage.alt = "";
-      hoverImage.loading = "lazy";
-      hoverImage.addEventListener("load", () => {
-        if (!hoverImage.hidden) {
-          article.classList.add("has-hover-image");
-        }
-      });
-      hoverImage.addEventListener("error", () => {
-        hoverImage.hidden = true;
-        article.classList.remove("has-hover-image");
-      });
-    } else {
-      baseImage.hidden = true;
-      hoverImage.hidden = true;
-      media.classList.add("is-empty");
-    }
-
-    detailsButton.addEventListener("click", () => {
-      void openPreview(card);
+      fragment.appendChild(node);
     });
 
-    fragment.appendChild(node);
-  });
+    grid.replaceChildren(fragment);
+  };
 
-  grid.replaceChildren(fragment);
+  void renderFeaturedCards();
 })();

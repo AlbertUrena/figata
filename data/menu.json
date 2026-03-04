@@ -3,12 +3,10 @@
   "currency": "DOP",
   "taxIncluded": false,
   "sections": [
-
     {
       "id": "entradas",
       "label": "Entradas",
       "items": [
-
         {
           "id": "berenjenas_parmesana",
           "name": "Berenjenas a la Parmesana",
@@ -24,7 +22,6 @@
             "parmigiano_reggiano"
           ]
         },
-
         {
           "id": "focaccia_parmigiano",
           "name": "Focaccia al horno con Parmigiano",
@@ -37,7 +34,6 @@
             "parmigiano_reggiano"
           ]
         },
-
         {
           "id": "bruschetta_classica",
           "name": "Bruschetta Classica",
@@ -48,9 +44,12 @@
             "pomodoro",
             "pesto_de_albahaca",
             "aceite_de_oliva_evoo"
-          ]
+          ],
+          "descriptionShort": "Pan tostado con pomodoro, pesto de albahaca y EVOO.",
+          "descriptionLong": "Entrada clásica italiana con pomodoro fresco, pesto de albahaca y aceite de oliva extra virgen sobre base crujiente.",
+          "image": "assets/bruschetta.png",
+          "reviews": "121 reseñas"
         },
-
         {
           "id": "insalata_caprese",
           "name": "Insalata Caprese",
@@ -64,7 +63,6 @@
             "pesto_de_albahaca"
           ]
         },
-
         {
           "id": "carpaccio_bresaola",
           "name": "Carpaccio di Bresaola",
@@ -76,7 +74,6 @@
             "pesto_de_rucula"
           ]
         },
-
         {
           "id": "salsiccia_vino_miele",
           "name": "Salsiccia vino e miele",
@@ -88,7 +85,6 @@
             "romero"
           ]
         },
-
         {
           "id": "burrata_prosciutto",
           "name": "Burrata con Prosciutto",
@@ -101,7 +97,6 @@
             "pesto_de_albahaca"
           ]
         },
-
         {
           "id": "tagliere_misto",
           "name": "Tagliere Misto",
@@ -115,7 +110,6 @@
             "mermelada_de_tomate"
           ]
         },
-
         {
           "id": "focaccia_rellena",
           "name": "Focaccia rellena",
@@ -127,15 +121,12 @@
             "pesto_de_albahaca"
           ]
         }
-
       ]
     },
-
     {
       "id": "pizza",
       "label": "Pizza",
       "items": [
-
         {
           "id": "margherita",
           "name": "Margherita",
@@ -145,9 +136,11 @@
             "mozzarella",
             "pomodoro",
             "albahaca"
-          ]
+          ],
+          "descriptionShort": "La reina napolitana con pomodoro San Marzano, mozzarella fresca y albahaca.",
+          "descriptionLong": "Pomodoro San Marzano, mozzarella fresca y albahaca sobre masa madre de fermentación lenta, horneada al estilo napolitano.",
+          "reviews": "198 reseñas"
         },
-
         {
           "id": "marinara",
           "name": "Marinara",
@@ -160,7 +153,6 @@
             "oregano"
           ]
         },
-
         {
           "id": "cacio_pepe",
           "name": "Cacio e Pepe",
@@ -172,7 +164,6 @@
             "albahaca"
           ]
         },
-
         {
           "id": "margherita_fume",
           "name": "Margherita Fumé",
@@ -185,7 +176,6 @@
             "aceite_de_oliva_evoo"
           ]
         },
-
         {
           "id": "diavola",
           "name": "Diavola",
@@ -195,9 +185,11 @@
             "mozzarella",
             "pomodoro",
             "salamino_piccante"
-          ]
+          ],
+          "descriptionShort": "Sabor intenso con salamino piccante y mozzarella fundida.",
+          "descriptionLong": "Una pizza de perfil picante con pomodoro, mozzarella y salamino piccante, horneada para lograr borde aireado y centro jugoso.",
+          "reviews": "166 reseñas"
         },
-
         {
           "id": "filetti",
           "name": "Filetti",
@@ -210,7 +202,6 @@
             "albahaca"
           ]
         },
-
         {
           "id": "sweet_goat",
           "name": "Sweet Goat",
@@ -220,9 +211,11 @@
             "queso_de_cabra",
             "bacon",
             "miel"
-          ]
+          ],
+          "descriptionShort": "Contraste dulce-salado con queso de cabra, bacon y miel.",
+          "descriptionLong": "Mozzarella, queso de cabra, bacon y miel sobre masa madre napolitana para un balance cremoso, salado y ligeramente dulce.",
+          "reviews": "149 reseñas"
         },
-
         {
           "id": "mamma",
           "name": "Mamma",
@@ -234,7 +227,6 @@
             "menta"
           ]
         },
-
         {
           "id": "tonno",
           "name": "Tonno",
@@ -246,7 +238,6 @@
             "cebolla"
           ]
         },
-
         {
           "id": "puta",
           "name": "Puta",
@@ -261,7 +252,6 @@
             "peperoncino"
           ]
         },
-
         {
           "id": "figata",
           "name": "Figata",
@@ -270,9 +260,11 @@
             "mozzarella",
             "mortadella",
             "crema_de_trufa"
-          ]
+          ],
+          "descriptionShort": "Mortadella y crema de trufa sobre mozzarella derretida.",
+          "descriptionLong": "Combinación de mozzarella, mortadella y crema de trufa para una pizza untuosa y aromática, con carácter de autor.",
+          "reviews": "184 reseñas"
         },
-
         {
           "id": "margherita_sbagliata",
           "name": "Margherita Sbagliata",
@@ -281,17 +273,17 @@
             "mozzarella",
             "san_marzano_dop",
             "pesto_de_albahaca"
-          ]
+          ],
+          "descriptionShort": "Versión intensa de la clásica, con San Marzano DOP y pesto de albahaca.",
+          "descriptionLong": "Mozzarella, San Marzano DOP y pesto de albahaca sobre masa madre. Una margherita con más profundidad herbal y carácter.",
+          "reviews": "143 reseñas"
         }
-
       ]
     },
-
     {
       "id": "pizza_autor",
       "label": "Pizza de autor",
       "items": [
-
         {
           "id": "macellaio",
           "name": "Macellaio",
@@ -304,7 +296,6 @@
             "salamino_piccante"
           ]
         },
-
         {
           "id": "quattro_formaggi_truffle",
           "name": "Quattro Formaggi y Black Truffle",
@@ -318,7 +309,6 @@
             "crema_de_trufa"
           ]
         },
-
         {
           "id": "boscaiola",
           "name": "Boscaiola",
@@ -330,7 +320,6 @@
             "pecorino_trufado"
           ]
         },
-
         {
           "id": "calzone",
           "name": "Calzone",
@@ -343,7 +332,6 @@
             "parmigiano_reggiano"
           ]
         },
-
         {
           "id": "corazon_burrata",
           "name": "Corazón de Burrata",
@@ -356,7 +344,6 @@
             "burrata_fresca"
           ]
         },
-
         {
           "id": "fantasia_pistachos",
           "name": "Fantasia de Pistachos",
@@ -369,7 +356,6 @@
             "pistachos"
           ]
         },
-
         {
           "id": "vulcano",
           "name": "Vulcano",
@@ -381,9 +367,11 @@
             "tomate_cherry",
             "gorgonzola",
             "chili_flakes"
-          ]
+          ],
+          "descriptionShort": "Explosión picante con nduja, gorgonzola y tomate cherry.",
+          "descriptionLong": "Pizza de autor con nduja, tomate cherry, gorgonzola y chili flakes; cremosa y picante, con final persistente.",
+          "reviews": "171 reseñas"
         },
-
         {
           "id": "bellezza",
           "name": "Bellezza",
@@ -398,7 +386,6 @@
             "parmigiano_reggiano"
           ]
         },
-
         {
           "id": "passione_del_sud",
           "name": "Passione del Sud",
@@ -412,7 +399,6 @@
             "pesto_de_albahaca"
           ]
         },
-
         {
           "id": "soppressata",
           "name": "Soppressata",
@@ -426,7 +412,6 @@
             "miel"
           ]
         },
-
         {
           "id": "parmesana",
           "name": "Parmesana",
@@ -440,7 +425,6 @@
             "parmigiano_reggiano"
           ]
         },
-
         {
           "id": "prosciutto_rucula",
           "name": "Prosciutto y Rúcula",
@@ -452,53 +436,46 @@
             "pesto_de_rucula"
           ]
         }
-
       ]
     },
-
     {
       "id": "postres",
       "label": "Postres",
       "items": [
-
         {
           "id": "pizza_nutella",
           "name": "Pizza de Nutella",
           "price": 350
         },
-
         {
           "id": "tiramisu",
           "name": "Tiramisú artesanal",
-          "price": 450
+          "price": 450,
+          "descriptionShort": "Postre italiano de capas cremosas con café y cacao.",
+          "descriptionLong": "Tiramisú artesanal de textura suave con notas de café y cacao, ideal para cerrar la experiencia Figata.",
+          "reviews": "132 reseñas"
         },
-
         {
           "id": "helado_artesanal",
           "name": "Helado artesanal",
           "price": 350
         },
-
         {
           "id": "delicia_coco",
           "name": "Delicia de coco",
           "price": 450
         },
-
         {
           "id": "tartufo_affogato",
           "name": "Tartufo affogato",
           "price": 550
         }
-
       ]
     },
-
     {
       "id": "productos",
       "label": "Productos",
       "items": [
-
         {
           "id": "mermelada_della_mamma",
           "name": "Mermelada della Mamma",
@@ -508,7 +485,6 @@
             "menta"
           ]
         },
-
         {
           "id": "burrata_fresca_producto",
           "name": "Burrata fresca",
@@ -517,7 +493,6 @@
             "burrata_fresca"
           ]
         },
-
         {
           "id": "aceite_evoo_aromatizado",
           "name": "Aceite EVOO aromatizado",
@@ -529,7 +504,6 @@
             "porcini"
           ]
         },
-
         {
           "id": "pesto_artesanal",
           "name": "Pesto de rúcula o albahaca",
@@ -539,15 +513,22 @@
             "pesto_de_albahaca"
           ]
         },
-
         {
           "id": "pan_ciabatta",
           "name": "Pan ciabatta de masa madre",
           "price": 200
         }
-
       ]
     }
-
+  ],
+  "featuredIds": [
+    "margherita",
+    "diavola",
+    "sweet_goat",
+    "figata",
+    "margherita_sbagliata",
+    "vulcano",
+    "bruschetta_classica",
+    "tiramisu"
   ]
 }
