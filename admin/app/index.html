@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Figata Admin</title>
+    <meta
+      name="description"
+      content="Panel interno de administracion para gestionar contenido de Figata."
+    />
+    <link rel="stylesheet" href="/admin/app/styles.css" />
+  </head>
+  <body>
+    <div class="app-bg" aria-hidden="true"></div>
+
+    <main class="admin-shell">
+      <section id="login-view" class="view view-login">
+        <div class="card login-card">
+          <p class="kicker">Panel interno</p>
+          <h1>Figata Admin</h1>
+          <p class="muted">
+            Inicia sesion con tu invitacion para editar contenido y publicar cambios.
+          </p>
+          <button id="login-button" class="btn btn-primary" type="button">
+            Iniciar sesion
+          </button>
+          <p id="login-message" class="status-message" role="status" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section id="dashboard-view" class="view view-dashboard is-hidden">
+        <header class="topbar">
+          <div>
+            <p class="kicker">Dashboard</p>
+            <h1>Figata Admin</h1>
+          </div>
+          <div class="session-box">
+            <p class="session-label">Sesion activa</p>
+            <p id="session-email" class="session-email">-</p>
+            <button id="logout-button" class="btn btn-ghost" type="button">Logout</button>
+          </div>
+        </header>
+
+        <section class="cards-grid" aria-label="Accesos rapidos">
+          <a class="dash-card" href="/admin/cms/#/collections/menu">
+            <p class="dash-card__eyebrow">Contenido</p>
+            <h2>Menu</h2>
+            <p>Items, precios y textos.</p>
+          </a>
+
+          <a class="dash-card" href="/admin/cms/#/collections/home">
+            <p class="dash-card__eyebrow">Homepage</p>
+            <h2>Home</h2>
+            <p>Hero, featured y links.</p>
+          </a>
+
+          <a class="dash-card" href="/admin/cms/#/collections/availability">
+            <p class="dash-card__eyebrow">Operacion</p>
+            <h2>Availability</h2>
+            <p>Disponibilidad y notas.</p>
+          </a>
+
+          <a class="dash-card" href="/admin/cms/#/collections/categories">
+            <p class="dash-card__eyebrow">Estructura</p>
+            <h2>Categories</h2>
+            <p>Categorias y orden de secciones.</p>
+          </a>
+
+          <a class="dash-card" href="/admin/cms/#/collections/restaurant">
+            <p class="dash-card__eyebrow">Negocio</p>
+            <h2>Restaurant</h2>
+            <p>Telefono, horario y datos generales.</p>
+          </a>
+
+          <a class="dash-card" href="/admin/cms/#/collections/media">
+            <p class="dash-card__eyebrow">Activos</p>
+            <h2>Media</h2>
+            <p>JSON de imagenes y variantes.</p>
+          </a>
+        </section>
+      </section>
+    </main>
+
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <script src="/admin/app/app.js"></script>
+  </body>
+</html>
