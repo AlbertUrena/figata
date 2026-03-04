@@ -5,7 +5,9 @@
     selectedItemRef: null,
     isDataLoading: false,
     hasDataLoaded: false,
-    isMenuDirty: false
+    isMenuDirty: false,
+    currentPanel: "dashboard",
+    sidebarCollapsed: false
   };
 
   var views = {
@@ -16,6 +18,11 @@
   };
 
   var elements = {
+    sidebar: document.getElementById("admin-sidebar"),
+    sidebarHomeButton: document.getElementById("sidebar-home-button"),
+    sidebarToggleButton: document.getElementById("sidebar-toggle-button"),
+    sidebarSearchButton: document.getElementById("sidebar-search-button"),
+    sidebarNavMenu: document.getElementById("sidebar-nav-menu"),
     loginButton: document.getElementById("login-button"),
     logoutButton: document.getElementById("logout-button"),
     refreshDataButton: document.getElementById("refresh-data-button"),
@@ -57,6 +64,8 @@
     media: "/data/media.json"
   };
 
+  var SIDEBAR_COLLAPSE_KEY = "figata_admin_sidebar_collapsed";
+
   function getIdentity() {
     return window.netlifyIdentity || null;
   }
@@ -95,6 +104,56 @@
     elements.menuEditorStatus.textContent = message || "";
   }
 
+  function readStoredSidebarCollapsed() {
+    try {
+      return window.localStorage.getItem(SIDEBAR_COLLAPSE_KEY) === "1";
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  function isCompactViewport() {
+    return window.matchMedia("(max-width: 900px)").matches;
+  }
+
+  function setSidebarCollapsed(nextCollapsed, options) {
+    if (!elements.sidebar) return;
+
+    var allowCollapse = !isCompactViewport();
+    var collapsed = Boolean(nextCollapsed) && allowCollapse;
+    state.sidebarCollapsed = collapsed;
+
+    elements.sidebar.setAttribute("data-collapsed", collapsed ? "true" : "false");
+    if (elements.sidebarToggleButton) {
+      elements.sidebarToggleButton.setAttribute("aria-pressed", collapsed ? "true" : "false");
+    }
+
+    if (options && options.persist) {
+      try {
+        window.localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? "1" : "0");
+      } catch (_error) {
+        // ignore localStorage failures
+      }
+    }
+  }
+
+  function updateSidebarActiveState() {
+    if (elements.sidebarNavMenu) {
+      elements.sidebarNavMenu.classList.toggle("is-active", state.currentPanel === "menu-editor");
+    }
+    if (elements.sidebarHomeButton) {
+      elements.sidebarHomeButton.classList.toggle("is-active", state.currentPanel === "dashboard");
+    }
+  }
+
+  function syncSidebarViewportState() {
+    if (isCompactViewport()) {
+      setSidebarCollapsed(false, { persist: false });
+      return;
+    }
+    setSidebarCollapsed(readStoredSidebarCollapsed(), { persist: false });
+  }
+
   function showLoginView(message) {
     views.login.classList.remove("is-hidden");
     views.dashboard.classList.add("is-hidden");
@@ -111,14 +170,18 @@
   }
 
   function setActivePanel(panel) {
+    state.currentPanel = panel;
+
     if (panel === "menu-editor") {
       views.dashboardPanel.classList.add("is-hidden");
       views.menuEditorPanel.classList.remove("is-hidden");
+      updateSidebarActiveState();
       return;
     }
 
     views.dashboardPanel.classList.remove("is-hidden");
     views.menuEditorPanel.classList.add("is-hidden");
+    updateSidebarActiveState();
   }
 
   function hashHasAuthToken() {
@@ -682,6 +745,30 @@
       openIdentityModal();
     });
 
+    if (elements.sidebarHomeButton) {
+      elements.sidebarHomeButton.addEventListener("click", function () {
+        setActivePanel("dashboard");
+      });
+    }
+
+    if (elements.sidebarNavMenu) {
+      elements.sidebarNavMenu.addEventListener("click", function () {
+        openMenuEditor();
+      });
+    }
+
+    if (elements.sidebarSearchButton) {
+      elements.sidebarSearchButton.addEventListener("click", function () {
+        setDataStatus("Buscador global en construccion. Usa el sidebar para navegar por ahora.");
+      });
+    }
+
+    if (elements.sidebarToggleButton) {
+      elements.sidebarToggleButton.addEventListener("click", function () {
+        setSidebarCollapsed(!state.sidebarCollapsed, { persist: true });
+      });
+    }
+
     elements.logoutButton.addEventListener("click", function () {
       var identity = getIdentity();
       if (!identity) return;
@@ -697,6 +784,18 @@
     });
 
     bindMenuEditorEvents();
+
+    window.addEventListener("resize", syncSidebarViewportState);
+    syncSidebarViewportState();
+
+    window.addEventListener("keydown", function (event) {
+      var isShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k";
+      if (!isShortcut) return;
+      event.preventDefault();
+      if (elements.sidebarSearchButton) {
+        elements.sidebarSearchButton.click();
+      }
+    });
 
     window.addEventListener("beforeunload", function (event) {
       if (!state.isMenuDirty) return;
