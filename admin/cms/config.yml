@@ -1,0 +1,100 @@
+backend:
+  name: git-gateway
+  branch: master
+
+media_folder: assets/uploads
+public_folder: /assets/uploads
+
+editor:
+  preview: false
+
+collections:
+  - name: menu
+    label: Menu
+    files:
+      - label: Menu Data
+        name: menu_data
+        file: data/menu.json
+        format: json
+        fields:
+          - label: Version
+            name: version
+            widget: number
+            value_type: int
+          - label: Currency
+            name: currency
+            widget: string
+          - label: Tax Included
+            name: taxIncluded
+            widget: boolean
+            required: false
+          - label: Sections
+            name: sections
+            widget: list
+            summary: "{{fields.label}} ({{fields.id}})"
+            fields:
+              - label: Section ID
+                name: id
+                widget: string
+              - label: Section Label
+                name: label
+                widget: string
+              - label: Items
+                name: items
+                widget: list
+                summary: "{{fields.name}} ({{fields.id}})"
+                fields:
+                  - label: ID
+                    name: id
+                    widget: string
+                  - label: Name
+                    name: name
+                    widget: string
+                  - label: Price
+                    name: price
+                    widget: number
+                    value_type: int
+                  - label: Category
+                    name: category
+                    widget: string
+                    required: false
+                  - label: Vegetarian
+                    name: vegetarian
+                    widget: boolean
+                    required: false
+                  - label: Spicy
+                    name: spicy
+                    widget: boolean
+                    required: false
+                  - label: Available
+                    name: available
+                    widget: boolean
+                    required: false
+                  - label: Availability Note
+                    name: availabilityNote
+                    widget: text
+                    required: false
+                  - label: Ingredients
+                    name: ingredients
+                    widget: list
+                    required: false
+                    field:
+                      label: Ingredient
+                      name: ingredient
+                      widget: string
+                  - label: Short Description
+                    name: descriptionShort
+                    widget: text
+                    required: false
+                  - label: Long Description
+                    name: descriptionLong
+                    widget: text
+                    required: false
+                  - label: Image
+                    name: image
+                    widget: string
+                    required: false
+                  - label: Reviews
+                    name: reviews
+                    widget: string
+                    required: false
