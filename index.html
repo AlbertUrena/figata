@@ -515,5 +515,27 @@
   <script src="js/mas-pedidas.js" defer></script>
   <script src="js/testimonials.js" defer></script>
   <script src="js/events-tabs.js?v=2" defer></script>
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <script>
+    if (window.netlifyIdentity) {
+      window.netlifyIdentity.on("init", function (user) {
+        var hasAuthToken = /invite_token|recovery_token|confirmation_token/.test(
+          window.location.hash
+        );
+
+        if (hasAuthToken) {
+          window.netlifyIdentity.open();
+        }
+
+        if (!user) {
+          window.netlifyIdentity.on("login", function () {
+            document.location.href = "/admin/cms/";
+          });
+        }
+      });
+
+      window.netlifyIdentity.init();
+    }
+  </script>
 </body>
 </html>
