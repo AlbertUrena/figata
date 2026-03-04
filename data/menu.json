@@ -1,0 +1,553 @@
+{
+  "version": 1,
+  "currency": "DOP",
+  "taxIncluded": false,
+  "sections": [
+
+    {
+      "id": "entradas",
+      "label": "Entradas",
+      "items": [
+
+        {
+          "id": "berenjenas_parmesana",
+          "name": "Berenjenas a la Parmesana",
+          "price": 550,
+          "category": "entrada",
+          "vegetarian": true,
+          "spicy": false,
+          "ingredients": [
+            "berenjena",
+            "salsa_de_tomate",
+            "mozzarella",
+            "albahaca",
+            "parmigiano_reggiano"
+          ]
+        },
+
+        {
+          "id": "focaccia_parmigiano",
+          "name": "Focaccia al horno con Parmigiano",
+          "price": 350,
+          "category": "entrada",
+          "vegetarian": true,
+          "ingredients": [
+            "romero",
+            "aceite_de_oliva_evoo",
+            "parmigiano_reggiano"
+          ]
+        },
+
+        {
+          "id": "bruschetta_classica",
+          "name": "Bruschetta Classica",
+          "price": 350,
+          "category": "entrada",
+          "vegetarian": true,
+          "ingredients": [
+            "pomodoro",
+            "pesto_de_albahaca",
+            "aceite_de_oliva_evoo"
+          ]
+        },
+
+        {
+          "id": "insalata_caprese",
+          "name": "Insalata Caprese",
+          "price": 600,
+          "category": "entrada",
+          "vegetarian": true,
+          "ingredients": [
+            "mozzarella",
+            "pomodoro",
+            "aceite_de_oliva_evoo",
+            "pesto_de_albahaca"
+          ]
+        },
+
+        {
+          "id": "carpaccio_bresaola",
+          "name": "Carpaccio di Bresaola",
+          "price": 850,
+          "category": "entrada",
+          "ingredients": [
+            "bresaola",
+            "tomate_cherry",
+            "pesto_de_rucula"
+          ]
+        },
+
+        {
+          "id": "salsiccia_vino_miele",
+          "name": "Salsiccia vino e miele",
+          "price": 500,
+          "category": "entrada",
+          "ingredients": [
+            "salsiccia",
+            "miel",
+            "romero"
+          ]
+        },
+
+        {
+          "id": "burrata_prosciutto",
+          "name": "Burrata con Prosciutto",
+          "price": 900,
+          "category": "entrada",
+          "ingredients": [
+            "burrata_fresca",
+            "prosciutto_di_parma",
+            "tomate_cherry",
+            "pesto_de_albahaca"
+          ]
+        },
+
+        {
+          "id": "tagliere_misto",
+          "name": "Tagliere Misto",
+          "price": 850,
+          "category": "entrada",
+          "ingredients": [
+            "quesos_tagliere",
+            "prosciutto_di_parma",
+            "mortadella",
+            "pesto_de_albahaca",
+            "mermelada_de_tomate"
+          ]
+        },
+
+        {
+          "id": "focaccia_rellena",
+          "name": "Focaccia rellena",
+          "price": 750,
+          "category": "entrada",
+          "ingredients": [
+            "mortadella",
+            "stracciatella",
+            "pesto_de_albahaca"
+          ]
+        }
+
+      ]
+    },
+
+    {
+      "id": "pizza",
+      "label": "Pizza",
+      "items": [
+
+        {
+          "id": "margherita",
+          "name": "Margherita",
+          "price": 500,
+          "vegetarian": true,
+          "ingredients": [
+            "mozzarella",
+            "pomodoro",
+            "albahaca"
+          ]
+        },
+
+        {
+          "id": "marinara",
+          "name": "Marinara",
+          "price": 500,
+          "vegetarian": true,
+          "ingredients": [
+            "pomodoro",
+            "ajo",
+            "aceite_de_oliva_evoo",
+            "oregano"
+          ]
+        },
+
+        {
+          "id": "cacio_pepe",
+          "name": "Cacio e Pepe",
+          "price": 500,
+          "vegetarian": true,
+          "ingredients": [
+            "mozzarella",
+            "pecorino",
+            "albahaca"
+          ]
+        },
+
+        {
+          "id": "margherita_fume",
+          "name": "Margherita Fumé",
+          "price": 600,
+          "ingredients": [
+            "mozzarella",
+            "pomodoro",
+            "provola",
+            "albahaca",
+            "aceite_de_oliva_evoo"
+          ]
+        },
+
+        {
+          "id": "diavola",
+          "name": "Diavola",
+          "price": 600,
+          "spicy": true,
+          "ingredients": [
+            "mozzarella",
+            "pomodoro",
+            "salamino_piccante"
+          ]
+        },
+
+        {
+          "id": "filetti",
+          "name": "Filetti",
+          "price": 600,
+          "ingredients": [
+            "mozzarella",
+            "tomate_cherry",
+            "ajo",
+            "aceite_de_oliva_evoo",
+            "albahaca"
+          ]
+        },
+
+        {
+          "id": "sweet_goat",
+          "name": "Sweet Goat",
+          "price": 650,
+          "ingredients": [
+            "mozzarella",
+            "queso_de_cabra",
+            "bacon",
+            "miel"
+          ]
+        },
+
+        {
+          "id": "mamma",
+          "name": "Mamma",
+          "price": 650,
+          "ingredients": [
+            "mozzarella",
+            "soppressata",
+            "mermelada_de_tomate",
+            "menta"
+          ]
+        },
+
+        {
+          "id": "tonno",
+          "name": "Tonno",
+          "price": 650,
+          "ingredients": [
+            "mozzarella",
+            "pomodoro",
+            "atun",
+            "cebolla"
+          ]
+        },
+
+        {
+          "id": "puta",
+          "name": "Puta",
+          "price": 650,
+          "spicy": true,
+          "ingredients": [
+            "pomodoro",
+            "alcaparras",
+            "aceitunas",
+            "pancetta",
+            "pecorino",
+            "peperoncino"
+          ]
+        },
+
+        {
+          "id": "figata",
+          "name": "Figata",
+          "price": 750,
+          "ingredients": [
+            "mozzarella",
+            "mortadella",
+            "crema_de_trufa"
+          ]
+        },
+
+        {
+          "id": "margherita_sbagliata",
+          "name": "Margherita Sbagliata",
+          "price": 600,
+          "ingredients": [
+            "mozzarella",
+            "san_marzano_dop",
+            "pesto_de_albahaca"
+          ]
+        }
+
+      ]
+    },
+
+    {
+      "id": "pizza_autor",
+      "label": "Pizza de autor",
+      "items": [
+
+        {
+          "id": "macellaio",
+          "name": "Macellaio",
+          "price": 800,
+          "ingredients": [
+            "mozzarella",
+            "pomodoro",
+            "salsiccia",
+            "pancetta",
+            "salamino_piccante"
+          ]
+        },
+
+        {
+          "id": "quattro_formaggi_truffle",
+          "name": "Quattro Formaggi y Black Truffle",
+          "price": 800,
+          "vegetarian": true,
+          "ingredients": [
+            "mozzarella",
+            "queso_de_cabra",
+            "pecorino",
+            "parmigiano_reggiano",
+            "crema_de_trufa"
+          ]
+        },
+
+        {
+          "id": "boscaiola",
+          "name": "Boscaiola",
+          "price": 800,
+          "ingredients": [
+            "mozzarella",
+            "salsiccia",
+            "porcini",
+            "pecorino_trufado"
+          ]
+        },
+
+        {
+          "id": "calzone",
+          "name": "Calzone",
+          "price": 800,
+          "ingredients": [
+            "mozzarella",
+            "pomodoro",
+            "mortadella",
+            "porcini",
+            "parmigiano_reggiano"
+          ]
+        },
+
+        {
+          "id": "corazon_burrata",
+          "name": "Corazón de Burrata",
+          "price": 950,
+          "ingredients": [
+            "mozzarella",
+            "pesto_de_albahaca",
+            "albahaca",
+            "prosciutto_di_parma",
+            "burrata_fresca"
+          ]
+        },
+
+        {
+          "id": "fantasia_pistachos",
+          "name": "Fantasia de Pistachos",
+          "price": 950,
+          "ingredients": [
+            "mozzarella",
+            "pesto_de_pistacho",
+            "stracciatella",
+            "mortadella",
+            "pistachos"
+          ]
+        },
+
+        {
+          "id": "vulcano",
+          "name": "Vulcano",
+          "price": 950,
+          "spicy": true,
+          "ingredients": [
+            "mozzarella",
+            "nduja",
+            "tomate_cherry",
+            "gorgonzola",
+            "chili_flakes"
+          ]
+        },
+
+        {
+          "id": "bellezza",
+          "name": "Bellezza",
+          "price": 800,
+          "ingredients": [
+            "mozzarella",
+            "pomodoro",
+            "mortadella",
+            "porcini",
+            "aceitunas",
+            "albahaca",
+            "parmigiano_reggiano"
+          ]
+        },
+
+        {
+          "id": "passione_del_sud",
+          "name": "Passione del Sud",
+          "price": 950,
+          "spicy": true,
+          "ingredients": [
+            "pomodoro",
+            "nduja",
+            "salamino_piccante",
+            "stracciatella",
+            "pesto_de_albahaca"
+          ]
+        },
+
+        {
+          "id": "soppressata",
+          "name": "Soppressata",
+          "price": 800,
+          "ingredients": [
+            "mozzarella",
+            "pomodoro",
+            "soppressata",
+            "cebolla",
+            "ricotta",
+            "miel"
+          ]
+        },
+
+        {
+          "id": "parmesana",
+          "name": "Parmesana",
+          "price": 750,
+          "vegetarian": true,
+          "ingredients": [
+            "mozzarella",
+            "salsa_de_tomate",
+            "berenjena",
+            "albahaca",
+            "parmigiano_reggiano"
+          ]
+        },
+
+        {
+          "id": "prosciutto_rucula",
+          "name": "Prosciutto y Rúcula",
+          "price": 750,
+          "ingredients": [
+            "mozzarella",
+            "pomodoro",
+            "prosciutto_di_parma",
+            "pesto_de_rucula"
+          ]
+        }
+
+      ]
+    },
+
+    {
+      "id": "postres",
+      "label": "Postres",
+      "items": [
+
+        {
+          "id": "pizza_nutella",
+          "name": "Pizza de Nutella",
+          "price": 350
+        },
+
+        {
+          "id": "tiramisu",
+          "name": "Tiramisú artesanal",
+          "price": 450
+        },
+
+        {
+          "id": "helado_artesanal",
+          "name": "Helado artesanal",
+          "price": 350
+        },
+
+        {
+          "id": "delicia_coco",
+          "name": "Delicia de coco",
+          "price": 450
+        },
+
+        {
+          "id": "tartufo_affogato",
+          "name": "Tartufo affogato",
+          "price": 550
+        }
+
+      ]
+    },
+
+    {
+      "id": "productos",
+      "label": "Productos",
+      "items": [
+
+        {
+          "id": "mermelada_della_mamma",
+          "name": "Mermelada della Mamma",
+          "price": 250,
+          "ingredients": [
+            "mermelada_de_tomate",
+            "menta"
+          ]
+        },
+
+        {
+          "id": "burrata_fresca_producto",
+          "name": "Burrata fresca",
+          "price": 500,
+          "ingredients": [
+            "burrata_fresca"
+          ]
+        },
+
+        {
+          "id": "aceite_evoo_aromatizado",
+          "name": "Aceite EVOO aromatizado",
+          "price": 500,
+          "ingredients": [
+            "aceite_de_oliva_evoo",
+            "crema_de_trufa",
+            "peperoncino",
+            "porcini"
+          ]
+        },
+
+        {
+          "id": "pesto_artesanal",
+          "name": "Pesto de rúcula o albahaca",
+          "price": 500,
+          "ingredients": [
+            "pesto_de_rucula",
+            "pesto_de_albahaca"
+          ]
+        },
+
+        {
+          "id": "pan_ciabatta",
+          "name": "Pan ciabatta de masa madre",
+          "price": 200
+        }
+
+      ]
+    }
+
+  ]
+}

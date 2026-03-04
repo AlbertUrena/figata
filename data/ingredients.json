@@ -1,0 +1,512 @@
+{
+  "version": 2,
+  "basePath": "/assets/ingredients/",
+  "allergens": {
+    "milk": { "id": "milk", "label": "Lácteos" },
+    "nuts": { "id": "nuts", "label": "Frutos secos" },
+    "fish": { "id": "fish", "label": "Pescado" }
+  },
+  "tags": {
+    "vegetarian": { "id": "vegetarian", "label": "Vegetariano" },
+    "vegan": { "id": "vegan", "label": "Vegano" },
+    "spicy": { "id": "spicy", "label": "Picante" },
+    "pork": { "id": "pork", "label": "Cerdo" },
+    "cured_meat": { "id": "cured_meat", "label": "Embutido / curado" },
+    "herb": { "id": "herb", "label": "Hierba" },
+    "sauce": { "id": "sauce", "label": "Salsa / crema" }
+  },
+  "icons": {
+    "aceituna": {
+      "icon": "/assets/ingredients/aceituna.png",
+      "label": "Aceituna",
+      "covers": ["aceitunas"]
+    },
+    "ajo": {
+      "icon": "/assets/ingredients/ajo.png",
+      "label": "Ajo",
+      "covers": ["ajo"]
+    },
+    "albahaca": {
+      "icon": "/assets/ingredients/albahaca.png",
+      "label": "Albahaca",
+      "covers": ["albahaca"]
+    },
+    "alcaparra": {
+      "icon": "/assets/ingredients/alcaparra.png",
+      "label": "Alcaparra",
+      "covers": ["alcaparras"]
+    },
+    "bacon": {
+      "icon": "/assets/ingredients/bacon.png",
+      "label": "Bacon",
+      "covers": ["bacon"]
+    },
+    "berenjena": {
+      "icon": "/assets/ingredients/berenjena.png",
+      "label": "Berenjena",
+      "covers": ["berenjena"]
+    },
+    "burrata": {
+      "icon": "/assets/ingredients/burrata.png",
+      "label": "Burrata",
+      "covers": ["burrata_fresca"]
+    },
+    "cebolla": {
+      "icon": "/assets/ingredients/cebolla.png",
+      "label": "Cebolla",
+      "covers": ["cebolla"]
+    },
+    "chile": {
+      "icon": "/assets/ingredients/chile.png",
+      "label": "Picante",
+      "covers": ["peperoncino", "chili_flakes", "nduja"]
+    },
+    "hongo": {
+      "icon": "/assets/ingredients/hongo.png",
+      "label": "Hongos",
+      "covers": ["porcini"]
+    },
+    "jamon_curado": {
+      "icon": "/assets/ingredients/jamon-curado.png",
+      "label": "Curados",
+      "covers": ["prosciutto_di_parma", "bresaola", "mortadella"]
+    },
+    "menta": {
+      "icon": "/assets/ingredients/menta.png",
+      "label": "Menta",
+      "covers": ["menta"]
+    },
+    "mermelada": {
+      "icon": "/assets/ingredients/mermelada.png",
+      "label": "Mermelada",
+      "covers": ["mermelada_de_tomate"]
+    },
+    "miel": {
+      "icon": "/assets/ingredients/miel.png",
+      "label": "Miel",
+      "covers": ["miel"]
+    },
+    "oliva": {
+      "icon": "/assets/ingredients/oliva.png",
+      "label": "Aceite de oliva",
+      "covers": ["aceite_de_oliva_evoo"]
+    },
+    "oregano": {
+      "icon": "/assets/ingredients/oregano.png",
+      "label": "Orégano",
+      "covers": ["oregano"]
+    },
+    "pancetta": {
+      "icon": "/assets/ingredients/pancetta.png",
+      "label": "Pancetta",
+      "covers": ["pancetta"]
+    },
+    "pescado": {
+      "icon": "/assets/ingredients/pescado.png",
+      "label": "Pescado",
+      "covers": ["atun"]
+    },
+    "pesto": {
+      "icon": "/assets/ingredients/pesto.png",
+      "label": "Pestos",
+      "covers": ["pesto_de_albahaca", "pesto_de_rucula", "pesto_de_pistacho"]
+    },
+    "pistacho": {
+      "icon": "/assets/ingredients/pistacho.png",
+      "label": "Pistacho",
+      "covers": ["pistachos"]
+    },
+    "queso": {
+      "icon": "/assets/ingredients/queso.png",
+      "label": "Quesos",
+      "covers": [
+        "mozzarella",
+        "fior_di_latte",
+        "parmigiano_reggiano",
+        "pecorino",
+        "provola",
+        "ricotta",
+        "queso_de_cabra",
+        "gorgonzola",
+        "pecorino_trufado",
+        "quesos_tagliere"
+      ]
+    },
+    "romero": {
+      "icon": "/assets/ingredients/romero.png",
+      "label": "Romero",
+      "covers": ["romero"]
+    },
+    "rucula": {
+      "icon": "/assets/ingredients/rucula.png",
+      "label": "Rúcula",
+      "covers": ["rucula"]
+    },
+    "salami": {
+      "icon": "/assets/ingredients/salami.png",
+      "label": "Salami",
+      "covers": ["salamino_piccante", "soppressata"]
+    },
+    "salchicha": {
+      "icon": "/assets/ingredients/salchicha.png",
+      "label": "Salsiccia",
+      "covers": ["salsiccia"]
+    },
+    "san_marzano": {
+      "icon": "/assets/ingredients/san-marzano.png",
+      "label": "San Marzano",
+      "covers": ["san_marzano_dop"]
+    },
+    "stracciatella": {
+      "icon": "/assets/ingredients/stracciatella.png",
+      "label": "Stracciatella",
+      "covers": ["stracciatella"]
+    },
+    "tomate_cherry": {
+      "icon": "/assets/ingredients/tomate-cherry.png",
+      "label": "Tomate cherry",
+      "covers": ["tomate_cherry"]
+    },
+    "tomate": {
+      "icon": "/assets/ingredients/tomate.png",
+      "label": "Tomate",
+      "covers": ["pomodoro", "salsa_de_tomate"]
+    },
+    "trufa": {
+      "icon": "/assets/ingredients/trufa.png",
+      "label": "Trufa",
+      "covers": ["crema_de_trufa"]
+    }
+  },
+  "ingredients": {
+    "aceitunas": {
+      "label": "Aceitunas",
+      "icon": "aceituna",
+      "aliases": ["aceituna", "aceitunas", "olive", "olives"],
+      "tags": ["vegetarian", "vegan"],
+      "allergens": []
+    },
+    "ajo": {
+      "label": "Ajo",
+      "icon": "ajo",
+      "aliases": ["ajo", "garlic"],
+      "tags": ["vegetarian", "vegan"],
+      "allergens": []
+    },
+    "albahaca": {
+      "label": "Albahaca",
+      "icon": "albahaca",
+      "aliases": ["albahaca", "basil", "basilico"],
+      "tags": ["vegetarian", "vegan", "herb"],
+      "allergens": []
+    },
+    "alcaparras": {
+      "label": "Alcaparras",
+      "icon": "alcaparra",
+      "aliases": ["alcaparra", "alcaparras", "capers"],
+      "tags": ["vegetarian", "vegan"],
+      "allergens": []
+    },
+    "bacon": {
+      "label": "Bacon",
+      "icon": "bacon",
+      "aliases": ["bacon", "tocineta"],
+      "tags": ["pork"],
+      "allergens": []
+    },
+    "berenjena": {
+      "label": "Berenjena",
+      "icon": "berenjena",
+      "aliases": ["berenjena", "eggplant", "melanzana"],
+      "tags": ["vegetarian", "vegan"],
+      "allergens": []
+    },
+    "burrata_fresca": {
+      "label": "Burrata fresca",
+      "icon": "burrata",
+      "aliases": ["burrata", "burrata fresca"],
+      "tags": ["vegetarian"],
+      "allergens": ["milk"]
+    },
+    "cebolla": {
+      "label": "Cebolla",
+      "icon": "cebolla",
+      "aliases": ["cebolla", "onion", "cipolla"],
+      "tags": ["vegetarian", "vegan"],
+      "allergens": []
+    },
+    "peperoncino": {
+      "label": "Peperoncino",
+      "icon": "chile",
+      "aliases": ["peperoncino", "ají", "chile", "picante"],
+      "tags": ["vegetarian", "vegan", "spicy"],
+      "allergens": []
+    },
+    "chili_flakes": {
+      "label": "Chili flakes",
+      "icon": "chile",
+      "aliases": ["chili flakes", "ají en hojuelas", "hojuelas de chile", "chile flakes"],
+      "tags": ["vegetarian", "vegan", "spicy"],
+      "allergens": []
+    },
+    "nduja": {
+      "label": "Nduja",
+      "icon": "chile",
+      "aliases": ["nduja", "crema picante", "sobrasada picante"],
+      "tags": ["pork", "cured_meat", "spicy"],
+      "allergens": []
+    },
+    "porcini": {
+      "label": "Porcini",
+      "icon": "hongo",
+      "aliases": ["porcini", "hongos porcini", "setas", "mushroom", "mushrooms"],
+      "tags": ["vegetarian", "vegan"],
+      "allergens": []
+    },
+    "prosciutto_di_parma": {
+      "label": "Prosciutto di Parma",
+      "icon": "jamon_curado",
+      "aliases": ["prosciutto", "prosciutto di parma", "jamón curado", "jamon curado"],
+      "tags": ["pork", "cured_meat"],
+      "allergens": []
+    },
+    "bresaola": {
+      "label": "Bresaola",
+      "icon": "jamon_curado",
+      "aliases": ["bresaola", "carpaccio de bresaola"],
+      "tags": ["cured_meat"],
+      "allergens": []
+    },
+    "mortadella": {
+      "label": "Mortadella",
+      "icon": "jamon_curado",
+      "aliases": ["mortadella", "mortadela"],
+      "tags": ["pork", "cured_meat"],
+      "allergens": []
+    },
+    "menta": {
+      "label": "Menta",
+      "icon": "menta",
+      "aliases": ["menta", "mint"],
+      "tags": ["vegetarian", "vegan", "herb"],
+      "allergens": []
+    },
+    "mermelada_de_tomate": {
+      "label": "Mermelada de tomate",
+      "icon": "mermelada",
+      "aliases": ["mermelada", "mermelada de tomate", "jam", "tomato jam"],
+      "tags": ["vegetarian", "vegan"],
+      "allergens": []
+    },
+    "miel": {
+      "label": "Miel",
+      "icon": "miel",
+      "aliases": ["miel", "honey"],
+      "tags": ["vegetarian"],
+      "allergens": []
+    },
+    "aceite_de_oliva_evoo": {
+      "label": "Aceite de oliva (EVOO)",
+      "icon": "oliva",
+      "aliases": ["aceite de oliva", "evoo", "olive oil", "olio d'oliva"],
+      "tags": ["vegetarian", "vegan"],
+      "allergens": []
+    },
+    "oregano": {
+      "label": "Orégano",
+      "icon": "oregano",
+      "aliases": ["orégano", "oregano"],
+      "tags": ["vegetarian", "vegan", "herb"],
+      "allergens": []
+    },
+    "pancetta": {
+      "label": "Pancetta",
+      "icon": "pancetta",
+      "aliases": ["pancetta"],
+      "tags": ["pork", "cured_meat"],
+      "allergens": []
+    },
+    "atun": {
+      "label": "Atún",
+      "icon": "pescado",
+      "aliases": ["atún", "atun", "tuna", "tonno"],
+      "tags": [],
+      "allergens": ["fish"]
+    },
+    "pesto_de_albahaca": {
+      "label": "Pesto de albahaca",
+      "icon": "pesto",
+      "aliases": ["pesto", "pesto de albahaca", "pesto basil"],
+      "tags": ["vegetarian", "sauce"],
+      "allergens": []
+    },
+    "pesto_de_rucula": {
+      "label": "Pesto de rúcula",
+      "icon": "pesto",
+      "aliases": ["pesto de rúcula", "pesto de rucula", "pesto arugula"],
+      "tags": ["vegetarian", "sauce"],
+      "allergens": []
+    },
+    "pesto_de_pistacho": {
+      "label": "Pesto de pistacho",
+      "icon": "pesto",
+      "aliases": ["pesto de pistacho", "pesto pistachio"],
+      "tags": ["vegetarian", "sauce"],
+      "allergens": ["nuts"]
+    },
+    "pistachos": {
+      "label": "Pistachos",
+      "icon": "pistacho",
+      "aliases": ["pistacho", "pistachos", "pistachio", "pistachios"],
+      "tags": ["vegetarian"],
+      "allergens": ["nuts"]
+    },
+    "mozzarella": {
+      "label": "Mozzarella",
+      "icon": "queso",
+      "aliases": ["mozzarella"],
+      "tags": ["vegetarian"],
+      "allergens": ["milk"]
+    },
+    "fior_di_latte": {
+      "label": "Fior di latte",
+      "icon": "queso",
+      "aliases": ["fior di latte", "fior", "fior-di-latte"],
+      "tags": ["vegetarian"],
+      "allergens": ["milk"]
+    },
+    "parmigiano_reggiano": {
+      "label": "Parmigiano Reggiano",
+      "icon": "queso",
+      "aliases": ["parmigiano", "parmigiano reggiano", "parmesano", "parmigiano-reggiano"],
+      "tags": ["vegetarian"],
+      "allergens": ["milk"]
+    },
+    "pecorino": {
+      "label": "Pecorino",
+      "icon": "queso",
+      "aliases": ["pecorino"],
+      "tags": ["vegetarian"],
+      "allergens": ["milk"]
+    },
+    "provola": {
+      "label": "Provola",
+      "icon": "queso",
+      "aliases": ["provola", "provolone"],
+      "tags": ["vegetarian"],
+      "allergens": ["milk"]
+    },
+    "ricotta": {
+      "label": "Ricotta",
+      "icon": "queso",
+      "aliases": ["ricotta"],
+      "tags": ["vegetarian"],
+      "allergens": ["milk"]
+    },
+    "queso_de_cabra": {
+      "label": "Queso de cabra",
+      "icon": "queso",
+      "aliases": ["queso de cabra", "goat cheese", "chèvre", "chevre"],
+      "tags": ["vegetarian"],
+      "allergens": ["milk"]
+    },
+    "gorgonzola": {
+      "label": "Gorgonzola",
+      "icon": "queso",
+      "aliases": ["gorgonzola"],
+      "tags": ["vegetarian"],
+      "allergens": ["milk"]
+    },
+    "pecorino_trufado": {
+      "label": "Pecorino trufado",
+      "icon": "queso",
+      "aliases": ["pecorino trufado", "pecorino al tartufo"],
+      "tags": ["vegetarian"],
+      "allergens": ["milk"]
+    },
+    "quesos_tagliere": {
+      "label": "Quesos del tagliere",
+      "icon": "queso",
+      "aliases": ["quesos del tagliere", "quesos", "selección de quesos", "tagliere de quesos"],
+      "tags": ["vegetarian"],
+      "allergens": ["milk"]
+    },
+    "romero": {
+      "label": "Romero",
+      "icon": "romero",
+      "aliases": ["romero", "rosemary"],
+      "tags": ["vegetarian", "vegan", "herb"],
+      "allergens": []
+    },
+    "rucula": {
+      "label": "Rúcula",
+      "icon": "rucula",
+      "aliases": ["rúcula", "rucula", "arugula", "rocket"],
+      "tags": ["vegetarian", "vegan", "herb"],
+      "allergens": []
+    },
+    "salamino_piccante": {
+      "label": "Salamino piccante",
+      "icon": "salami",
+      "aliases": ["salamino piccante", "salami picante", "piccante"],
+      "tags": ["pork", "cured_meat"],
+      "allergens": []
+    },
+    "soppressata": {
+      "label": "Soppressata",
+      "icon": "salami",
+      "aliases": ["soppressata"],
+      "tags": ["pork", "cured_meat"],
+      "allergens": []
+    },
+    "salsiccia": {
+      "label": "Salsiccia",
+      "icon": "salchicha",
+      "aliases": ["salsiccia", "salchicha italiana", "italian sausage"],
+      "tags": ["pork"],
+      "allergens": []
+    },
+    "san_marzano_dop": {
+      "label": "Pomodoro San Marzano DOP",
+      "icon": "san_marzano",
+      "aliases": ["san marzano", "pomodoro san marzano", "san-marzano", "san marzano dop"],
+      "tags": ["vegetarian", "vegan"],
+      "allergens": []
+    },
+    "stracciatella": {
+      "label": "Stracciatella",
+      "icon": "stracciatella",
+      "aliases": ["stracciatella", "stracciatella cremosa"],
+      "tags": ["vegetarian"],
+      "allergens": ["milk"]
+    },
+    "tomate_cherry": {
+      "label": "Tomate cherry",
+      "icon": "tomate_cherry",
+      "aliases": ["tomate cherry", "cherry", "cherry tomato", "cherry tomatoes"],
+      "tags": ["vegetarian", "vegan"],
+      "allergens": []
+    },
+    "pomodoro": {
+      "label": "Pomodoro",
+      "icon": "tomate",
+      "aliases": ["pomodoro", "tomate", "tomatoes"],
+      "tags": ["vegetarian", "vegan"],
+      "allergens": []
+    },
+    "salsa_de_tomate": {
+      "label": "Salsa de tomate",
+      "icon": "tomate",
+      "aliases": ["salsa de tomate", "tomato sauce", "sugo", "passata"],
+      "tags": ["vegetarian", "vegan", "sauce"],
+      "allergens": []
+    },
+    "crema_de_trufa": {
+      "label": "Crema de trufa",
+      "icon": "trufa",
+      "aliases": ["trufa", "crema de trufa", "black truffle", "tartufo"],
+      "tags": ["vegetarian", "sauce"],
+      "allergens": []
+    }
+  }
+}

@@ -676,6 +676,20 @@ html.nav--collapsed .navbar__actions .cta-button--nav.btn-liquid-glass:active {
   cursor: pointer;
 }
 
+.preview-overlay__picture {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transform-origin: 50% 50%;
+}
+
 .preview-overlay__image.mas-pedidas-card__image {
   width: auto;
   max-width: 100%;
@@ -698,12 +712,29 @@ html.nav--collapsed .navbar__actions .cta-button--nav.btn-liquid-glass:active {
     0 36px 62px rgba(0, 0, 0, 0.56),
     0 18px 30px rgba(0, 0, 0, 0.44),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  transform-origin: 50% 50%;
+}
+
+.preview-overlay__info-border-overlay {
+  position: absolute;
+  inset: 0;
+  border: 0 solid #143f2b;
+  border-radius: inherit;
+  pointer-events: none;
+  box-sizing: border-box;
+  z-index: 0;
+}
+
+.preview-overlay__info > :not(.preview-overlay__info-border-overlay) {
+  position: relative;
+  z-index: 1;
 }
 
 .preview-overlay__close-icon {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 22px;
+  right: 22px;
   width: 36px;
   height: 36px;
   border: 0;
@@ -715,6 +746,7 @@ html.nav--collapsed .navbar__actions .cta-button--nav.btn-liquid-glass:active {
   display: grid;
   place-items: center;
   cursor: pointer;
+  z-index: 4;
 }
 
 .preview-overlay__rating-row {
@@ -732,8 +764,8 @@ html.nav--collapsed .navbar__actions .cta-button--nav.btn-liquid-glass:active {
 }
 
 .preview-overlay__star {
-  width: 12px;
-  height: 12px;
+  width: 19px;
+  height: 19px;
 }
 
 .preview-overlay__reviews {

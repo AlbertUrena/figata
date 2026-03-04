@@ -21,10 +21,16 @@
   const COVER_OUT_DURATION_MS = 1000;
   const COVER_OUT_MORPH_DURATION_MS = 800;
   const PREVIEW_RISE_DURATION_MS = 1000;
+  const PREVIEW_INFO_SCALE_DURATION_MS = 1450;
+  const PREVIEW_INFO_BORDER_DURATION_MS = 1200;
+  const PREVIEW_INFO_BORDER_DELAY_MS = 250;
+  const PREVIEW_INFO_INITIAL_SCALE = 0.6;
+  const PREVIEW_INFO_INITIAL_BORDER_PX = 100;
   const PAGE_PUSH_DURATION_MS = 1000;
   const PAGE_PUSH_Y_PX = -200;
   const COVER_EXIT_Y_PERCENT = -100.2;
   const COVER_COLOR = "#143f2b";
+  const POWER3_OUT_EASING = "cubic-bezier(0.215, 0.61, 0.355, 1)";
 
   const SVG_WIDTH = 1366;
   const SVG_HEIGHT = 768;
@@ -56,14 +62,23 @@
   const previewMediaStage = document.createElement("section");
   previewMediaStage.className = "preview-overlay__media";
 
+  const previewPicture = document.createElement("figure");
+  previewPicture.className = "preview-overlay__picture app-picture";
+
   const previewImage = document.createElement("img");
   previewImage.className = "preview-overlay__image mas-pedidas-card__image";
   previewImage.alt = "";
   previewImage.loading = "eager";
-  previewMediaStage.appendChild(previewImage);
+
+  previewPicture.appendChild(previewImage);
+  previewMediaStage.appendChild(previewPicture);
 
   const previewInfo = document.createElement("aside");
   previewInfo.className = "preview-overlay__info";
+
+  const previewInfoBorderOverlay = document.createElement("span");
+  previewInfoBorderOverlay.className = "preview-overlay__info-border-overlay picture__border-overlay";
+  previewInfoBorderOverlay.setAttribute("aria-hidden", "true");
 
   const previewCloseIcon = document.createElement("button");
   previewCloseIcon.type = "button";
@@ -137,13 +152,14 @@
   previewActions.appendChild(previewPrimaryCta);
   previewActions.appendChild(previewSecondaryCta);
 
-  previewInfo.appendChild(previewCloseIcon);
+  previewInfo.appendChild(previewInfoBorderOverlay);
   previewInfo.appendChild(previewRatingRow);
   previewInfo.appendChild(previewHeader);
   previewInfo.appendChild(previewDescription);
   previewInfo.appendChild(previewIngredientsSection);
   previewInfo.appendChild(previewActions);
 
+  previewCard.appendChild(previewCloseIcon);
   previewCard.appendChild(previewMediaStage);
   previewCard.appendChild(previewInfo);
 
@@ -166,6 +182,7 @@
 
   const previewTransitionPath = previewTransitionCover.querySelector(".preview-transition-cover__bg");
   const pagePushTarget = document.querySelector("main");
+  let previewInfoAnimations = [];
 
   const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
   const lerp = (from, to, progress) => from + (to - from) * progress;
@@ -283,9 +300,88 @@
     pagePushTarget.style.transform = `translate3d(0, ${formatNumber(offsetY)}px, 0)`;
   };
 
+  const stopPreviewInfoAnimations = () => {
+    if (!previewInfoAnimations.length) {
+      return;
+    }
+
+    previewInfoAnimations.forEach((animation) => {
+      if (!animation) {
+        return;
+      }
+
+      try {
+        animation.cancel();
+      } catch (_) {
+        // no-op
+      }
+    });
+
+    previewInfoAnimations = [];
+  };
+
+  const resetPreviewInfoAnimation = () => {
+    stopPreviewInfoAnimations();
+    previewInfo.style.transform = "";
+    previewInfoBorderOverlay.style.borderColor = COVER_COLOR;
+    previewInfoBorderOverlay.style.borderWidth = "0px";
+    previewInfoBorderOverlay.style.opacity = "1";
+  };
+
+  const playPreviewInfoMorph = () => {
+    if (prefersReducedMotion.matches) {
+      resetPreviewInfoAnimation();
+      return;
+    }
+
+    stopPreviewInfoAnimations();
+
+    previewInfo.style.transform = `scale(${PREVIEW_INFO_INITIAL_SCALE})`;
+    previewInfoBorderOverlay.style.borderColor = COVER_COLOR;
+    previewInfoBorderOverlay.style.borderWidth = `${PREVIEW_INFO_INITIAL_BORDER_PX}px`;
+
+    const infoScaleAnimation = previewInfo.animate(
+      [
+        { transform: `scale(${PREVIEW_INFO_INITIAL_SCALE})` },
+        { transform: "scale(1)" },
+      ],
+      {
+        duration: PREVIEW_INFO_SCALE_DURATION_MS,
+        easing: POWER3_OUT_EASING,
+        fill: "forwards",
+      }
+    );
+
+    const borderAnimation = previewInfoBorderOverlay.animate(
+      [
+        { borderWidth: `${PREVIEW_INFO_INITIAL_BORDER_PX}px` },
+        { borderWidth: "0px" },
+      ],
+      {
+        duration: PREVIEW_INFO_BORDER_DURATION_MS,
+        delay: PREVIEW_INFO_BORDER_DELAY_MS,
+        easing: POWER3_OUT_EASING,
+        fill: "forwards",
+      }
+    );
+
+    previewInfoAnimations = [infoScaleAnimation, borderAnimation];
+
+    Promise.allSettled(previewInfoAnimations.map((animation) => animation.finished)).then(() => {
+      if (!isPreviewOpen) {
+        return;
+      }
+
+      previewInfoAnimations = [];
+      previewInfo.style.transform = "translate3d(0px, 0px, 0px) scale(1, 1)";
+      previewInfoBorderOverlay.style.borderWidth = "0px";
+    });
+  };
+
   const resetPreviewCardAnimation = () => {
     previewCard.style.transform = "";
     previewCard.style.opacity = "";
+    resetPreviewInfoAnimation();
   };
 
   const setPreviewOpen = (nextOpen) => {
@@ -441,6 +537,7 @@
           setPreviewOpen(true);
           previewCard.style.transform = "translate3d(0, 400px, 0)";
           previewCard.style.opacity = "0";
+          playPreviewInfoMorph();
         }
 
         if (previewActivated) {
@@ -448,6 +545,97 @@
           const easedRise = easePreviewRise(riseProgress);
           previewCard.style.transform = `translate3d(0, ${formatNumber(lerp(400, 0, easedRise))}px, 0)`;
           previewCard.style.opacity = String(formatNumber(easedRise));
+        }
+
+        if (elapsed < totalDuration) {
+          coverRafId = window.requestAnimationFrame(tick);
+          return;
+        }
+
+        finish();
+      };
+
+      coverRafId = window.requestAnimationFrame(tick);
+    });
+
+  const playCoverCloseTransition = () =>
+    new Promise((resolve) => {
+      if (coverRafId) {
+        window.cancelAnimationFrame(coverRafId);
+      }
+
+      isCoverTransitionRunning = true;
+      previewTransitionCover.hidden = false;
+      previewTransitionCover.classList.add("is-active");
+      setCoverTransform(100);
+      setCoverPath(buildTopBlobPath(0));
+
+      const transitionStart = window.performance.now();
+      const totalDuration = COVER_IN_DURATION_MS + COVER_HOLD_DURATION_MS + COVER_OUT_DURATION_MS;
+      const coverOutStart = COVER_IN_DURATION_MS + COVER_HOLD_DURATION_MS;
+      const coverOutMorphEnd = coverOutStart + COVER_OUT_MORPH_DURATION_MS;
+      let previewDeactivated = false;
+
+      const finish = () => {
+        coverRafId = 0;
+        previewTransitionCover.classList.remove("is-active");
+        previewTransitionCover.hidden = true;
+        setCoverTransform(COVER_EXIT_Y_PERCENT);
+        setCoverPath(buildTopBlobPath(0));
+        setPagePush(0);
+        setPreviewOpen(false);
+        resetPreviewCardAnimation();
+        isCoverTransitionRunning = false;
+        resolve();
+      };
+
+      const tick = (now) => {
+        const elapsed = now - transitionStart;
+        let coverTranslateY = COVER_EXIT_Y_PERCENT;
+
+        if (elapsed <= COVER_IN_DURATION_MS) {
+          const progress = easeCoverEnter(elapsed / COVER_IN_DURATION_MS);
+          coverTranslateY = lerp(100, 0, progress);
+        } else if (elapsed <= coverOutStart) {
+          coverTranslateY = 0;
+        } else if (elapsed <= totalDuration) {
+          const progress = easeCoverLeave((elapsed - coverOutStart) / COVER_OUT_DURATION_MS);
+          coverTranslateY = lerp(0, COVER_EXIT_Y_PERCENT, progress);
+        }
+
+        setCoverTransform(coverTranslateY);
+
+        if (elapsed <= PAGE_PUSH_DURATION_MS) {
+          const pagePushProgress = easeCoverEnter(elapsed / PAGE_PUSH_DURATION_MS);
+          setPagePush(lerp(PAGE_PUSH_Y_PX, 0, pagePushProgress));
+        } else {
+          setPagePush(0);
+        }
+
+        if (elapsed <= COVER_IN_MORPH_DURATION_MS) {
+          const localProgress = clamp(elapsed / COVER_IN_MORPH_DURATION_MS);
+          const yoyoProgress = localProgress <= 0.5 ? localProgress * 2 : (1 - localProgress) * 2;
+          setCoverPath(buildTopBlobPath(easeCoverEnter(yoyoProgress)));
+        } else if (elapsed >= coverOutStart && elapsed <= coverOutMorphEnd) {
+          const localProgress = clamp((elapsed - coverOutStart) / COVER_OUT_MORPH_DURATION_MS);
+          const yoyoProgress = localProgress <= 0.5 ? localProgress * 2 : (1 - localProgress) * 2;
+          setCoverPath(buildBottomBlobPath(easeCoverLeave(yoyoProgress)));
+        } else {
+          setCoverPath(buildTopBlobPath(0));
+        }
+
+        if (!previewDeactivated) {
+          const pushUpProgress = easeCoverEnter(clamp(elapsed / PAGE_PUSH_DURATION_MS));
+          previewCard.style.transform = `translate3d(0, ${formatNumber(
+            lerp(0, PAGE_PUSH_Y_PX, pushUpProgress)
+          )}px, 0)`;
+          previewCard.style.opacity = "1";
+        }
+
+        if (!previewDeactivated && elapsed >= COVER_IN_DURATION_MS) {
+          previewDeactivated = true;
+          setPreviewOpen(false);
+          resetPreviewCardAnimation();
         }
 
         if (elapsed < totalDuration) {
@@ -473,20 +661,26 @@
       setPreviewOpen(true);
       previewCard.style.transform = "translate3d(0, 0, 0)";
       previewCard.style.opacity = "1";
+      resetPreviewInfoAnimation();
       return;
     }
 
     await playCoverTransition();
   };
 
-  const closePreview = () => {
-    if (isCoverTransitionRunning) {
+  const closePreview = async () => {
+    if (isCoverTransitionRunning || !isPreviewOpen) {
       return;
     }
 
-    setPagePush(0);
-    setPreviewOpen(false);
-    resetPreviewCardAnimation();
+    if (prefersReducedMotion.matches) {
+      setPagePush(0);
+      setPreviewOpen(false);
+      resetPreviewCardAnimation();
+      return;
+    }
+
+    await playCoverCloseTransition();
   };
 
   previewOverlay.addEventListener("click", (event) => {
