@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "schema": "figata.home.v1",
+  "hero": {
+    "title": "Pizza napolitana autentica",
+    "subtitle": "Horneada en horno de lena, con ingredientes seleccionados y maridajes de la casa.",
+    "backgroundImage": "assets/seamless-bg.png",
+    "ctaPrimary": {
+      "label": "Ver menu",
+      "url": "#menu"
+    },
+    "ctaSecondary": {
+      "label": "Reservar",
+      "url": "#reservar"
+    }
+  },
+  "popular": {
+    "title": "Las mas pedidas",
+    "subtitle": "Favoritas de nuestros clientes",
+    "featuredIds": [
+      "margherita",
+      "diavola",
+      "sweet_goat",
+      "figata",
+      "margherita_sbagliata",
+      "vulcano"
+    ],
+    "limit": 8
+  },
+  "eventsPreview": {
+    "enabled": true,
+    "title": "Eventos en Figata",
+    "subtitle": "Llevamos el sabor de Figata a cada ocasion, dentro o fuera de nuestra casa.",
+    "eventIds": [
+      "celebraciones_in_house",
+      "pizza_party_domicilio",
+      "noches_especiales"
+    ],
+    "limit": 3,
+    "items": [
+      {
+        "id": "celebraciones_in_house",
+        "title": "Celebraciones In-House",
+        "subtitle": "Celebra tu evento en nuestro local",
+        "video": "/videos/tab0.mp4"
+      },
+      {
+        "id": "pizza_party_domicilio",
+        "title": "Pizza Party a Domicilio",
+        "subtitle": "Experiencia Figata donde estes",
+        "video": "/videos/tab1.mp4"
+      },
+      {
+        "id": "noches_especiales",
+        "title": "Noches Especiales",
+        "subtitle": "Catas y eventos privados en Figata",
+        "video": "/videos/tab2.mp4"
+      }
+    ]
+  },
+  "delivery": {
+    "title": "Pide desde casa",
+    "subtitle": "Pide por nuestras plataformas oficiales y recibe la pizza recien horneada donde estes, o para llevar.",
+    "links": {
+      "pedidosya": "",
+      "ubereats": "",
+      "takeout": "/menu",
+      "whatsapp": "https://wa.me/18090000000"
+    }
+  },
+  "reservation": {
+    "enabled": true,
+    "title": "Reserva tu mesa",
+    "url": "#reservar",
+    "ctaLabel": "Reservar ahora"
+  },
+  "announcements": {
+    "enabled": false,
+    "message": "",
+    "type": "highlight",
+    "link": ""
+  },
+  "sections": {
+    "hero": true,
+    "popular": true,
+    "events": true,
+    "delivery": true,
+    "reservation": true,
+    "announcements": true
+  }
+}

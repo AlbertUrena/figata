@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Figata Pizza & Wine - Pizzas napoletanas al horno de leña, vino y una experiencia premium.">
+  <meta id="meta-description" name="description" content="Figata Pizza & Wine - Pizzas napoletanas al horno de leña, vino y una experiencia premium.">
   <title>Figata Pizza & Wine</title>
+  <script id="restaurant-jsonld" type="application/ld+json"></script>
   <link rel="icon" type="image/png" href="assets/favicon.png">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -63,7 +64,7 @@
         </ul>
 
         <div class="navbar__actions">
-          <a class="cta-button btn-liquid-glass cta-button--nav" href="#reservar">
+          <a class="cta-button btn-liquid-glass cta-button--nav" href="#reservar" data-home-reservation-cta>
             <span>Reservar</span>
             <img src="assets/whatsapp.svg" alt="" aria-hidden="true">
           </a>
@@ -76,7 +77,7 @@
     <div class="top-bg">
       <section class="hero" id="inicio" aria-labelledby="hero-title">
         <div class="hero__content">
-          <a class="cta-button btn-liquid-glass cta-button--eyebrow hero__eyebrow" href="#menu">
+          <a class="cta-button btn-liquid-glass cta-button--eyebrow hero__eyebrow" href="#menu" data-home-hero-secondary>
             <span>Nuestra selecci&oacute;n de maridajes</span>
             <img src="assets/arrow-icon.svg" alt="" aria-hidden="true">
           </a>
@@ -86,14 +87,23 @@
             de las pizzas
           </h1>
 
-          <p class="hero__subtitle">
+          <p class="hero__subtitle" data-home-hero-subtitle>
             Pizzas napoletanas al horno de le&ntilde;a, con masa madre centenaria
             y una carta curada de vinos y cervezas italianas.
           </p>
 
-          <a class="cta-button btn-liquid-glass cta-button--hero" href="#menu">
+          <a class="cta-button btn-liquid-glass cta-button--hero" href="#menu" data-home-hero-primary>
             <span>Men&uacute;</span>
             <img src="assets/menu-icon.svg" alt="" aria-hidden="true">
+          </a>
+        </div>
+      </section>
+
+      <section id="home-announcement" class="home-announcement" aria-label="Anuncios del home" hidden>
+        <div class="home-announcement__inner">
+          <a class="home-announcement__link" href="#">
+            <span class="home-announcement__badge">Aviso</span>
+            <span class="home-announcement__message"></span>
           </a>
         </div>
       </section>
@@ -102,6 +112,7 @@
         <div class="mas-pedidas__container">
           <div class="mas-pedidas__header">
             <p class="mas-pedidas__headline">Intentamos no tener favoritos, pero...</p>
+            <p class="mas-pedidas__subtitle">Favoritas de nuestros clientes</p>
             <a class="mas-pedidas__link" href="#" aria-disabled="true">Ver todos</a>
           </div>
 
@@ -118,6 +129,7 @@
             <div class="mas-pedidas-card__body">
               <h3 class="mas-pedidas-card__title"></h3>
               <p class="mas-pedidas-card__description"></p>
+              <p class="mas-pedidas-card__availability-badge" hidden>No disponible</p>
             </div>
 
             <div class="mas-pedidas-card__footer">
@@ -137,17 +149,23 @@
         <div class="delivery-card">
           <div class="delivery-left">
             <p class="delivery-eyebrow">&mdash; Delivery &amp; Takeout &mdash;</p>
-            <h2 class="delivery-title">Figata en tu casa</h2>
-            <p class="delivery-subtitle">
+            <h2 class="delivery-title" data-home-delivery-title>Figata en tu casa</h2>
+            <p class="delivery-subtitle" data-home-delivery-subtitle>
               Pide por nuestras plataformas oficiales y recibe la pizza reci&eacute;n horneada donde est&eacute;s, o para llevar.
             </p>
 
             <div class="delivery-actions" role="group" aria-label="Plataformas de delivery">
-              <a class="delivery-action" href="#" aria-label="Pedir por PedidosYa">
+              <a class="delivery-action" href="#" aria-label="Pedir por PedidosYa" data-delivery-link="pedidosya">
                 <img src="assets/pedidosya.svg" alt="PedidosYa">
               </a>
-              <a class="delivery-action" href="#" aria-label="Pedir por Uber Eats">
+              <a class="delivery-action" href="#" aria-label="Pedir por Uber Eats" data-delivery-link="ubereats">
                 <img class="delivery-action-uber-eats" src="assets/uber-eats.svg" alt="Uber Eats">
+              </a>
+              <a class="delivery-action delivery-action--text" href="#" aria-label="Pedir para Takeout" data-delivery-link="takeout">
+                <span>Takeout</span>
+              </a>
+              <a class="delivery-action delivery-action--text" href="#" aria-label="Pedir por WhatsApp" data-delivery-link="whatsapp">
+                <span>WhatsApp</span>
               </a>
             </div>
 
@@ -259,11 +277,11 @@
       <div class="testimonials-shell">
         <div class="testimonials-container">
           <div class="testimonials-header">
-            <h2>
+            <h2 data-home-events-title>
               Donde cada ocasi&oacute;n
               <span>se convierte en experiencia</span>
             </h2>
-            <p>Llevamos el sabor de Figata a cada ocasi&oacute;n, dentro o fuera de nuestra casa.</p>
+            <p data-home-events-subtitle>Llevamos el sabor de Figata a cada ocasi&oacute;n, dentro o fuera de nuestra casa.</p>
           </div>
         </div>
       </div>
@@ -277,7 +295,7 @@
           </div>
 
           <div class="events-tab-container" data-index="0">
-            <div class="events-tab" role="tab" tabindex="-1" aria-selected="false" data-tab="0">
+            <div class="events-tab" role="tab" tabindex="0" aria-selected="true" data-tab="0" data-video="/videos/tab0.mp4">
               <div class="events-tab-icon" aria-hidden="true">
                 <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 -960 960 960" fill="currentColor" focusable="false" aria-hidden="true">
                   <path d="m80-80 200-560 360 360L80-80Zm132-132 282-100-182-182-100 282Zm370-246-42-42 224-224q32-32 77-32t77 32l24 24-42 42-24-24q-14-14-35-14t-35 14L582-458ZM422-618l-42-42 24-24q14-14 14-34t-14-34l-26-26 42-42 26 26q32 32 32 76t-32 76l-24 24Zm80 80-42-42 144-144q14-14 14-35t-14-35l-64-64 42-42 64 64q32 32 32 77t-32 77L502-538Zm160 160-42-42 64-64q32-32 77-32t77 32l64 64-42 42-64-64q-14-14-35-14t-35 14l-64 64ZM212-212Z"></path>
@@ -291,7 +309,7 @@
           </div>
 
           <div class="events-tab-container" data-index="1">
-            <div class="events-tab" role="tab" tabindex="0" aria-selected="true" data-tab="1">
+            <div class="events-tab" role="tab" tabindex="-1" aria-selected="false" data-tab="1" data-video="/videos/tab1.mp4">
               <div class="events-tab-icon" aria-hidden="true">
                 <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 -960 960 960" fill="currentColor" focusable="false" aria-hidden="true">
                   <path d="M195-195q-35-35-35-85H60l18-80h113q17-19 40-29.5t49-10.5q26 0 49 10.5t40 29.5h167l84-360H182l4-17q6-28 27.5-45.5T264-800h456l-37 160h117l120 160-40 200h-80q0 50-35 85t-85 35q-50 0-85-35t-35-85H400q0 50-35 85t-85 35q-50 0-85-35Zm442-245h193l4-21-74-99h-95l-28 120Zm-19-273 2-7-84 360 2-7 34-146 46-200ZM20-427l20-80h220l-20 80H20Zm80-146 20-80h260l-20 80H100Zm180 333q17 0 28.5-11.5T320-280q0-17-11.5-28.5T280-320q-17 0-28.5 11.5T240-280q0 17 11.5 28.5T280-240Zm400 0q17 0 28.5-11.5T720-280q0-17-11.5-28.5T680-320q-17 0-28.5 11.5T640-280q0 17 11.5 28.5T680-240Z"></path>
@@ -305,7 +323,7 @@
           </div>
 
           <div class="events-tab-container" data-index="2">
-            <div class="events-tab" role="tab" tabindex="-1" aria-selected="false" data-tab="2">
+            <div class="events-tab" role="tab" tabindex="-1" aria-selected="false" data-tab="2" data-video="/videos/tab2.mp4">
               <div class="events-tab-icon" aria-hidden="true">
                 <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 -960 960 960" fill="currentColor" focusable="false" aria-hidden="true">
                   <path d="M400-80v-80h520v80H400Zm40-120q0-81 51-141.5T620-416v-25q0-17 11.5-28.5T660-481q17 0 28.5 11.5T700-441v25q77 14 128.5 74.5T880-200H440Zm105-81h228q-19-27-48.5-43.5T660-341q-36 0-66 16.5T545-281Zm114 0ZM40-440v-440h240v58l280-78 320 100v40q0 50-35 85t-85 35h-80v24q0 25-14.5 45.5T628-541L358-440H40Zm80-80h80v-280h-80v280Zm160 0h64l232-85q11-4 17.5-13.5T600-640h-71l-117 38-24-76 125-42h247q9 0 22.5-6.5T796-742l-238-74-278 76v220Z"></path>
@@ -353,10 +371,10 @@
             <div class="footer-banner-overlay">
               <p class="footer-banner-eyebrow">Encuentra nuestro local</p>
               <p class="footer-banner-title">Estamos ubicados en</p>
-              <p class="footer-banner-address">
+              <p class="footer-banner-address" data-restaurant-address>
                 Calle Costa Rica No. 142, Urbanización Alma Rosa 1, en el municipio de Santo Domingo Este, República Dominicana.
               </p>
-              <a class="footer-banner-cta" href="#ubicacion">
+              <a class="footer-banner-cta" href="#ubicacion" data-restaurant-maps-link>
                 <span class="footer-banner-cta-label">Cómo llegar</span>
                 <img class="footer-banner-cta-icon" src="assets/open-link-icon.svg" alt="" aria-hidden="true">
               </a>
@@ -395,26 +413,28 @@
               <div class="footer-col footer-col--socials">
                 <p class="footer-col-title">Socials</p>
                 <ul class="footer-links">
-                  <li><a class="footer-social-link footer-social-link--instagram" href="#" target="_blank" rel="noopener"><span>Instagram</span><img class="footer-link-icon" src="assets/open-link-icon.svg" alt="" aria-hidden="true"></a></li>
-                  <li><a class="footer-social-link footer-social-link--tiktok" href="#" target="_blank" rel="noopener"><span>TikTok</span><img class="footer-link-icon" src="assets/open-link-icon.svg" alt="" aria-hidden="true"></a></li>
-                  <li><a class="footer-social-link footer-social-link--tripadvisor" href="#" target="_blank" rel="noopener"><span>Trip Advisor</span><img class="footer-link-icon" src="assets/open-link-icon.svg" alt="" aria-hidden="true"></a></li>
+                  <li><a class="footer-social-link footer-social-link--instagram" data-restaurant-social-link="instagram" href="#" target="_blank" rel="noopener"><span>Instagram</span><img class="footer-link-icon" src="assets/open-link-icon.svg" alt="" aria-hidden="true"></a></li>
+                  <li><a class="footer-social-link footer-social-link--tiktok" data-restaurant-social-link="tiktok" href="#" target="_blank" rel="noopener"><span>TikTok</span><img class="footer-link-icon" src="assets/open-link-icon.svg" alt="" aria-hidden="true"></a></li>
+                  <li><a class="footer-social-link footer-social-link--tripadvisor" data-restaurant-social-link="tripadvisor" href="#" target="_blank" rel="noopener"><span>Trip Advisor</span><img class="footer-link-icon" src="assets/open-link-icon.svg" alt="" aria-hidden="true"></a></li>
                 </ul>
               </div>
 
               <!-- Contáctanos (estilo “Newsletter” de SquareUI) -->
               <div class="footer-newsletter">
                 <p class="footer-col-title">Contáctanos</p>
-                <p class="footer-muted footer-newsletter-copy">
+                <p class="footer-muted footer-newsletter-copy" data-restaurant-contact-copy>
                   ¿Tienes una pregunta? Escríbenos a nuestro WhatsApp
                 </p>
+                <p class="footer-muted footer-newsletter-copy" data-restaurant-hours></p>
 
-                <form class="footer-form" action="#" method="post">
+                <form class="footer-form" data-restaurant-contact-form action="#" method="post">
                   <img class="footer-form-icon" src="assets/hash.svg" alt="" aria-hidden="true">
                   <input class="footer-input" type="text" placeholder="Escribe tu pregunta..." />
                   <button class="footer-submit" type="submit" aria-label="Enviar">
                     <img class="footer-submit-icon" src="assets/right-arrow.svg" alt="" aria-hidden="true">
                   </button>
                 </form>
+                <ul class="footer-links" data-restaurant-contact-links hidden></ul>
               </div>
 
             </div>
@@ -424,7 +444,7 @@
               <div class="footer-copy">
                 <span>© 2026</span>
                 <span class="footer-dot">·</span>
-                <span>Figata Pizza &amp; Wine</span>
+                <span data-restaurant-brand>Figata Pizza &amp; Wine</span>
                 <span class="footer-dot">·</span>
                 <span class="footer-muted">Todos los derechos reservados</span>
               </div>
@@ -434,7 +454,7 @@
                 <strong>La Frame</strong>
 
                 <div class="footer-icons">
-                  <a href="#" aria-label="Instagram" class="footer-icon-trigger footer-icon-trigger--instagram">
+                  <a href="#" aria-label="Instagram" data-restaurant-social-icon="instagram" class="footer-icon-trigger footer-icon-trigger--instagram">
                     <svg class="footer-social-icon footer-social-icon--instagram" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
                       <defs>
                         <linearGradient id="footer-instagram-gradient" x1="0" y1="32" x2="32" y2="0" gradientUnits="userSpaceOnUse">
@@ -464,11 +484,11 @@
                       </g>
                     </svg>
                   </a>
-                  <a href="#" aria-label="TikTok" class="footer-icon-trigger footer-icon-trigger--tiktok footer-icon-swap footer-icon-swap--tiktok">
+                  <a href="#" aria-label="TikTok" data-restaurant-social-icon="tiktok" class="footer-icon-trigger footer-icon-trigger--tiktok footer-icon-swap footer-icon-swap--tiktok">
                     <img class="footer-icon-swap__img footer-icon-swap__img--default" src="assets/tiktok.svg" alt="" aria-hidden="true">
                     <img class="footer-icon-swap__img footer-icon-swap__img--hover" src="assets/tiktok-hover.svg" alt="" aria-hidden="true">
                   </a>
-                  <a href="#" aria-label="TripAdvisor" class="footer-icon-trigger footer-icon-trigger--tripadvisor">
+                  <a href="#" aria-label="TripAdvisor" data-restaurant-social-icon="tripadvisor" class="footer-icon-trigger footer-icon-trigger--tripadvisor">
                     <svg class="footer-social-icon footer-social-icon--tripadvisor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                       <path d="M8.311 10.278a2.496 2.496 0 1 0 0 4.992 2.496 2.496 0 0 0 0-4.992zm1.309 2.497a1.309 1.309 0 1 1-1.309-1.309c.723 0 1.309.586 1.309 1.309zm6.069-2.497a2.496 2.496 0 1 0 2.496 2.496 2.497 2.497 0 0 0-2.496-2.496zm1.308 2.497a1.309 1.309 0 1 1-1.309-1.309c.724 0 1.309.586 1.309 1.309z"></path>
                       <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm3.689 14.464a3.678 3.678 0 0 1-2.506-.982l-1.182 1.286-1.183-1.287-.006.006a3.69 3.69 0 0 1-4.986-5.439L4.618 8.735h2.683a8.36 8.36 0 0 1 9.406 0h2.676l-1.207 1.313a3.69 3.69 0 0 1-2.487 6.416z"></path>
@@ -509,12 +529,17 @@
     </div>
   </div>
   <script src="js/navbar-collapse.js" defer></script>
+  <script src="src/data/media.js" defer></script>
   <script src="src/data/menu.js" defer></script>
+  <script src="src/data/home.js" defer></script>
+  <script src="src/data/restaurant.js" defer></script>
   <script src="src/data/ingredients.js" defer></script>
   <script src="src/ui/ingredient-icon-row.js" defer></script>
+  <script src="js/home-config.js" defer></script>
+  <script src="js/restaurant-config.js" defer></script>
   <script src="js/mas-pedidas.js" defer></script>
   <script src="js/testimonials.js" defer></script>
-  <script src="js/events-tabs.js?v=2" defer></script>
+  <script src="js/events-tabs.js?v=3" defer></script>
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   <script>
     if (window.netlifyIdentity) {

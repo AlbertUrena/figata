@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "schema": "figata.restaurant.v1",
+  "updatedAt": "2026-03-04T08:00:00.000Z",
+  "updatedBy": "codex",
+  "name": "Figata Pizza & Wine",
+  "brand": "Figata",
+  "tagline": "Autentica pizza napolitana con maridajes de vino",
+  "currency": "DOP",
+  "phone": "+1 809-000-0000",
+  "whatsapp": "https://wa.me/18090000000",
+  "reservationUrl": "#reservar",
+  "googleMapsUrl": "https://maps.google.com/?q=Calle+Costa+Rica+142%2C+Alma+Rosa+1%2C+Santo+Domingo+Este",
+  "address": {
+    "line1": "Calle Costa Rica No. 142",
+    "line2": "Urbanizacion Alma Rosa 1",
+    "city": "Santo Domingo Este",
+    "area": "Ensanche Ozama",
+    "country": "DO",
+    "postalCode": "11506"
+  },
+  "openingHours": {
+    "mon": null,
+    "tue": "12:00-22:00",
+    "wed": "12:00-22:00",
+    "thu": "12:00-22:00",
+    "fri": "12:00-23:00",
+    "sat": "12:00-23:00",
+    "sun": "12:00-22:00"
+  },
+  "openingHoursExceptions": [],
+  "social": {
+    "instagram": "https://instagram.com/figata.rd",
+    "tiktok": "https://tiktok.com/@figata.rd",
+    "tripadvisor": ""
+  },
+  "seo": {
+    "title": "Figata Pizza & Wine",
+    "description": "Pizzas napolitanas al horno de lena, vino y una experiencia premium en Santo Domingo Este.",
+    "url": "/",
+    "image": "assets/location.png"
+  }
+}

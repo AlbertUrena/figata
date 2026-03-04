@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "schema": "figata.media.variants.v1",
+  "variants": {
+    "card": {
+      "aspectRatio": "4/3",
+      "maxWidth": 900,
+      "recommendedFormat": "webp",
+      "description": "Imagen para cards y grillas"
+    },
+    "modal": {
+      "aspectRatio": "1/1",
+      "maxWidth": 1800,
+      "recommendedFormat": "webp",
+      "description": "Imagen hero del preview de detalles"
+    },
+    "hover": {
+      "aspectRatio": "4/3",
+      "maxWidth": 900,
+      "recommendedFormat": "webp",
+      "description": "Variante opcional para hover"
+    },
+    "gallery": {
+      "aspectRatio": "4/3",
+      "maxWidth": 1800,
+      "recommendedFormat": "webp",
+      "description": "Imagenes adicionales para carousel futuro"
+    }
+  }
+}

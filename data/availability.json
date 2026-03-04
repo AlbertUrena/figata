@@ -1,0 +1,224 @@
+{
+  "version": 1,
+  "schema": "figata.menu.availability.v1",
+  "settings": {
+    "hideUnavailableItems": false
+  },
+  "items": [
+    {
+      "itemId": "aceite_evoo_aromatizado",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "bellezza",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "berenjenas_parmesana",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "boscaiola",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "bruschetta_classica",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "burrata_fresca_producto",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "burrata_prosciutto",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "cacio_pepe",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "calzone",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "carpaccio_bresaola",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "corazon_burrata",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "delicia_coco",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "diavola",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "fantasia_pistachos",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "figata",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "filetti",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "focaccia_parmigiano",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "focaccia_rellena",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "helado_artesanal",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "insalata_caprese",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "macellaio",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "mamma",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "margherita",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "margherita_fume",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "margherita_sbagliata",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "marinara",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "mermelada_della_mamma",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "pan_ciabatta",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "parmesana",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "passione_del_sud",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "pesto_artesanal",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "pizza_nutella",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "prosciutto_rucula",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "puta",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "quattro_formaggi_truffle",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "salsiccia_vino_miele",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "soppressata",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "sweet_goat",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "tagliere_misto",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "tartufo_affogato",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "tiramisu",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "tonno",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "vulcano",
+      "available": true,
+      "soldOutReason": ""
+    }
+  ]
+}

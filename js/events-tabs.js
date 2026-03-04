@@ -2,60 +2,79 @@
   const PILL_MS = 390;
   const EASE = createBezierEasing(0.45, 0, 0.55, 1);
 
-  const root = document.querySelector("#eventos-tabs .events-tabs[role='tablist']");
-  if (!root) return;
+  const root = document.querySelector('#eventos-tabs .events-tabs[role="tablist"]');
+  if (!root) {
+    return;
+  }
 
-  const rail = root.querySelector(".events-tabs-rail");
-  const pill = root.querySelector(".events-tabs-pill");
-  const tabs = Array.from(root.querySelectorAll(".events-tab[role='tab']"));
+  const rail = root.querySelector('.events-tabs-rail');
+  const pill = root.querySelector('.events-tabs-pill');
+  const video = document.querySelector('#eventos-tabs .events-card-video');
 
-  if (!rail || !pill || tabs.length !== 3) return;
+  if (!rail || !pill) {
+    return;
+  }
 
-  let activeIndex = tabs.findIndex((tab) => tab.getAttribute("aria-selected") === "true");
-  if (activeIndex < 0) activeIndex = 0;
+  const tabs = Array.from(root.querySelectorAll('.events-tab[role="tab"]')).filter((tab) => {
+    const container = tab.closest('.events-tab-container');
+    return !tab.hidden && (!container || !container.hidden);
+  });
+
+  if (tabs.length === 0) {
+    return;
+  }
+
+  root.style.setProperty('--events-tab-count', String(tabs.length));
+  syncRailSpacers(tabs.length);
+
+  let activeIndex = tabs.findIndex((tab) => tab.getAttribute('aria-selected') === 'true');
+  if (activeIndex < 0) {
+    activeIndex = 0;
+  }
+
   let currentX = getTargetX(activeIndex);
   let animationFrameId = 0;
 
-  tabs.forEach((tab) => {
-    tab.addEventListener("click", () => {
-      activateTab(resolveIndex(tab), { animate: true });
+  tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => {
+      activateTab(index, { animate: true });
     });
 
-    tab.addEventListener("keydown", (event) => {
-      if (event.key === "ArrowRight") {
+    tab.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight') {
         event.preventDefault();
         const nextIndex = (activeIndex + 1) % tabs.length;
         activateTab(nextIndex, { animate: true, focus: true });
         return;
       }
 
-      if (event.key === "ArrowLeft") {
+      if (event.key === 'ArrowLeft') {
         event.preventDefault();
         const nextIndex = (activeIndex - 1 + tabs.length) % tabs.length;
         activateTab(nextIndex, { animate: true, focus: true });
         return;
       }
 
-      if (event.key === "Home") {
+      if (event.key === 'Home') {
         event.preventDefault();
         activateTab(0, { animate: true, focus: true });
         return;
       }
 
-      if (event.key === "End") {
+      if (event.key === 'End') {
         event.preventDefault();
         activateTab(tabs.length - 1, { animate: true, focus: true });
         return;
       }
 
-      if (event.key === "Enter" || event.key === " ") {
+      if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        activateTab(resolveIndex(tab), { animate: true });
+        activateTab(index, { animate: true });
       }
     });
   });
 
-  window.addEventListener("resize", () => {
+  window.addEventListener('resize', () => {
     setPillPosition(activeIndex, true);
   });
 
@@ -67,9 +86,10 @@
 
     tabs.forEach((tab, tabIndex) => {
       const isActive = tabIndex === nextIndex;
-      tab.setAttribute("aria-selected", isActive ? "true" : "false");
-      tab.setAttribute("tabindex", isActive ? "0" : "-1");
-      tab.classList.toggle("is-active", isActive);
+      tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      tab.setAttribute('tabindex', isActive ? '0' : '-1');
+      tab.classList.toggle('is-active', isActive);
+      tab.setAttribute('data-tab', String(tabIndex));
     });
 
     if (animate) {
@@ -79,6 +99,7 @@
     }
 
     activeIndex = nextIndex;
+    syncVideoForTab(tabs[nextIndex]);
 
     if (focus) {
       tabs[nextIndex].focus();
@@ -133,6 +154,7 @@
       cancelAnimationFrame(animationFrameId);
       animationFrameId = 0;
     }
+
     const targetX = getTargetX(index);
     currentX = targetX;
     pill.style.transform = `translateX(${targetX}px)`;
@@ -140,20 +162,65 @@
 
   function getTargetX(index) {
     const width = rail.getBoundingClientRect().width;
-    const tabWidth = width / 3;
+    const tabWidth = tabs.length > 0 ? width / tabs.length : width;
     return tabWidth * index;
   }
 
-  function resolveIndex(tab) {
-    const raw = Number(tab.getAttribute("data-tab"));
-    if (Number.isFinite(raw)) return clampIndex(raw);
-    return clampIndex(tabs.indexOf(tab));
+  function clampIndex(index) {
+    if (index < 0) {
+      return 0;
+    }
+
+    if (index > tabs.length - 1) {
+      return tabs.length - 1;
+    }
+
+    return index;
   }
 
-  function clampIndex(index) {
-    if (index < 0) return 0;
-    if (index > tabs.length - 1) return tabs.length - 1;
-    return index;
+  function syncRailSpacers(tabCount) {
+    const spacers = Array.from(rail.querySelectorAll('.events-tabs-spacer'));
+    spacers.forEach((spacer) => spacer.remove());
+
+    for (let index = 1; index < tabCount; index += 1) {
+      const spacer = document.createElement('div');
+      spacer.className = 'events-tabs-spacer';
+      spacer.style.left = `calc((100% / ${tabCount}) * ${index})`;
+      rail.appendChild(spacer);
+    }
+  }
+
+  function syncVideoForTab(tab) {
+    if (!video || !tab) {
+      return;
+    }
+
+    const source = (tab.getAttribute('data-video') || '').trim();
+
+    if (!source) {
+      video.pause();
+      video.removeAttribute('src');
+      video.hidden = true;
+      video.load();
+      return;
+    }
+
+    const currentSource = video.getAttribute('src') || '';
+
+    if (currentSource !== source) {
+      video.setAttribute('src', source);
+      video.load();
+    }
+
+    video.hidden = false;
+
+    if (typeof video.play === 'function') {
+      const playPromise = video.play();
+
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {});
+      }
+    }
   }
 
   function createBezierEasing(mX1, mY1, mX2, mY2) {
@@ -207,7 +274,10 @@
           a = currentT;
         }
         i += 1;
-      } while (Math.abs(currentX) > SUBDIVISION_PRECISION && i < SUBDIVISION_MAX_ITERATIONS);
+      } while (
+        Math.abs(currentX) > SUBDIVISION_PRECISION &&
+        i < SUBDIVISION_MAX_ITERATIONS
+      );
 
       return currentT;
     }
@@ -216,7 +286,9 @@
       let t = guessT;
       for (let i = 0; i < NEWTON_ITERATIONS; i += 1) {
         const slope = getSlope(t, mX1, mX2);
-        if (slope === 0) return t;
+        if (slope === 0) {
+          return t;
+        }
         const currentX = calcBezier(t, mX1, mX2) - x;
         t -= currentX / slope;
       }
@@ -235,7 +307,9 @@
 
       currentSample -= 1;
 
-      const dist = (x - samples[currentSample]) / (samples[currentSample + 1] - samples[currentSample]);
+      const dist =
+        (x - samples[currentSample]) /
+        (samples[currentSample + 1] - samples[currentSample]);
       const guessT = intervalStart + dist * SAMPLE_STEP;
       const slope = getSlope(guessT, mX1, mX2);
 
@@ -251,8 +325,14 @@
     }
 
     return (x) => {
-      if (x <= 0) return 0;
-      if (x >= 1) return 1;
+      if (x <= 0) {
+        return 0;
+      }
+
+      if (x >= 1) {
+        return 1;
+      }
+
       return calcBezier(getTForX(x), mY1, mY2);
     };
   }

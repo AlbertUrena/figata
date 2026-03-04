@@ -1,0 +1,402 @@
+{
+  "version": 1,
+  "schema": "figata.media.v1",
+  "updatedAt": "2026-03-04T07:08:00.306Z",
+  "updatedBy": "codex",
+  "notes": "Mapa oficial de media por item. Si una variante falta, el frontend aplica fallback controlado.",
+  "items": {
+    "berenjenas_parmesana": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Berenjenas a la Parmesana",
+      "dominantColor": "",
+      "version": 1
+    },
+    "focaccia_parmigiano": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Focaccia al horno con Parmigiano",
+      "dominantColor": "",
+      "version": 1
+    },
+    "bruschetta_classica": {
+      "card": "assets/bruschetta.png",
+      "hover": "assets/bruschetta-hover.png",
+      "modal": "assets/bruschetta.png",
+      "gallery": [],
+      "alt": "Bruschetta Classica",
+      "dominantColor": "",
+      "version": 1
+    },
+    "insalata_caprese": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Insalata Caprese",
+      "dominantColor": "",
+      "version": 1
+    },
+    "carpaccio_bresaola": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Carpaccio di Bresaola",
+      "dominantColor": "",
+      "version": 1
+    },
+    "salsiccia_vino_miele": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Salsiccia vino e miele",
+      "dominantColor": "",
+      "version": 1
+    },
+    "burrata_prosciutto": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Burrata con Prosciutto",
+      "dominantColor": "",
+      "version": 1
+    },
+    "tagliere_misto": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Tagliere Misto",
+      "dominantColor": "",
+      "version": 1
+    },
+    "focaccia_rellena": {
+      "card": "assets/schiacciata-sandwich.png",
+      "hover": "assets/schiacciata-sandwich-hover.png",
+      "modal": "assets/schiacciata-sandwich.png",
+      "gallery": [],
+      "alt": "Focaccia rellena",
+      "dominantColor": "",
+      "version": 1
+    },
+    "margherita": {
+      "card": "assets/margherita.png",
+      "hover": "assets/margherita-hover.png",
+      "modal": "assets/margherita.png",
+      "gallery": [],
+      "alt": "Margherita",
+      "dominantColor": "",
+      "version": 1
+    },
+    "marinara": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Marinara",
+      "dominantColor": "",
+      "version": 1
+    },
+    "cacio_pepe": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Cacio e Pepe",
+      "dominantColor": "",
+      "version": 1
+    },
+    "margherita_fume": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Margherita Fumé",
+      "dominantColor": "",
+      "version": 1
+    },
+    "diavola": {
+      "card": "assets/diavola.png",
+      "hover": "assets/diavola-hover.png",
+      "modal": "assets/diavola.png",
+      "gallery": [],
+      "alt": "Diavola",
+      "dominantColor": "",
+      "version": 1
+    },
+    "filetti": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Filetti",
+      "dominantColor": "",
+      "version": 1
+    },
+    "sweet_goat": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Sweet Goat",
+      "dominantColor": "",
+      "version": 1
+    },
+    "mamma": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Mamma",
+      "dominantColor": "",
+      "version": 1
+    },
+    "tonno": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Tonno",
+      "dominantColor": "",
+      "version": 1
+    },
+    "puta": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Puta",
+      "dominantColor": "",
+      "version": 1
+    },
+    "figata": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Figata",
+      "dominantColor": "",
+      "version": 1
+    },
+    "margherita_sbagliata": {
+      "card": "assets/margherita-sbagliata.png",
+      "hover": "assets/margherita-sbagliata-hover.png",
+      "modal": "assets/margherita-sbagliata.png",
+      "gallery": [],
+      "alt": "Margherita Sbagliata",
+      "dominantColor": "",
+      "version": 1
+    },
+    "macellaio": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Macellaio",
+      "dominantColor": "",
+      "version": 1
+    },
+    "quattro_formaggi_truffle": {
+      "card": "assets/quattroformaggi.png",
+      "hover": "assets/quattroformaggi-hover.png",
+      "modal": "assets/quattroformaggi.png",
+      "gallery": [],
+      "alt": "Quattro Formaggi y Black Truffle",
+      "dominantColor": "",
+      "version": 1
+    },
+    "boscaiola": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Boscaiola",
+      "dominantColor": "",
+      "version": 1
+    },
+    "calzone": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Calzone",
+      "dominantColor": "",
+      "version": 1
+    },
+    "corazon_burrata": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Corazón de Burrata",
+      "dominantColor": "",
+      "version": 1
+    },
+    "fantasia_pistachos": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Fantasia de Pistachos",
+      "dominantColor": "",
+      "version": 1
+    },
+    "vulcano": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Vulcano",
+      "dominantColor": "",
+      "version": 1
+    },
+    "bellezza": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Bellezza",
+      "dominantColor": "",
+      "version": 1
+    },
+    "passione_del_sud": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Passione del Sud",
+      "dominantColor": "",
+      "version": 1
+    },
+    "soppressata": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Soppressata",
+      "dominantColor": "",
+      "version": 1
+    },
+    "parmesana": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Parmesana",
+      "dominantColor": "",
+      "version": 1
+    },
+    "prosciutto_rucula": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Prosciutto y Rúcula",
+      "dominantColor": "",
+      "version": 1
+    },
+    "pizza_nutella": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Pizza de Nutella",
+      "dominantColor": "",
+      "version": 1
+    },
+    "tiramisu": {
+      "card": "assets/tiramisu.png",
+      "hover": "assets/tiramisu-hover.png",
+      "modal": "assets/tiramisu.png",
+      "gallery": [],
+      "alt": "Tiramisú artesanal",
+      "dominantColor": "",
+      "version": 1
+    },
+    "helado_artesanal": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Helado artesanal",
+      "dominantColor": "",
+      "version": 1
+    },
+    "delicia_coco": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Delicia de coco",
+      "dominantColor": "",
+      "version": 1
+    },
+    "tartufo_affogato": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Tartufo affogato",
+      "dominantColor": "",
+      "version": 1
+    },
+    "mermelada_della_mamma": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Mermelada della Mamma",
+      "dominantColor": "",
+      "version": 1
+    },
+    "burrata_fresca_producto": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Burrata fresca",
+      "dominantColor": "",
+      "version": 1
+    },
+    "aceite_evoo_aromatizado": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Aceite EVOO aromatizado",
+      "dominantColor": "",
+      "version": 1
+    },
+    "pesto_artesanal": {
+      "card": "assets/menu/placeholders/card.svg",
+      "hover": "",
+      "modal": "assets/menu/placeholders/card.svg",
+      "gallery": [],
+      "alt": "Pesto de rúcula o albahaca",
+      "dominantColor": "",
+      "version": 1
+    },
+    "pan_ciabatta": {
+      "card": "assets/sourdough-ciabatta.png",
+      "hover": "assets/sourdough-ciabatta-hover.png",
+      "modal": "assets/sourdough-ciabatta.png",
+      "gallery": [],
+      "alt": "Pan ciabatta de masa madre",
+      "dominantColor": "",
+      "version": 1
+    }
+  },
+  "defaults": {
+    "card": "assets/menu/placeholders/card.svg",
+    "modal": "assets/menu/placeholders/modal.svg",
+    "hover": "assets/menu/placeholders/card.svg",
+    "alt": "Imagen del producto Figata"
+  }
+}

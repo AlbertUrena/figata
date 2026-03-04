@@ -7,6 +7,8 @@
   }
 
   const menuApi = window.FigataData?.menu;
+  const homeApi = window.FigataData?.home;
+  const mediaApi = window.FigataData?.media;
   const ingredientIconRowApi = window.FigataData?.ingredientIconRow;
 
   if (!menuApi?.getFeaturedMenuItems || !ingredientIconRowApi?.renderIngredientIconRow) {
@@ -80,6 +82,7 @@
   previewImage.className = "preview-overlay__image mas-pedidas-card__image";
   previewImage.alt = "";
   previewImage.loading = "eager";
+  previewImage.decoding = "async";
 
   previewPicture.appendChild(previewImage);
   previewMediaStage.appendChild(previewPicture);
@@ -134,6 +137,18 @@
   const previewDescription = document.createElement("p");
   previewDescription.className = "preview-overlay__description";
 
+  const previewAvailability = document.createElement("section");
+  previewAvailability.className = "preview-overlay__availability";
+
+  const previewAvailabilityBadge = document.createElement("span");
+  previewAvailabilityBadge.className = "preview-overlay__availability-badge";
+
+  const previewSoldOutReason = document.createElement("p");
+  previewSoldOutReason.className = "preview-overlay__soldout-reason";
+
+  previewAvailability.appendChild(previewAvailabilityBadge);
+  previewAvailability.appendChild(previewSoldOutReason);
+
   const previewIngredientsSection = document.createElement("section");
   previewIngredientsSection.className = "preview-overlay__ingredients";
 
@@ -153,7 +168,8 @@
   const previewPrimaryCta = document.createElement("button");
   previewPrimaryCta.type = "button";
   previewPrimaryCta.className = "preview-overlay__button preview-overlay__button--primary";
-  previewPrimaryCta.textContent = "Añadir al pedido";
+  previewPrimaryCta.textContent = "Disponible";
+  previewPrimaryCta.disabled = true;
 
   const previewSecondaryCta = document.createElement("button");
   previewSecondaryCta.type = "button";
@@ -167,6 +183,7 @@
   previewInfo.appendChild(previewRatingRow);
   previewInfo.appendChild(previewHeader);
   previewInfo.appendChild(previewDescription);
+  previewInfo.appendChild(previewAvailability);
   previewInfo.appendChild(previewIngredientsSection);
   previewInfo.appendChild(previewActions);
 
@@ -426,8 +443,62 @@
     previewImage.hidden = false;
   };
 
+  const normalizeAssetPath = (value) => String(value || "").trim().replace(/^\//, "");
+
+  const resolveItemMedia = (item) => {
+    const fallbackImage = normalizeAssetPath(item?.image || "");
+    const fallbackAlt = item?.name || item?.id || "";
+
+    if (!mediaApi?.get) {
+      return {
+        card: fallbackImage,
+        hover: "",
+        modal: fallbackImage,
+        alt: fallbackAlt,
+        gallery: [],
+      };
+    }
+
+    const card = normalizeAssetPath(mediaApi.get(item.id, "card"));
+    const hover = normalizeAssetPath(mediaApi.get(item.id, "hover"));
+    const modal = normalizeAssetPath(mediaApi.get(item.id, "modal"));
+    const alt = String(mediaApi.getAlt(item.id) || fallbackAlt).trim();
+    const gallery = Array.isArray(mediaApi.getGallery(item.id))
+      ? mediaApi.getGallery(item.id).map(normalizeAssetPath).filter(Boolean)
+      : [];
+
+    return {
+      card,
+      hover: hover && hover !== card ? hover : "",
+      modal: modal || card,
+      alt,
+      gallery,
+    };
+  };
+
+  const preloadFeaturedModalImages = (items) => {
+    if (!mediaApi?.prefetch || !Array.isArray(items) || items.length === 0) {
+      return;
+    }
+
+    const execute = () => {
+      items.forEach((item) => {
+        mediaApi.prefetch(item.id, "modal");
+      });
+    };
+
+    if (typeof window.requestIdleCallback === "function") {
+      window.requestIdleCallback(execute, { timeout: 1500 });
+      return;
+    }
+
+    window.setTimeout(execute, 120);
+  };
+
   const setPreviewImage = (card) => {
-    if (!card.image) {
+    const modalImage = card.modalImage || card.image;
+
+    if (!modalImage) {
       previewBaseImageSrc = "";
       previewHoverImageSrc = "";
       hasPreviewHoverImage = false;
@@ -436,21 +507,24 @@
       return;
     }
 
-    previewBaseImageSrc = card.image;
-    previewHoverImageSrc = getHoverImageSrc(previewBaseImageSrc);
-    hasPreviewHoverImage = false;
+    previewBaseImageSrc = modalImage;
+    previewHoverImageSrc = card.hoverImage || "";
+    hasPreviewHoverImage =
+      Boolean(previewHoverImageSrc) && previewHoverImageSrc !== previewBaseImageSrc;
 
     setPreviewImageSource(previewBaseImageSrc);
-    previewImage.alt = card.title;
+    previewImage.alt = card.imageAlt || card.title;
 
-    const hoverProbe = new Image();
-    hoverProbe.onload = () => {
-      hasPreviewHoverImage = true;
-    };
-    hoverProbe.onerror = () => {
-      hasPreviewHoverImage = false;
-    };
-    hoverProbe.src = previewHoverImageSrc;
+    if (hasPreviewHoverImage) {
+      const hoverProbe = new Image();
+      hoverProbe.onload = () => {
+        hasPreviewHoverImage = true;
+      };
+      hoverProbe.onerror = () => {
+        hasPreviewHoverImage = false;
+      };
+      hoverProbe.src = previewHoverImageSrc;
+    }
   };
 
   const setPreviewIngredients = async (ingredients) => {
@@ -467,6 +541,7 @@
     previewTitle.textContent = card.title;
     previewPrice.textContent = card.price;
     previewDescription.textContent = card.previewDescription || card.description;
+    setPreviewAvailability(card);
     await setPreviewIngredients(card.ingredients || []);
     setPreviewImage(card);
   };
@@ -715,7 +790,11 @@
   });
 
   previewImage.addEventListener("error", () => {
-    if (previewImage.src.includes("-hover.png") && previewBaseImageSrc) {
+    const renderedSource = previewImage.currentSrc || previewImage.src || "";
+    const isHoverSource =
+      Boolean(previewHoverImageSrc) && renderedSource.includes(previewHoverImageSrc);
+
+    if (isHoverSource && previewBaseImageSrc) {
       hasPreviewHoverImage = false;
       setPreviewImageSource(previewBaseImageSrc);
       return;
@@ -736,9 +815,9 @@
   setCoverPath(buildTopBlobPath(0));
   setPagePush(0);
 
-  const getHoverImageSrc = (src) => src.replace(/\.png$/i, "-hover.png");
+  const DEFAULT_SOLD_OUT_REASON = "Temporalmente no disponible.";
 
-  const toCardViewModel = (item) => ({
+  const toCardViewModel = (item, media) => ({
     id: item.id,
     slug: item.slug,
     title: item.name || item.id,
@@ -747,14 +826,81 @@
     ingredients: Array.isArray(item.ingredients) ? item.ingredients : [],
     reviews: item.reviews || "",
     price: item.priceFormatted || "",
-    image: item.image || "",
+    image: media.card || "",
+    hoverImage: media.hover || "",
+    modalImage: media.modal || media.card || "",
+    imageAlt: media.alt || item.name || item.id,
+    gallery: Array.isArray(media.gallery) ? media.gallery : [],
+    available: item.available !== false,
+    soldOutReason: item.soldOutReason || "",
   });
+
+  const setPreviewAvailability = (card) => {
+    const isAvailable = card.available !== false;
+    const soldOutReason = card.soldOutReason || DEFAULT_SOLD_OUT_REASON;
+
+    previewAvailabilityBadge.textContent = isAvailable ? "Disponible" : "No disponible";
+    previewAvailabilityBadge.classList.toggle("is-available", isAvailable);
+    previewAvailabilityBadge.classList.toggle("is-unavailable", !isAvailable);
+
+    previewSoldOutReason.hidden = isAvailable;
+    previewSoldOutReason.textContent = isAvailable ? "" : soldOutReason;
+
+    previewPrimaryCta.textContent = isAvailable ? "Disponible" : "No disponible";
+    previewPrimaryCta.classList.toggle("is-available", isAvailable);
+    previewPrimaryCta.classList.toggle("is-unavailable", !isAvailable);
+  };
+
+  const normalizeFeaturedIds = (value) =>
+    Array.isArray(value)
+      ? value.map((id) => String(id || "").trim()).filter(Boolean)
+      : [];
+
+  const resolvePopularSelection = async () => {
+    const fallback = {
+      featuredIds: [],
+      limit: 8,
+    };
+
+    if (!homeApi?.getHomeConfig) {
+      return fallback;
+    }
+
+    try {
+      const home = await homeApi.getHomeConfig();
+      const popular = home?.popular || {};
+      const configuredLimit = Number(popular.limit);
+      const limit = Number.isFinite(configuredLimit) && configuredLimit > 0
+        ? Math.round(configuredLimit)
+        : fallback.limit;
+
+      return {
+        featuredIds: normalizeFeaturedIds(popular.featuredIds),
+        limit,
+      };
+    } catch (error) {
+      console.error("[mas-pedidas] No se pudo leer configuracion popular desde home.json", error);
+      return fallback;
+    }
+  };
 
   const renderFeaturedCards = async () => {
     let featuredItems = [];
+    const selection = await resolvePopularSelection();
+
+    if (mediaApi?.loadMediaStore) {
+      try {
+        await mediaApi.loadMediaStore();
+      } catch (error) {
+        console.error("[mas-pedidas] No se pudo cargar media.json", error);
+      }
+    }
 
     try {
-      featuredItems = await getFeaturedMenuItems(8);
+      featuredItems = await getFeaturedMenuItems({
+        featuredIds: selection.featuredIds,
+        limit: selection.limit,
+      });
     } catch (error) {
       console.error("[mas-pedidas] No se pudo cargar featured items desde menu.json", error);
       return;
@@ -763,24 +909,27 @@
     const fragment = document.createDocumentFragment();
 
     featuredItems.forEach((item) => {
-      const card = toCardViewModel(item);
+      const mediaAssets = resolveItemMedia(item);
+      const card = toCardViewModel(item, mediaAssets);
       const node = template.content.cloneNode(true);
       const article = node.querySelector(".mas-pedidas-card");
-      const media = node.querySelector(".mas-pedidas-card__media");
+      const mediaContainer = node.querySelector(".mas-pedidas-card__media");
       const baseImage = node.querySelector(".mas-pedidas-card__image--base");
       const hoverImage = node.querySelector(".mas-pedidas-card__image--hover");
       const title = node.querySelector(".mas-pedidas-card__title");
       const description = node.querySelector(".mas-pedidas-card__description");
+      const availabilityBadge = node.querySelector(".mas-pedidas-card__availability-badge");
       const price = node.querySelector(".mas-pedidas-card__price");
       const detailsButton = node.querySelector(".mas-pedidas-card__button");
 
       if (
         !article ||
-        !media ||
+        !mediaContainer ||
         !baseImage ||
         !hoverImage ||
         !title ||
         !description ||
+        !availabilityBadge ||
         !price ||
         !detailsButton
       ) {
@@ -790,6 +939,16 @@
       title.textContent = card.title;
       description.textContent = card.description;
       price.textContent = card.price;
+      article.classList.toggle("is-unavailable", !card.available);
+
+      if (card.available) {
+        availabilityBadge.hidden = true;
+        availabilityBadge.textContent = "";
+      } else {
+        availabilityBadge.hidden = false;
+        availabilityBadge.textContent = "No disponible";
+        availabilityBadge.title = card.soldOutReason || DEFAULT_SOLD_OUT_REASON;
+      }
 
       const detailsLabel = detailsButton.querySelector("span");
       if (detailsLabel) {
@@ -801,44 +960,60 @@
       const imageSrc = card.image;
 
       if (imageSrc) {
-        const hoverSrc = getHoverImageSrc(imageSrc);
-
         baseImage.src = imageSrc;
-        baseImage.alt = card.title;
+        baseImage.alt = card.imageAlt || card.title;
         baseImage.loading = "lazy";
+        baseImage.decoding = "async";
         baseImage.addEventListener("error", () => {
           baseImage.hidden = true;
           hoverImage.hidden = true;
           article.classList.remove("has-hover-image");
-          media.classList.add("is-empty");
+          mediaContainer.classList.add("is-empty");
         });
 
-        hoverImage.src = hoverSrc;
-        hoverImage.alt = "";
-        hoverImage.loading = "lazy";
-        hoverImage.addEventListener("load", () => {
-          if (!hoverImage.hidden) {
-            article.classList.add("has-hover-image");
-          }
-        });
-        hoverImage.addEventListener("error", () => {
+        if (card.hoverImage && card.hoverImage !== imageSrc) {
+          hoverImage.src = card.hoverImage;
+          hoverImage.alt = "";
+          hoverImage.loading = "lazy";
+          hoverImage.decoding = "async";
+          hoverImage.addEventListener("load", () => {
+            if (!hoverImage.hidden) {
+              article.classList.add("has-hover-image");
+            }
+          });
+          hoverImage.addEventListener("error", () => {
+            hoverImage.hidden = true;
+            article.classList.remove("has-hover-image");
+          });
+        } else {
           hoverImage.hidden = true;
           article.classList.remove("has-hover-image");
-        });
+        }
       } else {
         baseImage.hidden = true;
         hoverImage.hidden = true;
-        media.classList.add("is-empty");
+        mediaContainer.classList.add("is-empty");
       }
 
       detailsButton.addEventListener("click", () => {
         void openPreview(card);
       });
 
+      article.addEventListener(
+        "pointerenter",
+        () => {
+          if (mediaApi?.prefetch) {
+            mediaApi.prefetch(card.id, "modal");
+          }
+        },
+        { once: true }
+      );
+
       fragment.appendChild(node);
     });
 
     grid.replaceChildren(fragment);
+    preloadFeaturedModalImages(featuredItems);
   };
 
   void renderFeaturedCards();

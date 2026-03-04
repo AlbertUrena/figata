@@ -50,6 +50,10 @@ collections:
                   - label: Name
                     name: name
                     widget: string
+                  - label: Slug
+                    name: slug
+                    widget: string
+                    required: false
                   - label: Price
                     name: price
                     widget: number
@@ -58,8 +62,27 @@ collections:
                     name: category
                     widget: string
                     required: false
+                  - label: Subcategory
+                    name: subcategory
+                    widget: string
+                    required: false
+                  - label: Featured
+                    name: featured
+                    widget: boolean
+                    required: false
+                  - label: Spicy Level
+                    name: spicy_level
+                    widget: number
+                    value_type: int
+                    min: 0
+                    max: 3
+                    required: false
                   - label: Vegetarian
                     name: vegetarian
+                    widget: boolean
+                    required: false
+                  - label: Vegan
+                    name: vegan
                     widget: boolean
                     required: false
                   - label: Spicy
@@ -82,6 +105,22 @@ collections:
                       label: Ingredient
                       name: ingredient
                       widget: string
+                  - label: Tags
+                    name: tags
+                    widget: list
+                    required: false
+                    field:
+                      label: Tag
+                      name: tag
+                      widget: string
+                  - label: Allergens
+                    name: allergens
+                    widget: list
+                    required: false
+                    field:
+                      label: Allergen
+                      name: allergen
+                      widget: string
                   - label: Short Description
                     name: descriptionShort
                     widget: text
@@ -98,3 +137,360 @@ collections:
                     name: reviews
                     widget: string
                     required: false
+  - name: categories
+    label: Categories
+    files:
+      - label: Categories Data
+        name: categories_data
+        file: data/categories.json
+        format: json
+        fields:
+          - label: Version
+            name: version
+            widget: number
+            value_type: int
+          - label: Schema
+            name: schema
+            widget: string
+          - label: Categories
+            name: categories
+            widget: list
+            summary: "{{fields.label}} ({{fields.id}})"
+            fields:
+              - label: ID
+                name: id
+                widget: string
+              - label: Label
+                name: label
+                widget: string
+              - label: Label Short
+                name: labelShort
+                widget: string
+                required: false
+              - label: Label Long
+                name: labelLong
+                widget: string
+                required: false
+              - label: Pill Label
+                name: pillLabel
+                widget: string
+                required: false
+              - label: Description
+                name: description
+                widget: text
+                required: false
+              - label: Icon
+                name: icon
+                widget: string
+                required: false
+              - label: Order
+                name: order
+                widget: number
+                value_type: int
+                required: false
+              - label: Enabled
+                name: enabled
+                widget: boolean
+                required: false
+              - label: Show On Home
+                name: showOnHome
+                widget: boolean
+                required: false
+              - label: Legacy IDs
+                name: legacyIds
+                widget: list
+                required: false
+                field:
+                  label: Legacy ID
+                  name: legacyId
+                  widget: string
+              - label: Subcategories
+                name: subcategories
+                widget: list
+                required: false
+                summary: "{{fields.label}} ({{fields.id}})"
+                fields:
+                  - label: ID
+                    name: id
+                    widget: string
+                  - label: Label
+                    name: label
+                    widget: string
+                  - label: Label Short
+                    name: labelShort
+                    widget: string
+                    required: false
+                  - label: Label Long
+                    name: labelLong
+                    widget: string
+                    required: false
+                  - label: Pill Label
+                    name: pillLabel
+                    widget: string
+                    required: false
+                  - label: Description
+                    name: description
+                    widget: text
+                    required: false
+                  - label: Icon
+                    name: icon
+                    widget: string
+                    required: false
+                  - label: Order
+                    name: order
+                    widget: number
+                    value_type: int
+                    required: false
+                  - label: Enabled
+                    name: enabled
+                    widget: boolean
+                    required: false
+                  - label: Show On Home
+                    name: showOnHome
+                    widget: boolean
+                    required: false
+  - name: availability
+    label: Availability
+    files:
+      - label: Availability Data
+        name: availability_data
+        file: data/availability.json
+        format: json
+        fields:
+          - label: Version
+            name: version
+            widget: number
+            value_type: int
+          - label: Schema
+            name: schema
+            widget: string
+          - label: Settings
+            name: settings
+            widget: object
+            fields:
+              - label: Hide Unavailable Items
+                name: hideUnavailableItems
+                widget: boolean
+                required: false
+          - label: Items
+            name: items
+            widget: list
+            summary: "{{fields.itemId}} ({{fields.available}})"
+            fields:
+              - label: Item ID
+                name: itemId
+                widget: string
+              - label: Available
+                name: available
+                widget: boolean
+                required: false
+                hint: "Toggle: Disponible / No disponible"
+              - label: Sold Out Reason
+                name: soldOutReason
+                widget: text
+                required: false
+  - name: home
+    label: Home
+    files:
+      - label: Home Data
+        name: home_data
+        file: data/home.json
+        format: json
+        fields:
+          - label: Version
+            name: version
+            widget: number
+            value_type: int
+          - label: Schema
+            name: schema
+            widget: string
+          - label: Hero
+            name: hero
+            widget: object
+            fields:
+              - label: Title
+                name: title
+                widget: string
+              - label: Subtitle
+                name: subtitle
+                widget: text
+              - label: Background Image
+                name: backgroundImage
+                widget: string
+              - label: CTA Primary
+                name: ctaPrimary
+                widget: object
+                fields:
+                  - label: Label
+                    name: label
+                    widget: string
+                  - label: URL
+                    name: url
+                    widget: string
+              - label: CTA Secondary
+                name: ctaSecondary
+                widget: object
+                fields:
+                  - label: Label
+                    name: label
+                    widget: string
+                  - label: URL
+                    name: url
+                    widget: string
+          - label: Popular
+            name: popular
+            widget: object
+            fields:
+              - label: Title
+                name: title
+                widget: string
+              - label: Subtitle
+                name: subtitle
+                widget: string
+              - label: Featured IDs
+                name: featuredIds
+                widget: list
+                required: false
+                field:
+                  label: Item ID
+                  name: itemId
+                  widget: string
+              - label: Limit
+                name: limit
+                widget: number
+                value_type: int
+          - label: Events Preview
+            name: eventsPreview
+            widget: object
+            fields:
+              - label: Enabled
+                name: enabled
+                widget: boolean
+              - label: Title
+                name: title
+                widget: string
+              - label: Subtitle
+                name: subtitle
+                widget: text
+              - label: Event IDs
+                name: eventIds
+                widget: list
+                required: false
+                field:
+                  label: Event ID
+                  name: eventId
+                  widget: string
+              - label: Limit
+                name: limit
+                widget: number
+                value_type: int
+              - label: Items
+                name: items
+                widget: list
+                required: false
+                summary: "{{fields.title}} ({{fields.id}})"
+                fields:
+                  - label: ID
+                    name: id
+                    widget: string
+                  - label: Title
+                    name: title
+                    widget: string
+                  - label: Subtitle
+                    name: subtitle
+                    widget: string
+                  - label: Video
+                    name: video
+                    widget: string
+                    required: false
+          - label: Delivery
+            name: delivery
+            widget: object
+            fields:
+              - label: Title
+                name: title
+                widget: string
+              - label: Subtitle
+                name: subtitle
+                widget: text
+              - label: Links
+                name: links
+                widget: object
+                fields:
+                  - label: PedidosYa
+                    name: pedidosya
+                    widget: string
+                    required: false
+                  - label: Uber Eats
+                    name: ubereats
+                    widget: string
+                    required: false
+                  - label: Takeout
+                    name: takeout
+                    widget: string
+                    required: false
+                  - label: WhatsApp
+                    name: whatsapp
+                    widget: string
+                    required: false
+          - label: Reservation
+            name: reservation
+            widget: object
+            fields:
+              - label: Enabled
+                name: enabled
+                widget: boolean
+              - label: Title
+                name: title
+                widget: string
+              - label: URL
+                name: url
+                widget: string
+              - label: CTA Label
+                name: ctaLabel
+                widget: string
+          - label: Announcements
+            name: announcements
+            widget: object
+            fields:
+              - label: Enabled
+                name: enabled
+                widget: boolean
+              - label: Message
+                name: message
+                widget: text
+                required: false
+              - label: Type
+                name: type
+                widget: select
+                options:
+                  - highlight
+                  - warning
+                  - info
+                required: false
+              - label: Link
+                name: link
+                widget: string
+                required: false
+          - label: Sections
+            name: sections
+            widget: object
+            fields:
+              - label: Hero
+                name: hero
+                widget: boolean
+              - label: Popular
+                name: popular
+                widget: boolean
+              - label: Events
+                name: events
+                widget: boolean
+              - label: Delivery
+                name: delivery
+                widget: boolean
+              - label: Reservation
+                name: reservation
+                widget: boolean
+              - label: Announcements
+                name: announcements
+                widget: boolean

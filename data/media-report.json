@@ -1,0 +1,272 @@
+{
+  "generatedAt": "2026-03-04T07:18:36.656Z",
+  "summary": {
+    "errors": 0,
+    "warnings": 2,
+    "menuItems": 43,
+    "mediaItems": 43,
+    "missingMediaItems": 0,
+    "unknownMediaItems": 0,
+    "missingVariants": 35,
+    "brokenPaths": 0,
+    "duplicatedPaths": 8
+  },
+  "details": {
+    "errors": [],
+    "warnings": [
+      "Variantes faltantes en media.items: 35",
+      "Rutas duplicadas potencialmente innecesarias: 8"
+    ],
+    "missingMediaItems": [],
+    "unknownMediaItems": [],
+    "missingVariants": [
+      {
+        "itemId": "berenjenas_parmesana",
+        "variant": "hover"
+      },
+      {
+        "itemId": "focaccia_parmigiano",
+        "variant": "hover"
+      },
+      {
+        "itemId": "insalata_caprese",
+        "variant": "hover"
+      },
+      {
+        "itemId": "carpaccio_bresaola",
+        "variant": "hover"
+      },
+      {
+        "itemId": "salsiccia_vino_miele",
+        "variant": "hover"
+      },
+      {
+        "itemId": "burrata_prosciutto",
+        "variant": "hover"
+      },
+      {
+        "itemId": "tagliere_misto",
+        "variant": "hover"
+      },
+      {
+        "itemId": "marinara",
+        "variant": "hover"
+      },
+      {
+        "itemId": "cacio_pepe",
+        "variant": "hover"
+      },
+      {
+        "itemId": "margherita_fume",
+        "variant": "hover"
+      },
+      {
+        "itemId": "filetti",
+        "variant": "hover"
+      },
+      {
+        "itemId": "sweet_goat",
+        "variant": "hover"
+      },
+      {
+        "itemId": "mamma",
+        "variant": "hover"
+      },
+      {
+        "itemId": "tonno",
+        "variant": "hover"
+      },
+      {
+        "itemId": "puta",
+        "variant": "hover"
+      },
+      {
+        "itemId": "figata",
+        "variant": "hover"
+      },
+      {
+        "itemId": "macellaio",
+        "variant": "hover"
+      },
+      {
+        "itemId": "boscaiola",
+        "variant": "hover"
+      },
+      {
+        "itemId": "calzone",
+        "variant": "hover"
+      },
+      {
+        "itemId": "corazon_burrata",
+        "variant": "hover"
+      },
+      {
+        "itemId": "fantasia_pistachos",
+        "variant": "hover"
+      },
+      {
+        "itemId": "vulcano",
+        "variant": "hover"
+      },
+      {
+        "itemId": "bellezza",
+        "variant": "hover"
+      },
+      {
+        "itemId": "passione_del_sud",
+        "variant": "hover"
+      },
+      {
+        "itemId": "soppressata",
+        "variant": "hover"
+      },
+      {
+        "itemId": "parmesana",
+        "variant": "hover"
+      },
+      {
+        "itemId": "prosciutto_rucula",
+        "variant": "hover"
+      },
+      {
+        "itemId": "pizza_nutella",
+        "variant": "hover"
+      },
+      {
+        "itemId": "helado_artesanal",
+        "variant": "hover"
+      },
+      {
+        "itemId": "delicia_coco",
+        "variant": "hover"
+      },
+      {
+        "itemId": "tartufo_affogato",
+        "variant": "hover"
+      },
+      {
+        "itemId": "mermelada_della_mamma",
+        "variant": "hover"
+      },
+      {
+        "itemId": "burrata_fresca_producto",
+        "variant": "hover"
+      },
+      {
+        "itemId": "aceite_evoo_aromatizado",
+        "variant": "hover"
+      },
+      {
+        "itemId": "pesto_artesanal",
+        "variant": "hover"
+      }
+    ],
+    "brokenPaths": [],
+    "duplicatedPaths": [
+      {
+        "path": "assets/bruschetta.png",
+        "uses": [
+          {
+            "itemId": "bruschetta_classica",
+            "variant": "card"
+          },
+          {
+            "itemId": "bruschetta_classica",
+            "variant": "modal"
+          }
+        ]
+      },
+      {
+        "path": "assets/schiacciata-sandwich.png",
+        "uses": [
+          {
+            "itemId": "focaccia_rellena",
+            "variant": "card"
+          },
+          {
+            "itemId": "focaccia_rellena",
+            "variant": "modal"
+          }
+        ]
+      },
+      {
+        "path": "assets/margherita.png",
+        "uses": [
+          {
+            "itemId": "margherita",
+            "variant": "card"
+          },
+          {
+            "itemId": "margherita",
+            "variant": "modal"
+          }
+        ]
+      },
+      {
+        "path": "assets/diavola.png",
+        "uses": [
+          {
+            "itemId": "diavola",
+            "variant": "card"
+          },
+          {
+            "itemId": "diavola",
+            "variant": "modal"
+          }
+        ]
+      },
+      {
+        "path": "assets/margherita-sbagliata.png",
+        "uses": [
+          {
+            "itemId": "margherita_sbagliata",
+            "variant": "card"
+          },
+          {
+            "itemId": "margherita_sbagliata",
+            "variant": "modal"
+          }
+        ]
+      },
+      {
+        "path": "assets/quattroformaggi.png",
+        "uses": [
+          {
+            "itemId": "quattro_formaggi_truffle",
+            "variant": "card"
+          },
+          {
+            "itemId": "quattro_formaggi_truffle",
+            "variant": "modal"
+          }
+        ]
+      },
+      {
+        "path": "assets/tiramisu.png",
+        "uses": [
+          {
+            "itemId": "tiramisu",
+            "variant": "card"
+          },
+          {
+            "itemId": "tiramisu",
+            "variant": "modal"
+          }
+        ]
+      },
+      {
+        "path": "assets/sourdough-ciabatta.png",
+        "uses": [
+          {
+            "itemId": "pan_ciabatta",
+            "variant": "card"
+          },
+          {
+            "itemId": "pan_ciabatta",
+            "variant": "modal"
+          }
+        ]
+      }
+    ]
+  }
+}
