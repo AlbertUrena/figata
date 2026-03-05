@@ -21,9 +21,7 @@
           <p class="muted">
             Inicia sesion con tu invitacion para editar contenido y publicar cambios.
           </p>
-          <button id="login-button" class="btn btn-primary" type="button">
-            Iniciar sesion
-          </button>
+          <button id="login-button" class="btn btn-primary" type="button">Iniciar sesion</button>
           <p id="login-message" class="status-message" role="status" aria-live="polite"></p>
         </div>
       </section>
@@ -32,101 +30,179 @@
         <div class="dashboard-layout">
           <aside id="admin-sidebar" class="admin-sidebar" data-collapsed="false">
             <div class="sidebar-inner">
-              <div class="sidebar-head">
-                <button
-                  id="sidebar-home-button"
-                  class="sidebar-logo"
-                  type="button"
-                  aria-label="Ir al dashboard"
-                >
-                  <img src="/assets/svg-icons/logo-icon.svg" alt="Figata" width="36" height="36" />
-                </button>
+              <div class="sidebar-main">
+                <div class="sidebar-head">
+                  <button
+                    id="sidebar-home-button"
+                    class="sidebar-logo"
+                    type="button"
+                    aria-label="Ir al dashboard"
+                  >
+                    <img
+                      class="sidebar-logo-icon"
+                      src="/assets/svg-icons/logo-icon.svg"
+                      alt=""
+                      aria-hidden="true"
+                    />
+                  </button>
+
+                  <button
+                    id="sidebar-toggle-button"
+                    class="sidebar-toggle"
+                    type="button"
+                    aria-label="Colapsar navegacion"
+                    aria-pressed="false"
+                  >
+                    <svg viewBox="0 0 16 16" aria-hidden="true">
+                      <path
+                        d="M1.8 1 0 2.8v10.4L1.8 15h12.4l1.8-1.8V2.8L14.2 1zm4.805 12.2V2.8H14.2v10.4zm-1.8-10.4H1.8v10.4h3.005z"
+                      ></path>
+                    </svg>
+                  </button>
+                </div>
 
                 <button
-                  id="sidebar-toggle-button"
-                  class="sidebar-toggle"
+                  id="sidebar-search-button"
+                  class="sidebar-search"
                   type="button"
-                  aria-label="Colapsar navegacion"
-                  aria-pressed="false"
+                  aria-label="Buscar en Figata Admin"
                 >
-                  <svg viewBox="0 0 16 16" aria-hidden="true">
-                    <path
-                      d="M1.8 1 0 2.8v10.4L1.8 15h12.4l1.8-1.8V2.8L14.2 1zm4.805 12.2V2.8H14.2v10.4zm-1.8-10.4H1.8v10.4h3.005z"
-                    ></path>
-                  </svg>
+                  <span class="sidebar-search-left">
+                    <svg viewBox="0 0 16 16" aria-hidden="true">
+                      <path
+                        fill-rule="evenodd"
+                        d="M6.788 1.308a5.478 5.478 0 1 0 0 10.955 5.478 5.478 0 0 0 0-10.955M2.811 6.786a3.978 3.978 0 1 1 7.955 0 3.978 3.978 0 0 1-7.955 0"
+                        clip-rule="evenodd"
+                      ></path>
+                      <path d="M10.595 12.313v.344l2.593 2.593h1.82l.242-.245v-1.817l-2.592-2.593h-.345z"></path>
+                    </svg>
+                    <span class="sidebar-search-label">Search Figata...</span>
+                  </span>
+                  <span class="sidebar-shortcut">
+                    <kbd>⌘</kbd>
+                    <kbd>K</kbd>
+                  </span>
                 </button>
+
+                <nav class="sidebar-nav" aria-label="Figata admin sections">
+                  <button id="sidebar-nav-dashboard" class="sidebar-nav__item" type="button">
+                    <span class="sidebar-nav__icon" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                        <path d="M128 128C128 110.3 113.7 96 96 96C78.3 96 64 110.3 64 128L64 464C64 508.2 99.8 544 144 544L544 544C561.7 544 576 529.7 576 512C576 494.3 561.7 480 544 480L144 480C135.2 480 128 472.8 128 464L128 128zM534.6 214.6C547.1 202.1 547.1 181.8 534.6 169.3C522.1 156.8 501.8 156.8 489.3 169.3L384 274.7L326.6 217.4C314.1 204.9 293.8 204.9 281.3 217.4L185.3 313.4C172.8 325.9 172.8 346.2 185.3 358.7C197.8 371.2 218.1 371.2 230.6 358.7L304 285.3L361.4 342.7C373.9 355.2 394.2 355.2 406.7 342.7L534.7 214.7z"></path>
+                      </svg>
+                    </span>
+                    <span class="sidebar-nav__label">Dashboard</span>
+                  </button>
+
+                  <button id="sidebar-nav-menu" class="sidebar-nav__item" type="button">
+                    <span class="sidebar-nav__icon" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+                        <path d="M560-564v-68q33-14 67.5-21t72.5-7q26 0 51 4t49 10v64q-24-9-48.5-13.5T700-600q-38 0-73 9.5T560-564Zm0 220v-68q33-14 67.5-21t72.5-7q26 0 51 4t49 10v64q-24-9-48.5-13.5T700-380q-38 0-73 9t-67 27Zm0-110v-68q33-14 67.5-21t72.5-7q26 0 51 4t49 10v64q-24-9-48.5-13.5T700-490q-38 0-73 9.5T560-454ZM260-320q47 0 91.5 10.5T440-278v-394q-41-24-87-36t-93-12q-36 0-71.5 7T120-692v396q35-12 69.5-18t70.5-6Zm260 42q44-21 88.5-31.5T700-320q36 0 70.5 6t69.5 18v-396q-33-14-68.5-21t-71.5-7q-47 0-93 12t-87 36v394Zm-40 118q-48-38-104-59t-116-21q-42 0-82.5 11T100-198q-21 11-40.5-1T40-234v-482q0-11 5.5-21T62-752q46-24 96-36t102-12q58 0 113.5 15T480-740q51-30 106.5-45T700-800q52 0 102 12t96 36q11 5 16.5 15t5.5 21v482q0 23-19.5 35t-40.5 1q-37-20-77.5-31T700-240q-60 0-116 21t-104 59ZM280-494Z"></path>
+                      </svg>
+                    </span>
+                    <span class="sidebar-nav__label">Menu</span>
+                  </button>
+
+                  <div id="sidebar-menu-accordion" class="sidebar-menu-accordion" aria-hidden="true"></div>
+
+                  <a class="sidebar-nav__item" href="/admin/cms/#/collections/home">
+                    <span class="sidebar-nav__icon" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                        <path d="M298.2 72.6C310.5 61.2 329.5 61.2 341.7 72.6L432 156.3L432 144C432 126.3 446.3 112 464 112L496 112C513.7 112 528 126.3 528 144L528 245.5L565.8 280.6C575.4 289.6 578.6 303.5 573.8 315.7C569 327.9 557.2 336 544 336L528 336L528 512C528 547.3 499.3 576 464 576L176 576C140.7 576 112 547.3 112 512L112 336L96 336C82.8 336 71 327.9 66.2 315.7C61.4 303.5 64.6 289.5 74.2 280.6L298.2 72.6zM304 384C277.5 384 256 405.5 256 432L256 528L384 528L384 432C384 405.5 362.5 384 336 384L304 384z"></path>
+                      </svg>
+                    </span>
+                    <span class="sidebar-nav__label">Home</span>
+                  </a>
+
+                  <a class="sidebar-nav__item" href="/admin/cms/#/collections/availability">
+                    <span class="sidebar-nav__icon" aria-hidden="true">
+                      <svg viewBox="0 0 16 16">
+                        <path
+                          fill-rule="evenodd"
+                          d="m5.46 12.25.2.19v1.12l-.2.19H1.69L.25 12.31V1.69L1.69.25h9.62l1.44 1.44v3.63l-.19.18h-1.11l-.19-.18V2.31l-.56-.56H2.31l-.56.56v9.38l.56.56zM3.5 4.19v1.12l.2.19h5.6l.2-.19V4.19L9.3 4H3.7zM3.7 7l-.2.19v1.12l.2.19h2.6l.2-.19V7.19L6.3 7zm8.31 2.25h-.82l-.19.2v1.54H9.5l-.2.19V12l.2.19H12l.2-.19V9.45zM16 11.5c0 2.49-2.01 4.5-4.5 4.5S7 13.99 7 11.5 9.01 7 11.5 7 16 9.01 16 11.5m-1.5 0c0-1.66-1.34-3-3-3s-3 1.34-3 3 1.34 3 3 3 3-1.34 3-3"
+                          clip-rule="evenodd"
+                        ></path>
+                      </svg>
+                    </span>
+                    <span class="sidebar-nav__label">Availability</span>
+                  </a>
+
+                  <a class="sidebar-nav__item" href="/admin/cms/#/collections/categories">
+                    <span class="sidebar-nav__icon" aria-hidden="true">
+                      <svg viewBox="0 0 16 16">
+                        <path
+                          d="M3.5 2.333 4.833 1h6.334L12.5 2.333l-.167.167H3.667zM3.833 3.5 2.5 4.833 2.667 5h10.666l.167-.167L12.167 3.5zM1.5 7l1-1h11l1 1v7l-1 1h-11l-1-1z"
+                        ></path>
+                      </svg>
+                    </span>
+                    <span class="sidebar-nav__label">Categories</span>
+                  </a>
+
+                  <a class="sidebar-nav__item" href="/admin/cms/#/collections/restaurant">
+                    <span class="sidebar-nav__icon" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+                        <path d="M120-120v-122q-18-5-30-19t-14-34L40-680h25q23 0 40.5 16t19.5 39l24 265h171q33 0 56.5 23.5T400-280v40h-40v120h-60v-120H180v120h-60Zm320 0v-320H200q0-33 23.5-56.5T280-520h400q33 0 56.5 23.5T760-440H520v320h-80ZM280-600v-40q0-66 47-113t113-47v-120h80v120q66 0 113 47t47 113v40H280Zm91-80h218q-11-19-29-29.5T520-720h-80q-22 0-40 10.5T371-680Zm229 560v-120h-40v-40q0-33 23.5-56.5T640-360h172l24-265q2-23 19-39t40-16h25l-35 385q-2 20-14.5 34T840-242v122h-60v-120H660v120h-60ZM480-680Z"></path>
+                      </svg>
+                    </span>
+                    <span class="sidebar-nav__label">Restaurant</span>
+                  </a>
+
+                  <a class="sidebar-nav__item" href="/admin/cms/#/collections/media">
+                    <span class="sidebar-nav__icon" aria-hidden="true">
+                      <svg viewBox="0 0 16 16">
+                        <path
+                          fill-rule="evenodd"
+                          d="m4.803 8.824 2.373 2.373h1.648l2.373-2.373V7.176L8.824 4.803H7.176L4.803 7.175zm4.894-1.027L8.203 6.303h-.406L6.303 7.796v.406l1.495 1.495h.405l1.494-1.495v-.406Z"
+                          clip-rule="evenodd"
+                        ></path>
+                        <path
+                          fill-rule="evenodd"
+                          d="M9.464.25H6.537L5.322 2.68l-.59.34-2.712-.162L.557 5.392l1.497 2.269v.678L.557 10.607l1.463 2.535 2.712-.162.59.34 1.215 2.43h2.927l1.214-2.429.592-.341 2.71.162 1.463-2.534-1.496-2.266v-.684l1.496-2.266-1.463-2.534-2.71.162-.591-.34L9.463.25ZM6.462 3.753 7.464 1.75h1.073l1.001 2.003 1.371.792 2.235-.135.537.93-1.234 1.868v1.584l1.234 1.868-.537.93-2.234-.134-1.372.791-1.001 2.003H7.464l-1.002-2.003-1.37-.792-2.236.135-.537-.93 1.235-1.87V7.21L2.32 5.34l.537-.93 2.236.135 1.37-.792Z"
+                          clip-rule="evenodd"
+                        ></path>
+                      </svg>
+                    </span>
+                    <span class="sidebar-nav__label">Media</span>
+                  </a>
+                </nav>
               </div>
 
-              <button
-                id="sidebar-search-button"
-                class="sidebar-search"
-                type="button"
-                aria-label="Buscar en Figata Admin"
-              >
-                <span class="sidebar-search-left">
-                  <svg viewBox="0 0 16 16" aria-hidden="true">
-                    <path
-                      fill-rule="evenodd"
-                      d="M6.788 1.308a5.478 5.478 0 1 0 0 10.955 5.478 5.478 0 0 0 0-10.955M2.811 6.786a3.978 3.978 0 1 1 7.955 0 3.978 3.978 0 0 1-7.955 0"
-                      clip-rule="evenodd"
-                    ></path>
-                    <path d="M10.595 12.313v.344l2.593 2.593h1.82l.242-.245v-1.817l-2.592-2.593h-.345z"></path>
-                  </svg>
-                  <span class="sidebar-search-label">Search Figata...</span>
-                </span>
-                <span class="sidebar-shortcut">
-                  <kbd>⌘</kbd>
-                  <kbd>K</kbd>
-                </span>
-              </button>
+              <div class="sidebar-footer">
+                <div class="sidebar-session">
+                  <div class="sidebar-user">
+                    <button
+                      id="sidebar-user-button"
+                      class="sidebar-user-row"
+                      type="button"
+                      aria-haspopup="menu"
+                      aria-expanded="false"
+                      aria-controls="sidebar-user-menu"
+                    >
+                      <span id="session-avatar" class="sidebar-user-avatar" aria-hidden="true">U</span>
+                      <span class="sidebar-user-meta">
+                        <span id="session-name" class="sidebar-user-name">Usuario</span>
+                        <span id="session-email" class="sidebar-user-email">-</span>
+                      </span>
+                    </button>
 
-              <nav class="sidebar-nav" aria-label="Figata admin sections">
-                <button
-                  id="sidebar-nav-menu"
-                  class="sidebar-nav__item"
-                  type="button"
-                  data-panel="menu-editor"
-                >
-                  <span class="sidebar-nav__icon" aria-hidden="true">M</span>
-                  <span class="sidebar-nav__label">Menu</span>
-                </button>
-
-                <a class="sidebar-nav__item" href="/admin/cms/#/collections/home">
-                  <span class="sidebar-nav__icon" aria-hidden="true">H</span>
-                  <span class="sidebar-nav__label">Home</span>
-                </a>
-
-                <a class="sidebar-nav__item" href="/admin/cms/#/collections/availability">
-                  <span class="sidebar-nav__icon" aria-hidden="true">A</span>
-                  <span class="sidebar-nav__label">Availability</span>
-                </a>
-
-                <a class="sidebar-nav__item" href="/admin/cms/#/collections/categories">
-                  <span class="sidebar-nav__icon" aria-hidden="true">C</span>
-                  <span class="sidebar-nav__label">Categories</span>
-                </a>
-
-                <a class="sidebar-nav__item" href="/admin/cms/#/collections/restaurant">
-                  <span class="sidebar-nav__icon" aria-hidden="true">R</span>
-                  <span class="sidebar-nav__label">Restaurant</span>
-                </a>
-
-                <a class="sidebar-nav__item" href="/admin/cms/#/collections/media">
-                  <span class="sidebar-nav__icon" aria-hidden="true">I</span>
-                  <span class="sidebar-nav__label">Media</span>
-                </a>
-              </nav>
-
-              <div class="sidebar-spacer"></div>
-
-              <div class="sidebar-session">
-                <p class="sidebar-session__kicker">Sesion activa</p>
-                <p id="session-email" class="sidebar-session__email">-</p>
-                <div class="sidebar-session__actions">
-                  <button id="refresh-data-button" class="btn btn-ghost" type="button">
-                    Recargar data
-                  </button>
-                  <button id="logout-button" class="btn btn-ghost" type="button">Logout</button>
+                    <div id="sidebar-user-menu" class="sidebar-user-menu is-hidden" role="menu">
+                      <div class="sidebar-user-menu__identity">
+                        <p id="sidebar-user-menu-name" class="sidebar-user-menu__name">Usuario</p>
+                        <p id="sidebar-user-menu-email" class="sidebar-user-menu__email">-</p>
+                      </div>
+                      <button id="refresh-data-button" class="sidebar-user-menu__item" type="button" role="menuitem">
+                        Recargar data
+                      </button>
+                      <button
+                        id="logout-button"
+                        class="sidebar-user-menu__item sidebar-user-menu__item--danger"
+                        type="button"
+                        role="menuitem"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -140,9 +216,7 @@
               </div>
             </header>
 
-            <p id="data-status" class="data-status" role="status" aria-live="polite">
-              Cargando datos...
-            </p>
+            <p id="data-status" class="data-status" role="status" aria-live="polite">Cargando datos...</p>
 
             <section id="dashboard-panel" aria-label="Accesos rapidos">
               <section class="cards-grid">
@@ -150,9 +224,9 @@
                   <p class="dash-card__eyebrow">Contenido</p>
                   <h2>Menu</h2>
                   <p id="metric-menu" class="dash-card__metric">0 items</p>
-                  <p>Editor visual para crear, editar o eliminar productos.</p>
+                  <p>Editor visual completo con cards, tabs y validaciones del menu.</p>
                   <div class="dash-card__actions">
-                    <button id="open-menu-editor-button" class="btn btn-inline" type="button">
+                    <button id="open-menu-browser-button" class="btn btn-inline" type="button">
                       Abrir editor
                     </button>
                     <a href="/admin/cms/#/collections/menu">Decap fallback</a>
@@ -196,90 +270,239 @@
               </section>
             </section>
 
-            <section id="menu-editor-panel" class="menu-editor is-hidden" aria-label="Menu Editor">
-              <div class="menu-editor__header">
+            <section id="menu-browser-panel" class="menu-browser is-hidden" aria-label="Menu Browser">
+              <div class="menu-browser__header">
                 <div>
-                  <p class="kicker">Editor custom</p>
-                  <h2>Menu Editor</h2>
-                  <p class="menu-editor__subtitle">
-                    Gestion visual de <code>data/menu.json</code> sin tocar JSON manualmente.
+                  <p class="kicker">Menu Editor</p>
+                  <h2>Items del menu</h2>
+                  <p class="menu-browser__subtitle">
+                    Cards visuales por categoria y subcategoria. Click en un item para editarlo.
                   </p>
                 </div>
-                <div class="menu-editor__toolbar">
-                  <button id="menu-editor-back-button" class="btn btn-ghost" type="button">
-                    Volver al dashboard
+                <div class="menu-browser__actions">
+                  <button id="menu-clear-filter-button" class="btn btn-ghost" type="button">
+                    Ver todo
                   </button>
-                  <button id="menu-add-item-button" class="btn btn-primary" type="button">
+                  <button id="menu-new-item-button" class="btn btn-primary" type="button">
                     Nuevo item
-                  </button>
-                  <button id="menu-copy-json-button" class="btn btn-ghost" type="button">
-                    Copiar JSON
-                  </button>
-                  <button id="menu-download-json-button" class="btn btn-ghost" type="button">
-                    Descargar JSON
                   </button>
                 </div>
               </div>
 
-              <p id="menu-editor-status" class="status-message" role="status" aria-live="polite"></p>
+              <p id="menu-browser-status" class="status-message" role="status" aria-live="polite"></p>
 
-              <div class="menu-editor__layout">
-                <aside class="menu-list card">
-                  <div class="menu-list__top">
-                    <label class="field">
-                      <span>Seccion</span>
-                      <select id="menu-section-filter"></select>
-                    </label>
-                  </div>
-                  <ul id="menu-items-list" class="menu-items-list"></ul>
-                </aside>
+              <div id="menu-browser-groups" class="menu-groups"></div>
+            </section>
 
-                <section class="menu-form card">
-                  <h3 id="menu-form-title">Editar item</h3>
-                  <form id="menu-item-form">
-                    <label class="field">
-                      <span>Seccion</span>
-                      <select id="menu-field-section" required></select>
-                    </label>
+            <section id="menu-item-panel" class="menu-item-editor is-hidden" aria-label="Menu Item Editor">
+              <div class="menu-item-editor__header">
+                <div>
+                  <p class="kicker">Menu / Item</p>
+                  <h2 id="item-editor-title">Editar item</h2>
+                  <p class="menu-item-editor__subtitle">
+                    Editor dedicado con validaciones cruzadas contra categories, ingredients y availability.
+                  </p>
+                </div>
+                <div class="menu-item-editor__actions">
+                  <button id="item-save-button" class="btn btn-primary" type="button">Guardar</button>
+                  <button id="item-save-close-button" class="btn btn-ghost" type="button">
+                    Guardar y cerrar
+                  </button>
+                  <button id="item-cancel-button" class="btn btn-ghost" type="button">Cancelar</button>
+                  <button id="item-delete-button" class="btn btn-danger" type="button">Eliminar item</button>
+                </div>
+              </div>
 
-                    <label class="field">
-                      <span>ID</span>
-                      <input id="menu-field-id" type="text" required />
-                    </label>
+              <p id="item-editor-status" class="status-message" role="status" aria-live="polite"></p>
+              <div id="item-editor-errors" class="item-editor-errors is-hidden" role="alert"></div>
 
-                    <label class="field">
-                      <span>Nombre</span>
-                      <input id="menu-field-name" type="text" required />
-                    </label>
+              <div class="menu-item-editor__layout">
+                <section class="menu-item-editor__form card" aria-label="Formulario de item">
+                  <nav class="item-tabs" aria-label="Item tabs">
+                    <button class="item-tab is-active" data-tab="basic" type="button">Basico</button>
+                    <button class="item-tab" data-tab="descriptions" type="button">Descripciones</button>
+                    <button class="item-tab" data-tab="ingredients" type="button">Ingredientes</button>
+                    <button class="item-tab" data-tab="tags" type="button">Tags</button>
+                    <button class="item-tab" data-tab="allergens" type="button">Alergenos</button>
+                    <button class="item-tab" data-tab="media" type="button">Media</button>
+                    <button class="item-tab" data-tab="availability" type="button">Disponibilidad</button>
+                    <button class="item-tab" data-tab="special" type="button">Especiales</button>
+                  </nav>
 
-                    <label class="field">
-                      <span>Precio (DOP)</span>
-                      <input id="menu-field-price" type="number" min="0" step="1" required />
-                    </label>
+                  <div class="item-tab-panels">
+                    <section class="item-tab-panel is-active" data-tab-panel="basic">
+                      <label class="field">
+                        <span>ID</span>
+                        <input id="item-field-id" type="text" readonly />
+                      </label>
 
-                    <label class="field">
-                      <span>Categoria</span>
-                      <input id="menu-field-category" type="text" />
-                    </label>
+                      <label class="field">
+                        <span>Nombre</span>
+                        <input id="item-field-name" type="text" />
+                      </label>
 
-                    <label class="field">
-                      <span>Ingredientes (separados por coma)</span>
-                      <textarea id="menu-field-ingredients" rows="3"></textarea>
-                    </label>
+                      <label class="field">
+                        <span>Slug</span>
+                        <div class="field-inline">
+                          <input id="item-field-slug" type="text" />
+                          <button id="item-generate-slug-button" class="btn btn-ghost" type="button">
+                            Generar
+                          </button>
+                        </div>
+                      </label>
 
-                    <label class="field">
-                      <span>Tags (separados por coma)</span>
-                      <textarea id="menu-field-tags" rows="2"></textarea>
-                    </label>
+                      <label class="field">
+                        <span>Categoria</span>
+                        <select id="item-field-category"></select>
+                      </label>
 
-                    <div class="menu-form__actions">
-                      <button class="btn btn-primary" type="submit">Guardar item</button>
-                      <button id="menu-delete-item-button" class="btn btn-danger" type="button">
-                        Eliminar item
+                      <label class="field">
+                        <span>Subcategoria</span>
+                        <select id="item-field-subcategory"></select>
+                      </label>
+
+                      <label class="field">
+                        <span>Precio</span>
+                        <input id="item-field-price" type="number" min="0" step="1" />
+                      </label>
+
+                      <p id="item-price-preview" class="inline-help">DOP 0</p>
+
+                      <label class="toggle-field">
+                        <input id="item-field-featured" type="checkbox" />
+                        <span>Featured</span>
+                      </label>
+                    </section>
+
+                    <section class="item-tab-panel" data-tab-panel="descriptions">
+                      <label class="field">
+                        <span>Descripcion corta</span>
+                        <textarea id="item-field-description-short" rows="3"></textarea>
+                      </label>
+
+                      <label class="field">
+                        <span>Descripcion larga</span>
+                        <textarea id="item-field-description-long" rows="7"></textarea>
+                      </label>
+                    </section>
+
+                    <section class="item-tab-panel" data-tab-panel="ingredients">
+                      <label class="field">
+                        <span>Buscar ingrediente</span>
+                        <input id="ingredient-search-input" type="search" placeholder="Ej: mozzarella" />
+                      </label>
+                      <div id="ingredient-search-results" class="token-search-results"></div>
+                      <ul id="ingredient-chip-list" class="chip-list chip-list--draggable"></ul>
+                      <p class="inline-help">Arrastra para cambiar el orden de ingredientes.</p>
+                    </section>
+
+                    <section class="item-tab-panel" data-tab-panel="tags">
+                      <label class="field">
+                        <span>Buscar tag</span>
+                        <input id="tag-search-input" type="search" placeholder="Ej: spicy" />
+                      </label>
+                      <div id="tag-search-results" class="token-search-results"></div>
+                      <ul id="tag-chip-list" class="chip-list"></ul>
+                    </section>
+
+                    <section class="item-tab-panel" data-tab-panel="allergens">
+                      <label class="field">
+                        <span>Buscar alergeno</span>
+                        <input id="allergen-search-input" type="search" placeholder="Ej: milk" />
+                      </label>
+                      <div id="allergen-search-results" class="token-search-results"></div>
+                      <ul id="allergen-chip-list" class="chip-list"></ul>
+                      <button id="item-autodetect-meta-button" class="btn btn-ghost" type="button">
+                        Autodetectar tags y alergenos
                       </button>
-                    </div>
-                  </form>
+                    </section>
+
+                    <section class="item-tab-panel" data-tab-panel="media">
+                      <label class="field">
+                        <span>Image path</span>
+                        <input id="item-field-image" type="text" />
+                      </label>
+
+                      <label class="field">
+                        <span>Media picker</span>
+                        <select id="item-media-picker"></select>
+                      </label>
+
+                      <div class="media-preview-box">
+                        <img id="item-media-preview" alt="Preview media" />
+                      </div>
+                    </section>
+
+                    <section class="item-tab-panel" data-tab-panel="availability">
+                      <label class="toggle-field">
+                        <input id="item-availability-toggle" type="checkbox" />
+                        <span>Disponible</span>
+                      </label>
+
+                      <label class="field">
+                        <span>Razon agotado</span>
+                        <input id="item-availability-reason" type="text" placeholder="Ej: Agotado hoy" />
+                      </label>
+                    </section>
+
+                    <section class="item-tab-panel" data-tab-panel="special">
+                      <label class="field">
+                        <span>Spicy level: <strong id="item-spicy-level-value">0</strong></span>
+                        <input id="item-field-spicy-level" type="range" min="0" max="3" step="1" />
+                      </label>
+
+                      <label class="toggle-field">
+                        <input id="item-field-vegetarian" type="checkbox" />
+                        <span>Vegetariano</span>
+                      </label>
+
+                      <label class="toggle-field">
+                        <input id="item-field-vegan" type="checkbox" />
+                        <span>Vegano</span>
+                      </label>
+
+                      <details class="advanced-box">
+                        <summary>Advanced (legacy)</summary>
+                        <label class="field">
+                          <span>item.spicy</span>
+                          <select id="item-field-spicy-legacy">
+                            <option value="">(sin valor)</option>
+                            <option value="true">true</option>
+                            <option value="false">false</option>
+                          </select>
+                        </label>
+
+                        <label class="field">
+                          <span>item.reviews</span>
+                          <input id="item-field-reviews" type="text" />
+                        </label>
+                      </details>
+                    </section>
+                  </div>
                 </section>
+
+                <aside class="menu-item-editor__preview card" aria-label="Preview en tiempo real">
+                  <p class="kicker">Preview</p>
+                  <div class="preview-columns">
+                    <article class="preview-card">
+                      <div class="preview-card__image-wrap">
+                        <img id="preview-card-image" alt="Card preview" />
+                      </div>
+                      <h3 id="preview-card-name">-</h3>
+                      <p id="preview-card-short">-</p>
+                      <div id="preview-card-badges" class="preview-badges"></div>
+                    </article>
+
+                    <article class="preview-modal">
+                      <div class="preview-modal__image-wrap">
+                        <img id="preview-modal-image" alt="Modal preview" />
+                      </div>
+                      <h3 id="preview-modal-name">-</h3>
+                      <p id="preview-modal-long">-</p>
+                      <p id="preview-modal-price" class="preview-modal__price">-</p>
+                    </article>
+                  </div>
+                </aside>
               </div>
             </section>
           </div>
