@@ -65,7 +65,7 @@ Referencia: `assets/menu/README.md`.
 - `hero`: titulo, subtitulo, imagen de fondo y CTAs.
 - `popular`: titulo/subtitulo, `featuredIds`, `limit`.
 - `eventsPreview`: toggle, titulo/subtitulo, `limit`, `eventIds`, `items`.
-- `delivery`: titulo/subtitulo y links externos.
+- `delivery`: titulo/subtitulo y `platforms` (`url`, `icon`, `iconSize`) por canal.
 - `reservation`: CTA de reservas (navbar y seccion controlada).
 - `announcements`: mensaje temporal, tipo y link.
 - `sections`: visibilidad de bloques (`hero`, `popular`, `events`, `delivery`, `reservation`, `announcements`).
@@ -81,10 +81,11 @@ Referencia: `assets/menu/README.md`.
 3. Completa `message` y, opcionalmente, `link`.
 4. Define `type` (`highlight`, `warning` o `info`).
 
-### Como cambiar links de delivery
-1. En `data/home.json`, edita `delivery.links`.
+### Como cambiar plataformas de delivery
+1. En `data/home.json`, edita `delivery.platforms`.
 2. Soporta `pedidosya`, `ubereats`, `takeout`, `whatsapp`.
-3. Si un link falta o es invalido, ese boton se oculta automaticamente.
+3. Cada plataforma acepta `url`, `icon` (path) y `iconSize` (16-64).
+4. Si un `url` falta o es invalido, ese boton se oculta automaticamente.
 
 ## Restaurante data-driven (`data/restaurant.json`)
 Centraliza los datos oficiales reutilizables para SEO + footer + contacto:
@@ -106,7 +107,7 @@ Consumo runtime:
 ## Fallbacks de runtime
 - Si `popular.featuredIds` esta vacio o invalido, se usa fallback automatico.
 - Si `hero.backgroundImage` falta, se usa imagen por defecto.
-- Si faltan links en `delivery.links`, se ocultan esos botones.
+- Si faltan links en `delivery.platforms.*.url`, se ocultan esos botones.
 
 ## Validacion
 Valida el contrato de `home.json` con:

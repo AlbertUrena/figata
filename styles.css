@@ -1320,6 +1320,7 @@ html.page-reload-transition main {
 }
 
 .delivery-action {
+  --delivery-icon-size: 36px;
   width: 270px;
   height: 70px;
   border-radius: 18px;
@@ -1337,15 +1338,14 @@ html.page-reload-transition main {
     background-color 160ms ease;
 }
 
-.delivery-action img {
-  width: 196px;
-  height: 40px;
+.delivery-action__icon {
+  width: auto;
+  height: var(--delivery-icon-size);
+  max-width: calc(var(--delivery-icon-size) * 5);
+  max-height: var(--delivery-icon-size);
   object-fit: contain;
-}
-
-.delivery-action img.delivery-action-uber-eats {
-  width: 156.8px;
-  height: 32px;
+  display: block;
+  flex: 0 0 auto;
 }
 
 .delivery-action--text span {
@@ -1353,6 +1353,15 @@ html.page-reload-transition main {
   font-weight: 700;
   letter-spacing: -0.01em;
   color: #f0efed;
+}
+
+.delivery-action--text {
+  gap: 12px;
+}
+
+.delivery-action--text .delivery-action__icon {
+  width: var(--delivery-icon-size);
+  max-width: var(--delivery-icon-size);
 }
 
 .delivery-action[hidden] {

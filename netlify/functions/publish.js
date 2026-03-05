@@ -45,6 +45,127 @@ function normalizeJsonValue(value) {
   }
 }
 
+function normalizeText(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function normalizeIngredientAlias(value) {
+  return normalizeText(value)
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .replace(/_+/g, "_");
+}
+
+function isLikelyValidIngredientIconPath(value) {
+  var path = String(value || "").trim();
+  if (!path) return false;
+  if (/^https?:\/\//i.test(path)) return true;
+  if (path[0] === "/") return true;
+  if (path.indexOf("assets/") === 0) return true;
+  return /\.(svg|webp|png|jpe?g|gif)$/i.test(path);
+}
+
+function validateIngredientsPayload(payload, menuPayload) {
+  var errors = [];
+  var warnings = [];
+  if (!payload || typeof payload !== "object") {
+    return {
+      errors: ["ingredients debe ser un objeto JSON"],
+      warnings: []
+    };
+  }
+
+  var ingredientsById = payload.ingredients && typeof payload.ingredients === "object"
+    ? payload.ingredients
+    : {};
+  var tagsById = payload.tags && typeof payload.tags === "object" ? payload.tags : {};
+  var allergensById = payload.allergens && typeof payload.allergens === "object" ? payload.allergens : {};
+  var iconsById = payload.icons && typeof payload.icons === "object" ? payload.icons : {};
+
+  Object.keys(ingredientsById).forEach(function (ingredientId) {
+    var ingredient = ingredientsById[ingredientId];
+    if (!ingredient || typeof ingredient !== "object") {
+      errors.push("Ingrediente invalido (objeto esperado): " + ingredientId);
+      return;
+    }
+
+    if (!String(ingredient.label || "").trim()) {
+      warnings.push("Ingrediente sin label: " + ingredientId);
+    }
+
+    var icon = String(ingredient.icon || "").trim();
+    if (!icon) {
+      warnings.push("Ingrediente sin icon: " + ingredientId);
+    } else if (!iconsById[icon] && !isLikelyValidIngredientIconPath(icon)) {
+      errors.push("Icon invalido en ingrediente '" + ingredientId + "': " + icon);
+    }
+
+    if (!Array.isArray(ingredient.aliases)) {
+      errors.push("aliases debe ser array en ingrediente: " + ingredientId);
+    } else {
+      var seenAliases = {};
+      ingredient.aliases.forEach(function (alias) {
+        var rawAlias = String(alias || "").trim();
+        var normalizedAlias = normalizeIngredientAlias(rawAlias);
+        if (!normalizedAlias) {
+          errors.push("Alias vacio/invalido en ingrediente: " + ingredientId);
+          return;
+        }
+        if (rawAlias !== normalizedAlias) {
+          errors.push("Alias no normalizado en '" + ingredientId + "': " + rawAlias);
+        }
+        if (seenAliases[normalizedAlias]) {
+          errors.push("Alias duplicado en '" + ingredientId + "': " + normalizedAlias);
+          return;
+        }
+        seenAliases[normalizedAlias] = true;
+      });
+    }
+
+    if (!Array.isArray(ingredient.tags)) {
+      errors.push("tags debe ser array en ingrediente: " + ingredientId);
+    } else {
+      ingredient.tags.forEach(function (tagId) {
+        if (!tagsById[tagId]) {
+          errors.push("Tag desconocido en ingrediente '" + ingredientId + "': " + tagId);
+        }
+      });
+    }
+
+    if (!Array.isArray(ingredient.allergens)) {
+      errors.push("allergens debe ser array en ingrediente: " + ingredientId);
+    } else {
+      ingredient.allergens.forEach(function (allergenId) {
+        if (!allergensById[allergenId]) {
+          errors.push("Alergeno desconocido en ingrediente '" + ingredientId + "': " + allergenId);
+        }
+      });
+    }
+  });
+
+  var menuSections = menuPayload && Array.isArray(menuPayload.sections) ? menuPayload.sections : [];
+  menuSections.forEach(function (section) {
+    var items = section && Array.isArray(section.items) ? section.items : [];
+    items.forEach(function (item) {
+      if (!item || !Array.isArray(item.ingredients)) return;
+      var unknown = item.ingredients.filter(function (ingredientId) {
+        return !ingredientsById[ingredientId];
+      });
+      if (!unknown.length) return;
+      warnings.push(
+        "Menu item '" + (item.id || "unknown") + "' referencia ingredientes invalidos: " +
+        unknown.join(", ")
+      );
+    });
+  });
+
+  return { errors: errors, warnings: warnings };
+}
+
 function getUserKey(user) {
   if (!user || typeof user !== "object") {
     return "anonymous";
@@ -272,13 +393,39 @@ exports.handler = async function (event, context) {
 
   var normalizedMenu = normalizeJsonValue(body.menu);
   var normalizedAvailability = normalizeJsonValue(body.availability);
-  if (!normalizedMenu || !normalizedAvailability) {
+  var hasHomePayload = typeof body.home !== "undefined";
+  var normalizedHome = hasHomePayload ? normalizeJsonValue(body.home) : null;
+  var hasIngredientsPayload = typeof body.ingredients !== "undefined";
+  var normalizedIngredients = hasIngredientsPayload ? normalizeJsonValue(body.ingredients) : null;
+  var hasMediaPayload = typeof body.media !== "undefined";
+  var normalizedMedia = hasMediaPayload ? normalizeJsonValue(body.media) : null;
+  if (
+    !normalizedMenu ||
+    !normalizedAvailability ||
+    (hasHomePayload && !normalizedHome) ||
+    (hasIngredientsPayload && !normalizedIngredients) ||
+    (hasMediaPayload && !normalizedMedia)
+  ) {
     return jsonResponse(400, { error: "Invalid payload" });
+  }
+
+  var ingredientsValidation = hasIngredientsPayload
+    ? validateIngredientsPayload(body.ingredients, body.menu)
+    : { errors: [], warnings: [] };
+  if (ingredientsValidation.errors.length) {
+    return jsonResponse(400, {
+      error: "Invalid ingredients payload",
+      details: ingredientsValidation.errors.slice(0, 30),
+      warnings: ingredientsValidation.warnings.slice(0, 20)
+    });
   }
 
   try {
     var menuPath = "data/menu.json";
     var availabilityPath = "data/availability.json";
+    var homePath = "data/home.json";
+    var ingredientsPath = "data/ingredients.json";
+    var mediaPath = "data/media.json";
 
     if (target === "preview" && targetBranch !== productionBranch) {
       await ensureBranchExists(
@@ -306,16 +453,55 @@ exports.handler = async function (event, context) {
       githubToken
     );
 
+    var homeRemote = null;
+    if (hasHomePayload) {
+      homeRemote = await readGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        homePath,
+        githubToken
+      );
+    }
+
+    var ingredientsRemote = null;
+    if (hasIngredientsPayload) {
+      ingredientsRemote = await readGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        ingredientsPath,
+        githubToken
+      );
+    }
+
+    var mediaRemote = null;
+    if (hasMediaPayload) {
+      mediaRemote = await readGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        mediaPath,
+        githubToken
+      );
+    }
+
     var menuChanged = menuRemote.normalized !== normalizedMenu;
     var availabilityChanged = availabilityRemote.normalized !== normalizedAvailability;
+    var homeChanged = hasHomePayload ? homeRemote.normalized !== normalizedHome : false;
+    var ingredientsChanged = hasIngredientsPayload
+      ? ingredientsRemote.normalized !== normalizedIngredients
+      : false;
+    var mediaChanged = hasMediaPayload ? mediaRemote.normalized !== normalizedMedia : false;
 
-    if (!menuChanged && !availabilityChanged) {
+    if (!menuChanged && !availabilityChanged && !homeChanged && !ingredientsChanged && !mediaChanged) {
       return jsonResponse(200, {
         success: true,
         skipped: true,
         reason: "no changes",
         target: target,
-        branch: targetBranch
+        branch: targetBranch,
+        validationWarnings: ingredientsValidation.warnings.slice(0, 20)
       });
     }
 
@@ -347,6 +533,45 @@ exports.handler = async function (event, context) {
       ) || latestCommitSha;
     }
 
+    if (homeChanged) {
+      latestCommitSha = await writeGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        homePath,
+        githubToken,
+        "CMS: update home (" + target + ")",
+        body.home,
+        homeRemote.sha
+      ) || latestCommitSha;
+    }
+
+    if (ingredientsChanged) {
+      latestCommitSha = await writeGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        ingredientsPath,
+        githubToken,
+        "CMS: update ingredients (" + target + ")",
+        body.ingredients,
+        ingredientsRemote.sha
+      ) || latestCommitSha;
+    }
+
+    if (mediaChanged) {
+      latestCommitSha = await writeGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        mediaPath,
+        githubToken,
+        "CMS: update media (" + target + ")",
+        body.media,
+        mediaRemote.sha
+      ) || latestCommitSha;
+    }
+
     return jsonResponse(200, {
       success: true,
       skipped: false,
@@ -354,8 +579,12 @@ exports.handler = async function (event, context) {
       branch: targetBranch,
       changed: {
         menu: menuChanged,
-        availability: availabilityChanged
+        availability: availabilityChanged,
+        home: homeChanged,
+        ingredients: ingredientsChanged,
+        media: mediaChanged
       },
+      validationWarnings: ingredientsValidation.warnings.slice(0, 20),
       commit: latestCommitSha
     });
   } catch (error) {

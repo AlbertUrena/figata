@@ -184,15 +184,25 @@
 
             <div class="delivery-actions" role="group" aria-label="Plataformas de delivery">
               <a class="delivery-action" href="#" aria-label="Pedir por PedidosYa" data-delivery-link="pedidosya">
-                <img src="assets/svg-icons/pedidosya.svg" alt="PedidosYa">
+                <img class="delivery-action__icon" src="assets/svg-icons/pedidosya.svg" alt="" aria-hidden="true"
+                  data-delivery-icon="pedidosya" data-delivery-default-icon="assets/svg-icons/pedidosya.svg"
+                  data-delivery-default-size="40">
               </a>
               <a class="delivery-action" href="#" aria-label="Pedir por Uber Eats" data-delivery-link="ubereats">
-                <img class="delivery-action-uber-eats" src="assets/svg-icons/uber-eats.svg" alt="Uber Eats">
+                <img class="delivery-action__icon" src="assets/svg-icons/uber-eats.svg" alt="" aria-hidden="true"
+                  data-delivery-icon="ubereats" data-delivery-default-icon="assets/svg-icons/uber-eats.svg"
+                  data-delivery-default-size="32">
               </a>
               <a class="delivery-action delivery-action--text" href="#" aria-label="Pedir para Takeout" data-delivery-link="takeout">
+                <img class="delivery-action__icon" src="assets/svg-icons/menu-icon.svg" alt="" aria-hidden="true"
+                  data-delivery-icon="takeout" data-delivery-default-icon="assets/svg-icons/menu-icon.svg"
+                  data-delivery-default-size="26">
                 <span>Takeout</span>
               </a>
               <a class="delivery-action delivery-action--text" href="#" aria-label="Pedir por WhatsApp" data-delivery-link="whatsapp">
+                <img class="delivery-action__icon" src="assets/svg-icons/whatsapp.svg" alt="" aria-hidden="true"
+                  data-delivery-icon="whatsapp" data-delivery-default-icon="assets/svg-icons/whatsapp.svg"
+                  data-delivery-default-size="26">
                 <span>WhatsApp</span>
               </a>
             </div>
@@ -400,8 +410,8 @@
               <p class="footer-banner-address" data-restaurant-address>
                 Calle Costa Rica No. 142, Urbanización Alma Rosa 1, en el municipio de Santo Domingo Este, República Dominicana.
               </p>
-              <a class="footer-banner-cta" href="#ubicacion" data-restaurant-maps-link>
-                <span class="footer-banner-cta-label">Cómo llegar</span>
+              <a class="footer-banner-cta" href="#ubicacion" data-restaurant-maps-link data-home-footer-cta>
+                <span class="footer-banner-cta-label" data-home-footer-cta-label>C&oacute;mo llegar</span>
                 <img class="footer-banner-cta-icon" src="assets/svg-icons/open-link-icon.svg" alt="" aria-hidden="true">
               </a>
             </div>
@@ -426,8 +436,8 @@
 
               <!-- Empresa -->
               <div class="footer-col">
-                <p class="footer-col-title">Empresa</p>
-                <ul class="footer-links">
+                <p class="footer-col-title" data-home-footer-column-title="0">Empresa</p>
+                <ul class="footer-links" data-home-footer-column-links="0">
                   <li><a href="#menu"><span>Menú</span></a></li>
                   <li><a href="#nosotros"><span>Nosotros</span></a></li>
                   <li><a href="#faqs"><span>FAQs</span></a></li>
@@ -437,8 +447,8 @@
 
               <!-- Socials -->
               <div class="footer-col footer-col--socials">
-                <p class="footer-col-title">Socials</p>
-                <ul class="footer-links">
+                <p class="footer-col-title" data-home-footer-column-title="1">Socials</p>
+                <ul class="footer-links" data-home-footer-column-links="1">
                   <li><a class="footer-social-link footer-social-link--instagram" data-restaurant-social-link="instagram" href="#" target="_blank" rel="noopener"><span>Instagram</span><img class="footer-link-icon" src="assets/svg-icons/open-link-icon.svg" alt="" aria-hidden="true"></a></li>
                   <li><a class="footer-social-link footer-social-link--tiktok" data-restaurant-social-link="tiktok" href="#" target="_blank" rel="noopener"><span>TikTok</span><img class="footer-link-icon" src="assets/svg-icons/open-link-icon.svg" alt="" aria-hidden="true"></a></li>
                   <li><a class="footer-social-link footer-social-link--tripadvisor" data-restaurant-social-link="tripadvisor" href="#" target="_blank" rel="noopener"><span>Trip Advisor</span><img class="footer-link-icon" src="assets/svg-icons/open-link-icon.svg" alt="" aria-hidden="true"></a></li>
@@ -447,7 +457,7 @@
 
               <!-- Contáctanos (estilo “Newsletter” de SquareUI) -->
               <div class="footer-newsletter">
-                <p class="footer-col-title">Contáctanos</p>
+                <p class="footer-col-title" data-home-footer-column-title="2">Cont&aacute;ctanos</p>
                 <p class="footer-muted footer-newsletter-copy">
                   ¿Tienes una pregunta? Escríbenos a nuestro WhatsApp
                 </p>
@@ -458,6 +468,7 @@
                     <img class="footer-submit-icon" src="assets/svg-icons/right-arrow.svg" alt="" aria-hidden="true">
                   </button>
                 </form>
+                <ul class="footer-links" data-home-footer-column-links="2"></ul>
               </div>
 
             </div>

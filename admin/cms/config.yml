@@ -2,8 +2,8 @@ backend:
   name: git-gateway
   branch: master
 
-media_folder: assets/uploads
-public_folder: /assets/uploads
+media_folder: assets/menu
+public_folder: /assets/menu
 
 editor:
   preview: false
@@ -133,6 +133,7 @@ collections:
                     name: image
                     widget: string
                     required: false
+                    hint: "Usa rutas de menu en formato WebP: assets/menu/<archivo>.webp"
                   - label: Reviews
                     name: reviews
                     widget: string
@@ -662,6 +663,7 @@ collections:
                 name: image
                 widget: string
                 required: false
+                hint: "Preferir assets/menu/<archivo>.webp (si aplica al contenido del menu)."
   - name: media
     label: Media
     files:

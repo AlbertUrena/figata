@@ -78,12 +78,11 @@
             "vegetarian"
           ],
           "allergens": [],
-          "image": "menu/bruschetta.webp",
+          "image": "assets/menu/bruschetta.webp",
           "featured": true,
           "spicy_level": 0,
           "vegetarian": true,
           "vegan": false,
-          "available": true,
           "reviews": "121 reseñas"
         },
         {
@@ -223,12 +222,11 @@
           ],
           "tags": [],
           "allergens": [],
-          "image": "menu/schiacciata-sandwich.webp",
-          "featured": false,
+          "image": "assets/menu/schiacciata-sandwich.webp",
+          "featured": true,
           "spicy_level": 0,
           "vegetarian": false,
-          "vegan": false,
-          "available": true
+          "vegan": false
         }
       ]
     },
@@ -254,12 +252,11 @@
             "vegetarian"
           ],
           "allergens": [],
-          "image": "menu/margherita.webp",
+          "image": "assets/menu/margherita.webp",
           "featured": true,
           "spicy_level": 0,
           "vegetarian": true,
           "vegan": false,
-          "available": true,
           "reviews": "198 reseñas"
         },
         {
@@ -340,7 +337,7 @@
         },
         {
           "id": "diavola",
-          "name": "Diavola",
+          "name": "Diavola tt",
           "slug": "diavola",
           "category": "pizza",
           "subcategory": "",
@@ -361,7 +358,6 @@
           "spicy_level": 1,
           "vegetarian": false,
           "vegan": false,
-          "available": true,
           "spicy": true,
           "reviews": "166 reseñas"
         },
@@ -383,12 +379,11 @@
           ],
           "tags": [],
           "allergens": [],
-          "image": "assets/filetti.png",
-          "featured": false,
+          "image": "assets/menu/filetti.webp",
+          "featured": true,
           "spicy_level": 0,
           "vegetarian": false,
-          "vegan": false,
-          "available": true
+          "vegan": false
         },
         {
           "id": "sweet_goat",
@@ -407,12 +402,11 @@
           ],
           "tags": [],
           "allergens": [],
-          "image": "assets/sweet-goat.png",
-          "featured": true,
+          "image": "assets/menu/sweet-goat.webp",
+          "featured": false,
           "spicy_level": 0,
           "vegetarian": false,
           "vegan": false,
-          "available": true,
           "reviews": "149 reseñas"
         },
         {
@@ -508,12 +502,11 @@
           ],
           "tags": [],
           "allergens": [],
-          "image": "assets/figata.png",
-          "featured": true,
+          "image": "assets/menu/figata.webp",
+          "featured": false,
           "spicy_level": 0,
           "vegetarian": false,
           "vegan": false,
-          "available": true,
           "reviews": "184 reseñas"
         },
         {
@@ -717,12 +710,11 @@
             "spicy"
           ],
           "allergens": [],
-          "image": "assets/vulcano.png",
-          "featured": true,
+          "image": "assets/menu/vulcano.webp",
+          "featured": false,
           "spicy_level": 1,
           "vegetarian": false,
           "vegan": false,
-          "available": true,
           "spicy": true,
           "reviews": "171 reseñas"
         },
@@ -746,12 +738,11 @@
           ],
           "tags": [],
           "allergens": [],
-          "image": "assets/bellezza.png",
+          "image": "assets/menu/bellezza.webp",
           "featured": false,
           "spicy_level": 0,
           "vegetarian": false,
-          "vegan": false,
-          "available": true
+          "vegan": false
         },
         {
           "id": "passione_del_sud",
@@ -895,12 +886,11 @@
           "ingredients": [],
           "tags": [],
           "allergens": [],
-          "image": "menu/tiramisu.webp",
+          "image": "assets/menu/tiramisu.webp",
           "featured": true,
           "spicy_level": 0,
           "vegetarian": false,
           "vegan": false,
-          "available": true,
           "reviews": "132 reseñas"
         },
         {
@@ -915,12 +905,11 @@
           "ingredients": [],
           "tags": [],
           "allergens": [],
-          "image": "assets/helado-artesanal.png",
+          "image": "assets/menu/helado-artesanal.webp",
           "featured": false,
           "spicy_level": 0,
           "vegetarian": false,
-          "vegan": false,
-          "available": true
+          "vegan": false
         },
         {
           "id": "delicia_coco",
@@ -1057,7 +1046,7 @@
         },
         {
           "id": "pan_ciabatta",
-          "name": "Pan ciabatta de masa madre",
+          "name": "Sourdough Ciabatta",
           "slug": "pan-ciabatta",
           "category": "productos",
           "subcategory": "",
@@ -1067,12 +1056,11 @@
           "ingredients": [],
           "tags": [],
           "allergens": [],
-          "image": "menu/sourdough-ciabatta.webp",
-          "featured": false,
+          "image": "assets/menu/sourdough-ciabatta.webp",
+          "featured": true,
           "spicy_level": 0,
           "vegetarian": false,
-          "vegan": false,
-          "available": true
+          "vegan": false
         }
       ]
     }

@@ -11,32 +11,369 @@
 
   var SIDEBAR_COLLAPSE_KEY = "figata_admin_sidebar_collapsed";
   var MENU_PLACEHOLDER_IMAGE = "assets/menu/placeholders/card.svg";
+  var MENU_MEDIA_ROOT = "assets/menu";
+  var LOCAL_MEDIA_OPTIONS_ENDPOINT = "/__local/menu-media-paths";
   var LOCAL_DRAFTS_MENU_KEY = "figata_admin_drafts_menu";
   var LOCAL_DRAFTS_AVAILABILITY_KEY = "figata_admin_drafts_availability";
+  var LOCAL_DRAFTS_HOME_KEY = "figata_admin_drafts_home";
+  var LOCAL_DRAFTS_INGREDIENTS_KEY = "figata_admin_drafts_ingredients";
   var LOCAL_DRAFTS_FLAG_KEY = "figata_admin_has_drafts";
+  var LOCAL_SAVE_DRAFTS_ENDPOINT = "/__local/save-drafts";
+  var MENU_MODAL_PLACEHOLDER_IMAGE = "assets/menu/placeholders/modal.svg";
+  var DEV_AUTH_BYPASS_KEY = "figata_admin_dev_auth_bypass";
+  var SIDEBAR_ACCORDION_SWITCH_DELAY_MS = 260;
+  var SIDEBAR_ACCORDION_OPEN_DELAY_MS = 0;
+  var SIDEBAR_ACCORDION_STAGGER_STEP_MS = 40;
+  var SIDEBAR_ACCORDION_STAGGER_BASE_MS = 170;
+  var PANEL_FADE_OUT_DELAY_MS = 88;
+  var PANEL_FADE_IN_CLEANUP_DELAY_MS = 176;
+  var HOME_FEATURED_LIMIT = 8;
+  var HOME_ANNOUNCEMENT_TYPES = ["highlight", "warning", "info"];
+  var HOME_DEFAULT_NAVBAR_LINKS = [
+    { label: "Menu", url: "#menu" },
+    { label: "Nosotros", url: "#nosotros" },
+    { label: "Ubicacion", url: "#ubicacion" },
+    { label: "Contacto", url: "#contacto" }
+  ];
+  var HOME_DEFAULT_NAVBAR_ICON = "assets/svg-icons/whatsapp.svg";
+  var HOME_TESTIMONIALS_LIMIT = 9;
+  var HOME_FOOTER_COLUMNS_COUNT = 3;
+  var HOME_FOOTER_LINKS_LIMIT = 8;
+  var HOME_FOOTER_SOCIAL_KEYS = ["instagram", "tiktok", "tripadvisor"];
+  var HOME_DELIVERY_ICON_MIN_SIZE = 16;
+  var HOME_DELIVERY_ICON_MAX_SIZE = 64;
+  var HOME_DELIVERY_PLATFORM_KEYS = ["pedidosya", "ubereats", "takeout", "whatsapp"];
+  var HOME_DELIVERY_DEFAULTS = {
+    pedidosya: {
+      url: "#",
+      icon: "assets/svg-icons/pedidosya.svg",
+      iconSize: 40
+    },
+    ubereats: {
+      url: "#",
+      icon: "assets/svg-icons/uber-eats.svg",
+      iconSize: 32
+    },
+    takeout: {
+      url: "",
+      icon: "assets/svg-icons/menu-icon.svg",
+      iconSize: 26
+    },
+    whatsapp: {
+      url: "",
+      icon: "assets/svg-icons/whatsapp.svg",
+      iconSize: 26
+    }
+  };
+  var HOME_TESTIMONIALS_DEFAULT_ITEMS = [
+    {
+      name: "Awilda Suero",
+      role: "Local Guide",
+      text: "We ordered for delivery, it was 10 out of 10. Great ingredients and real Neapolitan pizza from wood oven.",
+      stars: 5
+    },
+    {
+      name: "Fabio Reyes",
+      role: "Cliente frecuente",
+      text: "Sus pizzas son excelentes, hechas con ingredientes de alta calidad y con muy buen ambiente en el local.",
+      stars: 5
+    },
+    {
+      name: "Karla Villar",
+      role: "Food lover",
+      text: "La pizza artesanal es excelente. Si te gusta probar cervezas diferentes, este lugar vale la pena.",
+      stars: 4
+    },
+    {
+      name: "Liecel Franco",
+      role: "Cliente",
+      text: "Tienen una variedad deliciosa de pizza, muy buen cafe y cocteles. Siempre regresamos.",
+      stars: 5
+    },
+    {
+      name: "Prysla Rodriguez",
+      role: "Local Guide",
+      text: "La mejor pizza napolitana que he probado. Textura, sabor y servicio, todo excelente.",
+      stars: 5
+    },
+    {
+      name: "Angel Tejeda Pina",
+      role: "Cliente",
+      text: "Desde que abres la puerta el olor a pizza te gana. Servicio excelente y pizzas espectaculares.",
+      stars: 5
+    },
+    {
+      name: "Massiel Beltre",
+      role: "Cliente frecuente",
+      text: "Mi restaurante favorito en Santo Domingo Este. Buenisimas pizzas, excelente servicio y ambiente.",
+      stars: 5
+    },
+    {
+      name: "Vianneris Morillo",
+      role: "Foodie",
+      text: "Cocteles riquisimos, pizzas llenas de sabor y un tiramisu increible. Muy recomendado.",
+      stars: 5
+    },
+    {
+      name: "Ricardo Restituyo",
+      role: "Local Guide",
+      text: "Great pizzas, very good value and attentive staff. Sweet Goat and Figata are must-tries.",
+      stars: 5
+    }
+  ];
+  var HOME_FOOTER_DEFAULT_COLUMNS = [
+    {
+      title: "Empresa",
+      links: [
+        { label: "Menu", url: "#menu" },
+        { label: "Nosotros", url: "#nosotros" },
+        { label: "FAQs", url: "#faqs" },
+        { label: "Eventos", url: "#eventos" }
+      ]
+    },
+    {
+      title: "Socials",
+      links: [
+        { label: "Instagram", url: "" },
+        { label: "TikTok", url: "" },
+        { label: "Trip Advisor", url: "" }
+      ]
+    },
+    {
+      title: "Contactanos",
+      links: []
+    }
+  ];
+  var HOME_FOOTER_DEFAULT_CTA = {
+    label: "Como llegar",
+    url: "#ubicacion"
+  };
+  var HOME_FOOTER_DEFAULT_SOCIALS = {
+    instagram: "",
+    tiktok: "",
+    tripadvisor: ""
+  };
+  var HOME_EDITOR_SECTIONS = [
+    {
+      id: "navbar",
+      label: "Navbar",
+      description: "Links de navegacion y boton derecho del navbar."
+    },
+    {
+      id: "hero",
+      label: "Hero",
+      description: "Titulo principal, subtitulo, imagen y CTAs del hero."
+    },
+    {
+      id: "featured",
+      label: "Featured",
+      description: "Seccion Las mas pedidas y orden de featuredIds (max 8)."
+    },
+    {
+      id: "delivery",
+      label: "Delivery",
+      description: "Copy, links e iconos (path + size) de plataformas de delivery y takeout."
+    },
+    {
+      id: "testimonials",
+      label: "Testimonials",
+      description: "Titulo/subtitulo y cards editables del bloque testimonials (3x3)."
+    },
+    {
+      id: "events",
+      label: "Eventos",
+      description: "Tabs de eventos, textos y lista de items."
+    },
+    {
+      id: "footer",
+      label: "Footer",
+      description: "Titulos/links del footer, CTA marron y URLs de redes sociales."
+    },
+    {
+      id: "announcements",
+      label: "Announcements",
+      description: "Aviso superior del home y su tipo visual."
+    }
+  ];
+  var INGREDIENT_CATEGORY_DEFINITIONS = [
+    { id: "lacteos_quesos", label: "Lácteos / Quesos" },
+    { id: "tomates", label: "Tomates" },
+    { id: "hierbas", label: "Hierbas" },
+    { id: "aceites_salsas", label: "Aceites y Salsas" },
+    { id: "vegetales_base", label: "Vegetales Base" },
+    { id: "hongos", label: "Hongos" },
+    { id: "carnes_embutidos", label: "Carnes / Embutidos" },
+    { id: "mar_pescado", label: "Mar / Pescado" },
+    { id: "encurtidos_salmuera", label: "Encurtidos / Salmuera" },
+    { id: "dulces", label: "Dulces" },
+    { id: "frutos_secos", label: "Frutos Secos" },
+    { id: "otros", label: "Otros" }
+  ];
+  var INGREDIENT_CATEGORY_BY_ID = {
+    burrata_fresca: "lacteos_quesos",
+    fior_di_latte: "lacteos_quesos",
+    gorgonzola: "lacteos_quesos",
+    mozzarella: "lacteos_quesos",
+    parmigiano_reggiano: "lacteos_quesos",
+    pecorino: "lacteos_quesos",
+    pecorino_trufado: "lacteos_quesos",
+    provola: "lacteos_quesos",
+    queso_de_cabra: "lacteos_quesos",
+    quesos_tagliere: "lacteos_quesos",
+    ricotta: "lacteos_quesos",
+    stracciatella: "lacteos_quesos",
+    pomodoro: "tomates",
+    salsa_de_tomate: "tomates",
+    san_marzano_dop: "tomates",
+    tomate_cherry: "tomates",
+    albahaca: "hierbas",
+    menta: "hierbas",
+    oregano: "hierbas",
+    romero: "hierbas",
+    rucula: "hierbas",
+    aceite_de_oliva_evoo: "aceites_salsas",
+    crema_de_trufa: "aceites_salsas",
+    pesto_de_albahaca: "aceites_salsas",
+    pesto_de_pistacho: "aceites_salsas",
+    pesto_de_rucula: "aceites_salsas",
+    ajo: "vegetales_base",
+    berenjena: "vegetales_base",
+    cebolla: "vegetales_base",
+    chili_flakes: "vegetales_base",
+    peperoncino: "vegetales_base",
+    porcini: "hongos",
+    bacon: "carnes_embutidos",
+    bresaola: "carnes_embutidos",
+    mortadella: "carnes_embutidos",
+    nduja: "carnes_embutidos",
+    pancetta: "carnes_embutidos",
+    prosciutto_di_parma: "carnes_embutidos",
+    salamino_piccante: "carnes_embutidos",
+    salsiccia: "carnes_embutidos",
+    soppressata: "carnes_embutidos",
+    atun: "mar_pescado",
+    aceitunas: "encurtidos_salmuera",
+    alcaparras: "encurtidos_salmuera",
+    mermelada_de_tomate: "dulces",
+    miel: "dulces",
+    pistachos: "frutos_secos"
+  };
+  var INGREDIENT_CATEGORY_BY_ICON = {
+    aceituna: "encurtidos_salmuera",
+    ajo: "vegetales_base",
+    albahaca: "hierbas",
+    alcaparra: "encurtidos_salmuera",
+    bacon: "carnes_embutidos",
+    berenjena: "vegetales_base",
+    burrata: "lacteos_quesos",
+    cebolla: "vegetales_base",
+    chile: "vegetales_base",
+    hongo: "hongos",
+    jamon_curado: "carnes_embutidos",
+    menta: "hierbas",
+    mermelada: "dulces",
+    miel: "dulces",
+    oliva: "aceites_salsas",
+    oregano: "hierbas",
+    pancetta: "carnes_embutidos",
+    pescado: "mar_pescado",
+    pesto: "aceites_salsas",
+    pistacho: "frutos_secos",
+    queso: "lacteos_quesos",
+    romero: "hierbas",
+    rucula: "hierbas",
+    salami: "carnes_embutidos",
+    salchicha: "carnes_embutidos",
+    san_marzano: "tomates",
+    stracciatella: "lacteos_quesos",
+    tomate: "tomates",
+    tomate_cherry: "tomates",
+    trufa: "aceites_salsas"
+  };
+  var INGREDIENT_CATEGORY_KEYWORDS = [
+    {
+      categoryId: "lacteos_quesos",
+      keywords: ["queso", "mozzarella", "ricotta", "burrata", "gorgonzola", "pecorino", "fior", "stracciatella", "parmigiano", "provola", "lacteo", "milk"]
+    },
+    {
+      categoryId: "tomates",
+      keywords: ["tomate", "pomodoro", "san_marzano", "marzano"]
+    },
+    {
+      categoryId: "hierbas",
+      keywords: ["albahaca", "oregano", "romero", "menta", "rucula", "herb", "basil"]
+    },
+    {
+      categoryId: "aceites_salsas",
+      keywords: ["aceite", "evoo", "pesto", "salsa", "crema", "trufa", "olio"]
+    },
+    {
+      categoryId: "vegetales_base",
+      keywords: ["ajo", "cebolla", "berenjena", "peperoncino", "chili", "chile", "vegetal"]
+    },
+    {
+      categoryId: "hongos",
+      keywords: ["hongo", "porcini", "fungi", "mushroom"]
+    },
+    {
+      categoryId: "carnes_embutidos",
+      keywords: ["bacon", "prosciutto", "salami", "soppressata", "mortadella", "pancetta", "salsiccia", "bresaola", "nduja", "jamon", "carne", "embutido"]
+    },
+    {
+      categoryId: "mar_pescado",
+      keywords: ["atun", "pescado", "mar", "fish", "tonno"]
+    },
+    {
+      categoryId: "encurtidos_salmuera",
+      keywords: ["aceituna", "alcaparra", "encurtido", "salmuera", "olive", "caper"]
+    },
+    {
+      categoryId: "dulces",
+      keywords: ["miel", "mermelada", "dulce", "sweet", "honey", "jam"]
+    },
+    {
+      categoryId: "frutos_secos",
+      keywords: ["pistacho", "fruto_seco", "nuts", "almendra", "nuez", "avellana"]
+    }
+  ];
 
   var state = {
     data: null,
     drafts: {
       menu: null,
-      availability: null
+      availability: null,
+      home: null,
+      ingredients: null
     },
     indexes: {
       categoryList: [],
       categoriesById: {},
       ingredientsById: {},
       ingredientList: [],
+      iconsById: {},
+      iconList: [],
       tagsById: {},
       tagList: [],
       allergensById: {},
       allergenList: [],
-      mediaPaths: []
+      mediaPaths: [],
+      localMenuMediaPaths: [],
+      menuMediaPathSet: {}
     },
     isDataLoading: false,
     hasDataLoaded: false,
     isPublishing: false,
     currentPanel: "dashboard",
+    visiblePanel: "dashboard",
     sidebarCollapsed: false,
+    sidebarAccordionOpenKey: "",
+    sidebarAccordionPendingKey: "",
+    sidebarAccordionTimer: 0,
+    sidebarIndicatorSyncFrame: 0,
+    sidebarIndicatorSyncTimers: [],
+    panelFadeOutTimer: 0,
+    panelFadeInTimer: 0,
+    panelTransitionToken: 0,
     menuActiveAnchor: {
       categoryId: "",
       subcategoryId: ""
@@ -44,6 +381,11 @@
     menuViewGroups: [],
     menuAnchorTargets: [],
     menuScrollSpyFrame: 0,
+    homeActiveSectionId: "",
+    homeAnchorTargets: [],
+    homeScrollSpyFrame: 0,
+    ingredientsAnchorTargets: [],
+    ingredientsScrollSpyFrame: 0,
     itemEditor: {
       isOpen: false,
       isNew: false,
@@ -58,6 +400,16 @@
         available: true,
         soldOutReason: ""
       }
+    },
+    ingredientsEditor: {
+      view: "catalog",
+      search: "",
+      activeCategoryId: "",
+      catalogSections: null,
+      selectedIngredientId: "",
+      selectedIsNew: false,
+      draft: null,
+      validationReport: null
     }
   };
 
@@ -66,26 +418,37 @@
     dashboard: document.getElementById("dashboard-view"),
     dashboardPanel: document.getElementById("dashboard-panel"),
     menuBrowserPanel: document.getElementById("menu-browser-panel"),
-    menuItemPanel: document.getElementById("menu-item-panel")
+    menuItemPanel: document.getElementById("menu-item-panel"),
+    homeEditorPanel: document.getElementById("home-editor-panel"),
+    ingredientsEditorPanel: document.getElementById("ingredients-editor-panel")
   };
 
   var elements = {
     sidebar: document.getElementById("admin-sidebar"),
+    sidebarNav: document.querySelector(".sidebar-nav"),
+    sidebarNavActiveIndicator: document.getElementById("sidebar-nav-active-indicator"),
     sidebarHomeButton: document.getElementById("sidebar-home-button"),
     sidebarToggleButton: document.getElementById("sidebar-toggle-button"),
     sidebarSearchButton: document.getElementById("sidebar-search-button"),
     sidebarNavDashboard: document.getElementById("sidebar-nav-dashboard"),
     sidebarNavMenu: document.getElementById("sidebar-nav-menu"),
+    sidebarNavHomepage: document.getElementById("sidebar-nav-homepage"),
+    sidebarNavIngredients: document.getElementById("sidebar-nav-ingredients"),
     sidebarMenuAccordion: document.getElementById("sidebar-menu-accordion"),
+    sidebarHomepageAccordion: document.getElementById("sidebar-homepage-accordion"),
+    sidebarIngredientsAccordion: document.getElementById("sidebar-ingredients-accordion"),
     sidebarUserButton: document.getElementById("sidebar-user-button"),
     sidebarUserMenu: document.getElementById("sidebar-user-menu"),
     sidebarUserMenuName: document.getElementById("sidebar-user-menu-name"),
     sidebarUserMenuEmail: document.getElementById("sidebar-user-menu-email"),
+    dashboardContent: document.querySelector(".dashboard-content"),
 
     loginButton: document.getElementById("login-button"),
     logoutButton: document.getElementById("logout-button"),
     refreshDataButton: document.getElementById("refresh-data-button"),
     openMenuBrowserButton: document.getElementById("open-menu-browser-button"),
+    openHomepageEditorButton: document.getElementById("open-homepage-editor-button"),
+    openIngredientsEditorButton: document.getElementById("open-ingredients-editor-button"),
 
     sessionName: document.getElementById("session-name"),
     sessionEmail: document.getElementById("session-email"),
@@ -99,6 +462,7 @@
 
     metricMenu: document.getElementById("metric-menu"),
     metricHome: document.getElementById("metric-home"),
+    metricIngredients: document.getElementById("metric-ingredients"),
     metricAvailability: document.getElementById("metric-availability"),
     metricCategories: document.getElementById("metric-categories"),
     metricRestaurant: document.getElementById("metric-restaurant"),
@@ -108,6 +472,46 @@
     menuBrowserGroups: document.getElementById("menu-browser-groups"),
     menuClearFilterButton: document.getElementById("menu-clear-filter-button"),
     menuNewItemButton: document.getElementById("menu-new-item-button"),
+    homeEditorStatus: document.getElementById("home-editor-status"),
+    homeSectionsNav: document.getElementById("home-sections-nav"),
+    homeSectionsContent: document.getElementById("home-sections-content"),
+    homeSaveButton: document.getElementById("home-save-button"),
+    homeExportJsonButton: document.getElementById("home-export-json-button"),
+    homePublishPreviewButton: document.getElementById("home-publish-preview-button"),
+    homePublishProductionButton: document.getElementById("home-publish-production-button"),
+    ingredientsEditorStatus: document.getElementById("ingredients-editor-status"),
+    ingredientsPanelTitle: document.getElementById("ingredients-panel-title"),
+    ingredientsPanelSubtitle: document.getElementById("ingredients-panel-subtitle"),
+    ingredientsCatalogView: document.getElementById("ingredients-catalog-view"),
+    ingredientsDetailView: document.getElementById("ingredients-detail-view"),
+    ingredientsCatalogActions: document.getElementById("ingredients-catalog-actions"),
+    ingredientsEditorActions: document.getElementById("ingredients-editor-actions"),
+    ingredientsBackButton: document.getElementById("ingredients-back-button"),
+    ingredientsDetailTitle: document.getElementById("ingredients-detail-title"),
+    ingredientsSearchInput: document.getElementById("ingredients-search-input"),
+    ingredientsCatalogCount: document.getElementById("ingredients-catalog-count"),
+    ingredientsGlobalWarning: document.getElementById("ingredients-global-warning"),
+    ingredientsList: document.getElementById("ingredients-list"),
+    ingredientsNewButton: document.getElementById("ingredients-new-button"),
+    ingredientsSaveButton: document.getElementById("ingredients-save-button"),
+    ingredientsExportJsonButton: document.getElementById("ingredients-export-json-button"),
+    ingredientsPublishPreviewButton: document.getElementById("ingredients-publish-preview-button"),
+    ingredientsPublishProductionButton: document.getElementById("ingredients-publish-production-button"),
+    ingredientsDeleteButton: document.getElementById("ingredients-delete-button"),
+    ingredientsValidationSummary: document.getElementById("ingredients-validation-summary"),
+    ingredientsFieldId: document.getElementById("ingredients-field-id"),
+    ingredientsFieldLabel: document.getElementById("ingredients-field-label"),
+    ingredientsFieldIconSelect: document.getElementById("ingredients-field-icon-select"),
+    ingredientsFieldIcon: document.getElementById("ingredients-field-icon"),
+    ingredientsAliasInput: document.getElementById("ingredients-alias-input"),
+    ingredientsAliasAddButton: document.getElementById("ingredients-alias-add-button"),
+    ingredientsAliasList: document.getElementById("ingredients-alias-list"),
+    ingredientsTagsList: document.getElementById("ingredients-tags-list"),
+    ingredientsAllergensList: document.getElementById("ingredients-allergens-list"),
+    ingredientsImpactCount: document.getElementById("ingredients-impact-count"),
+    ingredientsImpactList: document.getElementById("ingredients-impact-list"),
+    ingredientsTagsCatalog: document.getElementById("ingredients-tags-catalog"),
+    ingredientsAllergensCatalog: document.getElementById("ingredients-allergens-catalog"),
 
     itemEditorTitle: document.getElementById("item-editor-title"),
     itemEditorStatus: document.getElementById("item-editor-status"),
@@ -151,6 +555,7 @@
     itemAutodetectMetaButton: document.getElementById("item-autodetect-meta-button"),
 
     itemFieldImage: document.getElementById("item-field-image"),
+    itemMediaStatus: document.getElementById("item-media-status"),
     itemMediaPicker: document.getElementById("item-media-picker"),
     itemMediaPreview: document.getElementById("item-media-preview"),
 
@@ -177,7 +582,9 @@
   };
 
   var dragState = {
-    ingredientIndex: null
+    ingredientIndex: null,
+    featuredIndex: null,
+    featuredDropIndex: null
   };
 
   function deepClone(value) {
@@ -189,6 +596,59 @@
 
   function getIdentity() {
     return window.netlifyIdentity || null;
+  }
+
+  function isLocalDevHost() {
+    var hostname = window.location.hostname;
+    return hostname === "127.0.0.1" || hostname === "localhost" || hostname === "[::1]";
+  }
+
+  function setDevAuthBypass(enabled) {
+    try {
+      if (enabled) {
+        window.localStorage.setItem(DEV_AUTH_BYPASS_KEY, "1");
+      } else {
+        window.localStorage.removeItem(DEV_AUTH_BYPASS_KEY);
+      }
+    } catch (_error) {
+      // ignore storage errors
+    }
+  }
+
+  function isDevAuthBypassEnabled() {
+    if (!isLocalDevHost()) return false;
+    try {
+      return window.localStorage.getItem(DEV_AUTH_BYPASS_KEY) === "1";
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  function applyDevAuthBypassQueryToggle() {
+    if (!isLocalDevHost()) return;
+    var params = new URLSearchParams(window.location.search);
+    var value = params.get("devAuthBypass");
+    if (value === "1") {
+      setDevAuthBypass(true);
+    } else if (value === "0") {
+      setDevAuthBypass(false);
+    }
+  }
+
+  function createLocalBypassUser() {
+    return {
+      id: "local-dev-bypass",
+      email: "local-admin@figata.local",
+      user_metadata: {
+        name: "Local Admin (Bypass)"
+      }
+    };
+  }
+
+  function activateLocalAuthBypass() {
+    setDevAuthBypass(true);
+    showDashboardShell(createLocalBypassUser());
+    setDataStatus("Modo local sin login activo. Publish requiere Netlify Identity real.");
   }
 
   function getUserEmail(user) {
@@ -234,6 +694,28 @@
     elements.dataStatus.textContent = message || "";
   }
 
+  function setHomeEditorStatus(message) {
+    if (!elements.homeEditorStatus) return;
+    elements.homeEditorStatus.textContent = message || "";
+  }
+
+  function setIngredientsEditorStatus(message) {
+    if (!elements.ingredientsEditorStatus) return;
+    elements.ingredientsEditorStatus.textContent = message || "";
+  }
+
+  function setCurrentEditorStatus(message) {
+    if (state.currentPanel === "home-editor") {
+      setHomeEditorStatus(message);
+      return;
+    }
+    if (state.currentPanel === "ingredients-editor") {
+      setIngredientsEditorStatus(message);
+      return;
+    }
+    setItemEditorStatus(message);
+  }
+
   function setDraftsBanner(show, message) {
     if (!elements.draftsBanner) return;
     elements.draftsBanner.classList.toggle("is-hidden", !show);
@@ -246,6 +728,8 @@
     try {
       window.localStorage.removeItem(LOCAL_DRAFTS_MENU_KEY);
       window.localStorage.removeItem(LOCAL_DRAFTS_AVAILABILITY_KEY);
+      window.localStorage.removeItem(LOCAL_DRAFTS_HOME_KEY);
+      window.localStorage.removeItem(LOCAL_DRAFTS_INGREDIENTS_KEY);
       window.localStorage.removeItem(LOCAL_DRAFTS_FLAG_KEY);
     } catch (_error) {
       // ignore storage errors
@@ -253,10 +737,12 @@
   }
 
   function persistDraftsToLocalStorage() {
-    if (!state.drafts.menu || !state.drafts.availability) return;
+    if (!state.drafts.menu || !state.drafts.availability || !state.drafts.home || !state.drafts.ingredients) return;
     try {
       window.localStorage.setItem(LOCAL_DRAFTS_MENU_KEY, JSON.stringify(state.drafts.menu));
       window.localStorage.setItem(LOCAL_DRAFTS_AVAILABILITY_KEY, JSON.stringify(state.drafts.availability));
+      window.localStorage.setItem(LOCAL_DRAFTS_HOME_KEY, JSON.stringify(state.drafts.home));
+      window.localStorage.setItem(LOCAL_DRAFTS_INGREDIENTS_KEY, JSON.stringify(state.drafts.ingredients));
       window.localStorage.setItem(LOCAL_DRAFTS_FLAG_KEY, "1");
     } catch (_error) {
       // ignore storage errors
@@ -271,6 +757,8 @@
 
       var menuRaw = window.localStorage.getItem(LOCAL_DRAFTS_MENU_KEY);
       var availabilityRaw = window.localStorage.getItem(LOCAL_DRAFTS_AVAILABILITY_KEY);
+      var homeRaw = window.localStorage.getItem(LOCAL_DRAFTS_HOME_KEY);
+      var ingredientsRaw = window.localStorage.getItem(LOCAL_DRAFTS_INGREDIENTS_KEY);
 
       if (!menuRaw || !availabilityRaw) {
         clearPersistedDraftsStorage();
@@ -279,6 +767,10 @@
 
       var restoredMenu = JSON.parse(menuRaw);
       var restoredAvailability = JSON.parse(availabilityRaw);
+      var restoredHome = homeRaw ? JSON.parse(homeRaw) : deepClone(state.data && state.data.home);
+      var restoredIngredients = ingredientsRaw
+        ? JSON.parse(ingredientsRaw)
+        : deepClone(state.data && state.data.ingredients);
 
       if (!restoredMenu || !Array.isArray(restoredMenu.sections)) {
         clearPersistedDraftsStorage();
@@ -290,10 +782,24 @@
         return false;
       }
 
+      if (!restoredHome || typeof restoredHome !== "object") {
+        clearPersistedDraftsStorage();
+        return false;
+      }
+
+      if (!restoredIngredients || typeof restoredIngredients !== "object") {
+        clearPersistedDraftsStorage();
+        return false;
+      }
+
       state.drafts.menu = restoredMenu;
       state.drafts.availability = restoredAvailability;
+      state.drafts.home = restoredHome;
+      state.drafts.ingredients = restoredIngredients;
       ensureMenuDraft();
       ensureAvailabilityDraft();
+      ensureHomeDraft();
+      ensureIngredientsDraft();
       return true;
     } catch (_error) {
       clearPersistedDraftsStorage();
@@ -317,16 +823,68 @@
   }
 
   function exportCurrentDrafts() {
-    if (!state.drafts.menu || !state.drafts.availability) {
-      setItemEditorStatus("No hay drafts cargados para exportar.");
+    if (!state.drafts.menu || !state.drafts.availability || !state.drafts.home || !state.drafts.ingredients) {
+      setCurrentEditorStatus("No hay drafts cargados para exportar.");
       return;
     }
+    ensureMediaStore();
+
+    var ingredientsValidation = validateIngredientsDraftData(state.drafts.ingredients);
+    state.ingredientsEditor.validationReport = ingredientsValidation;
 
     downloadJsonFile("menu.updated.json", state.drafts.menu);
     downloadJsonFile("availability.updated.json", state.drafts.availability);
+    downloadJsonFile("home.updated.json", state.drafts.home);
+    downloadJsonFile("ingredients.updated.json", state.drafts.ingredients);
+    downloadJsonFile("media.updated.json", state.data.media);
 
     if (elements.dataStatus) {
-      setDataStatus("JSON exportados: menu.updated.json + availability.updated.json");
+      var validationSuffix = ingredientsValidation.errors.length
+        ? " (ingredients con errores de validacion; revisa panel Ingredients)"
+        : "";
+      setDataStatus(
+        "JSON exportados: menu.updated.json + availability.updated.json + home.updated.json + ingredients.updated.json + media.updated.json" +
+          validationSuffix
+      );
+    }
+  }
+
+  async function saveDraftsToLocalFiles() {
+    if (!isLocalDevHost() || !isDevAuthBypassEnabled()) return;
+    if (!state.drafts.menu || !state.drafts.availability || !state.drafts.home || !state.drafts.ingredients) return;
+    ensureMediaStore();
+
+    try {
+      var response = await fetch(LOCAL_SAVE_DRAFTS_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          menu: state.drafts.menu,
+          availability: state.drafts.availability,
+          home: state.drafts.home,
+          ingredients: state.drafts.ingredients,
+          media: state.data.media
+        })
+      });
+
+      if (!response.ok) {
+        var responseText = await response.text();
+        throw new Error(responseText || ("HTTP " + response.status));
+      }
+
+      if (state.data) {
+        state.data.menu = deepClone(state.drafts.menu);
+        state.data.availability = deepClone(state.drafts.availability);
+        state.data.home = deepClone(state.drafts.home);
+        state.data.ingredients = deepClone(state.drafts.ingredients);
+      }
+
+      setDataStatus("Guardado local en /data (menu, availability, home, ingredients, media).");
+    } catch (error) {
+      var message = error && error.message ? error.message : "Unknown error";
+      setDataStatus("Error guardando JSON local: " + message + " (usa Exportar JSON).");
     }
   }
 
@@ -337,10 +895,12 @@
       return;
     }
 
-    if (!state.drafts.menu || !state.drafts.availability) {
-      setItemEditorStatus("Error: no hay drafts para publicar.");
+    if (!state.drafts.menu || !state.drafts.availability || !state.drafts.home || !state.drafts.ingredients) {
+      setCurrentEditorStatus("Error: no hay drafts para publicar.");
       return;
     }
+    ensureMediaStore();
+    ensureIngredientsDraft();
 
     if (publishTarget === "production") {
       var confirmed = window.confirm(
@@ -356,39 +916,61 @@
       ? identity.currentUser()
       : null;
     if (!user || typeof user.jwt !== "function") {
-      setItemEditorStatus("Error: inicia sesion para publicar.");
-      setDataStatus("Publish failed: Not logged in");
+      setCurrentEditorStatus("Inicia sesión para publicar.");
+      setDataStatus("Publish blocked: Inicia sesión para publicar.");
+      return;
+    }
+
+    var ingredientsValidation = validateIngredientsDraftData(state.drafts.ingredients);
+    state.ingredientsEditor.validationReport = ingredientsValidation;
+    if (state.currentPanel === "ingredients-editor") {
+      renderIngredientsEditorValidationSummary(ingredientsValidation);
+      renderIngredientsGlobalWarnings(ingredientsValidation);
+    }
+    if (ingredientsValidation.errors.length) {
+      setCurrentEditorStatus(
+        "No se puede publicar: corrige " + ingredientsValidation.errors.length + " errores en Ingredients."
+      );
+      setDataStatus("Publish blocked: Ingredients tiene errores de validacion.");
       return;
     }
 
     state.isPublishing = true;
-    var previewButton = elements.itemPublishPreviewButton;
-    var productionButton = elements.itemPublishProductionButton;
-    var activeButton = publishTarget === "production" ? productionButton : previewButton;
+    var publishButtonSets = [
+      { preview: elements.itemPublishPreviewButton, production: elements.itemPublishProductionButton },
+      { preview: elements.homePublishPreviewButton, production: elements.homePublishProductionButton },
+      { preview: elements.ingredientsPublishPreviewButton, production: elements.ingredientsPublishProductionButton }
+    ];
 
-    var previewDefaultLabel = previewButton && previewButton.getAttribute("data-default-label")
-      ? previewButton.getAttribute("data-default-label")
-      : "Publish Preview";
-    var productionDefaultLabel = productionButton && productionButton.getAttribute("data-default-label")
-      ? productionButton.getAttribute("data-default-label")
-      : "Publish Production";
+    publishButtonSets.forEach(function (buttonSet) {
+      if (!buttonSet.preview && !buttonSet.production) return;
+      if (buttonSet.preview && !buttonSet.preview.getAttribute("data-default-label")) {
+        buttonSet.preview.setAttribute("data-default-label", "Publish Preview");
+      }
+      if (buttonSet.production && !buttonSet.production.getAttribute("data-default-label")) {
+        buttonSet.production.setAttribute("data-default-label", "Publish Production");
+      }
+      if (buttonSet.preview) buttonSet.preview.disabled = true;
+      if (buttonSet.production) buttonSet.production.disabled = true;
+    });
 
-    if (previewButton && !previewButton.getAttribute("data-default-label")) {
-      previewButton.setAttribute("data-default-label", previewDefaultLabel);
+    var currentButtons = publishButtonSets[0];
+    if (state.currentPanel === "home-editor") {
+      currentButtons = publishButtonSets[1];
+    } else if (state.currentPanel === "ingredients-editor") {
+      currentButtons = publishButtonSets[2];
     }
-    if (productionButton && !productionButton.getAttribute("data-default-label")) {
-      productionButton.setAttribute("data-default-label", productionDefaultLabel);
-    }
+    var activeButton = publishTarget === "production" ? currentButtons.production : currentButtons.preview;
 
-    if (previewButton) previewButton.disabled = true;
-    if (productionButton) productionButton.disabled = true;
     if (activeButton) {
       activeButton.textContent = publishTarget === "production"
         ? "Publishing production..."
         : "Publishing preview...";
     }
 
-    setItemEditorStatus(publishTarget === "production" ? "Publishing production..." : "Publishing preview...");
+    setCurrentEditorStatus(
+      publishTarget === "production" ? "Publishing production..." : "Publishing preview..."
+    );
     setDataStatus(publishTarget === "production" ? "Publishing production..." : "Publishing preview...");
 
     try {
@@ -402,6 +984,9 @@
         body: JSON.stringify({
           menu: state.drafts.menu,
           availability: state.drafts.availability,
+          home: state.drafts.home,
+          ingredients: state.drafts.ingredients,
+          media: state.data.media,
           target: publishTarget
         })
       });
@@ -427,14 +1012,14 @@
         var skippedLabel = publishTarget === "production"
           ? "No changes (production)"
           : "No changes (preview)";
-        setItemEditorStatus(skippedLabel);
+        setCurrentEditorStatus(skippedLabel);
         setDataStatus("No changes to publish (" + publishTarget + ").");
         if (activeButton) activeButton.textContent = skippedLabel;
       } else {
         var successLabel = publishTarget === "production"
           ? "Published ✓ (production)"
           : "Published ✓ (preview)";
-        setItemEditorStatus(successLabel);
+        setCurrentEditorStatus(successLabel);
         if (payload && payload.commit) {
           setDataStatus(successLabel + " (" + payload.commit + ")");
         } else {
@@ -444,18 +1029,27 @@
       }
     } catch (error) {
       var message = error && error.message ? error.message : "Unknown error";
-      setItemEditorStatus("Publish failed");
+      setCurrentEditorStatus("Publish failed");
       setDataStatus("Publish failed: " + message);
       if (activeButton) {
         activeButton.textContent = "Publish failed";
       }
     } finally {
       state.isPublishing = false;
-      if (previewButton) previewButton.disabled = false;
-      if (productionButton) productionButton.disabled = false;
+      publishButtonSets.forEach(function (buttonSet) {
+        if (buttonSet.preview) buttonSet.preview.disabled = false;
+        if (buttonSet.production) buttonSet.production.disabled = false;
+      });
       window.setTimeout(function () {
-        if (previewButton) previewButton.textContent = previewDefaultLabel;
-        if (productionButton) productionButton.textContent = productionDefaultLabel;
+        publishButtonSets.forEach(function (buttonSet) {
+          if (buttonSet.preview) {
+            buttonSet.preview.textContent = buttonSet.preview.getAttribute("data-default-label") || "Publish Preview";
+          }
+          if (buttonSet.production) {
+            buttonSet.production.textContent =
+              buttonSet.production.getAttribute("data-default-label") || "Publish Production";
+          }
+        });
       }, 1800);
     }
   }
@@ -542,6 +1136,8 @@
     if (collapsed) {
       closeSidebarUserMenu();
     }
+
+    window.requestAnimationFrame(updateSidebarActiveIndicator);
   }
 
   function syncSidebarViewportState() {
@@ -574,36 +1170,439 @@
     openSidebarUserMenu();
   }
 
-  function showMenuAccordion(show) {
-    elements.sidebarMenuAccordion.classList.toggle("is-open", !!show);
-    elements.sidebarMenuAccordion.setAttribute("aria-hidden", show ? "false" : "true");
+  function setSidebarAccordionElementState(accordionElement, show) {
+    if (!accordionElement) return;
+    var shouldOpen = Boolean(show);
+    var wasOpen = accordionElement.classList.contains("is-open");
+
+    if (shouldOpen === wasOpen) {
+      accordionElement.setAttribute("aria-hidden", shouldOpen ? "false" : "true");
+      if (shouldOpen) {
+        syncSidebarAccordionCategoryHeights(accordionElement);
+      }
+      return;
+    }
+
+    if (shouldOpen) {
+      prepareSidebarAccordionOpeningMotion(accordionElement);
+      accordionElement.classList.add("is-open");
+      accordionElement.setAttribute("aria-hidden", "false");
+      scheduleSidebarAccordionOpeningMotion(accordionElement);
+      return;
+    }
+
+    clearSidebarAccordionOpeningMotion(accordionElement);
+    accordionElement.classList.remove("is-open");
+    accordionElement.setAttribute("aria-hidden", "true");
   }
 
-  function setActivePanel(panel) {
-    state.currentPanel = panel;
-    closeSidebarUserMenu();
+  function clearSidebarAccordionOpeningMotion(accordionElement) {
+    if (!accordionElement) return;
 
+    if (accordionElement.__openingMotionFrame) {
+      window.cancelAnimationFrame(accordionElement.__openingMotionFrame);
+      accordionElement.__openingMotionFrame = 0;
+    }
+    if (accordionElement.__openingMotionTimer) {
+      window.clearTimeout(accordionElement.__openingMotionTimer);
+      accordionElement.__openingMotionTimer = 0;
+    }
+    if (Array.isArray(accordionElement.__openingCategoryTimers) && accordionElement.__openingCategoryTimers.length) {
+      accordionElement.__openingCategoryTimers.forEach(function (timerId) {
+        window.clearTimeout(timerId);
+      });
+      accordionElement.__openingCategoryTimers = [];
+    }
+
+    var categories = accordionElement.querySelectorAll(".sidebar-accordion-category");
+    Array.prototype.forEach.call(categories, function (categoryElement) {
+      categoryElement.classList.remove("is-entering");
+      categoryElement.classList.remove("is-entering-prep");
+      categoryElement.classList.remove("is-entering-active");
+    });
+
+    accordionElement.classList.remove("is-opening");
+    accordionElement.classList.remove("is-opening-active");
+  }
+
+  function prepareSidebarAccordionOpeningMotion(accordionElement) {
+    if (!accordionElement) return;
+
+    clearSidebarAccordionOpeningMotion(accordionElement);
+    accordionElement.classList.add("is-opening");
+    syncSidebarAccordionCategoryHeights(accordionElement);
+
+    var categories = Array.prototype.slice.call(
+      accordionElement.querySelectorAll(".sidebar-accordion-category")
+    );
+
+    categories.forEach(function (categoryElement) {
+      categoryElement.classList.add("is-entering");
+      categoryElement.classList.add("is-entering-prep");
+      categoryElement.classList.remove("is-entering-active");
+    });
+    void accordionElement.offsetHeight;
+    accordionElement.__openingCategoryTimers = [];
+  }
+
+  function scheduleSidebarAccordionOpeningMotion(accordionElement) {
+    if (!accordionElement) return;
+
+    var categories = Array.prototype.slice.call(
+      accordionElement.querySelectorAll(".sidebar-accordion-category")
+    );
+    var categoriesCount = categories.length;
+    var lastIndex = Math.max(0, categoriesCount - 1);
+    var settleDelay = SIDEBAR_ACCORDION_STAGGER_BASE_MS +
+      Math.min(lastIndex, 14) * SIDEBAR_ACCORDION_STAGGER_STEP_MS +
+      70;
+
+    accordionElement.__openingMotionFrame = window.requestAnimationFrame(function () {
+      accordionElement.__openingMotionFrame = window.requestAnimationFrame(function () {
+        accordionElement.__openingMotionFrame = 0;
+        accordionElement.classList.add("is-opening-active");
+        categories.forEach(function (categoryElement, categoryIndex) {
+          var categoryTimerId = window.setTimeout(function () {
+            categoryElement.classList.remove("is-entering-prep");
+            categoryElement.classList.add("is-entering-active");
+          }, categoryIndex * SIDEBAR_ACCORDION_STAGGER_STEP_MS);
+          accordionElement.__openingCategoryTimers.push(categoryTimerId);
+        });
+      });
+    });
+
+    accordionElement.__openingMotionTimer = window.setTimeout(function () {
+      accordionElement.__openingMotionTimer = 0;
+      categories.forEach(function (categoryElement) {
+        categoryElement.classList.remove("is-entering");
+        categoryElement.classList.remove("is-entering-prep");
+        categoryElement.classList.remove("is-entering-active");
+      });
+      accordionElement.classList.remove("is-opening");
+      accordionElement.classList.remove("is-opening-active");
+    }, settleDelay);
+  }
+
+  function clearAllSidebarAccordionOpeningMotions() {
+    [elements.sidebarMenuAccordion, elements.sidebarHomepageAccordion, elements.sidebarIngredientsAccordion]
+      .filter(Boolean)
+      .forEach(function (accordionElement) {
+        clearSidebarAccordionOpeningMotion(accordionElement);
+      });
+  }
+
+  function syncSidebarAccordionCategoryHeights(accordionElement) {
+    if (!accordionElement) return;
+    var categories = accordionElement.querySelectorAll(".sidebar-accordion-category");
+    Array.prototype.forEach.call(categories, function (categoryElement) {
+      var targetHeight = categoryElement.scrollHeight;
+      if (targetHeight > 0) {
+        categoryElement.style.setProperty("--sidebar-enter-max-height", targetHeight + "px");
+      }
+    });
+  }
+
+  function syncAllSidebarAccordionCategoryHeights() {
+    [elements.sidebarMenuAccordion, elements.sidebarHomepageAccordion, elements.sidebarIngredientsAccordion]
+      .filter(Boolean)
+      .forEach(function (accordionElement) {
+        syncSidebarAccordionCategoryHeights(accordionElement);
+      });
+  }
+
+  function showMenuAccordion(show) {
+    setSidebarAccordionElementState(elements.sidebarMenuAccordion, show);
+  }
+
+  function showHomepageAccordion(show) {
+    setSidebarAccordionElementState(elements.sidebarHomepageAccordion, show);
+  }
+
+  function showIngredientsAccordion(show) {
+    setSidebarAccordionElementState(elements.sidebarIngredientsAccordion, show);
+  }
+
+  function getSidebarAccordionKeyForPanel(panel) {
+    if (panel === "menu-browser" || panel === "menu-item") return "menu";
+    if (panel === "home-editor") return "homepage";
+    if (panel === "ingredients-editor") return "ingredients";
+    return "";
+  }
+
+  function getSidebarOpenAccordionKeyFromDom() {
+    if (elements.sidebarMenuAccordion && elements.sidebarMenuAccordion.classList.contains("is-open")) {
+      return "menu";
+    }
+    if (elements.sidebarHomepageAccordion && elements.sidebarHomepageAccordion.classList.contains("is-open")) {
+      return "homepage";
+    }
+    if (elements.sidebarIngredientsAccordion && elements.sidebarIngredientsAccordion.classList.contains("is-open")) {
+      return "ingredients";
+    }
+    return "";
+  }
+
+  function getSidebarAccordionElementByKey(accordionKey) {
+    if (accordionKey === "menu") return elements.sidebarMenuAccordion || null;
+    if (accordionKey === "homepage") return elements.sidebarHomepageAccordion || null;
+    if (accordionKey === "ingredients") return elements.sidebarIngredientsAccordion || null;
+    return null;
+  }
+
+  function isSidebarAccordionOpening(accordionKey) {
+    var accordionElement = getSidebarAccordionElementByKey(accordionKey);
+    return Boolean(accordionElement && accordionElement.classList.contains("is-opening"));
+  }
+
+  function applySidebarAccordionState(nextAccordionKey) {
+    var normalizedKey = nextAccordionKey || "";
+    showMenuAccordion(normalizedKey === "menu");
+    showHomepageAccordion(normalizedKey === "homepage");
+    showIngredientsAccordion(normalizedKey === "ingredients");
+    state.sidebarAccordionOpenKey = normalizedKey;
+  }
+
+  function transitionSidebarAccordions(nextAccordionKey, options) {
+    options = options || {};
+    var normalizedKey = nextAccordionKey || "";
+    var currentOpenKey = getSidebarOpenAccordionKeyFromDom() || state.sidebarAccordionOpenKey || "";
+    state.sidebarAccordionOpenKey = currentOpenKey;
+    state.sidebarAccordionPendingKey = normalizedKey;
+
+    if (state.sidebarAccordionTimer) {
+      window.clearTimeout(state.sidebarAccordionTimer);
+      state.sidebarAccordionTimer = 0;
+    }
+    clearAllSidebarAccordionOpeningMotions();
+
+    var shouldDelayIndicator = Boolean(options.delayIndicatorUntilClosed);
+    var shouldDelayOpen = Boolean(options.delayOpenUntilIndicator);
+    var shouldSyncIndicator = options.syncIndicator !== false;
+
+    if (currentOpenKey === normalizedKey) {
+      applySidebarAccordionState(normalizedKey);
+      if (shouldSyncIndicator) {
+        scheduleSidebarActiveIndicatorSync();
+      }
+      return;
+    }
+
+    applySidebarAccordionState("");
+
+    state.sidebarAccordionTimer = window.setTimeout(function () {
+      state.sidebarAccordionTimer = 0;
+      if (state.sidebarAccordionPendingKey !== normalizedKey) return;
+
+      if (shouldDelayIndicator && shouldSyncIndicator) {
+        scheduleSidebarActiveIndicatorSync();
+      }
+
+      if (!normalizedKey) return;
+
+      var openAccordion = function () {
+        if (state.sidebarAccordionPendingKey !== normalizedKey) return;
+        applySidebarAccordionState(normalizedKey);
+        if (shouldSyncIndicator) {
+          scheduleSidebarActiveIndicatorSync();
+        }
+      };
+
+      if (shouldDelayOpen && SIDEBAR_ACCORDION_OPEN_DELAY_MS > 0) {
+        state.sidebarAccordionTimer = window.setTimeout(function () {
+          state.sidebarAccordionTimer = 0;
+          openAccordion();
+        }, SIDEBAR_ACCORDION_OPEN_DELAY_MS);
+        return;
+      }
+
+      openAccordion();
+    }, SIDEBAR_ACCORDION_SWITCH_DELAY_MS);
+  }
+
+  function updateSidebarActiveIndicator() {
+    if (!elements.sidebarNav || !elements.sidebarNavActiveIndicator) return;
+    var activeItem = elements.sidebarNav.querySelector(".sidebar-nav__item.is-active");
+    if (!activeItem) {
+      elements.sidebarNavActiveIndicator.classList.remove("is-visible");
+      return;
+    }
+
+    var visibleHeight = Math.max(8, activeItem.offsetHeight - 14);
+    var top = Math.max(0, activeItem.offsetTop - elements.sidebarNav.scrollTop + 7);
+    elements.sidebarNavActiveIndicator.style.height = visibleHeight + "px";
+    elements.sidebarNavActiveIndicator.style.transform = "translateY(" + top + "px)";
+    elements.sidebarNavActiveIndicator.classList.add("is-visible");
+  }
+
+  function clearSidebarIndicatorSyncTimers() {
+    if (state.sidebarIndicatorSyncFrame) {
+      window.cancelAnimationFrame(state.sidebarIndicatorSyncFrame);
+      state.sidebarIndicatorSyncFrame = 0;
+    }
+
+    if (Array.isArray(state.sidebarIndicatorSyncTimers) && state.sidebarIndicatorSyncTimers.length) {
+      state.sidebarIndicatorSyncTimers.forEach(function (timerId) {
+        window.clearTimeout(timerId);
+      });
+      state.sidebarIndicatorSyncTimers = [];
+    }
+  }
+
+  function scheduleSidebarActiveIndicatorSync() {
+    clearSidebarIndicatorSyncTimers();
+    updateSidebarActiveIndicator();
+
+    state.sidebarIndicatorSyncFrame = window.requestAnimationFrame(function () {
+      state.sidebarIndicatorSyncFrame = 0;
+      updateSidebarActiveIndicator();
+    });
+
+    state.sidebarIndicatorSyncTimers = [
+      window.setTimeout(updateSidebarActiveIndicator, 120),
+      window.setTimeout(function () {
+        updateSidebarActiveIndicator();
+        clearSidebarIndicatorSyncTimers();
+      }, 280)
+    ];
+  }
+
+  function syncVisiblePanelAnchors(panel) {
+    if (panel === "menu-browser") {
+      refreshMenuScrollAnchors();
+      updateMenuScrollSpy(true);
+      return;
+    }
+
+    if (panel === "home-editor") {
+      refreshHomeScrollAnchors();
+      updateHomeScrollSpy(true);
+      return;
+    }
+
+    if (panel === "ingredients-editor" && state.ingredientsEditor.view === "catalog") {
+      refreshIngredientsScrollAnchors();
+      updateIngredientsScrollSpy(true);
+    }
+  }
+
+  function applyPanelVisibility(panel) {
     views.dashboardPanel.classList.add("is-hidden");
     views.menuBrowserPanel.classList.add("is-hidden");
     views.menuItemPanel.classList.add("is-hidden");
+    views.homeEditorPanel.classList.add("is-hidden");
+    views.ingredientsEditorPanel.classList.add("is-hidden");
 
     if (panel === "menu-browser") {
       views.menuBrowserPanel.classList.remove("is-hidden");
     } else if (panel === "menu-item") {
       views.menuItemPanel.classList.remove("is-hidden");
+    } else if (panel === "home-editor") {
+      views.homeEditorPanel.classList.remove("is-hidden");
+    } else if (panel === "ingredients-editor") {
+      views.ingredientsEditorPanel.classList.remove("is-hidden");
     } else {
       views.dashboardPanel.classList.remove("is-hidden");
     }
 
     var isMenuPanel = panel === "menu-browser" || panel === "menu-item";
+    var isHomePanel = panel === "home-editor";
+    var isIngredientsPanel = panel === "ingredients-editor";
+    if (elements.topbar) {
+      elements.topbar.classList.toggle("is-hidden", isMenuPanel || isHomePanel || isIngredientsPanel);
+    }
+
+    state.visiblePanel = panel;
+    window.requestAnimationFrame(function () {
+      syncVisiblePanelAnchors(panel);
+    });
+  }
+
+  function setActiveSidebarNav(panel, options) {
+    options = options || {};
+    var isMenuPanel = panel === "menu-browser" || panel === "menu-item";
+    var isHomePanel = panel === "home-editor";
+    var isIngredientsPanel = panel === "ingredients-editor";
     elements.sidebarNavDashboard.classList.toggle("is-active", panel === "dashboard");
     elements.sidebarNavMenu.classList.toggle("is-active", isMenuPanel);
-    elements.sidebarHomeButton.classList.toggle("is-active", panel === "dashboard");
-    showMenuAccordion(isMenuPanel);
-
-    if (elements.topbar) {
-      elements.topbar.classList.toggle("is-hidden", isMenuPanel);
+    if (elements.sidebarNavHomepage) {
+      elements.sidebarNavHomepage.classList.toggle("is-active", isHomePanel);
     }
+    if (elements.sidebarNavIngredients) {
+      elements.sidebarNavIngredients.classList.toggle("is-active", isIngredientsPanel);
+    }
+    elements.sidebarHomeButton.classList.toggle("is-active", panel === "dashboard");
+
+    if (options.syncIndicator !== false) {
+      scheduleSidebarActiveIndicatorSync();
+    }
+  }
+
+  function clearPanelTransitionTimers() {
+    if (state.panelFadeOutTimer) {
+      window.clearTimeout(state.panelFadeOutTimer);
+      state.panelFadeOutTimer = 0;
+    }
+    if (state.panelFadeInTimer) {
+      window.clearTimeout(state.panelFadeInTimer);
+      state.panelFadeInTimer = 0;
+    }
+  }
+
+  function setActivePanel(panel) {
+    var previousVisiblePanel = state.visiblePanel || state.currentPanel || "dashboard";
+    var nextAccordionKey = getSidebarAccordionKeyForPanel(panel);
+    var previousAccordionKey = getSidebarOpenAccordionKeyFromDom() || state.sidebarAccordionOpenKey || "";
+    state.sidebarAccordionOpenKey = previousAccordionKey;
+    var hasPendingAccordionTransition =
+      Boolean(state.sidebarAccordionTimer) &&
+      state.sidebarAccordionPendingKey === nextAccordionKey;
+    var shouldSequenceIndicatorMove =
+      Boolean(previousAccordionKey) &&
+      Boolean(nextAccordionKey) &&
+      previousAccordionKey !== nextAccordionKey;
+
+    state.currentPanel = panel;
+    closeSidebarUserMenu();
+    if (hasPendingAccordionTransition) {
+      setActiveSidebarNav(panel, { syncIndicator: false });
+    } else {
+      setActiveSidebarNav(panel, { syncIndicator: !shouldSequenceIndicatorMove });
+      transitionSidebarAccordions(nextAccordionKey, {
+        syncIndicator: true,
+        delayIndicatorUntilClosed: shouldSequenceIndicatorMove,
+        delayOpenUntilIndicator: shouldSequenceIndicatorMove
+      });
+    }
+
+    if (!elements.dashboardContent || previousVisiblePanel === panel) {
+      applyPanelVisibility(panel);
+      if (elements.dashboardContent) {
+        elements.dashboardContent.classList.remove("is-panel-fading");
+        elements.dashboardContent.classList.remove("is-panel-fade-out");
+      }
+      return;
+    }
+
+    clearPanelTransitionTimers();
+    state.panelTransitionToken += 1;
+    var transitionToken = state.panelTransitionToken;
+
+    elements.dashboardContent.classList.add("is-panel-fading");
+    elements.dashboardContent.classList.add("is-panel-fade-out");
+
+    state.panelFadeOutTimer = window.setTimeout(function () {
+      state.panelFadeOutTimer = 0;
+      if (transitionToken !== state.panelTransitionToken) return;
+
+      applyPanelVisibility(panel);
+      elements.dashboardContent.classList.remove("is-panel-fade-out");
+
+      state.panelFadeInTimer = window.setTimeout(function () {
+        state.panelFadeInTimer = 0;
+        if (transitionToken !== state.panelTransitionToken) return;
+        elements.dashboardContent.classList.remove("is-panel-fading");
+      }, PANEL_FADE_IN_CLEANUP_DELAY_MS);
+    }, PANEL_FADE_OUT_DELAY_MS);
   }
 
   function hashHasAuthToken() {
@@ -644,6 +1643,217 @@
       .replace(/'/g, "&#39;");
   }
 
+  var toggleHandlerRegistry = {};
+  var toggleHandlerSequence = 0;
+
+  function registerToggleHandler(handler) {
+    if (typeof handler !== "function") return "";
+    toggleHandlerSequence += 1;
+    var handlerId = "fig_toggle_handler_" + toggleHandlerSequence;
+    toggleHandlerRegistry[handlerId] = handler;
+    return handlerId;
+  }
+
+  function buildHtmlAttributes(attributes) {
+    if (!attributes || typeof attributes !== "object") return "";
+    var output = "";
+    Object.keys(attributes).forEach(function (key) {
+      var value = attributes[key];
+      if (value === null || value === undefined || value === false) return;
+      if (value === true) {
+        output += " " + key;
+        return;
+      }
+      output += " " + key + "=\"" + escapeHtml(String(value)) + "\"";
+    });
+    return output;
+  }
+
+  function resolveToggleChecked(control) {
+    if (!control) return false;
+    return control.getAttribute("aria-checked") === "true";
+  }
+
+  function setToggleChecked(control, checked) {
+    if (!control) return;
+    var safeChecked = Boolean(checked);
+    control.setAttribute("aria-checked", safeChecked ? "true" : "false");
+    control.classList.toggle("is-checked", safeChecked);
+  }
+
+  function setToggleDisabled(control, disabled) {
+    if (!control) return;
+    var safeDisabled = Boolean(disabled);
+    control.disabled = safeDisabled;
+    control.setAttribute("aria-disabled", safeDisabled ? "true" : "false");
+  }
+
+  function getToggleChecked(control) {
+    return resolveToggleChecked(control);
+  }
+
+  function renderToggle(options) {
+    options = options || {};
+    var id = String(options.id || "").trim();
+    var label = String(options.label || "");
+    var checked = Boolean(options.checked);
+    var disabled = Boolean(options.disabled);
+    var labelPosition = options.labelPosition === "left" ? "left" : "right";
+
+    var wrapperClasses = ["fig-toggle-field"];
+    if (labelPosition === "left") wrapperClasses.push("fig-toggle-field--label-left");
+    if (options.className) wrapperClasses.push(String(options.className));
+
+    var wrapperAttributes = {};
+    if (options.span) {
+      wrapperAttributes["data-span"] = options.span;
+    }
+    if (options.wrapperDataAttributes && typeof options.wrapperDataAttributes === "object") {
+      Object.keys(options.wrapperDataAttributes).forEach(function (key) {
+        wrapperAttributes[key] = options.wrapperDataAttributes[key];
+      });
+    }
+
+    var controlAttributes = {
+      id: id,
+      type: "button",
+      class: "fig-toggle",
+      role: "switch",
+      "aria-checked": checked ? "true" : "false",
+      "aria-disabled": disabled ? "true" : "false",
+      "data-toggle-control": "true"
+    };
+
+    if (disabled) {
+      controlAttributes.disabled = true;
+    }
+
+    if (options.title) {
+      controlAttributes.title = options.title;
+    }
+
+    if (options.dataAttributes && typeof options.dataAttributes === "object") {
+      Object.keys(options.dataAttributes).forEach(function (key) {
+        controlAttributes[key] = options.dataAttributes[key];
+      });
+    }
+
+    if (typeof options.onChange === "function") {
+      controlAttributes["data-toggle-handler"] = registerToggleHandler(options.onChange);
+    } else if (typeof options.onChange === "string" && options.onChange.trim()) {
+      controlAttributes["data-toggle-handler"] = options.onChange.trim();
+    }
+
+    var labelId = id ? id + "-label" : "";
+    if (label && labelId) {
+      controlAttributes["aria-labelledby"] = labelId;
+    } else if (label) {
+      controlAttributes["aria-label"] = label;
+    } else {
+      controlAttributes["aria-label"] = options.ariaLabel || "Toggle";
+    }
+
+    var labelHtml = "";
+    if (label) {
+      var labelAttributes = {
+        type: "button",
+        class: "fig-toggle__label",
+        "data-toggle-label-for": id
+      };
+      if (labelId) {
+        labelAttributes.id = labelId;
+      }
+      if (disabled) {
+        labelAttributes.disabled = true;
+      }
+      labelHtml = "<button" + buildHtmlAttributes(labelAttributes) + ">" + escapeHtml(label) + "</button>";
+    }
+
+    var controlHtml =
+      "<button" + buildHtmlAttributes(controlAttributes) + ">" +
+      "<span class=\"fig-toggle__track\"><span class=\"fig-toggle__knob\"></span></span>" +
+      "</button>";
+
+    var contentHtml = labelPosition === "left"
+      ? (labelHtml + controlHtml)
+      : (controlHtml + labelHtml);
+
+    return "<div class=\"" + wrapperClasses.join(" ") + "\"" + buildHtmlAttributes(wrapperAttributes) + ">" +
+      contentHtml +
+      "</div>";
+  }
+
+  function triggerToggleChange(control, checked, event, fallbackOnChange) {
+    var handlerId = control.getAttribute("data-toggle-handler");
+    if (handlerId && typeof toggleHandlerRegistry[handlerId] === "function") {
+      toggleHandlerRegistry[handlerId](checked, control, event);
+    }
+
+    if (typeof fallbackOnChange === "function") {
+      fallbackOnChange(checked, control, event);
+    }
+
+    if (typeof window.CustomEvent === "function") {
+      control.dispatchEvent(new window.CustomEvent("fig-toggle-change", {
+        bubbles: true,
+        detail: { checked: checked }
+      }));
+      return;
+    }
+
+    var legacyEvent = document.createEvent("CustomEvent");
+    legacyEvent.initCustomEvent("fig-toggle-change", true, false, { checked: checked });
+    control.dispatchEvent(legacyEvent);
+  }
+
+  function bindToggles(rootEl, options) {
+    var root = rootEl || document;
+    var fallbackOnChange = options && typeof options.onChange === "function"
+      ? options.onChange
+      : null;
+    var controls = root.querySelectorAll("[data-toggle-control]");
+    Array.prototype.forEach.call(controls, function (control) {
+      setToggleChecked(control, resolveToggleChecked(control));
+      setToggleDisabled(control, control.disabled || control.getAttribute("aria-disabled") === "true");
+
+      if (control.getAttribute("data-toggle-bound") === "true") {
+        return;
+      }
+      control.setAttribute("data-toggle-bound", "true");
+
+      control.addEventListener("click", function (event) {
+        if (control.disabled || control.getAttribute("aria-disabled") === "true") return;
+        var nextChecked = !resolveToggleChecked(control);
+        setToggleChecked(control, nextChecked);
+        triggerToggleChange(control, nextChecked, event, fallbackOnChange);
+      });
+
+      control.addEventListener("keydown", function (event) {
+        if (event.key !== " " && event.key !== "Enter") return;
+        event.preventDefault();
+        control.click();
+      });
+    });
+
+    var labelButtons = root.querySelectorAll("[data-toggle-label-for]");
+    Array.prototype.forEach.call(labelButtons, function (labelButton) {
+      if (labelButton.getAttribute("data-toggle-bound") === "true") {
+        return;
+      }
+      labelButton.setAttribute("data-toggle-bound", "true");
+
+      labelButton.addEventListener("click", function () {
+        var targetId = labelButton.getAttribute("data-toggle-label-for");
+        if (!targetId) return;
+        var control = document.getElementById(targetId);
+        if (!control || !root.contains(control)) return;
+        if (control.disabled || control.getAttribute("aria-disabled") === "true") return;
+        control.focus();
+        control.click();
+      });
+    });
+  }
+
   function slugify(value) {
     return normalizeText(value)
       .replace(/[^a-z0-9]+/g, "-")
@@ -656,6 +1866,162 @@
     if (/^https?:\/\//i.test(path)) return path;
     if (path[0] === "/") return path;
     return "/" + path.replace(/^\.\/?/, "");
+  }
+
+  function toRelativeAssetPath(path) {
+    return String(path || "")
+      .trim()
+      .replace(/\\/g, "/")
+      .replace(/^\.\/+/, "")
+      .replace(/^\/+/, "");
+  }
+
+  function getPathExtension(path) {
+    var match = String(path || "").match(/\.([a-z0-9]+)$/i);
+    return match ? match[1].toLowerCase() : "";
+  }
+
+  function removePathExtension(path) {
+    return String(path || "").replace(/\.[a-z0-9]+$/i, "");
+  }
+
+  function isSvgPlaceholderPath(path) {
+    var relative = toRelativeAssetPath(path);
+    return (
+      relative === MENU_PLACEHOLDER_IMAGE ||
+      relative === MENU_MODAL_PLACEHOLDER_IMAGE ||
+      (relative.indexOf(MENU_MEDIA_ROOT + "/placeholders/") === 0 && getPathExtension(relative) === "svg")
+    );
+  }
+
+  function isMenuMediaPath(path) {
+    var relative = toRelativeAssetPath(path);
+    if (!relative) return false;
+    if (isSvgPlaceholderPath(relative)) return true;
+    if (relative.indexOf(MENU_MEDIA_ROOT + "/") !== 0) return false;
+    return getPathExtension(relative) === "webp";
+  }
+
+  function buildMenuMediaCandidates(rawPath) {
+    var relative = toRelativeAssetPath(rawPath);
+    if (!relative) return [];
+    if (/^https?:\/\//i.test(relative)) return [relative];
+    if (isSvgPlaceholderPath(relative)) return [relative];
+
+    var candidates = [];
+    function pushCandidate(value) {
+      var normalized = toRelativeAssetPath(value);
+      if (!normalized) return;
+      if (candidates.includes(normalized)) return;
+      candidates.push(normalized);
+    }
+
+    var extension = getPathExtension(relative);
+    var hasExtension = Boolean(extension);
+    var basename = relative.split("/").pop() || "";
+    var baseWithoutExt = removePathExtension(basename);
+    var parentPath = relative.indexOf("/") >= 0
+      ? relative.slice(0, relative.lastIndexOf("/") + 1)
+      : "";
+
+    if (relative.indexOf("menu/") === 0) {
+      pushCandidate("assets/" + relative);
+    }
+
+    if (relative.indexOf(MENU_MEDIA_ROOT + "/") === 0) {
+      pushCandidate(relative);
+    }
+
+    if (relative.indexOf("assets/") === 0 && relative.indexOf(MENU_MEDIA_ROOT + "/") !== 0 && baseWithoutExt) {
+      pushCandidate(MENU_MEDIA_ROOT + "/" + baseWithoutExt + ".webp");
+    }
+
+    if (relative.indexOf("/") === -1 && baseWithoutExt) {
+      pushCandidate(MENU_MEDIA_ROOT + "/" + baseWithoutExt + ".webp");
+    }
+
+    if (relative.indexOf(MENU_MEDIA_ROOT + "/") === 0 && baseWithoutExt) {
+      pushCandidate(parentPath + baseWithoutExt + ".webp");
+      if (!hasExtension) {
+        pushCandidate(relative + ".webp");
+      }
+    }
+
+    if (relative.indexOf("menu/") === 0 && baseWithoutExt) {
+      var menuParent = "assets/" + parentPath;
+      pushCandidate(menuParent + baseWithoutExt + ".webp");
+    }
+
+    pushCandidate(relative);
+    return candidates;
+  }
+
+  function resolveMenuMediaPath(rawPath, allowFallback) {
+    var candidates = buildMenuMediaCandidates(rawPath);
+    if (!candidates.length) return "";
+
+    var knownPaths = state.indexes && state.indexes.menuMediaPathSet ? state.indexes.menuMediaPathSet : {};
+    for (var i = 0; i < candidates.length; i += 1) {
+      var candidate = candidates[i];
+      if (knownPaths[candidate]) {
+        return candidate;
+      }
+    }
+
+    if (!allowFallback) return "";
+
+    for (var j = 0; j < candidates.length; j += 1) {
+      var fallbackCandidate = candidates[j];
+      if (isMenuMediaPath(fallbackCandidate) || isSvgPlaceholderPath(fallbackCandidate)) {
+        return fallbackCandidate;
+      }
+    }
+
+    return candidates[0];
+  }
+
+  function setImageElementSourceWithFallback(imageElement, path, fallbackPath) {
+    if (!imageElement) return;
+
+    var fallback = resolveAssetPath(fallbackPath || MENU_PLACEHOLDER_IMAGE);
+    var resolved = resolveAssetPath(path || fallbackPath || MENU_PLACEHOLDER_IMAGE);
+
+    imageElement.dataset.fallbackApplied = "0";
+    imageElement.onerror = function () {
+      if (imageElement.dataset.fallbackApplied === "1") return;
+      imageElement.dataset.fallbackApplied = "1";
+      imageElement.src = fallback;
+    };
+
+    imageElement.src = resolved;
+  }
+
+  async function fetchLocalMenuMediaPaths() {
+    if (!isLocalDevHost()) return [];
+
+    try {
+      var response = await fetch(LOCAL_MEDIA_OPTIONS_ENDPOINT, { cache: "no-store" });
+      if (!response.ok) return [];
+
+      var payload = await response.json();
+      var paths = Array.isArray(payload && payload.paths) ? payload.paths : [];
+      var unique = [];
+      paths.forEach(function (path) {
+        var normalized = toRelativeAssetPath(path);
+        if (!normalized) return;
+        if (!isMenuMediaPath(normalized) && !isSvgPlaceholderPath(normalized)) return;
+        if (unique.includes(normalized)) return;
+        unique.push(normalized);
+      });
+
+      unique.sort(function (a, b) {
+        return normalizeText(a).localeCompare(normalizeText(b));
+      });
+
+      return unique;
+    } catch (_error) {
+      return [];
+    }
   }
 
   async function fetchJson(endpoint) {
@@ -694,6 +2060,822 @@
     }
   }
 
+  function ensureIngredientsDraft() {
+    if (!state.drafts.ingredients || typeof state.drafts.ingredients !== "object") {
+      state.drafts.ingredients = deepClone((state.data && state.data.ingredients) || {});
+    }
+
+    if (!state.drafts.ingredients || typeof state.drafts.ingredients !== "object") {
+      state.drafts.ingredients = {};
+    }
+
+    if (!Number.isFinite(Number(state.drafts.ingredients.version))) {
+      state.drafts.ingredients.version = 1;
+    } else {
+      state.drafts.ingredients.version = Number(state.drafts.ingredients.version);
+    }
+
+    if (!state.drafts.ingredients.basePath) {
+      state.drafts.ingredients.basePath = "/assets/Ingredients/";
+    }
+
+    if (!state.drafts.ingredients.tags || typeof state.drafts.ingredients.tags !== "object") {
+      state.drafts.ingredients.tags = {};
+    }
+    if (!state.drafts.ingredients.allergens || typeof state.drafts.ingredients.allergens !== "object") {
+      state.drafts.ingredients.allergens = {};
+    }
+    if (!state.drafts.ingredients.icons || typeof state.drafts.ingredients.icons !== "object") {
+      state.drafts.ingredients.icons = {};
+    }
+    if (!state.drafts.ingredients.ingredients || typeof state.drafts.ingredients.ingredients !== "object") {
+      state.drafts.ingredients.ingredients = {};
+    }
+
+    Object.keys(state.drafts.ingredients.ingredients).forEach(function (ingredientId) {
+      var ingredient = state.drafts.ingredients.ingredients[ingredientId];
+      if (!ingredient || typeof ingredient !== "object") {
+        state.drafts.ingredients.ingredients[ingredientId] = {
+          label: "",
+          icon: "",
+          aliases: [],
+          tags: [],
+          allergens: []
+        };
+        return;
+      }
+
+      if (!Array.isArray(ingredient.aliases)) {
+        ingredient.aliases = [];
+      }
+      if (!Array.isArray(ingredient.tags)) {
+        ingredient.tags = [];
+      }
+      if (!Array.isArray(ingredient.allergens)) {
+        ingredient.allergens = [];
+      }
+    });
+  }
+
+  function normalizeIngredientAliasValue(value) {
+    return normalizeText(value)
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "")
+      .replace(/_+/g, "_");
+  }
+
+  function isLikelyValidIngredientIconPath(value) {
+    var path = String(value || "").trim();
+    if (!path) return false;
+    if (/^https?:\/\//i.test(path)) return true;
+    if (path[0] === "/") return true;
+    if (path.indexOf("assets/") === 0) return true;
+    return /\.(svg|webp|png|jpe?g|gif)$/i.test(path);
+  }
+
+  function resolveIngredientIconPath(ingredient, ingredientsSource) {
+    var iconValue = ingredient && typeof ingredient.icon === "string"
+      ? ingredient.icon.trim()
+      : "";
+    if (!iconValue) return "";
+
+    if (isLikelyValidIngredientIconPath(iconValue)) {
+      return iconValue;
+    }
+
+    var iconMap = ingredientsSource && ingredientsSource.icons
+      ? ingredientsSource.icons[iconValue]
+      : null;
+    if (iconMap && typeof iconMap.icon === "string") {
+      return iconMap.icon.trim();
+    }
+
+    return "";
+  }
+
+  function getMenuIngredientReferenceReport(ingredientsById) {
+    var report = {
+      invalidItems: [],
+      invalidReferencesCount: 0
+    };
+
+    getAllMenuItems().forEach(function (entry) {
+      var item = entry && entry.item ? entry.item : null;
+      if (!item || !Array.isArray(item.ingredients) || !item.ingredients.length) return;
+
+      var unknown = [];
+      item.ingredients.forEach(function (ingredientId) {
+        var normalizedId = String(ingredientId || "").trim();
+        if (!normalizedId) return;
+        if (!ingredientsById[normalizedId] && !unknown.includes(normalizedId)) {
+          unknown.push(normalizedId);
+        }
+      });
+
+      if (!unknown.length) return;
+      report.invalidReferencesCount += unknown.length;
+      report.invalidItems.push({
+        id: item.id || "",
+        label: item.name || item.id || "Item sin nombre",
+        unknownIngredients: unknown
+      });
+    });
+
+    return report;
+  }
+
+  function validateIngredientsDraftData(ingredientsDraft) {
+    var source = ingredientsDraft && typeof ingredientsDraft === "object" ? ingredientsDraft : {};
+    var ingredientsById = source.ingredients && typeof source.ingredients === "object"
+      ? source.ingredients
+      : {};
+    var tagsById = source.tags && typeof source.tags === "object" ? source.tags : {};
+    var allergensById = source.allergens && typeof source.allergens === "object" ? source.allergens : {};
+    var iconsById = source.icons && typeof source.icons === "object" ? source.icons : {};
+
+    var report = {
+      errors: [],
+      warnings: [],
+      ingredientIssuesById: {},
+      menuReferenceReport: null
+    };
+
+    function ensureIssueBucket(ingredientId) {
+      if (!report.ingredientIssuesById[ingredientId]) {
+        report.ingredientIssuesById[ingredientId] = {
+          errors: [],
+          warnings: []
+        };
+      }
+      return report.ingredientIssuesById[ingredientId];
+    }
+
+    function pushIngredientIssue(ingredientId, severity, message) {
+      var bucket = ensureIssueBucket(ingredientId);
+      if (severity === "error") {
+        bucket.errors.push(message);
+        report.errors.push(message);
+      } else {
+        bucket.warnings.push(message);
+        report.warnings.push(message);
+      }
+    }
+
+    Object.keys(tagsById).forEach(function (tagId) {
+      var tagEntry = tagsById[tagId] || {};
+      if (!String(tagEntry.label || "").trim()) {
+        report.warnings.push("Tag sin label: " + tagId);
+      }
+    });
+
+    Object.keys(allergensById).forEach(function (allergenId) {
+      var allergenEntry = allergensById[allergenId] || {};
+      if (!String(allergenEntry.label || "").trim()) {
+        report.warnings.push("Alergeno sin label: " + allergenId);
+      }
+    });
+
+    Object.keys(ingredientsById).forEach(function (ingredientId) {
+      var ingredient = ingredientsById[ingredientId];
+      if (!ingredient || typeof ingredient !== "object") {
+        pushIngredientIssue(ingredientId, "error", "Ingrediente invalido (debe ser objeto): " + ingredientId);
+        return;
+      }
+
+      var label = String(ingredient.label || "").trim();
+      if (!label) {
+        pushIngredientIssue(ingredientId, "warning", "Ingrediente sin label: " + ingredientId);
+      }
+
+      var iconValue = String(ingredient.icon || "").trim();
+      if (!iconValue) {
+        pushIngredientIssue(ingredientId, "warning", "Ingrediente sin icon: " + ingredientId);
+      } else {
+        var iconFromCatalog = iconsById[iconValue];
+        var iconAsPath = isLikelyValidIngredientIconPath(iconValue);
+        if (!iconFromCatalog && !iconAsPath) {
+          pushIngredientIssue(
+            ingredientId,
+            "error",
+            "Icon invalido en ingrediente '" + ingredientId + "': " + iconValue
+          );
+        }
+      }
+
+      var aliases = Array.isArray(ingredient.aliases) ? ingredient.aliases : [];
+      if (!Array.isArray(ingredient.aliases)) {
+        pushIngredientIssue(ingredientId, "error", "aliases debe ser array en ingrediente: " + ingredientId);
+      } else {
+        var seenAliases = {};
+        aliases.forEach(function (aliasRaw) {
+          var rawText = String(aliasRaw || "").trim();
+          var normalizedAlias = normalizeIngredientAliasValue(rawText);
+          if (!normalizedAlias) {
+            pushIngredientIssue(ingredientId, "error", "Alias vacio/invalido en ingrediente: " + ingredientId);
+            return;
+          }
+          if (rawText !== normalizedAlias) {
+            pushIngredientIssue(
+              ingredientId,
+              "error",
+              "Alias no normalizado en '" + ingredientId + "': " + rawText + " -> " + normalizedAlias
+            );
+          }
+          if (seenAliases[normalizedAlias]) {
+            pushIngredientIssue(
+              ingredientId,
+              "error",
+              "Alias duplicado en '" + ingredientId + "': " + normalizedAlias
+            );
+            return;
+          }
+          seenAliases[normalizedAlias] = true;
+        });
+      }
+
+      var tags = Array.isArray(ingredient.tags) ? ingredient.tags : [];
+      if (!Array.isArray(ingredient.tags)) {
+        pushIngredientIssue(ingredientId, "error", "tags debe ser array en ingrediente: " + ingredientId);
+      } else {
+        var seenTags = {};
+        tags.forEach(function (tagId) {
+          if (!tagsById[tagId]) {
+            pushIngredientIssue(
+              ingredientId,
+              "error",
+              "Tag desconocido en ingrediente '" + ingredientId + "': " + tagId
+            );
+          }
+          if (seenTags[tagId]) {
+            pushIngredientIssue(
+              ingredientId,
+              "error",
+              "Tag duplicado en ingrediente '" + ingredientId + "': " + tagId
+            );
+          }
+          seenTags[tagId] = true;
+        });
+      }
+
+      var allergens = Array.isArray(ingredient.allergens) ? ingredient.allergens : [];
+      if (!Array.isArray(ingredient.allergens)) {
+        pushIngredientIssue(ingredientId, "error", "allergens debe ser array en ingrediente: " + ingredientId);
+      } else {
+        var seenAllergens = {};
+        allergens.forEach(function (allergenId) {
+          if (!allergensById[allergenId]) {
+            pushIngredientIssue(
+              ingredientId,
+              "error",
+              "Alergeno desconocido en ingrediente '" + ingredientId + "': " + allergenId
+            );
+          }
+          if (seenAllergens[allergenId]) {
+            pushIngredientIssue(
+              ingredientId,
+              "error",
+              "Alergeno duplicado en ingrediente '" + ingredientId + "': " + allergenId
+            );
+          }
+          seenAllergens[allergenId] = true;
+        });
+      }
+    });
+
+    report.menuReferenceReport = getMenuIngredientReferenceReport(ingredientsById);
+    if (report.menuReferenceReport.invalidItems.length) {
+      report.warnings.push(
+        report.menuReferenceReport.invalidItems.length +
+        " items del menu tienen ingredientes invalidos (" +
+        report.menuReferenceReport.invalidReferencesCount + " refs)."
+      );
+    }
+
+    return report;
+  }
+
+  function ensureMediaStore() {
+    if (!state.data || typeof state.data !== "object") {
+      state.data = {};
+    }
+
+    if (!state.data.media || typeof state.data.media !== "object") {
+      state.data.media = {
+        version: 1,
+        schema: "figata.media.v1",
+        items: {},
+        defaults: {
+          card: MENU_PLACEHOLDER_IMAGE,
+          modal: MENU_MODAL_PLACEHOLDER_IMAGE,
+          hover: MENU_PLACEHOLDER_IMAGE,
+          alt: "Imagen del producto Figata"
+        }
+      };
+    }
+
+    if (!state.data.media.defaults || typeof state.data.media.defaults !== "object") {
+      state.data.media.defaults = {};
+    }
+
+    if (!state.data.media.defaults.card) {
+      state.data.media.defaults.card = MENU_PLACEHOLDER_IMAGE;
+    }
+    if (!state.data.media.defaults.modal) {
+      state.data.media.defaults.modal = MENU_MODAL_PLACEHOLDER_IMAGE;
+    }
+    if (!state.data.media.defaults.hover) {
+      state.data.media.defaults.hover = MENU_PLACEHOLDER_IMAGE;
+    }
+    if (!state.data.media.defaults.alt) {
+      state.data.media.defaults.alt = "Imagen del producto Figata";
+    }
+
+    if (!state.data.media.items || typeof state.data.media.items !== "object") {
+      state.data.media.items = {};
+    }
+  }
+
+  function syncMediaEntryForItem(item) {
+    ensureMediaStore();
+    if (!item) return;
+
+    var itemId = String(item.id || "").trim();
+    if (!itemId) return;
+
+    var imagePath = resolveMenuMediaPath(item.image, true) || MENU_PLACEHOLDER_IMAGE;
+    var mediaItems = state.data.media.items;
+    var existing = mediaItems[itemId];
+    var nextEntry = existing && typeof existing === "object" ? deepClone(existing) : {};
+
+    nextEntry.card = imagePath;
+    if (!nextEntry.modal || isSvgPlaceholderPath(nextEntry.modal)) {
+      nextEntry.modal = imagePath;
+    }
+    if (typeof nextEntry.hover !== "string") {
+      nextEntry.hover = "";
+    }
+    if (!Array.isArray(nextEntry.gallery)) {
+      nextEntry.gallery = [];
+    }
+    if (!nextEntry.alt) {
+      nextEntry.alt = item.name || itemId;
+    }
+    if (!Number.isFinite(Number(nextEntry.version))) {
+      nextEntry.version = 1;
+    } else {
+      nextEntry.version = Number(nextEntry.version);
+    }
+
+    mediaItems[itemId] = nextEntry;
+    state.data.media.updatedAt = new Date().toISOString();
+    state.data.media.updatedBy = "admin-app";
+  }
+
+  function removeMediaEntryForItem(itemId) {
+    ensureMediaStore();
+    var normalizedId = String(itemId || "").trim();
+    if (!normalizedId) return;
+    if (state.data.media.items && state.data.media.items[normalizedId]) {
+      delete state.data.media.items[normalizedId];
+      state.data.media.updatedAt = new Date().toISOString();
+      state.data.media.updatedBy = "admin-app";
+    }
+  }
+
+  function normalizeHomeDeliveryIconSize(rawValue, fallbackSize) {
+    var parsed = Number(rawValue);
+    var nextSize = Number.isFinite(parsed) ? Math.round(parsed) : fallbackSize;
+    return Math.max(HOME_DELIVERY_ICON_MIN_SIZE, Math.min(HOME_DELIVERY_ICON_MAX_SIZE, nextSize));
+  }
+
+  function normalizeHomeTestimonialStars(rawValue, fallbackStars) {
+    var parsed = Number(rawValue);
+    var nextStars = Number.isFinite(parsed) ? Math.round(parsed) : fallbackStars;
+    return Math.max(1, Math.min(5, nextStars));
+  }
+
+  function cloneHomeTestimonialsDefaultItems() {
+    return HOME_TESTIMONIALS_DEFAULT_ITEMS.map(function (item) {
+      return {
+        name: item.name,
+        role: item.role,
+        text: item.text,
+        stars: normalizeHomeTestimonialStars(item.stars, 5)
+      };
+    });
+  }
+
+  function normalizeHomeTestimonialsItems(rawItems) {
+    var sourceItems = Array.isArray(rawItems) ? rawItems : [];
+    if (!sourceItems.length) {
+      sourceItems = cloneHomeTestimonialsDefaultItems();
+    }
+
+    var fallbackItems = cloneHomeTestimonialsDefaultItems();
+    var normalized = sourceItems
+      .slice(0, HOME_TESTIMONIALS_LIMIT)
+      .map(function (item, index) {
+        var safeItem = item && typeof item === "object" ? item : {};
+        var fallback = fallbackItems[index] || fallbackItems[fallbackItems.length - 1] || {};
+
+        return {
+          name: String(safeItem.name || fallback.name || ("Cliente " + (index + 1))).trim(),
+          role: String(safeItem.role || fallback.role || "Cliente").trim(),
+          text: String(safeItem.text || fallback.text || "").trim(),
+          stars: normalizeHomeTestimonialStars(safeItem.stars, normalizeHomeTestimonialStars(fallback.stars, 5))
+        };
+      });
+
+    if (!normalized.length) {
+      return fallbackItems.slice(0, HOME_TESTIMONIALS_LIMIT);
+    }
+
+    return normalized;
+  }
+
+  function cloneHomeFooterDefaultColumns() {
+    return HOME_FOOTER_DEFAULT_COLUMNS.map(function (column) {
+      return {
+        title: column.title,
+        links: (column.links || []).map(function (linkEntry) {
+          return {
+            label: linkEntry.label,
+            url: linkEntry.url
+          };
+        })
+      };
+    });
+  }
+
+  function normalizeHomeFooterLink(linkInput, index) {
+    var safeLink = linkInput && typeof linkInput === "object" ? linkInput : {};
+    var label = String(safeLink.label || "").trim();
+    var url = String(safeLink.url || "").trim();
+    if (!label && !url) return null;
+    return {
+      label: label || ("Link " + (index + 1)),
+      url: url
+    };
+  }
+
+  function normalizeHomeFooterColumn(columnInput, index, fallbackColumn) {
+    var safeColumn = columnInput && typeof columnInput === "object" ? columnInput : {};
+    var fallback = fallbackColumn && typeof fallbackColumn === "object"
+      ? fallbackColumn
+      : { title: "Columna " + (index + 1), links: [] };
+    var sourceLinks = Array.isArray(safeColumn.links)
+      ? safeColumn.links
+      : (Array.isArray(fallback.links) ? fallback.links : []);
+    var normalizedLinks = sourceLinks
+      .map(function (linkEntry, linkIndex) {
+        return normalizeHomeFooterLink(linkEntry, linkIndex);
+      })
+      .filter(Boolean)
+      .slice(0, HOME_FOOTER_LINKS_LIMIT);
+
+    return {
+      title: String(safeColumn.title || fallback.title || ("Columna " + (index + 1))).trim(),
+      links: normalizedLinks
+    };
+  }
+
+  function normalizeHomeFooterColumns(rawColumns) {
+    var sourceColumns = Array.isArray(rawColumns) ? rawColumns : [];
+    var fallbackColumns = cloneHomeFooterDefaultColumns();
+    var normalized = [];
+
+    for (var index = 0; index < HOME_FOOTER_COLUMNS_COUNT; index += 1) {
+      normalized.push(
+        normalizeHomeFooterColumn(
+          sourceColumns[index],
+          index,
+          fallbackColumns[index] || fallbackColumns[0]
+        )
+      );
+    }
+
+    return normalized;
+  }
+
+  function normalizeHomeFooterSocials(rawSocials) {
+    var source = rawSocials && typeof rawSocials === "object" ? rawSocials : {};
+    var normalized = {};
+    HOME_FOOTER_SOCIAL_KEYS.forEach(function (socialKey) {
+      normalized[socialKey] = String(
+        source[socialKey] || HOME_FOOTER_DEFAULT_SOCIALS[socialKey] || ""
+      ).trim();
+    });
+    return normalized;
+  }
+
+  function normalizeHomeDeliveryPlatforms(home) {
+    if (!home.delivery || typeof home.delivery !== "object") {
+      home.delivery = {};
+    }
+    if (!home.delivery.links || typeof home.delivery.links !== "object") {
+      home.delivery.links = {};
+    }
+    if (!home.delivery.platforms || typeof home.delivery.platforms !== "object") {
+      home.delivery.platforms = {};
+    }
+
+    HOME_DELIVERY_PLATFORM_KEYS.forEach(function (platformKey) {
+      var defaults = HOME_DELIVERY_DEFAULTS[platformKey] || {};
+      var legacyUrl = String(home.delivery.links[platformKey] || "").trim();
+      var source = home.delivery.platforms[platformKey];
+      if (!source || typeof source !== "object") {
+        source = {};
+      }
+
+      var hasOwn = Object.prototype.hasOwnProperty;
+      var rawUrl = hasOwn.call(source, "url") ? source.url : (legacyUrl || defaults.url || "");
+      var rawIcon = hasOwn.call(source, "icon") ? source.icon : defaults.icon;
+      var rawIconSize = hasOwn.call(source, "iconSize") ? source.iconSize : defaults.iconSize;
+
+      var normalizedUrl = String(rawUrl || "").trim();
+      var normalizedIcon = String(rawIcon || defaults.icon || "").trim();
+      var normalizedIconSize = normalizeHomeDeliveryIconSize(
+        rawIconSize,
+        Number(defaults.iconSize) || 32
+      );
+
+      home.delivery.platforms[platformKey] = {
+        url: normalizedUrl,
+        icon: normalizedIcon,
+        iconSize: normalizedIconSize
+      };
+
+      home.delivery.links[platformKey] = normalizedUrl;
+    });
+  }
+
+  function ensureHomeDraft() {
+    if (!state.drafts.home || typeof state.drafts.home !== "object") {
+      state.drafts.home = {};
+    }
+
+    var home = state.drafts.home;
+    home.version = Number.isFinite(Number(home.version)) ? Number(home.version) : 1;
+    home.schema = "figata.home.v1";
+
+    if (!home.sections || typeof home.sections !== "object") {
+      home.sections = {};
+    }
+    if (!home.hero || typeof home.hero !== "object") {
+      home.hero = {};
+    }
+    if (!home.hero.ctaPrimary || typeof home.hero.ctaPrimary !== "object") {
+      home.hero.ctaPrimary = {};
+    }
+    if (!home.hero.ctaSecondary || typeof home.hero.ctaSecondary !== "object") {
+      home.hero.ctaSecondary = {};
+    }
+    if (!home.popular || typeof home.popular !== "object") {
+      home.popular = {};
+    }
+    if (!home.delivery || typeof home.delivery !== "object") {
+      home.delivery = {};
+    }
+    if (!home.eventsPreview || typeof home.eventsPreview !== "object") {
+      home.eventsPreview = {};
+    }
+    if (!home.navbar || typeof home.navbar !== "object") {
+      home.navbar = {};
+    }
+    if (!home.navbar.cta || typeof home.navbar.cta !== "object") {
+      home.navbar.cta = {};
+    }
+    if (!home.reservation || typeof home.reservation !== "object") {
+      home.reservation = {};
+    }
+    if (!home.announcements || typeof home.announcements !== "object") {
+      home.announcements = {};
+    }
+    if (!home.testimonials || typeof home.testimonials !== "object") {
+      home.testimonials = {};
+    }
+    if (!home.footer || typeof home.footer !== "object") {
+      home.footer = {};
+    }
+
+    home.hero.title = String(home.hero.title || "Pizza napolitana autentica").trim();
+    home.hero.subtitle = String(
+      home.hero.subtitle ||
+      "Horneada en horno de lena, con ingredientes seleccionados y maridajes de la casa."
+    ).trim();
+    home.hero.backgroundImage = String(home.hero.backgroundImage || "assets/home/seamless-bg.webp").trim();
+    home.hero.ctaPrimary.label = String(home.hero.ctaPrimary.label || "Ver menu").trim();
+    home.hero.ctaPrimary.url = String(home.hero.ctaPrimary.url || "#menu").trim();
+    home.hero.ctaSecondary.label = String(home.hero.ctaSecondary.label || "Reservar").trim();
+    home.hero.ctaSecondary.url = String(home.hero.ctaSecondary.url || "#reservar").trim();
+
+    home.popular.title = String(home.popular.title || "Las mas pedidas").trim();
+    home.popular.subtitle = String(home.popular.subtitle || "Favoritas de nuestros clientes").trim();
+
+    if (!Array.isArray(home.popular.featuredIds)) {
+      home.popular.featuredIds = [];
+    }
+
+    var normalizedFeaturedIds = [];
+    home.popular.featuredIds.forEach(function (featuredId) {
+      var normalized = String(featuredId || "").trim();
+      if (!normalized) return;
+      if (normalizedFeaturedIds.includes(normalized)) return;
+      normalizedFeaturedIds.push(normalized);
+    });
+
+    home.popular.featuredIds = normalizedFeaturedIds;
+
+    var rawPopularLimit = Number(home.popular.limit);
+    if (!Number.isFinite(rawPopularLimit) || rawPopularLimit <= 0) {
+      rawPopularLimit = HOME_FEATURED_LIMIT;
+    }
+    home.popular.limit = Math.min(HOME_FEATURED_LIMIT, Math.max(1, Math.round(rawPopularLimit)));
+
+    if (home.popular.featuredIds.length > HOME_FEATURED_LIMIT) {
+      home.popular.featuredIds = home.popular.featuredIds.slice(
+        home.popular.featuredIds.length - HOME_FEATURED_LIMIT
+      );
+    }
+
+    home.delivery.title = String(home.delivery.title || "Figata en tu casa").trim();
+    home.delivery.subtitle = String(
+      home.delivery.subtitle ||
+      "Pide por nuestras plataformas oficiales y recibe la pizza recien horneada donde estes, o para llevar."
+    ).trim();
+    normalizeHomeDeliveryPlatforms(home);
+
+    home.eventsPreview.enabled = home.eventsPreview.enabled !== false;
+    home.eventsPreview.title = String(home.eventsPreview.title || "Eventos en Figata").trim();
+    home.eventsPreview.subtitle = String(
+      home.eventsPreview.subtitle ||
+      "Llevamos el sabor de Figata a cada ocasion, dentro o fuera de nuestra casa."
+    ).trim();
+
+    var eventsLimit = Number(home.eventsPreview.limit);
+    if (!Number.isFinite(eventsLimit) || eventsLimit <= 0) {
+      eventsLimit = 3;
+    }
+    home.eventsPreview.limit = Math.max(1, Math.round(eventsLimit));
+
+    if (!Array.isArray(home.eventsPreview.items)) {
+      home.eventsPreview.items = [];
+    }
+    if (!home.eventsPreview.items.length) {
+      home.eventsPreview.items = [
+        {
+          id: "celebraciones_in_house",
+          title: "Celebraciones In-House",
+          subtitle: "Celebra tu evento en nuestro local"
+        },
+        {
+          id: "pizza_party_domicilio",
+          title: "Pizza Party a Domicilio",
+          subtitle: "Experiencia Figata donde estes"
+        },
+        {
+          id: "noches_especiales",
+          title: "Noches Especiales",
+          subtitle: "Catas y eventos privados en Figata"
+        }
+      ];
+    }
+
+    home.eventsPreview.items = home.eventsPreview.items
+      .map(function (item, index) {
+        var safeItem = item && typeof item === "object" ? item : {};
+        return {
+          id: String(safeItem.id || ("evento_" + (index + 1))).trim(),
+          title: String(safeItem.title || ("Evento " + (index + 1))).trim(),
+          subtitle: String(safeItem.subtitle || "").trim()
+        };
+      })
+      .filter(function (item) {
+        return Boolean(item.id);
+      });
+    home.eventsPreview.items = home.eventsPreview.items.slice(0, home.eventsPreview.limit);
+    home.eventsPreview.eventIds = home.eventsPreview.items.map(function (item) {
+      return item.id;
+    });
+
+    var legacyReservation = home.reservation && typeof home.reservation === "object"
+      ? home.reservation
+      : {};
+
+    var rawNavbarLinks = Array.isArray(home.navbar.links) ? home.navbar.links : [];
+    var normalizedNavbarLinks = [];
+
+    rawNavbarLinks.forEach(function (linkEntry) {
+      if (!linkEntry || typeof linkEntry !== "object") return;
+      var label = String(linkEntry.label || "").trim();
+      var url = String(linkEntry.url || "").trim();
+      if (!label && !url) return;
+      normalizedNavbarLinks.push({
+        label: label || "Link",
+        url: url || "#"
+      });
+    });
+
+    if (!normalizedNavbarLinks.length) {
+      normalizedNavbarLinks = HOME_DEFAULT_NAVBAR_LINKS.map(function (linkEntry) {
+        return {
+          label: linkEntry.label,
+          url: linkEntry.url
+        };
+      });
+    }
+
+    home.navbar.links = normalizedNavbarLinks;
+    home.navbar.cta.label = String(
+      home.navbar.cta.label || legacyReservation.ctaLabel || "Reservar ahora"
+    ).trim();
+    home.navbar.cta.url = String(
+      home.navbar.cta.url || legacyReservation.url || "#reservar"
+    ).trim();
+    home.navbar.cta.icon = String(
+      home.navbar.cta.icon || HOME_DEFAULT_NAVBAR_ICON
+    ).trim();
+    home.navbar.cta.title = String(
+      home.navbar.cta.title || legacyReservation.title || "Reserva tu mesa"
+    ).trim();
+
+    home.reservation.enabled = home.sections.navbar !== false;
+    home.reservation.title = home.navbar.cta.title;
+    home.reservation.url = home.navbar.cta.url;
+    home.reservation.ctaLabel = home.navbar.cta.label;
+
+    home.announcements.enabled = Boolean(home.announcements.enabled);
+    home.announcements.message = String(home.announcements.message || "").trim();
+    home.announcements.link = String(home.announcements.link || "").trim();
+    home.announcements.type = HOME_ANNOUNCEMENT_TYPES.includes(home.announcements.type)
+      ? home.announcements.type
+      : "highlight";
+
+    home.testimonials.enabled = home.testimonials.enabled !== false;
+    home.testimonials.title = String(home.testimonials.title || "Historias que nacen en nuestra mesa").trim();
+    home.testimonials.subtitle = String(
+      home.testimonials.subtitle ||
+      "Clientes que volvieron por la masa, el fuego y el ambiente de Figata."
+    ).trim();
+    home.testimonials.items = normalizeHomeTestimonialsItems(home.testimonials.items);
+
+    home.footer.enabled = home.footer.enabled !== false;
+    home.footer.columns = normalizeHomeFooterColumns(home.footer.columns);
+    if (!home.footer.cta || typeof home.footer.cta !== "object") {
+      home.footer.cta = {};
+    }
+    home.footer.cta.label = String(home.footer.cta.label || HOME_FOOTER_DEFAULT_CTA.label).trim();
+    home.footer.cta.url = String(home.footer.cta.url || HOME_FOOTER_DEFAULT_CTA.url).trim();
+    home.footer.socials = normalizeHomeFooterSocials(home.footer.socials);
+    home.footer.note = String(home.footer.note || "").trim();
+
+    if (typeof home.sections.navbar !== "boolean") {
+      home.sections.navbar = typeof home.sections.reservation === "boolean"
+        ? home.sections.reservation
+        : true;
+    }
+    if (typeof home.sections.hero !== "boolean") {
+      home.sections.hero = true;
+    }
+    if (typeof home.sections.popular !== "boolean") {
+      home.sections.popular = true;
+    }
+    if (typeof home.sections.events !== "boolean") {
+      home.sections.events = true;
+    }
+    if (typeof home.sections.delivery !== "boolean") {
+      home.sections.delivery = true;
+    }
+    if (typeof home.sections.announcements !== "boolean") {
+      home.sections.announcements = true;
+    }
+    if (typeof home.sections.testimonials !== "boolean") {
+      home.sections.testimonials = true;
+    }
+    if (typeof home.sections.footer !== "boolean") {
+      home.sections.footer = true;
+    }
+  }
+
+  function syncHomeFeaturedSelection(itemId, isFeatured) {
+    ensureHomeDraft();
+    var normalizedId = String(itemId || "").trim();
+    if (!normalizedId) return;
+
+    var featuredIds = state.drafts.home.popular.featuredIds.filter(function (id) {
+      return id !== normalizedId;
+    });
+
+    if (isFeatured) {
+      featuredIds.push(normalizedId);
+      if (featuredIds.length > HOME_FEATURED_LIMIT) {
+        featuredIds = featuredIds.slice(featuredIds.length - HOME_FEATURED_LIMIT);
+      }
+    }
+
+    state.drafts.home.popular.featuredIds = featuredIds;
+  }
+
   function sortByOrder(list) {
     return list.slice().sort(function (a, b) {
       var aOrder = Number(a && a.order);
@@ -713,7 +2895,27 @@
     });
   }
 
+  function addMenuMediaCandidatesToSet(targetSet, rawPath) {
+    if (!targetSet) return;
+
+    var normalized = toRelativeAssetPath(rawPath);
+    if (!normalized) return;
+
+    if (isMenuMediaPath(normalized) || isSvgPlaceholderPath(normalized)) {
+      targetSet.add(normalized);
+    }
+
+    if (normalized.indexOf("menu/") === 0) {
+      var assetsVariant = toRelativeAssetPath("assets/" + normalized);
+      if (isMenuMediaPath(assetsVariant) || isSvgPlaceholderPath(assetsVariant)) {
+        targetSet.add(assetsVariant);
+      }
+    }
+  }
+
   function buildIndexes() {
+    ensureMediaStore();
+    ensureIngredientsDraft();
     var categoriesRaw = (((state.data || {}).categories || {}).categories || []).filter(function (category) {
       return category && category.enabled !== false;
     });
@@ -731,16 +2933,19 @@
       state.indexes.categoriesById[category.id] = category;
     });
 
-    var ingredientsSource = (state.data && state.data.ingredients) || {};
+    var ingredientsSource = state.drafts.ingredients || ((state.data && state.data.ingredients) || {});
     state.indexes.ingredientsById = ingredientsSource.ingredients || {};
+    state.indexes.iconsById = ingredientsSource.icons || {};
+    state.indexes.iconList = Object.keys(state.indexes.iconsById).sort(function (a, b) {
+      return normalizeText(a).localeCompare(normalizeText(b));
+    });
     state.indexes.ingredientList = Object.keys(state.indexes.ingredientsById).map(function (id) {
       var entry = state.indexes.ingredientsById[id] || {};
-      var iconId = entry.icon;
-      var iconMap = (ingredientsSource.icons && ingredientsSource.icons[iconId]) || null;
+      var iconPath = resolveIngredientIconPath(entry, ingredientsSource);
       return {
         id: id,
         label: entry.label || id,
-        icon: iconMap && iconMap.icon ? iconMap.icon : ""
+        icon: iconPath
       };
     }).sort(function (a, b) {
       return normalizeText(a.label).localeCompare(normalizeText(b.label));
@@ -752,23 +2957,32 @@
     state.indexes.allergensById = ingredientsSource.allergens || {};
     state.indexes.allergenList = Object.keys(state.indexes.allergensById).sort();
 
-    var mediaPathsSet = new Set([MENU_PLACEHOLDER_IMAGE]);
+    var mediaPathsSet = new Set([MENU_PLACEHOLDER_IMAGE, MENU_MODAL_PLACEHOLDER_IMAGE]);
     var mediaItems = ((state.data && state.data.media && state.data.media.items) || {});
     Object.keys(mediaItems).forEach(function (itemId) {
       var mediaEntry = mediaItems[itemId] || {};
       [mediaEntry.card, mediaEntry.hover, mediaEntry.modal].forEach(function (path) {
-        if (path) mediaPathsSet.add(path);
+        addMenuMediaCandidatesToSet(mediaPathsSet, path);
       });
     });
 
     getAllMenuItems().forEach(function (entry) {
       if (entry.item && entry.item.image) {
-        mediaPathsSet.add(entry.item.image);
+        addMenuMediaCandidatesToSet(mediaPathsSet, entry.item.image);
       }
+    });
+
+    (state.indexes.localMenuMediaPaths || []).forEach(function (localPath) {
+      addMenuMediaCandidatesToSet(mediaPathsSet, localPath);
     });
 
     state.indexes.mediaPaths = Array.from(mediaPathsSet).sort(function (a, b) {
       return normalizeText(a).localeCompare(normalizeText(b));
+    });
+
+    state.indexes.menuMediaPathSet = {};
+    state.indexes.mediaPaths.forEach(function (path) {
+      state.indexes.menuMediaPathSet[path] = true;
     });
   }
 
@@ -793,15 +3007,21 @@
 
       state.drafts.menu = deepClone(state.data.menu);
       state.drafts.availability = deepClone(state.data.availability);
+      state.drafts.home = deepClone(state.data.home);
+      state.drafts.ingredients = deepClone(state.data.ingredients || {});
+      state.indexes.localMenuMediaPaths = await fetchLocalMenuMediaPaths();
       var restoredFromLocalDrafts = hydrateDraftsFromLocalStorage();
       ensureMenuDraft();
       ensureAvailabilityDraft();
+      ensureHomeDraft();
+      ensureIngredientsDraft();
       buildIndexes();
       state.hasDataLoaded = true;
       updateDashboardMetrics();
 
       renderMenuBrowser();
       renderSidebarMenuAccordion();
+      renderSidebarHomepageAccordion();
 
       if (restoredFromLocalDrafts) {
         setDraftsBanner(true, "Drafts restaurados (Clear drafts | Export)");
@@ -815,6 +3035,8 @@
       }
       setMenuBrowserStatus("");
       setItemEditorStatus("");
+      setHomeEditorStatus("");
+      setIngredientsEditorStatus("");
       showItemEditorErrors([]);
       applyRoute();
     } catch (error) {
@@ -831,7 +3053,7 @@
   }
 
   function resetDraftsToBaseData() {
-    if (!state.data || !state.data.menu || !state.data.availability) {
+    if (!state.data || !state.data.menu || !state.data.availability || !state.data.home || !state.data.ingredients) {
       clearPersistedDraftsStorage();
       setDraftsBanner(false);
       return;
@@ -839,12 +3061,20 @@
 
     state.drafts.menu = deepClone(state.data.menu);
     state.drafts.availability = deepClone(state.data.availability);
+    state.drafts.home = deepClone(state.data.home);
+    state.drafts.ingredients = deepClone(state.data.ingredients || {});
     ensureMenuDraft();
     ensureAvailabilityDraft();
+    ensureHomeDraft();
+    ensureIngredientsDraft();
     buildIndexes();
     updateDashboardMetrics();
     renderMenuBrowser();
     renderSidebarMenuAccordion();
+    renderSidebarHomepageAccordion();
+    if (state.currentPanel === "ingredients-editor") {
+      renderIngredientsEditor();
+    }
 
     if (state.currentPanel === "menu-item") {
       openMenuBrowser({ skipRoute: true });
@@ -856,6 +3086,8 @@
     setDraftsBanner(false);
     setDataStatus("Drafts locales limpiados. Se restauro el estado base de /data.");
     setItemEditorStatus("");
+    setHomeEditorStatus("");
+    setIngredientsEditorStatus("");
     showItemEditorErrors([]);
   }
 
@@ -1265,6 +3497,8 @@
 
   function updateMenuScrollSpy(force) {
     if (state.currentPanel !== "menu-browser") return;
+    if (state.visiblePanel !== "menu-browser") return;
+    if (isSidebarAccordionOpening("menu")) return;
     if (!state.menuAnchorTargets.length) return;
 
     var threshold = 154;
@@ -1284,6 +3518,8 @@
 
   function requestMenuScrollSpyUpdate() {
     if (state.currentPanel !== "menu-browser") return;
+    if (state.visiblePanel !== "menu-browser") return;
+    if (isSidebarAccordionOpening("menu")) return;
     if (state.menuScrollSpyFrame) return;
 
     state.menuScrollSpyFrame = window.requestAnimationFrame(function () {
@@ -1300,44 +3536,23 @@
 
     var groups = state.menuViewGroups.length ? state.menuViewGroups : buildMenuGroups();
     var activeCategoryId = state.menuActiveAnchor.categoryId;
-    var activeSubcategoryId = state.menuActiveAnchor.subcategoryId;
 
-    var html = groups.map(function (group) {
+    var html = groups.map(function (group, groupIndex) {
       var categoryIsActive = activeCategoryId === group.id;
       var categoryButtonClass = "sidebar-accordion-category__toggle" + (categoryIsActive ? " is-active" : "");
-      var sidebarSubgroups = (group.subgroups || []).filter(function (subgroup) {
-        return Boolean(subgroup.id);
-      });
-
-      var subgroupsHtml = "";
-      if (sidebarSubgroups.length > 0) {
-        subgroupsHtml = "<ul class=\"sidebar-accordion-subcategories\">" +
-          sidebarSubgroups.map(function (subgroup) {
-            var subgroupIsActive = categoryIsActive && activeSubcategoryId === subgroup.id;
-            var subgroupClass = "sidebar-accordion-subcategory" + (subgroupIsActive ? " is-active" : "");
-
-            return (
-              "<li><button class=\"" + subgroupClass + "\" type=\"button\" data-scroll-category=\"" +
-              escapeHtml(group.id) + "\" data-scroll-subcategory=\"" + escapeHtml(subgroup.id) + "\">" +
-              escapeHtml(subgroup.label || subgroup.id) +
-              "</button></li>"
-            );
-          }).join("") +
-          "</ul>";
-      }
 
       return (
-        "<div class=\"sidebar-accordion-category\" data-category-id=\"" + escapeHtml(group.id) + "\">" +
+        "<div class=\"sidebar-accordion-category\" style=\"--sidebar-stagger-index:" + groupIndex + "\" data-category-id=\"" + escapeHtml(group.id) + "\">" +
         "<button class=\"" + categoryButtonClass + "\" type=\"button\" data-scroll-category=\"" +
         escapeHtml(group.id) + "\" data-scroll-subcategory=\"\">" +
         "<span>" + escapeHtml(group.label || group.id) + "</span>" +
         "</button>" +
-        subgroupsHtml +
         "</div>"
       );
     }).join("");
 
     elements.sidebarMenuAccordion.innerHTML = html;
+    syncSidebarAccordionCategoryHeights(elements.sidebarMenuAccordion);
   }
 
   function getItemBadges(item) {
@@ -1378,6 +3593,7 @@
   }
 
   function getMediaEntryForItem(itemId) {
+    ensureMediaStore();
     var mediaItems = (state.data && state.data.media && state.data.media.items) || {};
     return mediaItems[itemId] || null;
   }
@@ -1385,6 +3601,7 @@
   function resolveCardImageForItem(item) {
     var mediaEntry = getMediaEntryForItem(item.id);
     var path = item.image || (mediaEntry && mediaEntry.card) || MENU_PLACEHOLDER_IMAGE;
+    path = resolveMenuMediaPath(path, true) || MENU_PLACEHOLDER_IMAGE;
     return resolveAssetPath(path);
   }
 
@@ -1419,7 +3636,8 @@
             escapeHtml(item.id) + "\">" +
             "<div class=\"menu-item-card__media\">" +
             "<img class=\"menu-item-card__image\" src=\"" + escapeHtml(resolveCardImageForItem(item)) + "\" alt=\"" +
-            escapeHtml(item.name || item.id) + "\" loading=\"lazy\" />" +
+            escapeHtml(item.name || item.id) +
+            "\" loading=\"lazy\" onerror=\"this.onerror=null;this.src='/" + escapeHtml(MENU_PLACEHOLDER_IMAGE) + "';\" />" +
             "</div>" +
             "<div class=\"menu-item-card__content\">" +
             "<h4>" + escapeHtml(item.name || item.id) + "</h4>" +
@@ -1600,12 +3818,24 @@
   }
 
   function populateMediaPicker(selectedPath) {
+    var normalizedSelected = resolveMenuMediaPath(selectedPath, true);
+    if (!normalizedSelected && selectedPath) {
+      normalizedSelected = toRelativeAssetPath(selectedPath);
+    }
+    var mediaPathOptions = state.indexes.mediaPaths.slice();
+    if (normalizedSelected && !mediaPathOptions.includes(normalizedSelected)) {
+      mediaPathOptions.push(normalizedSelected);
+      mediaPathOptions.sort(function (a, b) {
+        return normalizeText(a).localeCompare(normalizeText(b));
+      });
+    }
+
     var options = ['<option value="">(sin seleccion)</option>'];
-    state.indexes.mediaPaths.forEach(function (path) {
+    mediaPathOptions.forEach(function (path) {
       options.push("<option value=\"" + escapeHtml(path) + "\">" + escapeHtml(path) + "</option>");
     });
     elements.itemMediaPicker.innerHTML = options.join("");
-    elements.itemMediaPicker.value = selectedPath || "";
+    elements.itemMediaPicker.value = normalizedSelected;
   }
 
   function setActiveItemTab(tabId) {
@@ -1623,12 +3853,12 @@
   }
 
   function renderIngredientChips() {
+    var ingredientsSource = state.drafts.ingredients || ((state.data && state.data.ingredients) || {});
     var html = state.itemEditor.ingredients.map(function (ingredientId, index) {
       var ingredient = state.indexes.ingredientsById[ingredientId] || {};
       var label = ingredient.label || ingredientId;
-      var iconId = ingredient.icon;
-      var iconMap = (state.data.ingredients && state.data.ingredients.icons && state.data.ingredients.icons[iconId]) || null;
-      var iconPath = iconMap && iconMap.icon ? resolveAssetPath(iconMap.icon) : "";
+      var iconPath = resolveIngredientIconPath(ingredient, ingredientsSource);
+      if (iconPath) iconPath = resolveAssetPath(iconPath);
 
       return (
         "<li class=\"chip chip--draggable\" draggable=\"true\" data-chip-index=\"" + index + "\">" +
@@ -1748,7 +3978,9 @@
     var draft = state.itemEditor.draft;
     if (!draft) return;
 
-    elements.previewCardImage.src = resolveCardImageForItem(draft);
+    var normalizedImagePath = resolveMenuMediaPath(draft.image, true) || MENU_PLACEHOLDER_IMAGE;
+
+    setImageElementSourceWithFallback(elements.previewCardImage, normalizedImagePath, MENU_PLACEHOLDER_IMAGE);
     elements.previewCardImage.alt = draft.name || draft.id;
     elements.previewCardName.textContent = draft.name || draft.id || "-";
     elements.previewCardShort.textContent = draft.descriptionShort || "Sin descripcion corta";
@@ -1758,7 +3990,7 @@
       return "<span class=\"" + badge.className + "\">" + escapeHtml(badge.label) + "</span>";
     }).join("");
 
-    elements.previewModalImage.src = resolveCardImageForItem(draft);
+    setImageElementSourceWithFallback(elements.previewModalImage, normalizedImagePath, MENU_PLACEHOLDER_IMAGE);
     elements.previewModalImage.alt = draft.name || draft.id;
     elements.previewModalName.textContent = draft.name || draft.id || "-";
     elements.previewModalLong.textContent =
@@ -1771,8 +4003,23 @@
     elements.itemPricePreview.textContent = currency + " " + price.toFixed(0);
     elements.itemSpicyLevelValue.textContent = String(Number(draft.spicy_level) || 0);
 
-    var imagePath = draft.image || "";
-    elements.itemMediaPreview.src = resolveAssetPath(imagePath || MENU_PLACEHOLDER_IMAGE);
+    setImageElementSourceWithFallback(elements.itemMediaPreview, normalizedImagePath, MENU_PLACEHOLDER_IMAGE);
+
+    if (elements.itemMediaStatus) {
+      var statusPath = toRelativeAssetPath(normalizedImagePath);
+      var knownSet = state.indexes.menuMediaPathSet || {};
+      var isMissing =
+        statusPath &&
+        !isSvgPlaceholderPath(statusPath) &&
+        !/^https?:\/\//i.test(statusPath) &&
+        !knownSet[statusPath];
+
+      elements.itemMediaStatus.textContent = isMissing
+        ? "Missing file: " + statusPath + " (fallback placeholder)"
+        : "Ruta valida: " + statusPath;
+      elements.itemMediaStatus.classList.toggle("media-status--missing", Boolean(isMissing));
+      elements.itemMediaStatus.classList.toggle("media-status--ok", !isMissing);
+    }
   }
 
   function syncDraftFromForm() {
@@ -1784,16 +4031,20 @@
     draft.category = elements.itemFieldCategory.value;
     draft.subcategory = elements.itemFieldSubcategory.value;
     draft.price = Math.max(0, Math.round(Number(elements.itemFieldPrice.value || 0)));
-    draft.featured = Boolean(elements.itemFieldFeatured.checked);
+    draft.featured = getToggleChecked(elements.itemFieldFeatured);
     draft.descriptionShort = elements.itemFieldDescriptionShort.value.trim();
     draft.descriptionLong = elements.itemFieldDescriptionLong.value.trim();
     draft.ingredients = state.itemEditor.ingredients.slice();
     draft.tags = state.itemEditor.tags.slice();
     draft.allergens = state.itemEditor.allergens.slice();
-    draft.image = elements.itemFieldImage.value.trim() || MENU_PLACEHOLDER_IMAGE;
+    var normalizedImagePath = resolveMenuMediaPath(elements.itemFieldImage.value, true) || MENU_PLACEHOLDER_IMAGE;
+    draft.image = normalizedImagePath;
+    if (document.activeElement !== elements.itemFieldImage) {
+      elements.itemFieldImage.value = normalizedImagePath;
+    }
     draft.spicy_level = Number(elements.itemFieldSpicyLevel.value || 0);
-    draft.vegetarian = Boolean(elements.itemFieldVegetarian.checked);
-    draft.vegan = Boolean(elements.itemFieldVegan.checked);
+    draft.vegetarian = getToggleChecked(elements.itemFieldVegetarian);
+    draft.vegan = getToggleChecked(elements.itemFieldVegan);
 
     var spicyLegacy = elements.itemFieldSpicyLegacy.value;
     if (!spicyLegacy) {
@@ -1809,7 +4060,7 @@
       draft.reviews = reviewsValue;
     }
 
-    state.itemEditor.availability.available = Boolean(elements.itemAvailabilityToggle.checked);
+    state.itemEditor.availability.available = getToggleChecked(elements.itemAvailabilityToggle);
     state.itemEditor.availability.soldOutReason = elements.itemAvailabilityReason.value.trim();
 
     renderItemPreview();
@@ -1834,6 +4085,7 @@
     }
 
     var draft = deepClone(itemPosition.item);
+    draft.image = resolveMenuMediaPath(draft.image, true) || MENU_PLACEHOLDER_IMAGE;
     var availabilityEntry = getAvailabilityEntry(draft.id, false);
     var fallbackAvailable =
       typeof draft.available === "boolean"
@@ -1864,19 +4116,19 @@
     elements.itemFieldName.value = draft.name || "";
     elements.itemFieldSlug.value = draft.slug || "";
     elements.itemFieldPrice.value = Number(draft.price || 0);
-    elements.itemFieldFeatured.checked = Boolean(draft.featured);
+    setToggleChecked(elements.itemFieldFeatured, Boolean(draft.featured));
 
     elements.itemFieldDescriptionShort.value = draft.descriptionShort || "";
     elements.itemFieldDescriptionLong.value = draft.descriptionLong || "";
 
     elements.itemFieldImage.value = draft.image || "";
 
-    elements.itemAvailabilityToggle.checked = state.itemEditor.availability.available;
+    setToggleChecked(elements.itemAvailabilityToggle, state.itemEditor.availability.available);
     elements.itemAvailabilityReason.value = state.itemEditor.availability.soldOutReason;
 
     elements.itemFieldSpicyLevel.value = Number(draft.spicy_level || 0);
-    elements.itemFieldVegetarian.checked = Boolean(draft.vegetarian);
-    elements.itemFieldVegan.checked = Boolean(draft.vegan);
+    setToggleChecked(elements.itemFieldVegetarian, Boolean(draft.vegetarian));
+    setToggleChecked(elements.itemFieldVegan, Boolean(draft.vegan));
     elements.itemFieldSpicyLegacy.value = typeof draft.spicy === "boolean" ? String(draft.spicy) : "";
     elements.itemFieldReviews.value = draft.reviews || "";
 
@@ -1936,18 +4188,18 @@
     elements.itemFieldName.value = draft.name;
     elements.itemFieldSlug.value = draft.slug;
     elements.itemFieldPrice.value = "0";
-    elements.itemFieldFeatured.checked = false;
+    setToggleChecked(elements.itemFieldFeatured, false);
 
     elements.itemFieldDescriptionShort.value = "";
     elements.itemFieldDescriptionLong.value = "";
     elements.itemFieldImage.value = draft.image;
 
-    elements.itemAvailabilityToggle.checked = true;
+    setToggleChecked(elements.itemAvailabilityToggle, true);
     elements.itemAvailabilityReason.value = "";
 
     elements.itemFieldSpicyLevel.value = "0";
-    elements.itemFieldVegetarian.checked = false;
-    elements.itemFieldVegan.checked = false;
+    setToggleChecked(elements.itemFieldVegetarian, false);
+    setToggleChecked(elements.itemFieldVegan, false);
     elements.itemFieldSpicyLegacy.value = "";
     elements.itemFieldReviews.value = "";
 
@@ -2164,16 +4416,21 @@
     var availabilityEntry = getAvailabilityEntry(draft.id, true);
     availabilityEntry.available = Boolean(state.itemEditor.availability.available);
     availabilityEntry.soldOutReason = state.itemEditor.availability.soldOutReason || "";
+    syncHomeFeaturedSelection(draft.id, Boolean(draft.featured));
+    syncMediaEntryForItem(draft);
 
     state.itemEditor.sourceSectionId = persistedPosition ? persistedPosition.sectionId : targetSection.id;
     state.itemEditor.sourceItemIndex = persistedPosition ? persistedPosition.itemIndex : -1;
     state.itemEditor.draft = deepClone(draft);
 
+    buildIndexes();
     updateDashboardMetrics();
     renderMenuBrowser();
     renderSidebarMenuAccordion();
+    renderSidebarHomepageAccordion();
     persistDraftsToLocalStorage();
     setDraftsBanner(true, "Drafts locales activos (Clear drafts | Export)");
+    saveDraftsToLocalFiles();
 
     showItemEditorErrors([]);
 
@@ -2217,12 +4474,17 @@
 
     position.section.items.splice(position.itemIndex, 1);
     removeAvailabilityEntry(draft.id);
+    syncHomeFeaturedSelection(draft.id, false);
+    removeMediaEntryForItem(draft.id);
 
+    buildIndexes();
     updateDashboardMetrics();
     renderMenuBrowser();
     renderSidebarMenuAccordion();
+    renderSidebarHomepageAccordion();
     persistDraftsToLocalStorage();
     setDraftsBanner(true, "Drafts locales activos (Clear drafts | Export)");
+    saveDraftsToLocalFiles();
 
     openMenuBrowser({ skipRoute: false });
     setMenuBrowserStatus("Item eliminado: " + draft.id);
@@ -2239,6 +4501,9 @@
       elements.metricCategories.textContent = "-";
       elements.metricAvailability.textContent = "-";
       elements.metricHome.textContent = "-";
+      if (elements.metricIngredients) {
+        elements.metricIngredients.textContent = "-";
+      }
       elements.metricRestaurant.textContent = "-";
       elements.metricMedia.textContent = "-";
       return;
@@ -2264,13 +4529,25 @@
     elements.metricAvailability.textContent =
       availableCount + " / " + matchingAvailability.length + " disponibles";
 
-    var homeData = state.data.home || {};
+    ensureHomeDraft();
+    ensureIngredientsDraft();
+    var homeData = state.drafts.home || {};
     var featuredCount =
       homeData.popular && Array.isArray(homeData.popular.featuredIds)
         ? homeData.popular.featuredIds.length
         : 0;
     var heroTitle = homeData.hero && homeData.hero.title ? homeData.hero.title : "Sin hero";
     elements.metricHome.textContent = featuredCount + " featured · " + heroTitle;
+
+    if (elements.metricIngredients) {
+      var ingredientsDraft = state.drafts.ingredients || {};
+      var ingredientsCount = Object.keys((ingredientsDraft.ingredients || {})).length;
+      var ingredientsValidation = validateIngredientsDraftData(ingredientsDraft);
+      state.ingredientsEditor.validationReport = ingredientsValidation;
+      var alertsCount = ingredientsValidation.errors.length + ingredientsValidation.warnings.length;
+      elements.metricIngredients.textContent = ingredientsCount + " ingredientes" +
+        (alertsCount ? (" · " + alertsCount + " alertas") : "");
+    }
 
     var restaurant = state.data.restaurant || {};
     var phone = restaurant.phone || "Sin telefono";
@@ -2286,6 +4563,8 @@
     setActivePanel("dashboard");
     setMenuBrowserStatus("");
     setItemEditorStatus("");
+    setHomeEditorStatus("");
+    setIngredientsEditorStatus("");
 
     if (!options.skipRoute) {
       navigateToRoute("/dashboard", { replace: Boolean(options.replaceRoute) });
@@ -2303,6 +4582,8 @@
     setActivePanel("menu-browser");
     renderMenuBrowser();
     renderSidebarMenuAccordion();
+    setHomeEditorStatus("");
+    setIngredientsEditorStatus("");
 
     if (!options.skipRoute) {
       navigateToRoute("/menu", { replace: Boolean(options.replaceRoute) });
@@ -2311,6 +4592,1942 @@
     window.requestAnimationFrame(function () {
       updateMenuScrollSpy(true);
     });
+  }
+
+  function getHomeSectionAnchorId(sectionId) {
+    return "home-section-" + sectionId;
+  }
+
+  function normalizeHomeSectionId(sectionId) {
+    var normalized = String(sectionId || "").trim();
+    if (!normalized) return HOME_EDITOR_SECTIONS[0].id;
+    var found = HOME_EDITOR_SECTIONS.some(function (entry) {
+      return entry.id === normalized;
+    });
+    return found ? normalized : HOME_EDITOR_SECTIONS[0].id;
+  }
+
+  function getHomeSectionMeta(sectionId) {
+    var normalized = normalizeHomeSectionId(sectionId);
+    var found = HOME_EDITOR_SECTIONS.find(function (entry) {
+      return entry.id === normalized;
+    });
+    return found || HOME_EDITOR_SECTIONS[0];
+  }
+
+  function getMenuItemNameById(itemId) {
+    var normalizedId = String(itemId || "").trim();
+    if (!normalizedId) return "";
+    var match = getAllMenuItems().find(function (entry) {
+      return entry.item && entry.item.id === normalizedId;
+    });
+    if (!match || !match.item) return normalizedId;
+    return match.item.name || normalizedId;
+  }
+
+  function getMenuItemById(itemId) {
+    var normalizedId = String(itemId || "").trim();
+    if (!normalizedId) return null;
+    var match = getAllMenuItems().find(function (entry) {
+      return entry.item && entry.item.id === normalizedId;
+    });
+    return match && match.item ? match.item : null;
+  }
+
+  function normalizeHomeEditorCollections() {
+    ensureHomeDraft();
+
+    var navbarLinksRaw = Array.isArray(state.drafts.home.navbar.links)
+      ? state.drafts.home.navbar.links
+      : [];
+    var navbarLinksNormalized = navbarLinksRaw
+      .map(function (linkEntry) {
+        var safeLink = linkEntry && typeof linkEntry === "object" ? linkEntry : {};
+        var label = String(safeLink.label || "").trim();
+        var url = String(safeLink.url || "").trim();
+        if (!label && !url) return null;
+        return {
+          label: label || "Link",
+          url: url || "#"
+        };
+      })
+      .filter(Boolean);
+
+    if (!navbarLinksNormalized.length) {
+      navbarLinksNormalized = HOME_DEFAULT_NAVBAR_LINKS.map(function (linkEntry) {
+        return {
+          label: linkEntry.label,
+          url: linkEntry.url
+        };
+      });
+    }
+
+    state.drafts.home.navbar.links = navbarLinksNormalized;
+    state.drafts.home.navbar.cta.label = String(
+      state.drafts.home.navbar.cta.label || "Reservar ahora"
+    ).trim();
+    state.drafts.home.navbar.cta.url = String(
+      state.drafts.home.navbar.cta.url || "#reservar"
+    ).trim();
+    state.drafts.home.navbar.cta.icon = String(
+      state.drafts.home.navbar.cta.icon || HOME_DEFAULT_NAVBAR_ICON
+    ).trim();
+    state.drafts.home.navbar.cta.title = String(
+      state.drafts.home.navbar.cta.title || "Reserva tu mesa"
+    ).trim();
+    normalizeHomeDeliveryPlatforms(state.drafts.home);
+
+    if (state.drafts.home.popular.featuredIds.length > HOME_FEATURED_LIMIT) {
+      state.drafts.home.popular.featuredIds = state.drafts.home.popular.featuredIds.slice(
+        state.drafts.home.popular.featuredIds.length - HOME_FEATURED_LIMIT
+      );
+    }
+
+    if (!Array.isArray(state.drafts.home.eventsPreview.items)) {
+      state.drafts.home.eventsPreview.items = [];
+    }
+
+    state.drafts.home.eventsPreview.items = state.drafts.home.eventsPreview.items
+      .map(function (item, index) {
+        var safeItem = item && typeof item === "object" ? item : {};
+        return {
+          id: String(safeItem.id || ("evento_" + (index + 1))).trim(),
+          title: String(safeItem.title || "").trim(),
+          subtitle: String(safeItem.subtitle || "").trim()
+        };
+      })
+      .filter(function (item) {
+        return Boolean(item.id);
+      });
+
+    var eventsLimit = Number(state.drafts.home.eventsPreview.limit);
+    if (!Number.isFinite(eventsLimit) || eventsLimit <= 0) {
+      eventsLimit = 3;
+    }
+    state.drafts.home.eventsPreview.limit = Math.max(1, Math.round(eventsLimit));
+    state.drafts.home.eventsPreview.items = state.drafts.home.eventsPreview.items.slice(
+      0,
+      state.drafts.home.eventsPreview.limit
+    );
+    state.drafts.home.eventsPreview.eventIds = state.drafts.home.eventsPreview.items.map(function (item) {
+      return item.id;
+    });
+
+    state.drafts.home.testimonials.items = normalizeHomeTestimonialsItems(
+      state.drafts.home.testimonials.items
+    );
+    state.drafts.home.footer.columns = normalizeHomeFooterColumns(
+      state.drafts.home.footer.columns
+    );
+    if (!state.drafts.home.footer.cta || typeof state.drafts.home.footer.cta !== "object") {
+      state.drafts.home.footer.cta = {};
+    }
+    state.drafts.home.footer.cta.label = String(
+      state.drafts.home.footer.cta.label || HOME_FOOTER_DEFAULT_CTA.label
+    ).trim();
+    state.drafts.home.footer.cta.url = String(
+      state.drafts.home.footer.cta.url || HOME_FOOTER_DEFAULT_CTA.url
+    ).trim();
+    state.drafts.home.footer.socials = normalizeHomeFooterSocials(
+      state.drafts.home.footer.socials
+    );
+
+    state.drafts.home.reservation.enabled = state.drafts.home.sections.navbar !== false;
+    state.drafts.home.reservation.title = state.drafts.home.navbar.cta.title;
+    state.drafts.home.reservation.url = state.drafts.home.navbar.cta.url;
+    state.drafts.home.reservation.ctaLabel = state.drafts.home.navbar.cta.label;
+  }
+
+  function setHomeValueByPath(path, value) {
+    if (!path) return;
+    var segments = path.split(".");
+    var pointer = state.drafts.home;
+    for (var index = 0; index < segments.length - 1; index += 1) {
+      var segment = segments[index];
+      if (!pointer[segment] || typeof pointer[segment] !== "object") {
+        pointer[segment] = {};
+      }
+      pointer = pointer[segment];
+    }
+    pointer[segments[segments.length - 1]] = value;
+  }
+
+  function renderHomeSectionsSidebarNav() {
+    if (!elements.homeSectionsNav) return;
+
+    var html = HOME_EDITOR_SECTIONS.map(function (section) {
+      var buttonClass = "home-sections-nav__button" +
+        (state.homeActiveSectionId === section.id ? " is-active" : "");
+      return (
+        "<button class=\"" + buttonClass + "\" type=\"button\" data-home-nav-section=\"" +
+        escapeHtml(section.id) + "\">" +
+        escapeHtml(section.label) +
+        "</button>"
+      );
+    }).join("");
+
+    elements.homeSectionsNav.innerHTML = html;
+  }
+
+  function renderSidebarHomepageAccordion() {
+    if (!elements.sidebarHomepageAccordion) return;
+    if (!state.hasDataLoaded) {
+      elements.sidebarHomepageAccordion.innerHTML = "";
+      return;
+    }
+
+    var html = HOME_EDITOR_SECTIONS.map(function (section, sectionIndex) {
+      var isActive = state.homeActiveSectionId === section.id;
+      var buttonClass = "sidebar-accordion-category__toggle" + (isActive ? " is-active" : "");
+      return (
+        "<div class=\"sidebar-accordion-category\" style=\"--sidebar-stagger-index:" + sectionIndex + "\" data-home-section-id=\"" + escapeHtml(section.id) + "\">" +
+        "<button class=\"" + buttonClass + "\" type=\"button\" data-scroll-home-section=\"" +
+        escapeHtml(section.id) + "\"><span>" + escapeHtml(section.label) + "</span></button>" +
+        "</div>"
+      );
+    }).join("");
+
+    elements.sidebarHomepageAccordion.innerHTML = html;
+    syncSidebarAccordionCategoryHeights(elements.sidebarHomepageAccordion);
+  }
+
+  function setActiveHomeSection(sectionId, options) {
+    options = options || {};
+    var nextSectionId = normalizeHomeSectionId(sectionId);
+    if (state.homeActiveSectionId === nextSectionId && !options.force) {
+      return;
+    }
+
+    state.homeActiveSectionId = nextSectionId;
+
+    if (!options.skipRender) {
+      renderHomeSectionsSidebarNav();
+      renderSidebarHomepageAccordion();
+    }
+  }
+
+  function scrollToHomeSection(sectionId) {
+    var normalized = normalizeHomeSectionId(sectionId);
+    var anchor = document.getElementById(getHomeSectionAnchorId(normalized));
+    if (!anchor) return;
+
+    var targetTop = window.scrollY + anchor.getBoundingClientRect().top - 96;
+    window.scrollTo({
+      top: Math.max(0, targetTop),
+      behavior: "smooth"
+    });
+  }
+
+  function refreshHomeScrollAnchors() {
+    if (!elements.homeSectionsContent) {
+      state.homeAnchorTargets = [];
+      return;
+    }
+    state.homeAnchorTargets = Array.prototype.slice
+      .call(elements.homeSectionsContent.querySelectorAll("[data-home-anchor='true']"))
+      .map(function (anchorElement) {
+        return {
+          sectionId: anchorElement.getAttribute("data-home-section-id") || "",
+          element: anchorElement
+        };
+      });
+  }
+
+  function updateHomeScrollSpy(force) {
+    if (state.currentPanel !== "home-editor") return;
+    if (state.visiblePanel !== "home-editor") return;
+    if (isSidebarAccordionOpening("homepage")) return;
+    if (!state.homeAnchorTargets.length) return;
+
+    var threshold = 154;
+    var activeAnchor = state.homeAnchorTargets[0];
+
+    state.homeAnchorTargets.forEach(function (target) {
+      if (!target.element || !target.element.isConnected) return;
+      if (target.element.getBoundingClientRect().top - threshold <= 0) {
+        activeAnchor = target;
+      }
+    });
+
+    setActiveHomeSection(activeAnchor.sectionId, { force: Boolean(force) });
+  }
+
+  function requestHomeScrollSpyUpdate() {
+    if (state.currentPanel !== "home-editor") return;
+    if (state.visiblePanel !== "home-editor") return;
+    if (isSidebarAccordionOpening("homepage")) return;
+    if (state.homeScrollSpyFrame) return;
+    state.homeScrollSpyFrame = window.requestAnimationFrame(function () {
+      state.homeScrollSpyFrame = 0;
+      updateHomeScrollSpy(false);
+    });
+  }
+
+  function buildNavbarLinksListHtml() {
+    var links = (state.drafts.home.navbar && state.drafts.home.navbar.links) || [];
+    if (!links.length) {
+      return "<p class=\"home-editor__hint\">No hay links en navbar.</p>";
+    }
+
+    return (
+      "<div class=\"home-events-list\">" +
+      links.map(function (linkEntry, index) {
+        return (
+          "<article class=\"home-events-item\" data-navbar-index=\"" + index + "\">" +
+          "<div class=\"home-events-item__top\">" +
+          "<strong>Link " + (index + 1) + "</strong>" +
+          "<span class=\"home-featured-item__actions\">" +
+          "<button class=\"btn btn-ghost\" type=\"button\" data-navbar-action=\"up\" data-navbar-index=\"" +
+          index + "\">↑</button>" +
+          "<button class=\"btn btn-ghost\" type=\"button\" data-navbar-action=\"down\" data-navbar-index=\"" +
+          index + "\">↓</button>" +
+          "<button class=\"btn btn-ghost\" type=\"button\" data-navbar-action=\"remove\" data-navbar-index=\"" +
+          index + "\">Quitar</button>" +
+          "</span>" +
+          "</div>" +
+          "<label class=\"field\">" +
+          "<span>Label</span>" +
+          "<input type=\"text\" data-navbar-index=\"" + index + "\" data-navbar-field=\"label\" value=\"" +
+          escapeHtml(linkEntry.label || "") + "\" />" +
+          "</label>" +
+          "<label class=\"field\">" +
+          "<span>URL</span>" +
+          "<input type=\"text\" data-navbar-index=\"" + index + "\" data-navbar-field=\"url\" value=\"" +
+          escapeHtml(linkEntry.url || "") + "\" />" +
+          "</label>" +
+          "</article>"
+        );
+      }).join("") +
+      "</div>"
+    );
+  }
+
+  function buildFeaturedOptionsHtml() {
+    var currentFeaturedSet = new Set(state.drafts.home.popular.featuredIds || []);
+    var options = getAllMenuItems()
+      .map(function (entry) {
+        return {
+          id: entry.item.id,
+          label: entry.item.name || entry.item.id
+        };
+      })
+      .filter(function (entry) {
+        return !currentFeaturedSet.has(entry.id);
+      })
+      .sort(function (a, b) {
+        return normalizeText(a.label).localeCompare(normalizeText(b.label));
+      });
+
+    var html = '<option value="">(selecciona item)</option>';
+    options.forEach(function (option) {
+      html += "<option value=\"" + escapeHtml(option.id) + "\">" +
+        escapeHtml(option.label + " · " + option.id) +
+        "</option>";
+    });
+    return html;
+  }
+
+  function buildFeaturedListHtml() {
+    var featuredIds = state.drafts.home.popular.featuredIds || [];
+    if (!featuredIds.length) {
+      return "<p class=\"home-editor__hint\">No hay featuredIds configurados.</p>";
+    }
+
+    return (
+      "<ul class=\"home-featured-list\">" +
+      featuredIds.map(function (itemId, index) {
+        var menuItem = getMenuItemById(itemId);
+        var itemName = menuItem && menuItem.name ? menuItem.name : itemId;
+        var cardImage = menuItem ? resolveCardImageForItem(menuItem) : resolveAssetPath(MENU_PLACEHOLDER_IMAGE);
+        return (
+          "<li class=\"home-featured-item\" data-featured-index=\"" + index +
+          "\" data-featured-id=\"" + escapeHtml(itemId) + "\">" +
+          "<button class=\"home-featured-item__handle\" type=\"button\" draggable=\"true\" " +
+          "data-featured-drag-handle data-featured-index=\"" + index + "\" aria-label=\"Arrastrar para reordenar " +
+          escapeHtml(itemName || itemId) + "\"></button>" +
+          "<div class=\"home-featured-item__thumb\">" +
+          "<img src=\"" + escapeHtml(cardImage) + "\" alt=\"" + escapeHtml(itemName || itemId) +
+          "\" loading=\"lazy\" onerror=\"this.onerror=null;this.src='/" +
+          escapeHtml(MENU_PLACEHOLDER_IMAGE) + "';\" />" +
+          "</div>" +
+          "<div class=\"home-featured-item__footer\">" +
+          "<span class=\"home-featured-item__label\">" +
+          escapeHtml(itemName || itemId) +
+          "</span>" +
+          "<span class=\"home-featured-item__actions\">" +
+          "<button class=\"home-featured-item__remove-btn\" type=\"button\" data-featured-action=\"remove\" data-featured-index=\"" +
+          index + "\" aria-label=\"Quitar\" title=\"Quitar\">" +
+          "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 640 640\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M232.7 69.9C237.1 56.8 249.3 48 263.1 48L377 48C390.8 48 403 56.8 407.4 69.9L416 96L512 96C529.7 96 544 110.3 544 128C544 145.7 529.7 160 512 160L128 160C110.3 160 96 145.7 96 128C96 110.3 110.3 96 128 96L224 96L232.7 69.9zM128 208L512 208L512 512C512 547.3 483.3 576 448 576L192 576C156.7 576 128 547.3 128 512L128 208zM216 272C202.7 272 192 282.7 192 296L192 488C192 501.3 202.7 512 216 512C229.3 512 240 501.3 240 488L240 296C240 282.7 229.3 272 216 272zM320 272C306.7 272 296 282.7 296 296L296 488C296 501.3 306.7 512 320 512C333.3 512 344 501.3 344 488L344 296C344 282.7 333.3 272 320 272zM424 272C410.7 272 400 282.7 400 296L400 488C400 501.3 410.7 512 424 512C437.3 512 448 501.3 448 488L448 296C448 282.7 437.3 272 424 272z\"/></svg>" +
+          "</button>" +
+          "</span>" +
+          "</div>" +
+          "</li>"
+        );
+      }).join("") +
+      "</ul>"
+    );
+  }
+
+  function captureFeaturedItemRects() {
+    if (!elements.homeSectionsContent) return null;
+    var featuredList = elements.homeSectionsContent.querySelector(".home-featured-list");
+    if (!featuredList) return null;
+
+    var rectsById = {};
+    var featuredItems = featuredList.querySelectorAll(".home-featured-item[data-featured-id]");
+    Array.prototype.forEach.call(featuredItems, function (item) {
+      var itemId = String(item.getAttribute("data-featured-id") || "").trim();
+      if (!itemId) return;
+      rectsById[itemId] = item.getBoundingClientRect();
+    });
+    return rectsById;
+  }
+
+  function animateFeaturedReorder(previousRectsById) {
+    if (!previousRectsById || !elements.homeSectionsContent) return;
+    var featuredList = elements.homeSectionsContent.querySelector(".home-featured-list");
+    if (!featuredList) return;
+
+    var animatedItems = [];
+    var featuredItems = featuredList.querySelectorAll(".home-featured-item[data-featured-id]");
+    Array.prototype.forEach.call(featuredItems, function (item) {
+      var itemId = String(item.getAttribute("data-featured-id") || "").trim();
+      if (!itemId || !previousRectsById[itemId]) return;
+
+      var previousRect = previousRectsById[itemId];
+      var nextRect = item.getBoundingClientRect();
+      var deltaX = previousRect.left - nextRect.left;
+      var deltaY = previousRect.top - nextRect.top;
+      if (!deltaX && !deltaY) return;
+
+      item.style.transition = "none";
+      item.style.transform = "translate(" + deltaX + "px, " + deltaY + "px)";
+      animatedItems.push(item);
+    });
+
+    if (!animatedItems.length) return;
+
+    window.requestAnimationFrame(function () {
+      animatedItems.forEach(function (item) {
+        item.style.transition = "transform 180ms cubic-bezier(0.2, 0, 0, 1)";
+        item.style.transform = "translate(0, 0)";
+
+        var cleanup = function () {
+          item.style.transition = "";
+          item.style.transform = "";
+          item.removeEventListener("transitionend", cleanup);
+        };
+
+        item.addEventListener("transitionend", cleanup);
+        window.setTimeout(cleanup, 220);
+      });
+    });
+  }
+
+  function clearFeaturedDropMarkers() {
+    if (!elements.homeSectionsContent) return;
+    var highlightedItems = elements.homeSectionsContent.querySelectorAll(
+      ".home-featured-item--drop-target"
+    );
+    Array.prototype.forEach.call(highlightedItems, function (item) {
+      item.classList.remove("home-featured-item--drop-target");
+    });
+  }
+
+  function resetFeaturedDragState() {
+    dragState.featuredIndex = null;
+    dragState.featuredDropIndex = null;
+    clearFeaturedDropMarkers();
+
+    if (!elements.homeSectionsContent) return;
+    var draggingItem = elements.homeSectionsContent.querySelector(".home-featured-item--dragging");
+    if (draggingItem) {
+      draggingItem.classList.remove("home-featured-item--dragging");
+    }
+    var featuredList = elements.homeSectionsContent.querySelector(".home-featured-list");
+    if (featuredList) {
+      featuredList.classList.remove("home-featured-list--dragging");
+    }
+  }
+
+  function resolveFeaturedDropTarget(targetItem, sourceIndex) {
+    var targetIndex = Number(targetItem.getAttribute("data-featured-index"));
+    if (!Number.isInteger(targetIndex) || targetIndex < 0) return null;
+    if (targetIndex === sourceIndex) return null;
+
+    return {
+      index: targetIndex
+    };
+  }
+
+  function buildEventsListHtml() {
+    var items = (state.drafts.home.eventsPreview && state.drafts.home.eventsPreview.items) || [];
+    if (!items.length) {
+      return "<p class=\"home-editor__hint\">No hay eventos configurados.</p>";
+    }
+
+    return (
+      "<div class=\"home-events-list\">" +
+      items.map(function (eventItem, index) {
+        return (
+          "<article class=\"home-events-item\" data-event-index=\"" + index + "\">" +
+          "<div class=\"home-events-item__top\">" +
+          "<strong>Evento " + (index + 1) + "</strong>" +
+          "<button class=\"btn btn-ghost\" type=\"button\" data-event-remove=\"" + index + "\">Quitar</button>" +
+          "</div>" +
+          "<label class=\"field\">" +
+          "<span>ID</span>" +
+          "<input type=\"text\" data-event-index=\"" + index + "\" data-event-field=\"id\" value=\"" +
+          escapeHtml(eventItem.id || "") + "\" />" +
+          "</label>" +
+          "<label class=\"field\">" +
+          "<span>Titulo</span>" +
+          "<input type=\"text\" data-event-index=\"" + index + "\" data-event-field=\"title\" value=\"" +
+          escapeHtml(eventItem.title || "") + "\" />" +
+          "</label>" +
+          "<label class=\"field\">" +
+          "<span>Subtitulo</span>" +
+          "<input type=\"text\" data-event-index=\"" + index + "\" data-event-field=\"subtitle\" value=\"" +
+          escapeHtml(eventItem.subtitle || "") + "\" />" +
+          "</label>" +
+          "</article>"
+        );
+      }).join("") +
+      "</div>"
+    );
+  }
+
+  function buildTestimonialsListHtml() {
+    var items = (state.drafts.home.testimonials && state.drafts.home.testimonials.items) || [];
+    if (!items.length) {
+      return "<p class=\"home-editor__hint\">No hay testimonios configurados.</p>";
+    }
+
+    return (
+      "<div class=\"home-testimonials-grid\">" +
+      items.map(function (testimonialItem, index) {
+        var safeStars = normalizeHomeTestimonialStars(testimonialItem.stars, 5);
+        var starsOptionsHtml = "";
+        for (var starsValue = 1; starsValue <= 5; starsValue += 1) {
+          starsOptionsHtml += "<option value=\"" + starsValue + "\"" +
+            (safeStars === starsValue ? " selected" : "") +
+            ">" + starsValue + "</option>";
+        }
+
+        return (
+          "<article class=\"home-testimonial-item\" data-testimonial-index=\"" + index + "\">" +
+          "<div class=\"home-testimonial-item__top\">" +
+          "<strong>Testimonio " + (index + 1) + "</strong>" +
+          "<button class=\"btn btn-ghost\" type=\"button\" data-testimonial-remove=\"" + index + "\">Eliminar</button>" +
+          "</div>" +
+          "<label class=\"field\">" +
+          "<span>Username</span>" +
+          "<input type=\"text\" data-testimonial-index=\"" + index + "\" data-testimonial-field=\"name\" value=\"" +
+          escapeHtml(testimonialItem.name || "") + "\" />" +
+          "</label>" +
+          "<label class=\"field\">" +
+          "<span>Role</span>" +
+          "<input type=\"text\" data-testimonial-index=\"" + index + "\" data-testimonial-field=\"role\" value=\"" +
+          escapeHtml(testimonialItem.role || "") + "\" />" +
+          "</label>" +
+          "<label class=\"field\">" +
+          "<span>Stars</span>" +
+          "<select data-testimonial-index=\"" + index + "\" data-testimonial-field=\"stars\">" +
+          starsOptionsHtml +
+          "</select>" +
+          "</label>" +
+          "<label class=\"field\" data-span=\"full\">" +
+          "<span>Texto</span>" +
+          "<textarea rows=\"4\" data-testimonial-index=\"" + index + "\" data-testimonial-field=\"text\">" +
+          escapeHtml(testimonialItem.text || "") +
+          "</textarea>" +
+          "</label>" +
+          "</article>"
+        );
+      }).join("") +
+      "</div>"
+    );
+  }
+
+  function buildFooterColumnsEditorHtml() {
+    var columns = (state.drafts.home.footer && state.drafts.home.footer.columns) || [];
+    if (!columns.length) {
+      return "<p class=\"home-editor__hint\">No hay columnas de footer configuradas.</p>";
+    }
+
+    return (
+      "<div class=\"home-footer-columns\">" +
+      columns.map(function (column, columnIndex) {
+        var links = Array.isArray(column.links) ? column.links : [];
+        var linksHtml = links.length
+          ? (
+            "<div class=\"home-footer-links-list\">" +
+            links.map(function (linkEntry, linkIndex) {
+              return (
+                "<article class=\"home-footer-link-item\" data-footer-column-index=\"" + columnIndex +
+                "\" data-footer-link-index=\"" + linkIndex + "\">" +
+                "<label class=\"field\">" +
+                "<span>Texto</span>" +
+                "<input type=\"text\" data-footer-column-index=\"" + columnIndex +
+                "\" data-footer-link-index=\"" + linkIndex +
+                "\" data-footer-link-field=\"label\" value=\"" +
+                escapeHtml(linkEntry.label || "") + "\" />" +
+                "</label>" +
+                "<label class=\"field\">" +
+                "<span>URL</span>" +
+                "<input type=\"text\" data-footer-column-index=\"" + columnIndex +
+                "\" data-footer-link-index=\"" + linkIndex +
+                "\" data-footer-link-field=\"url\" value=\"" +
+                escapeHtml(linkEntry.url || "") + "\" />" +
+                "</label>" +
+                "<button class=\"btn btn-ghost\" type=\"button\" data-footer-link-remove=\"" +
+                columnIndex + ":" + linkIndex + "\">Quitar link</button>" +
+                "</article>"
+              );
+            }).join("") +
+            "</div>"
+          )
+          : "<p class=\"home-editor__hint\">Sin links en esta columna.</p>";
+
+        return (
+          "<article class=\"home-footer-column-item\" data-footer-column-editor=\"" + columnIndex + "\">" +
+          "<div class=\"home-footer-column-item__top\">" +
+          "<strong>Columna " + (columnIndex + 1) + "</strong>" +
+          "</div>" +
+          "<label class=\"field\">" +
+          "<span>Titulo</span>" +
+          "<input type=\"text\" data-footer-column-index=\"" + columnIndex +
+          "\" data-footer-column-field=\"title\" value=\"" +
+          escapeHtml(column.title || "") + "\" />" +
+          "</label>" +
+          linksHtml +
+          "<button class=\"btn btn-ghost\" type=\"button\" data-footer-link-add=\"" + columnIndex +
+          "\">Agregar link</button>" +
+          "</article>"
+        );
+      }).join("") +
+      "</div>"
+    );
+  }
+
+  function renderHomePathToggle(homePath, label, checked, options) {
+    options = options || {};
+    var toggleId = "home-toggle-" + String(homePath || "toggle")
+      .replace(/[^a-z0-9]+/gi, "-")
+      .replace(/(^-|-$)/g, "")
+      .toLowerCase();
+
+    return renderToggle({
+      id: toggleId,
+      label: label,
+      checked: checked,
+      disabled: Boolean(options.disabled),
+      span: options.span || "",
+      title: options.title || "",
+      dataAttributes: {
+        "data-home-path": homePath
+      }
+    });
+  }
+
+  function renderHomeEditor() {
+    ensureHomeDraft();
+    normalizeHomeEditorCollections();
+    renderHomeSectionsSidebarNav();
+    renderSidebarHomepageAccordion();
+
+    var home = state.drafts.home;
+    var announcementTypeOptions = HOME_ANNOUNCEMENT_TYPES.map(function (typeValue) {
+      return "<option value=\"" + typeValue + "\"" +
+        (home.announcements.type === typeValue ? " selected" : "") +
+        ">" + typeValue + "</option>";
+    }).join("");
+
+    var sectionsHtml = [
+      "<section class=\"home-section\" id=\"" + getHomeSectionAnchorId("navbar") +
+        "\" data-home-anchor=\"true\" data-home-section-id=\"navbar\">",
+      "<div class=\"home-section__header\"><h3>Navbar</h3><p>" +
+        escapeHtml(getHomeSectionMeta("navbar").description) + "</p></div>",
+      "<div class=\"home-section__grid\">",
+      renderHomePathToggle("sections.navbar", "Mostrar navbar principal", home.sections.navbar, { span: "full" }),
+      "<label class=\"field\"><span>Boton label</span><input type=\"text\" data-home-path=\"navbar.cta.label\" value=\"" +
+        escapeHtml(home.navbar.cta.label) + "\" /></label>",
+      "<label class=\"field\"><span>Boton URL</span><input type=\"text\" data-home-path=\"navbar.cta.url\" value=\"" +
+        escapeHtml(home.navbar.cta.url) + "\" /></label>",
+      "<label class=\"field\"><span>Boton icon path</span><input type=\"text\" data-home-path=\"navbar.cta.icon\" value=\"" +
+        escapeHtml(home.navbar.cta.icon) + "\" /></label>",
+      "<label class=\"field\"><span>Boton title accesible</span><input type=\"text\" data-home-path=\"navbar.cta.title\" value=\"" +
+        escapeHtml(home.navbar.cta.title) + "\" /></label>",
+      "<div data-span=\"full\">" + buildNavbarLinksListHtml() + "</div>",
+      "<button class=\"btn btn-ghost\" data-span=\"full\" type=\"button\" data-navbar-add-button>Agregar link</button>",
+      "</div></section>",
+
+      "<section class=\"home-section\" id=\"" + getHomeSectionAnchorId("hero") +
+        "\" data-home-anchor=\"true\" data-home-section-id=\"hero\">",
+      "<div class=\"home-section__header\"><h3>Hero</h3><p>" +
+        escapeHtml(getHomeSectionMeta("hero").description) + "</p></div>",
+      "<div class=\"home-section__grid\">",
+      renderHomePathToggle("sections.hero", "Mostrar seccion Hero", home.sections.hero, { span: "full" }),
+      "<label class=\"field\" data-span=\"full\"><span>Titulo</span><input type=\"text\" data-home-path=\"hero.title\" value=\"" +
+        escapeHtml(home.hero.title) + "\" /></label>",
+      "<label class=\"field\" data-span=\"full\"><span>Subtitulo</span><textarea rows=\"3\" data-home-path=\"hero.subtitle\">" +
+        escapeHtml(home.hero.subtitle) + "</textarea></label>",
+      "<label class=\"field\" data-span=\"full\"><span>Background image</span><input type=\"text\" data-home-path=\"hero.backgroundImage\" value=\"" +
+        escapeHtml(home.hero.backgroundImage) + "\" /></label>",
+      "<label class=\"field\"><span>CTA Primario label</span><input type=\"text\" data-home-path=\"hero.ctaPrimary.label\" value=\"" +
+        escapeHtml(home.hero.ctaPrimary.label) + "\" /></label>",
+      "<label class=\"field\"><span>CTA Primario URL</span><input type=\"text\" data-home-path=\"hero.ctaPrimary.url\" value=\"" +
+        escapeHtml(home.hero.ctaPrimary.url) + "\" /></label>",
+      "<label class=\"field\"><span>CTA Secundario label</span><input type=\"text\" data-home-path=\"hero.ctaSecondary.label\" value=\"" +
+        escapeHtml(home.hero.ctaSecondary.label) + "\" /></label>",
+      "<label class=\"field\"><span>CTA Secundario URL</span><input type=\"text\" data-home-path=\"hero.ctaSecondary.url\" value=\"" +
+        escapeHtml(home.hero.ctaSecondary.url) + "\" /></label>",
+      "</div></section>",
+
+      "<section class=\"home-section\" id=\"" + getHomeSectionAnchorId("featured") +
+        "\" data-home-anchor=\"true\" data-home-section-id=\"featured\">",
+      "<div class=\"home-section__header\"><h3>Featured</h3><p>" +
+        escapeHtml(getHomeSectionMeta("featured").description) + "</p></div>",
+      "<div class=\"home-section__grid\">",
+      renderHomePathToggle("sections.popular", "Mostrar seccion Featured", home.sections.popular, { span: "full" }),
+      "<label class=\"field\"><span>Titulo</span><input type=\"text\" data-home-path=\"popular.title\" value=\"" +
+        escapeHtml(home.popular.title) + "\" /></label>",
+      "<label class=\"field\"><span>Subtitulo</span><input type=\"text\" data-home-path=\"popular.subtitle\" value=\"" +
+        escapeHtml(home.popular.subtitle) + "\" /></label>",
+      "<label class=\"field\"><span>Limite visible</span><input type=\"number\" min=\"1\" max=\"" + HOME_FEATURED_LIMIT +
+        "\" data-home-path=\"popular.limit\" data-home-value-type=\"number\" value=\"" +
+        escapeHtml(String(home.popular.limit)) + "\" /></label>",
+      "<label class=\"field\" data-span=\"full\"><span>Agregar item a featuredIds</span>" +
+        "<div class=\"field-inline\"><select data-featured-add-select>" + buildFeaturedOptionsHtml() +
+        "</select><button class=\"btn btn-ghost\" type=\"button\" data-featured-add-button>Agregar</button>" +
+        "<button class=\"btn btn-ghost\" type=\"button\" data-featured-sync-button>Sync desde toggle Featured</button></div></label>",
+      "<div data-span=\"full\">" + buildFeaturedListHtml() + "</div>",
+      "<p class=\"home-editor__hint\" data-span=\"full\">Maximo " + HOME_FEATURED_LIMIT + " items.</p>",
+      "</div></section>",
+
+      "<section class=\"home-section\" id=\"" + getHomeSectionAnchorId("delivery") +
+        "\" data-home-anchor=\"true\" data-home-section-id=\"delivery\">",
+      "<div class=\"home-section__header\"><h3>Delivery</h3><p>" +
+        escapeHtml(getHomeSectionMeta("delivery").description) + "</p></div>",
+      "<div class=\"home-section__grid\">",
+      renderHomePathToggle("sections.delivery", "Mostrar seccion Delivery", home.sections.delivery, { span: "full" }),
+      "<label class=\"field\" data-span=\"full\"><span>Titulo</span><input type=\"text\" data-home-path=\"delivery.title\" value=\"" +
+        escapeHtml(home.delivery.title) + "\" /></label>",
+      "<label class=\"field\" data-span=\"full\"><span>Subtitulo</span><textarea rows=\"3\" data-home-path=\"delivery.subtitle\">" +
+        escapeHtml(home.delivery.subtitle) + "</textarea></label>",
+      "<label class=\"field\"><span>PedidosYa URL</span><input type=\"text\" data-home-path=\"delivery.platforms.pedidosya.url\" value=\"" +
+        escapeHtml(home.delivery.platforms.pedidosya.url) + "\" /></label>",
+      "<label class=\"field\"><span>PedidosYa icon path</span><input type=\"text\" data-home-path=\"delivery.platforms.pedidosya.icon\" value=\"" +
+        escapeHtml(home.delivery.platforms.pedidosya.icon) + "\" /></label>",
+      "<label class=\"field\"><span>PedidosYa icon size</span><input type=\"number\" min=\"" + HOME_DELIVERY_ICON_MIN_SIZE +
+        "\" max=\"" + HOME_DELIVERY_ICON_MAX_SIZE + "\" data-home-path=\"delivery.platforms.pedidosya.iconSize\" data-home-value-type=\"number\" value=\"" +
+        escapeHtml(String(home.delivery.platforms.pedidosya.iconSize)) + "\" /></label>",
+      "<label class=\"field\"><span>Uber Eats URL</span><input type=\"text\" data-home-path=\"delivery.platforms.ubereats.url\" value=\"" +
+        escapeHtml(home.delivery.platforms.ubereats.url) + "\" /></label>",
+      "<label class=\"field\"><span>Uber Eats icon path</span><input type=\"text\" data-home-path=\"delivery.platforms.ubereats.icon\" value=\"" +
+        escapeHtml(home.delivery.platforms.ubereats.icon) + "\" /></label>",
+      "<label class=\"field\"><span>Uber Eats icon size</span><input type=\"number\" min=\"" + HOME_DELIVERY_ICON_MIN_SIZE +
+        "\" max=\"" + HOME_DELIVERY_ICON_MAX_SIZE + "\" data-home-path=\"delivery.platforms.ubereats.iconSize\" data-home-value-type=\"number\" value=\"" +
+        escapeHtml(String(home.delivery.platforms.ubereats.iconSize)) + "\" /></label>",
+      "<label class=\"field\"><span>Takeout URL</span><input type=\"text\" data-home-path=\"delivery.platforms.takeout.url\" value=\"" +
+        escapeHtml(home.delivery.platforms.takeout.url) + "\" /></label>",
+      "<label class=\"field\"><span>Takeout icon path</span><input type=\"text\" data-home-path=\"delivery.platforms.takeout.icon\" value=\"" +
+        escapeHtml(home.delivery.platforms.takeout.icon) + "\" /></label>",
+      "<label class=\"field\"><span>Takeout icon size</span><input type=\"number\" min=\"" + HOME_DELIVERY_ICON_MIN_SIZE +
+        "\" max=\"" + HOME_DELIVERY_ICON_MAX_SIZE + "\" data-home-path=\"delivery.platforms.takeout.iconSize\" data-home-value-type=\"number\" value=\"" +
+        escapeHtml(String(home.delivery.platforms.takeout.iconSize)) + "\" /></label>",
+      "<label class=\"field\"><span>WhatsApp URL</span><input type=\"text\" data-home-path=\"delivery.platforms.whatsapp.url\" value=\"" +
+        escapeHtml(home.delivery.platforms.whatsapp.url) + "\" /></label>",
+      "<label class=\"field\"><span>WhatsApp icon path</span><input type=\"text\" data-home-path=\"delivery.platforms.whatsapp.icon\" value=\"" +
+        escapeHtml(home.delivery.platforms.whatsapp.icon) + "\" /></label>",
+      "<label class=\"field\"><span>WhatsApp icon size</span><input type=\"number\" min=\"" + HOME_DELIVERY_ICON_MIN_SIZE +
+        "\" max=\"" + HOME_DELIVERY_ICON_MAX_SIZE + "\" data-home-path=\"delivery.platforms.whatsapp.iconSize\" data-home-value-type=\"number\" value=\"" +
+        escapeHtml(String(home.delivery.platforms.whatsapp.iconSize)) + "\" /></label>",
+      "</div></section>",
+
+      "<section class=\"home-section\" id=\"" + getHomeSectionAnchorId("testimonials") +
+        "\" data-home-anchor=\"true\" data-home-section-id=\"testimonials\">",
+      "<div class=\"home-section__header\"><h3>Testimonials</h3><p>" +
+        escapeHtml(getHomeSectionMeta("testimonials").description) + "</p></div>",
+      "<div class=\"home-section__grid\">",
+      renderHomePathToggle("sections.testimonials", "Mostrar bloque Testimonials", home.sections.testimonials),
+      renderHomePathToggle("testimonials.enabled", "Testimonials habilitado", home.testimonials.enabled),
+      "<label class=\"field\" data-span=\"full\"><span>Titulo</span><input type=\"text\" data-home-path=\"testimonials.title\" value=\"" +
+        escapeHtml(home.testimonials.title) + "\" /></label>",
+      "<label class=\"field\" data-span=\"full\"><span>Subtitulo</span><textarea rows=\"3\" data-home-path=\"testimonials.subtitle\">" +
+        escapeHtml(home.testimonials.subtitle) + "</textarea></label>",
+      "<div data-span=\"full\">" + buildTestimonialsListHtml() + "</div>",
+      "<button class=\"btn btn-ghost\" data-span=\"full\" type=\"button\" data-testimonial-add-button>Agregar testimonio</button>",
+      "<p class=\"home-editor__hint\" data-span=\"full\">Grid homepage: 3 columnas x 3 filas (maximo " +
+        HOME_TESTIMONIALS_LIMIT + ").</p>",
+      "</div></section>",
+
+      "<section class=\"home-section\" id=\"" + getHomeSectionAnchorId("events") +
+        "\" data-home-anchor=\"true\" data-home-section-id=\"events\">",
+      "<div class=\"home-section__header\"><h3>Eventos</h3><p>" +
+        escapeHtml(getHomeSectionMeta("events").description) + "</p></div>",
+      "<div class=\"home-section__grid\">",
+      renderHomePathToggle("sections.events", "Mostrar seccion Eventos", home.sections.events),
+      renderHomePathToggle("eventsPreview.enabled", "Eventos habilitados", home.eventsPreview.enabled),
+      "<label class=\"field\" data-span=\"full\"><span>Titulo</span><input type=\"text\" data-home-path=\"eventsPreview.title\" value=\"" +
+        escapeHtml(home.eventsPreview.title) + "\" /></label>",
+      "<label class=\"field\" data-span=\"full\"><span>Subtitulo</span><textarea rows=\"3\" data-home-path=\"eventsPreview.subtitle\">" +
+        escapeHtml(home.eventsPreview.subtitle) + "</textarea></label>",
+      "<label class=\"field\"><span>Limite tabs</span><input type=\"number\" min=\"1\" max=\"6\" data-home-path=\"eventsPreview.limit\" data-home-value-type=\"number\" value=\"" +
+        escapeHtml(String(home.eventsPreview.limit)) + "\" /></label>",
+      "<p class=\"home-editor__hint\" data-span=\"full\">Los eventos se renderizan desde eventsPreview.items.</p>",
+      "<div data-span=\"full\">" + buildEventsListHtml() + "</div>",
+      "<button class=\"btn btn-ghost\" data-span=\"full\" type=\"button\" data-event-add-button>Agregar evento</button>",
+      "</div></section>",
+
+      "<section class=\"home-section\" id=\"" + getHomeSectionAnchorId("footer") +
+        "\" data-home-anchor=\"true\" data-home-section-id=\"footer\">",
+      "<div class=\"home-section__header\"><h3>Footer</h3><p>" +
+        escapeHtml(getHomeSectionMeta("footer").description) + "</p></div>",
+      "<div class=\"home-section__grid\">",
+      renderHomePathToggle("sections.footer", "Mostrar Footer", home.sections.footer),
+      renderHomePathToggle("footer.enabled", "Footer habilitado", home.footer.enabled),
+      "<label class=\"field\"><span>CTA marron · texto</span><input type=\"text\" data-home-path=\"footer.cta.label\" value=\"" +
+        escapeHtml(home.footer.cta.label || "") + "\" /></label>",
+      "<label class=\"field\"><span>CTA marron · URL destino</span><input type=\"text\" data-home-path=\"footer.cta.url\" value=\"" +
+        escapeHtml(home.footer.cta.url || "") + "\" /></label>",
+      "<label class=\"field\"><span>Instagram URL</span><input type=\"text\" data-home-path=\"footer.socials.instagram\" value=\"" +
+        escapeHtml(home.footer.socials.instagram || "") + "\" /></label>",
+      "<label class=\"field\"><span>TikTok URL</span><input type=\"text\" data-home-path=\"footer.socials.tiktok\" value=\"" +
+        escapeHtml(home.footer.socials.tiktok || "") + "\" /></label>",
+      "<label class=\"field\"><span>TripAdvisor URL</span><input type=\"text\" data-home-path=\"footer.socials.tripadvisor\" value=\"" +
+        escapeHtml(home.footer.socials.tripadvisor || "") + "\" /></label>",
+      "<div data-span=\"full\">" + buildFooterColumnsEditorHtml() + "</div>",
+      "<label class=\"field\" data-span=\"full\"><span>Nota interna (opcional)</span><textarea rows=\"2\" data-home-path=\"footer.note\">" +
+        escapeHtml(home.footer.note || "") + "</textarea></label>",
+      "<p class=\"home-editor__hint\" data-span=\"full\">Address/phone siguen desde restaurant.json. Aqui editas columnas, links, CTA y socials del footer.</p>",
+      "</div></section>",
+
+      "<section class=\"home-section\" id=\"" + getHomeSectionAnchorId("announcements") +
+        "\" data-home-anchor=\"true\" data-home-section-id=\"announcements\">",
+      "<div class=\"home-section__header\"><h3>Announcements</h3><p>" +
+        escapeHtml(getHomeSectionMeta("announcements").description) + "</p></div>",
+      "<div class=\"home-section__grid\">",
+      renderHomePathToggle("sections.announcements", "Mostrar seccion anuncio", home.sections.announcements),
+      renderHomePathToggle("announcements.enabled", "Anuncio habilitado", home.announcements.enabled),
+      "<label class=\"field\" data-span=\"full\"><span>Mensaje</span><textarea rows=\"3\" data-home-path=\"announcements.message\">" +
+        escapeHtml(home.announcements.message) + "</textarea></label>",
+      "<label class=\"field\"><span>Tipo</span><select data-home-path=\"announcements.type\">" +
+        announcementTypeOptions + "</select></label>",
+      "<label class=\"field\"><span>Link</span><input type=\"text\" data-home-path=\"announcements.link\" value=\"" +
+        escapeHtml(home.announcements.link) + "\" /></label>",
+      "</div></section>"
+    ].join("");
+
+    elements.homeSectionsContent.innerHTML = sectionsHtml;
+    bindToggles(elements.homeSectionsContent);
+    refreshHomeScrollAnchors();
+
+    if (!state.homeActiveSectionId) {
+      state.homeActiveSectionId = HOME_EDITOR_SECTIONS[0].id;
+    }
+
+    setActiveHomeSection(state.homeActiveSectionId, { force: true });
+  }
+
+  function saveHomeEditorChanges() {
+    ensureHomeDraft();
+    normalizeHomeEditorCollections();
+    persistDraftsToLocalStorage();
+    updateDashboardMetrics();
+    renderHomeEditor();
+    setDraftsBanner(true, "Drafts locales activos (Clear drafts | Export)");
+    saveDraftsToLocalFiles();
+    setDataStatus("HomePage guardado en drafts locales.");
+    setHomeEditorStatus("HomePage guardado en drafts.");
+  }
+
+  function openHomePageEditor(options) {
+    options = options || {};
+
+    if (!state.hasDataLoaded) {
+      ensureDataLoaded(false);
+      return;
+    }
+
+    ensureHomeDraft();
+    setActivePanel("home-editor");
+    renderHomeEditor();
+    setMenuBrowserStatus("");
+    setItemEditorStatus("");
+    showItemEditorErrors([]);
+    setHomeEditorStatus("");
+    setIngredientsEditorStatus("");
+
+    if (!options.skipRoute) {
+      navigateToRoute("/homepage", { replace: Boolean(options.replaceRoute) });
+    }
+
+    window.requestAnimationFrame(function () {
+      updateHomeScrollSpy(true);
+    });
+  }
+
+  function createIngredientsEditorDraft(ingredientId, sourceEntry) {
+    var source = sourceEntry && typeof sourceEntry === "object" ? sourceEntry : {};
+    var aliasesRaw = Array.isArray(source.aliases) ? source.aliases : [];
+    var tagsRaw = Array.isArray(source.tags) ? source.tags : [];
+    var allergensRaw = Array.isArray(source.allergens) ? source.allergens : [];
+
+    var aliases = [];
+    aliasesRaw.forEach(function (alias) {
+      var normalizedAlias = normalizeIngredientAliasValue(alias);
+      if (!normalizedAlias) return;
+      if (!aliases.includes(normalizedAlias)) {
+        aliases.push(normalizedAlias);
+      }
+    });
+
+    var tags = [];
+    tagsRaw.forEach(function (tagId) {
+      var normalizedTagId = String(tagId || "").trim();
+      if (!normalizedTagId) return;
+      if (!tags.includes(normalizedTagId)) {
+        tags.push(normalizedTagId);
+      }
+    });
+
+    var allergens = [];
+    allergensRaw.forEach(function (allergenId) {
+      var normalizedAllergenId = String(allergenId || "").trim();
+      if (!normalizedAllergenId) return;
+      if (!allergens.includes(normalizedAllergenId)) {
+        allergens.push(normalizedAllergenId);
+      }
+    });
+
+    return {
+      id: String(ingredientId || "").trim(),
+      label: String(source.label || "").trim(),
+      icon: String(source.icon || "").trim(),
+      aliases: aliases,
+      tags: tags,
+      allergens: allergens
+    };
+  }
+
+  function renderIngredientsEditorValidationSummary(report) {
+    if (!elements.ingredientsValidationSummary) return;
+    var safeReport = report || state.ingredientsEditor.validationReport || {
+      errors: [],
+      warnings: [],
+      ingredientIssuesById: {}
+    };
+
+    var summary = "Errores: " + safeReport.errors.length + " · Warnings: " + safeReport.warnings.length;
+    var selectedId = state.ingredientsEditor.selectedIngredientId;
+    var selectedIssues = selectedId && safeReport.ingredientIssuesById
+      ? safeReport.ingredientIssuesById[selectedId]
+      : null;
+    if (selectedIssues) {
+      var selectedCount = selectedIssues.errors.length + selectedIssues.warnings.length;
+      if (selectedCount) {
+        summary += " · Seleccionado: " + selectedCount;
+      }
+    }
+
+    elements.ingredientsValidationSummary.textContent = summary;
+    elements.ingredientsValidationSummary.classList.toggle(
+      "is-warning",
+      safeReport.errors.length > 0 || safeReport.warnings.length > 0
+    );
+  }
+
+  function renderIngredientsGlobalWarnings(report) {
+    if (!elements.ingredientsGlobalWarning) return;
+    var safeReport = report || state.ingredientsEditor.validationReport || {
+      menuReferenceReport: { invalidItems: [], invalidReferencesCount: 0 }
+    };
+    var menuReferenceReport = safeReport.menuReferenceReport || {
+      invalidItems: [],
+      invalidReferencesCount: 0
+    };
+
+    if (!menuReferenceReport.invalidItems.length) {
+      elements.ingredientsGlobalWarning.innerHTML =
+        "Integridad menu ↔ ingredients: sin referencias invalidas.";
+      elements.ingredientsGlobalWarning.classList.remove("is-warning");
+      return;
+    }
+
+    var previewItems = menuReferenceReport.invalidItems.slice(0, 5).map(function (entry) {
+      return "<li><strong>" + escapeHtml(entry.label || entry.id) + "</strong> · " +
+        escapeHtml((entry.unknownIngredients || []).join(", ")) + "</li>";
+    }).join("");
+
+    var tail = menuReferenceReport.invalidItems.length > 5
+      ? "<li>... y " + (menuReferenceReport.invalidItems.length - 5) + " items mas</li>"
+      : "";
+
+    elements.ingredientsGlobalWarning.innerHTML =
+      "<strong>Warning:</strong> " +
+      menuReferenceReport.invalidItems.length + " items del menu tienen ingredientes invalidos (" +
+      menuReferenceReport.invalidReferencesCount + " refs)." +
+      "<ul>" + previewItems + tail + "</ul>";
+    elements.ingredientsGlobalWarning.classList.add("is-warning");
+  }
+
+  function getIngredientMenuImpact(ingredientId) {
+    var normalizedId = String(ingredientId || "").trim();
+    if (!normalizedId) return [];
+
+    var impacted = [];
+    getAllMenuItems().forEach(function (entry) {
+      var item = entry && entry.item ? entry.item : null;
+      if (!item || !Array.isArray(item.ingredients)) return;
+      if (!item.ingredients.includes(normalizedId)) return;
+      impacted.push({
+        id: item.id || "",
+        label: item.name || item.id || "Item sin nombre"
+      });
+    });
+    return impacted;
+  }
+
+  function getSortedIngredientIds() {
+    ensureIngredientsDraft();
+    return Object.keys(state.drafts.ingredients.ingredients || {}).sort(function (a, b) {
+      var ingredientA = state.drafts.ingredients.ingredients[a] || {};
+      var ingredientB = state.drafts.ingredients.ingredients[b] || {};
+      var labelA = ingredientA.label || a;
+      var labelB = ingredientB.label || b;
+      return normalizeText(labelA).localeCompare(normalizeText(labelB));
+    });
+  }
+
+  function getIngredientsCategoryAnchorId(categoryId) {
+    return "ingredients-category-" + String(categoryId || "").trim();
+  }
+
+  function normalizeIngredientCategoryId(categoryId) {
+    var normalized = String(categoryId || "").trim();
+    if (!normalized) return "otros";
+    var exists = INGREDIENT_CATEGORY_DEFINITIONS.some(function (entry) {
+      return entry.id === normalized;
+    });
+    return exists ? normalized : "otros";
+  }
+
+  function getIngredientCategoryId(ingredientId, ingredient, ingredientsSource) {
+    var normalizedId = String(ingredientId || "").trim();
+    if (normalizedId && INGREDIENT_CATEGORY_BY_ID[normalizedId]) {
+      return normalizeIngredientCategoryId(INGREDIENT_CATEGORY_BY_ID[normalizedId]);
+    }
+
+    var iconValue = ingredient && typeof ingredient.icon === "string"
+      ? ingredient.icon.trim()
+      : "";
+    if (iconValue && INGREDIENT_CATEGORY_BY_ICON[iconValue]) {
+      return normalizeIngredientCategoryId(INGREDIENT_CATEGORY_BY_ICON[iconValue]);
+    }
+
+    var normalizedLabel = ingredient && ingredient.label
+      ? String(ingredient.label).trim()
+      : "";
+    var aliases = ingredient && Array.isArray(ingredient.aliases)
+      ? ingredient.aliases.join(" ")
+      : "";
+    var normalizedIconPath = resolveIngredientIconPath(ingredient, ingredientsSource);
+    var haystack = normalizeText(
+      normalizedId + " " +
+      normalizedLabel + " " +
+      aliases + " " +
+      iconValue + " " +
+      normalizedIconPath
+    );
+
+    for (var i = 0; i < INGREDIENT_CATEGORY_KEYWORDS.length; i += 1) {
+      var keywordGroup = INGREDIENT_CATEGORY_KEYWORDS[i];
+      if (!keywordGroup || !Array.isArray(keywordGroup.keywords)) continue;
+      var matched = keywordGroup.keywords.some(function (keyword) {
+        return keyword && haystack.includes(normalizeText(keyword));
+      });
+      if (matched) {
+        return normalizeIngredientCategoryId(keywordGroup.categoryId);
+      }
+    }
+
+    return "otros";
+  }
+
+  function getIngredientIconGroupingKey(ingredient, ingredientsSource) {
+    var iconValue = ingredient && typeof ingredient.icon === "string"
+      ? ingredient.icon.trim()
+      : "";
+    if (iconValue) {
+      return "icon::" + normalizeText(iconValue);
+    }
+
+    var resolvedPath = resolveIngredientIconPath(ingredient, ingredientsSource);
+    if (resolvedPath) {
+      var relativePath = toRelativeAssetPath(resolvedPath) || resolvedPath;
+      return "path::" + normalizeText(relativePath);
+    }
+
+    return "zzzz::missing_icon";
+  }
+
+  function setActiveIngredientsCategory(categoryId) {
+    var normalizedId = String(categoryId || "").trim();
+    state.ingredientsEditor.activeCategoryId = normalizedId;
+    if (!elements.sidebarIngredientsAccordion) return;
+
+    var buttons = elements.sidebarIngredientsAccordion.querySelectorAll("[data-scroll-ingredients-category]");
+    Array.prototype.forEach.call(buttons, function (button) {
+      var buttonCategoryId = String(button.getAttribute("data-scroll-ingredients-category") || "").trim();
+      button.classList.toggle("is-active", Boolean(normalizedId && buttonCategoryId === normalizedId));
+    });
+  }
+
+  function renderSidebarIngredientsAccordion(categorySections) {
+    if (!elements.sidebarIngredientsAccordion) return;
+    if (!state.hasDataLoaded) {
+      elements.sidebarIngredientsAccordion.innerHTML = "";
+      return;
+    }
+
+    var sections = Array.isArray(categorySections) ? categorySections : [];
+    if (!sections.length) {
+      elements.sidebarIngredientsAccordion.innerHTML = "";
+      return;
+    }
+
+    var html = sections.map(function (section, sectionIndex) {
+      var isActive = state.ingredientsEditor.activeCategoryId === section.id;
+      var buttonClass = "sidebar-accordion-category__toggle" + (isActive ? " is-active" : "");
+      return (
+        "<div class=\"sidebar-accordion-category\" style=\"--sidebar-stagger-index:" + sectionIndex + "\" data-ingredients-category-id=\"" + escapeHtml(section.id) + "\">" +
+        "<button class=\"" + buttonClass + "\" type=\"button\" data-scroll-ingredients-category=\"" +
+        escapeHtml(section.id) + "\">" +
+        "<span>" + escapeHtml(section.label) + "</span>" +
+        "</button>" +
+        "</div>"
+      );
+    }).join("");
+
+    elements.sidebarIngredientsAccordion.innerHTML = html;
+    syncSidebarAccordionCategoryHeights(elements.sidebarIngredientsAccordion);
+  }
+
+  function scrollToIngredientsCategory(categoryId, options) {
+    options = options || {};
+    var normalizedId = String(categoryId || "").trim();
+    if (!normalizedId) return;
+
+    var section = document.getElementById(getIngredientsCategoryAnchorId(normalizedId));
+    if (!section) return;
+
+    setActiveIngredientsCategory(normalizedId);
+    var targetTop = window.scrollY + section.getBoundingClientRect().top - 96;
+    window.scrollTo({
+      top: Math.max(0, targetTop),
+      behavior: options.instant ? "auto" : "smooth"
+    });
+    if (typeof section.focus === "function") {
+      try {
+        section.focus({ preventScroll: true });
+      } catch (_error) {
+        section.focus();
+      }
+    }
+  }
+
+  function refreshIngredientsScrollAnchors() {
+    if (!elements.ingredientsList) {
+      state.ingredientsAnchorTargets = [];
+      return;
+    }
+    state.ingredientsAnchorTargets = Array.prototype.slice
+      .call(elements.ingredientsList.querySelectorAll("[data-ingredients-anchor='true']"))
+      .map(function (anchorElement) {
+        return {
+          categoryId: anchorElement.getAttribute("data-ingredients-category-id") || "",
+          element: anchorElement
+        };
+      });
+  }
+
+  function updateIngredientsScrollSpy(force) {
+    if (state.currentPanel !== "ingredients-editor") return;
+    if (state.visiblePanel !== "ingredients-editor") return;
+    if (isSidebarAccordionOpening("ingredients")) return;
+    if (state.ingredientsEditor.view !== "catalog") return;
+    if (!state.ingredientsAnchorTargets.length) return;
+
+    var threshold = 154;
+    var activeAnchor = state.ingredientsAnchorTargets[0];
+
+    state.ingredientsAnchorTargets.forEach(function (target) {
+      if (!target.element || !target.element.isConnected) return;
+      if (target.element.getBoundingClientRect().top - threshold <= 0) {
+        activeAnchor = target;
+      }
+    });
+
+    setActiveIngredientsCategory(activeAnchor.categoryId);
+    if (force) {
+      renderSidebarIngredientsAccordion(
+        (state.ingredientsEditor.catalogSections && state.ingredientsEditor.catalogSections.sections) || []
+      );
+    }
+  }
+
+  function requestIngredientsScrollSpyUpdate() {
+    if (state.currentPanel !== "ingredients-editor") return;
+    if (state.visiblePanel !== "ingredients-editor") return;
+    if (isSidebarAccordionOpening("ingredients")) return;
+    if (state.ingredientsEditor.view !== "catalog") return;
+    if (state.ingredientsScrollSpyFrame) return;
+    state.ingredientsScrollSpyFrame = window.requestAnimationFrame(function () {
+      state.ingredientsScrollSpyFrame = 0;
+      updateIngredientsScrollSpy(false);
+    });
+  }
+
+  function buildIngredientsCatalogSections(report) {
+    ensureIngredientsDraft();
+    var ingredientsSource = state.drafts.ingredients;
+    var normalizedSearch = normalizeText(state.ingredientsEditor.search || "");
+    var sortedIds = getSortedIngredientIds();
+    var bucketsByCategoryId = {};
+
+    INGREDIENT_CATEGORY_DEFINITIONS.forEach(function (definition) {
+      bucketsByCategoryId[definition.id] = [];
+    });
+
+    sortedIds.forEach(function (ingredientId) {
+      var ingredient = ingredientsSource.ingredients[ingredientId] || {};
+      var label = ingredient.label || "(sin label)";
+      var haystack = [
+        ingredientId,
+        label,
+        Array.isArray(ingredient.aliases) ? ingredient.aliases.join(" ") : ""
+      ].join(" ");
+      if (normalizedSearch && !normalizeText(haystack).includes(normalizedSearch)) {
+        return;
+      }
+
+      var categoryId = getIngredientCategoryId(ingredientId, ingredient, ingredientsSource);
+      var issues = (report.ingredientIssuesById && report.ingredientIssuesById[ingredientId]) || {
+        errors: [],
+        warnings: []
+      };
+
+      bucketsByCategoryId[categoryId].push({
+        id: ingredientId,
+        label: label,
+        iconPath: resolveIngredientIconPath(ingredient, ingredientsSource),
+        iconGroupKey: getIngredientIconGroupingKey(ingredient, ingredientsSource),
+        issues: issues
+      });
+    });
+
+    var sections = [];
+    INGREDIENT_CATEGORY_DEFINITIONS.forEach(function (definition) {
+      var items = (bucketsByCategoryId[definition.id] || []).slice();
+      if (!items.length) return;
+
+      items.sort(function (a, b) {
+        if (a.iconGroupKey !== b.iconGroupKey) {
+          return a.iconGroupKey.localeCompare(b.iconGroupKey);
+        }
+        var byLabel = normalizeText(a.label).localeCompare(normalizeText(b.label));
+        if (byLabel !== 0) return byLabel;
+        return a.id.localeCompare(b.id);
+      });
+
+      sections.push({
+        id: definition.id,
+        label: definition.label,
+        items: items
+      });
+    });
+
+    return {
+      sections: sections,
+      visibleCount: sections.reduce(function (acc, section) {
+        return acc + section.items.length;
+      }, 0),
+      totalCount: sortedIds.length
+    };
+  }
+
+  function ensureIngredientsEditorSelection() {
+    ensureIngredientsDraft();
+    var ingredientsById = state.drafts.ingredients.ingredients || {};
+
+    if (state.ingredientsEditor.view !== "edit") {
+      state.ingredientsEditor.selectedIsNew = false;
+      state.ingredientsEditor.draft = null;
+      return;
+    }
+
+    if (state.ingredientsEditor.selectedIsNew) {
+      if (!state.ingredientsEditor.draft) {
+        state.ingredientsEditor.draft = createIngredientsEditorDraft("", null);
+      }
+      return;
+    }
+
+    if (
+      state.ingredientsEditor.selectedIngredientId &&
+      ingredientsById[state.ingredientsEditor.selectedIngredientId]
+    ) {
+      if (!state.ingredientsEditor.draft) {
+        state.ingredientsEditor.draft = createIngredientsEditorDraft(
+          state.ingredientsEditor.selectedIngredientId,
+          ingredientsById[state.ingredientsEditor.selectedIngredientId]
+        );
+      }
+      return;
+    }
+
+    state.ingredientsEditor.selectedIngredientId = "";
+    state.ingredientsEditor.selectedIsNew = false;
+    state.ingredientsEditor.draft = null;
+    state.ingredientsEditor.view = "catalog";
+  }
+
+  function renderIngredientsList() {
+    if (!elements.ingredientsList) return;
+    ensureIngredientsDraft();
+    var ingredientsSource = state.drafts.ingredients;
+
+    var report = state.ingredientsEditor.validationReport || validateIngredientsDraftData(ingredientsSource);
+    var catalog = buildIngredientsCatalogSections(report);
+    state.ingredientsEditor.catalogSections = catalog;
+    var visibleSections = catalog.sections;
+    var visibleCount = catalog.visibleCount;
+    var totalCount = catalog.totalCount;
+    var alertsCount = report.errors.length + report.warnings.length;
+
+    if (elements.ingredientsCatalogCount) {
+      elements.ingredientsCatalogCount.textContent =
+        visibleCount + " de " + totalCount + " ingredientes · " +
+        visibleSections.length + " categorias visibles" +
+        (alertsCount ? (" · " + alertsCount + " alertas") : "");
+    }
+
+    if (!visibleSections.length) {
+      elements.ingredientsList.innerHTML = "<p class=\"ingredients-grid__empty\">No hay ingredientes para mostrar.</p>";
+      renderSidebarIngredientsAccordion([]);
+      refreshIngredientsScrollAnchors();
+      setActiveIngredientsCategory("");
+      return;
+    }
+
+    var sectionsHtml = visibleSections.map(function (section) {
+      var cardsHtml = section.items.map(function (entry) {
+        var issuesCount = entry.issues.errors.length + entry.issues.warnings.length;
+        var issueBadge = issuesCount
+          ? "<span class=\"ingredients-card__badge\">E" + entry.issues.errors.length + " · W" + entry.issues.warnings.length + "</span>"
+          : "";
+        var buttonClass = "ingredients-card";
+        if (!state.ingredientsEditor.selectedIsNew && state.ingredientsEditor.selectedIngredientId === entry.id) {
+          buttonClass += " is-active";
+        }
+        if (issuesCount) {
+          buttonClass += " is-warning";
+        }
+        var normalizedIconPath = entry.iconPath ? resolveAssetPath(entry.iconPath) : "";
+
+        return (
+          "<li class=\"ingredients-grid__item\">" +
+          "<button class=\"" + buttonClass + "\" type=\"button\" title=\"" + escapeHtml(entry.id) + "\" data-select-ingredient=\"" + escapeHtml(entry.id) + "\">" +
+          issueBadge +
+          "<span class=\"ingredients-card__media\">" +
+          (normalizedIconPath
+            ? "<img src=\"" + escapeHtml(normalizedIconPath) + "\" alt=\"" + escapeHtml(entry.label) + "\" loading=\"lazy\" />"
+            : "<span class=\"ingredients-card__media-placeholder\">•</span>") +
+          "</span>" +
+          "<span class=\"ingredients-card__label\">" + escapeHtml(entry.label) + "</span>" +
+          "</button>" +
+          "</li>"
+        );
+      }).join("");
+
+      return (
+        "<section class=\"ingredients-category-section\" id=\"" + getIngredientsCategoryAnchorId(section.id) +
+        "\" data-ingredients-anchor=\"true\" data-ingredients-category-id=\"" + escapeHtml(section.id) + "\" tabindex=\"-1\">" +
+        "<div class=\"ingredients-category-section__header\">" +
+        "<h3>" + escapeHtml(section.label) + "</h3>" +
+        "<small>" + section.items.length + " ingredientes</small>" +
+        "</div>" +
+        "<ul class=\"ingredients-grid\">" + cardsHtml + "</ul>" +
+        "</section>"
+      );
+    }).join("");
+
+    elements.ingredientsList.innerHTML = sectionsHtml;
+
+    if (
+      !state.ingredientsEditor.activeCategoryId ||
+      !visibleSections.some(function (section) {
+        return section.id === state.ingredientsEditor.activeCategoryId;
+      })
+    ) {
+      state.ingredientsEditor.activeCategoryId = visibleSections[0].id;
+    }
+    renderSidebarIngredientsAccordion(visibleSections);
+    setActiveIngredientsCategory(state.ingredientsEditor.activeCategoryId);
+    refreshIngredientsScrollAnchors();
+    requestIngredientsScrollSpyUpdate();
+  }
+
+  function renderIngredientsIconSelect(selectedIconValue) {
+    if (!elements.ingredientsFieldIconSelect) return;
+    var options = ['<option value="">(manual / sin icono)</option>'];
+    state.indexes.iconList.forEach(function (iconId) {
+      var iconEntry = state.indexes.iconsById[iconId] || {};
+      var label = iconEntry.label || iconId;
+      options.push(
+        "<option value=\"" + escapeHtml(iconId) + "\">" +
+        escapeHtml(label + " · " + iconId) +
+        "</option>"
+      );
+    });
+    elements.ingredientsFieldIconSelect.innerHTML = options.join("");
+    var selected = String(selectedIconValue || "").trim();
+    elements.ingredientsFieldIconSelect.value = state.indexes.iconsById[selected] ? selected : "";
+  }
+
+  function renderIngredientsAliasList() {
+    if (!elements.ingredientsAliasList) return;
+    var draft = state.ingredientsEditor.draft;
+    if (!draft || !Array.isArray(draft.aliases) || !draft.aliases.length) {
+      elements.ingredientsAliasList.innerHTML = "<li class=\"ingredients-list__empty\">Sin aliases.</li>";
+      return;
+    }
+
+    var html = draft.aliases.map(function (alias, index) {
+      return (
+        "<li class=\"chip\">" +
+        "<span>" + escapeHtml(alias) + "</span>" +
+        "<button type=\"button\" data-remove-ingredient-alias=\"" + escapeHtml(String(index)) + "\">x</button>" +
+        "</li>"
+      );
+    }).join("");
+    elements.ingredientsAliasList.innerHTML = html;
+  }
+
+  function renderIngredientsMetaSelector(kind) {
+    var targetElement = kind === "tags" ? elements.ingredientsTagsList : elements.ingredientsAllergensList;
+    if (!targetElement) return;
+    var sourceList = kind === "tags" ? state.indexes.tagList : state.indexes.allergenList;
+    var sourceById = kind === "tags" ? state.indexes.tagsById : state.indexes.allergensById;
+    var selected = state.ingredientsEditor.draft
+      ? (kind === "tags" ? state.ingredientsEditor.draft.tags : state.ingredientsEditor.draft.allergens)
+      : [];
+    if (!Array.isArray(selected)) selected = [];
+
+    if (!sourceList.length) {
+      targetElement.innerHTML = "<p class=\"ingredients-list__empty\">Sin " + escapeHtml(kind) + " en catalogo.</p>";
+      return;
+    }
+
+    var html = sourceList.map(function (id) {
+      var entry = sourceById[id] || {};
+      var label = entry.label || id;
+      var selectedClass = selected.includes(id) ? " is-selected" : "";
+      var attribute = kind === "tags" ? "data-toggle-ingredient-tag" : "data-toggle-ingredient-allergen";
+      return (
+        "<button class=\"token-search-result ingredients-meta-chip" + selectedClass + "\" type=\"button\" " +
+        attribute + "=\"" + escapeHtml(id) + "\">" +
+        escapeHtml(label) + " · " + escapeHtml(id) +
+        "</button>"
+      );
+    }).join("");
+    targetElement.innerHTML = html;
+  }
+
+  function renderIngredientsCatalogEditor(kind) {
+    var target = kind === "tags" ? elements.ingredientsTagsCatalog : elements.ingredientsAllergensCatalog;
+    if (!target) return;
+    ensureIngredientsDraft();
+
+    var sourceById = kind === "tags" ? state.drafts.ingredients.tags : state.drafts.ingredients.allergens;
+    var ids = Object.keys(sourceById || {}).sort(function (a, b) {
+      return normalizeText(a).localeCompare(normalizeText(b));
+    });
+
+    if (!ids.length) {
+      target.innerHTML = "<p class=\"ingredients-list__empty\">Catalogo vacio.</p>";
+      return;
+    }
+
+    target.innerHTML = ids.map(function (id) {
+      var entry = sourceById[id] || {};
+      return (
+        "<label class=\"ingredients-catalog-row\">" +
+        "<span class=\"ingredients-catalog-row__id\">" + escapeHtml(id) + "</span>" +
+        "<input type=\"text\" data-ingredients-catalog-kind=\"" + escapeHtml(kind) + "\" " +
+        "data-ingredients-catalog-id=\"" + escapeHtml(id) + "\" value=\"" + escapeHtml(entry.label || "") + "\" />" +
+        "</label>"
+      );
+    }).join("");
+  }
+
+  function renderIngredientImpact(ingredientId) {
+    if (!elements.ingredientsImpactCount || !elements.ingredientsImpactList) return;
+    var normalizedId = String(ingredientId || "").trim();
+    if (!normalizedId) {
+      elements.ingredientsImpactCount.textContent = "Selecciona un ingrediente para ver impacto.";
+      elements.ingredientsImpactList.innerHTML = "";
+      return;
+    }
+
+    var impact = getIngredientMenuImpact(normalizedId);
+    elements.ingredientsImpactCount.textContent = impact.length + " menu items usan este ingrediente.";
+    if (!impact.length) {
+      elements.ingredientsImpactList.innerHTML = "<li class=\"ingredients-list__empty\">Sin impacto en menu.</li>";
+      return;
+    }
+
+    elements.ingredientsImpactList.innerHTML = impact.slice(0, 10).map(function (entry) {
+      return "<li><strong>" + escapeHtml(entry.label) + "</strong> <small>" + escapeHtml(entry.id) + "</small></li>";
+    }).join("");
+  }
+
+  function getIngredientsEditorHeading() {
+    var catalogTitle = "Catalogo de ingredientes";
+    var catalogSubtitle = "Explora el catalogo en cards. Click en un ingrediente para abrir su editor.";
+
+    if (state.ingredientsEditor.view !== "edit") {
+      return {
+        title: catalogTitle,
+        subtitle: catalogSubtitle
+      };
+    }
+
+    if (state.ingredientsEditor.selectedIsNew) {
+      return {
+        title: "Nuevo ingrediente",
+        subtitle: "Define ID, label, icono y metadatos para agregarlo al catalogo."
+      };
+    }
+
+    var selectedId = String(state.ingredientsEditor.selectedIngredientId || "").trim();
+    var ingredientsById = (state.drafts.ingredients && state.drafts.ingredients.ingredients) || {};
+    var selectedIngredient = selectedId ? ingredientsById[selectedId] : null;
+    var label = selectedIngredient && selectedIngredient.label
+      ? String(selectedIngredient.label).trim()
+      : "";
+
+    var title = label || "Ingrediente sin label";
+
+    return {
+      title: title,
+      subtitle: "Edita campos, revisa impacto y guarda cambios en drafts."
+    };
+  }
+
+  function renderIngredientsForm() {
+    var draft = state.ingredientsEditor.draft;
+    if (elements.ingredientsDetailTitle) {
+      elements.ingredientsDetailTitle.textContent = "Ingrediente";
+    }
+    if (!draft) {
+      elements.ingredientsFieldId.value = "";
+      elements.ingredientsFieldLabel.value = "";
+      elements.ingredientsFieldIcon.value = "";
+      elements.ingredientsFieldId.readOnly = true;
+      renderIngredientsIconSelect("");
+      renderIngredientsAliasList();
+      renderIngredientsMetaSelector("tags");
+      renderIngredientsMetaSelector("allergens");
+      renderIngredientImpact("");
+      if (elements.ingredientsDeleteButton) elements.ingredientsDeleteButton.disabled = true;
+      return;
+    }
+
+    if (elements.ingredientsDetailTitle) {
+      if (state.ingredientsEditor.selectedIsNew) {
+        elements.ingredientsDetailTitle.textContent = "Nuevo ingrediente";
+      } else {
+        var detailTitle = draft.label || "Ingrediente sin label";
+        elements.ingredientsDetailTitle.textContent = detailTitle;
+      }
+    }
+
+    elements.ingredientsFieldId.value = draft.id || "";
+    elements.ingredientsFieldId.readOnly = !state.ingredientsEditor.selectedIsNew;
+    elements.ingredientsFieldLabel.value = draft.label || "";
+    elements.ingredientsFieldIcon.value = draft.icon || "";
+    renderIngredientsIconSelect(draft.icon || "");
+    renderIngredientsAliasList();
+    renderIngredientsMetaSelector("tags");
+    renderIngredientsMetaSelector("allergens");
+    renderIngredientImpact(state.ingredientsEditor.selectedIsNew ? "" : state.ingredientsEditor.selectedIngredientId);
+    if (elements.ingredientsDeleteButton) {
+      elements.ingredientsDeleteButton.disabled = state.ingredientsEditor.selectedIsNew || !state.ingredientsEditor.selectedIngredientId;
+    }
+  }
+
+  function renderIngredientsEditor() {
+    if (!state.hasDataLoaded) return;
+    ensureIngredientsDraft();
+    buildIndexes();
+    ensureIngredientsEditorSelection();
+
+    if (elements.ingredientsSearchInput) {
+      elements.ingredientsSearchInput.value = state.ingredientsEditor.search || "";
+    }
+
+    state.ingredientsEditor.validationReport = validateIngredientsDraftData(state.drafts.ingredients);
+    var isEditView = state.ingredientsEditor.view === "edit";
+    if (elements.ingredientsCatalogView) {
+      elements.ingredientsCatalogView.classList.toggle("is-hidden", isEditView);
+    }
+    if (elements.ingredientsDetailView) {
+      elements.ingredientsDetailView.classList.toggle("is-hidden", !isEditView);
+    }
+    if (elements.ingredientsCatalogActions) {
+      elements.ingredientsCatalogActions.classList.toggle("is-hidden", isEditView);
+    }
+    if (elements.ingredientsEditorActions) {
+      elements.ingredientsEditorActions.classList.toggle("is-hidden", !isEditView);
+    }
+    var heading = getIngredientsEditorHeading();
+    if (elements.ingredientsPanelTitle) {
+      elements.ingredientsPanelTitle.textContent = heading.title;
+    }
+    if (elements.ingredientsPanelSubtitle) {
+      elements.ingredientsPanelSubtitle.textContent = heading.subtitle;
+    }
+
+    renderIngredientsList();
+    if (isEditView) {
+      renderIngredientsCatalogEditor("tags");
+      renderIngredientsCatalogEditor("allergens");
+      renderIngredientsForm();
+    } else {
+      renderIngredientImpact("");
+    }
+    renderIngredientsEditorValidationSummary(state.ingredientsEditor.validationReport);
+    renderIngredientsGlobalWarnings(state.ingredientsEditor.validationReport);
+  }
+
+  function openIngredientsEditor(options) {
+    options = options || {};
+    if (!state.hasDataLoaded) {
+      ensureDataLoaded(false);
+      return;
+    }
+
+    ensureIngredientsDraft();
+    state.ingredientsEditor.view = "catalog";
+    state.ingredientsEditor.selectedIsNew = false;
+    state.ingredientsEditor.draft = null;
+    setActivePanel("ingredients-editor");
+    setMenuBrowserStatus("");
+    setItemEditorStatus("");
+    setHomeEditorStatus("");
+    showItemEditorErrors([]);
+    renderIngredientsEditor();
+
+    if (!options.skipRoute) {
+      navigateToRoute("/ingredients", { replace: Boolean(options.replaceRoute) });
+    }
+
+    window.requestAnimationFrame(function () {
+      updateIngredientsScrollSpy(true);
+    });
+  }
+
+  function beginNewIngredientDraft(options) {
+    options = options || {};
+    ensureIngredientsDraft();
+    setActivePanel("ingredients-editor");
+    state.ingredientsEditor.selectedIngredientId = "";
+    state.ingredientsEditor.selectedIsNew = true;
+    state.ingredientsEditor.view = "edit";
+    state.ingredientsEditor.draft = createIngredientsEditorDraft("", null);
+    renderIngredientsEditor();
+
+    if (!options.skipRoute) {
+      navigateToRoute("/ingredients/new");
+    }
+
+    setIngredientsEditorStatus("Nuevo ingrediente listo. Define ID unico y guarda.");
+  }
+
+  function selectIngredientForEditing(ingredientId, options) {
+    options = options || {};
+    ensureIngredientsDraft();
+    var normalizedId = String(ingredientId || "").trim();
+    if (!normalizedId) return false;
+    var source = state.drafts.ingredients.ingredients || {};
+    if (!source[normalizedId]) {
+      if (!options.skipRoute) {
+        navigateToRoute("/ingredients", { replace: true });
+      }
+      setIngredientsEditorStatus("No se encontro el ingrediente: " + normalizedId);
+      return false;
+    }
+
+    setActivePanel("ingredients-editor");
+    state.ingredientsEditor.selectedIngredientId = normalizedId;
+    state.ingredientsEditor.selectedIsNew = false;
+    state.ingredientsEditor.view = "edit";
+    state.ingredientsEditor.draft = createIngredientsEditorDraft(normalizedId, source[normalizedId]);
+    renderIngredientsEditor();
+
+    if (!options.skipRoute) {
+      navigateToRoute("/ingredients/" + encodeURIComponent(normalizedId));
+    }
+
+    setIngredientsEditorStatus("Editando ingrediente: " + normalizedId);
+    return true;
+  }
+
+  function returnToIngredientsCatalog(options) {
+    options = options || {};
+    state.ingredientsEditor.view = "catalog";
+    state.ingredientsEditor.selectedIsNew = false;
+    state.ingredientsEditor.draft = null;
+    renderIngredientsEditor();
+
+    if (!options.skipRoute) {
+      navigateToRoute("/ingredients");
+    }
+
+    if (!options.silent) {
+      setIngredientsEditorStatus("Catalogo de ingredientes.");
+    }
+
+    window.requestAnimationFrame(function () {
+      updateIngredientsScrollSpy(true);
+    });
+  }
+
+  function syncIngredientsEditorDraftFromForm() {
+    var draft = state.ingredientsEditor.draft;
+    if (!draft) return;
+
+    draft.id = String(elements.ingredientsFieldId.value || "").trim();
+    draft.label = String(elements.ingredientsFieldLabel.value || "").trim();
+    draft.icon = String(elements.ingredientsFieldIcon.value || "").trim();
+  }
+
+  function addAliasToIngredientsDraft() {
+    var draft = state.ingredientsEditor.draft;
+    if (!draft) return;
+
+    var normalizedAlias = normalizeIngredientAliasValue(elements.ingredientsAliasInput.value || "");
+    if (!normalizedAlias) {
+      setIngredientsEditorStatus("Alias invalido. Usa texto alfanumerico (normaliza a underscores).");
+      return;
+    }
+    if (!Array.isArray(draft.aliases)) {
+      draft.aliases = [];
+    }
+    if (draft.aliases.includes(normalizedAlias)) {
+      setIngredientsEditorStatus("Ese alias ya existe.");
+      return;
+    }
+    draft.aliases.push(normalizedAlias);
+    elements.ingredientsAliasInput.value = "";
+    renderIngredientsAliasList();
+    setIngredientsEditorStatus("Alias agregado. Guarda para persistir.");
+  }
+
+  function removeAliasFromIngredientsDraft(index) {
+    var draft = state.ingredientsEditor.draft;
+    var numericIndex = Number(index);
+    if (!draft || !Array.isArray(draft.aliases)) return;
+    if (!Number.isInteger(numericIndex) || numericIndex < 0 || numericIndex >= draft.aliases.length) return;
+    draft.aliases.splice(numericIndex, 1);
+    renderIngredientsAliasList();
+    setIngredientsEditorStatus("Alias removido. Guarda para persistir.");
+  }
+
+  function toggleIngredientMeta(kind, id) {
+    var draft = state.ingredientsEditor.draft;
+    if (!draft) return;
+    var normalizedId = String(id || "").trim();
+    if (!normalizedId) return;
+
+    var fieldName = kind === "allergens" ? "allergens" : "tags";
+    if (!Array.isArray(draft[fieldName])) {
+      draft[fieldName] = [];
+    }
+    if (draft[fieldName].includes(normalizedId)) {
+      draft[fieldName] = draft[fieldName].filter(function (value) {
+        return value !== normalizedId;
+      });
+    } else {
+      draft[fieldName].push(normalizedId);
+      draft[fieldName] = Array.from(new Set(draft[fieldName]));
+    }
+    renderIngredientsMetaSelector(fieldName);
+    setIngredientsEditorStatus("Cambios pendientes en " + fieldName + ". Guarda para persistir.");
+  }
+
+  function updateIngredientsCatalogLabel(kind, id, label) {
+    ensureIngredientsDraft();
+    var normalizedKind = kind === "allergens" ? "allergens" : "tags";
+    var normalizedId = String(id || "").trim();
+    if (!normalizedId) return;
+
+    var bucket = state.drafts.ingredients[normalizedKind];
+    if (!bucket || typeof bucket !== "object") {
+      bucket = {};
+      state.drafts.ingredients[normalizedKind] = bucket;
+    }
+    if (!bucket[normalizedId] || typeof bucket[normalizedId] !== "object") {
+      bucket[normalizedId] = { id: normalizedId, label: "" };
+    }
+
+    bucket[normalizedId].id = normalizedId;
+    bucket[normalizedId].label = String(label || "").trim();
+
+    buildIndexes();
+    state.ingredientsEditor.validationReport = validateIngredientsDraftData(state.drafts.ingredients);
+    renderIngredientsEditorValidationSummary(state.ingredientsEditor.validationReport);
+    renderIngredientsGlobalWarnings(state.ingredientsEditor.validationReport);
+    renderIngredientsList();
+    renderIngredientsMetaSelector("tags");
+    renderIngredientsMetaSelector("allergens");
+    updateDashboardMetrics();
+    setIngredientsEditorStatus("Catalogo actualizado. Guarda para persistir.");
+  }
+
+  function saveIngredientsEditorDraft() {
+    ensureIngredientsDraft();
+    if (state.ingredientsEditor.view !== "edit" || !state.ingredientsEditor.draft) {
+      setIngredientsEditorStatus("Selecciona un ingrediente para editar.");
+      return;
+    }
+    syncIngredientsEditorDraftFromForm();
+
+    var draft = state.ingredientsEditor.draft;
+    var ingredientsById = state.drafts.ingredients.ingredients;
+    var nextSelectedId = state.ingredientsEditor.selectedIngredientId;
+
+    if (draft) {
+      var nextId = state.ingredientsEditor.selectedIsNew
+        ? normalizeIngredientAliasValue(draft.id)
+        : String(state.ingredientsEditor.selectedIngredientId || "").trim();
+
+      if (!nextId) {
+        setIngredientsEditorStatus("ID invalido. Define un ID unico para el ingrediente.");
+        return;
+      }
+      if (state.ingredientsEditor.selectedIsNew && ingredientsById[nextId]) {
+        setIngredientsEditorStatus("El ID ya existe: " + nextId);
+        return;
+      }
+
+      var aliases = [];
+      (Array.isArray(draft.aliases) ? draft.aliases : []).forEach(function (alias) {
+        var normalizedAlias = normalizeIngredientAliasValue(alias);
+        if (!normalizedAlias) return;
+        if (!aliases.includes(normalizedAlias)) aliases.push(normalizedAlias);
+      });
+
+      var tags = [];
+      (Array.isArray(draft.tags) ? draft.tags : []).forEach(function (tagId) {
+        var normalizedTag = String(tagId || "").trim();
+        if (!normalizedTag) return;
+        if (!tags.includes(normalizedTag)) tags.push(normalizedTag);
+      });
+
+      var allergens = [];
+      (Array.isArray(draft.allergens) ? draft.allergens : []).forEach(function (allergenId) {
+        var normalizedAllergen = String(allergenId || "").trim();
+        if (!normalizedAllergen) return;
+        if (!allergens.includes(normalizedAllergen)) allergens.push(normalizedAllergen);
+      });
+
+      ingredientsById[nextId] = {
+        label: String(draft.label || "").trim(),
+        icon: String(draft.icon || "").trim(),
+        aliases: aliases,
+        tags: tags,
+        allergens: allergens
+      };
+
+      nextSelectedId = nextId;
+      state.ingredientsEditor.selectedIngredientId = nextId;
+      state.ingredientsEditor.selectedIsNew = false;
+      state.ingredientsEditor.draft = createIngredientsEditorDraft(nextId, ingredientsById[nextId]);
+    }
+
+    buildIndexes();
+    state.ingredientsEditor.validationReport = validateIngredientsDraftData(state.drafts.ingredients);
+    renderIngredientsEditor();
+    renderIngredientImpact(nextSelectedId);
+    if (!state.ingredientsEditor.selectedIsNew && nextSelectedId) {
+      var nextHash = "#/ingredients/" + encodeURIComponent(nextSelectedId);
+      if (window.location.hash !== nextHash) {
+        var baseUrl = window.location.pathname + window.location.search;
+        window.history.replaceState({}, document.title, baseUrl + nextHash);
+      }
+    }
+    persistDraftsToLocalStorage();
+    setDraftsBanner(true, "Drafts locales activos (Clear drafts | Export)");
+    saveDraftsToLocalFiles();
+    updateDashboardMetrics();
+
+    var report = state.ingredientsEditor.validationReport;
+    if (report.errors.length) {
+      setIngredientsEditorStatus(
+        "Guardado en drafts con " + report.errors.length + " errores y " + report.warnings.length + " warnings."
+      );
+    } else {
+      setIngredientsEditorStatus("Ingrediente guardado en drafts locales.");
+    }
+  }
+
+  function deleteSelectedIngredientDraft() {
+    ensureIngredientsDraft();
+    if (state.ingredientsEditor.selectedIsNew) {
+      returnToIngredientsCatalog({ skipRoute: false, silent: true });
+      setIngredientsEditorStatus("Borrador nuevo descartado.");
+      return;
+    }
+
+    var ingredientId = String(state.ingredientsEditor.selectedIngredientId || "").trim();
+    if (!ingredientId) {
+      setIngredientsEditorStatus("Selecciona un ingrediente para eliminar.");
+      return;
+    }
+
+    var impact = getIngredientMenuImpact(ingredientId);
+    var impactPreview = impact.slice(0, 10).map(function (entry) {
+      return "• " + entry.label + " (" + entry.id + ")";
+    }).join("\n");
+    var confirmationMessage = "Eliminar ingrediente '" + ingredientId + "'?\n\n" +
+      "Impacto: " + impact.length + " item(s) del menu lo usan.\n" +
+      (impactPreview ? ("\n" + impactPreview + "\n") : "") +
+      "\nEsta accion no borra referencias en menu.json.";
+
+    if (!window.confirm(confirmationMessage)) return;
+
+    delete state.drafts.ingredients.ingredients[ingredientId];
+    state.ingredientsEditor.selectedIngredientId = "";
+    state.ingredientsEditor.selectedIsNew = false;
+    state.ingredientsEditor.view = "catalog";
+    state.ingredientsEditor.draft = null;
+
+    buildIndexes();
+    state.ingredientsEditor.validationReport = validateIngredientsDraftData(state.drafts.ingredients);
+    renderIngredientsEditor();
+    var catalogHash = "#/ingredients";
+    if (window.location.hash !== catalogHash) {
+      var baseUrl = window.location.pathname + window.location.search;
+      window.history.replaceState({}, document.title, baseUrl + catalogHash);
+    }
+    persistDraftsToLocalStorage();
+    setDraftsBanner(true, "Drafts locales activos (Clear drafts | Export)");
+    saveDraftsToLocalFiles();
+    updateDashboardMetrics();
+    setIngredientsEditorStatus("Ingrediente eliminado: " + ingredientId);
   }
 
   function parseHashRoute() {
@@ -2337,6 +6554,25 @@
 
     if (parts[0] === "menu") {
       return { name: "menu" };
+    }
+
+    if (parts[0] === "homepage" || parts[0] === "home") {
+      return { name: "homepage" };
+    }
+
+    if (parts[0] === "ingredients" && parts[1]) {
+      var ingredientToken = decodeURIComponent(parts.slice(1).join("/"));
+      if (ingredientToken === "new") {
+        return { name: "ingredients-item", isNew: true };
+      }
+      return {
+        name: "ingredients-item",
+        ingredientId: ingredientToken
+      };
+    }
+
+    if (parts[0] === "ingredients") {
+      return { name: "ingredients" };
     }
 
     return { name: "dashboard" };
@@ -2384,6 +6620,44 @@
       return;
     }
 
+    if (route.name === "homepage") {
+      if (!state.hasDataLoaded) {
+        ensureDataLoaded(false);
+        return;
+      }
+      openHomePageEditor({ skipRoute: true });
+      return;
+    }
+
+    if (route.name === "ingredients-item") {
+      if (!state.hasDataLoaded) {
+        ensureDataLoaded(false);
+        return;
+      }
+      if (route.isNew) {
+        beginNewIngredientDraft({ skipRoute: true });
+        return;
+      }
+      if (route.ingredientId) {
+        var selected = selectIngredientForEditing(route.ingredientId, { skipRoute: true });
+        if (!selected) {
+          openIngredientsEditor({ skipRoute: true });
+        }
+        return;
+      }
+      openIngredientsEditor({ skipRoute: true });
+      return;
+    }
+
+    if (route.name === "ingredients") {
+      if (!state.hasDataLoaded) {
+        ensureDataLoaded(false);
+        return;
+      }
+      openIngredientsEditor({ skipRoute: true });
+      return;
+    }
+
     openDashboard({ skipRoute: true });
   }
 
@@ -2399,6 +6673,18 @@
     elements.sidebarNavMenu.addEventListener("click", function () {
       openMenuBrowser({ skipRoute: false });
     });
+
+    if (elements.sidebarNavHomepage) {
+      elements.sidebarNavHomepage.addEventListener("click", function () {
+        openHomePageEditor({ skipRoute: false });
+      });
+    }
+
+    if (elements.sidebarNavIngredients) {
+      elements.sidebarNavIngredients.addEventListener("click", function () {
+        openIngredientsEditor({ skipRoute: false });
+      });
+    }
 
     elements.sidebarToggleButton.addEventListener("click", function () {
       setSidebarCollapsed(!state.sidebarCollapsed, { persist: true });
@@ -2431,12 +6717,83 @@
       scrollToMenuAnchor(categoryValue, subcategoryValue);
       setActiveMenuAnchor(categoryValue, subcategoryValue, { force: true });
     });
+
+    if (elements.sidebarHomepageAccordion) {
+      elements.sidebarHomepageAccordion.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-scroll-home-section]");
+        if (!button) return;
+        var sectionId = button.getAttribute("data-scroll-home-section") || "";
+
+        if (state.currentPanel !== "home-editor") {
+          openHomePageEditor({ skipRoute: false });
+          window.setTimeout(function () {
+            scrollToHomeSection(sectionId);
+            setActiveHomeSection(sectionId, { force: true });
+          }, 40);
+          return;
+        }
+
+        scrollToHomeSection(sectionId);
+        setActiveHomeSection(sectionId, { force: true });
+      });
+    }
+
+    if (elements.sidebarIngredientsAccordion) {
+      elements.sidebarIngredientsAccordion.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-scroll-ingredients-category]");
+        if (!button) return;
+        var categoryId = button.getAttribute("data-scroll-ingredients-category") || "";
+
+        var shouldOpenCatalog =
+          state.currentPanel !== "ingredients-editor" ||
+          state.ingredientsEditor.view !== "catalog";
+
+        if (shouldOpenCatalog) {
+          openIngredientsEditor({ skipRoute: false });
+          window.setTimeout(function () {
+            scrollToIngredientsCategory(categoryId);
+            setActiveIngredientsCategory(categoryId);
+          }, 40);
+          return;
+        }
+
+        scrollToIngredientsCategory(categoryId);
+        setActiveIngredientsCategory(categoryId);
+      });
+    }
+
+    if (elements.sidebarNav) {
+      elements.sidebarNav.addEventListener("scroll", updateSidebarActiveIndicator, { passive: true });
+    }
+
+    [elements.sidebarMenuAccordion, elements.sidebarHomepageAccordion, elements.sidebarIngredientsAccordion]
+      .filter(Boolean)
+      .forEach(function (accordionElement) {
+        accordionElement.addEventListener("transitionend", function (event) {
+          if (!event || !event.propertyName) return;
+          if (event.propertyName.indexOf("max-height") === -1) return;
+          if (!accordionElement.classList.contains("is-open")) return;
+          scheduleSidebarActiveIndicatorSync();
+        });
+      });
   }
 
   function bindMenuBrowserEvents() {
     elements.openMenuBrowserButton.addEventListener("click", function () {
       openMenuBrowser({ skipRoute: false });
     });
+
+    if (elements.openHomepageEditorButton) {
+      elements.openHomepageEditorButton.addEventListener("click", function () {
+        openHomePageEditor({ skipRoute: false });
+      });
+    }
+
+    if (elements.openIngredientsEditorButton) {
+      elements.openIngredientsEditorButton.addEventListener("click", function () {
+        openIngredientsEditor({ skipRoute: false });
+      });
+    }
 
     elements.menuClearFilterButton.addEventListener("click", function () {
       var firstGroup = state.menuViewGroups[0];
@@ -2459,6 +6816,46 @@
       var itemId = card.getAttribute("data-item-id");
       openItemEditor(itemId, { skipRoute: false });
     });
+  }
+
+  function mountItemEditorToggles() {
+    var itemToggleMounts = [
+      {
+        mountId: "item-field-featured-toggle-mount",
+        toggleId: "item-field-featured",
+        label: "Featured"
+      },
+      {
+        mountId: "item-availability-toggle-mount",
+        toggleId: "item-availability-toggle",
+        label: "Disponible"
+      },
+      {
+        mountId: "item-field-vegetarian-toggle-mount",
+        toggleId: "item-field-vegetarian",
+        label: "Vegetariano"
+      },
+      {
+        mountId: "item-field-vegan-toggle-mount",
+        toggleId: "item-field-vegan",
+        label: "Vegano"
+      }
+    ];
+
+    itemToggleMounts.forEach(function (entry) {
+      var mountElement = document.getElementById(entry.mountId);
+      if (!mountElement) return;
+      mountElement.innerHTML = renderToggle({
+        id: entry.toggleId,
+        label: entry.label,
+        checked: false
+      });
+    });
+
+    elements.itemFieldFeatured = document.getElementById("item-field-featured");
+    elements.itemAvailabilityToggle = document.getElementById("item-availability-toggle");
+    elements.itemFieldVegetarian = document.getElementById("item-field-vegetarian");
+    elements.itemFieldVegan = document.getElementById("item-field-vegan");
   }
 
   function bindItemEditorEvents() {
@@ -2486,20 +6883,31 @@
       elements.itemFieldSlug,
       elements.itemFieldSubcategory,
       elements.itemFieldPrice,
-      elements.itemFieldFeatured,
       elements.itemFieldDescriptionShort,
       elements.itemFieldDescriptionLong,
       elements.itemFieldImage,
-      elements.itemAvailabilityToggle,
       elements.itemAvailabilityReason,
       elements.itemFieldSpicyLevel,
-      elements.itemFieldVegetarian,
-      elements.itemFieldVegan,
       elements.itemFieldSpicyLegacy,
       elements.itemFieldReviews
     ].forEach(function (inputElement) {
+      if (!inputElement) return;
       inputElement.addEventListener("input", syncDraftFromForm);
       inputElement.addEventListener("change", syncDraftFromForm);
+    });
+
+    bindToggles(views.menuItemPanel, {
+      onChange: function (_checked, control) {
+        if (!control || !control.id) return;
+        if (
+          control.id === "item-field-featured" ||
+          control.id === "item-availability-toggle" ||
+          control.id === "item-field-vegetarian" ||
+          control.id === "item-field-vegan"
+        ) {
+          syncDraftFromForm();
+        }
+      }
     });
 
     elements.itemMediaPicker.addEventListener("change", function () {
@@ -2623,13 +7031,688 @@
     });
   }
 
+  function bindHomeEditorEvents() {
+    if (elements.homeSectionsNav) {
+      elements.homeSectionsNav.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-home-nav-section]");
+        if (!button) return;
+        var sectionId = button.getAttribute("data-home-nav-section") || "";
+        scrollToHomeSection(sectionId);
+        setActiveHomeSection(sectionId, { force: true });
+      });
+    }
+
+    if (!elements.homeSectionsContent) return;
+
+    elements.homeSectionsContent.addEventListener("input", function (event) {
+      var target = event.target;
+
+      var homePath = target.getAttribute("data-home-path");
+      if (homePath) {
+        if (target.matches("[data-toggle-control]")) {
+          return;
+        }
+
+        var nextValue;
+        if (target.getAttribute("data-home-value-type") === "number") {
+          var numericValue = Number(target.value);
+          nextValue = Number.isFinite(numericValue) ? numericValue : 0;
+        } else {
+          nextValue = target.value;
+        }
+
+        setHomeValueByPath(homePath, nextValue);
+        normalizeHomeEditorCollections();
+
+        if (homePath === "popular.limit" || homePath === "eventsPreview.limit") {
+          renderHomeEditor();
+          setActiveHomeSection(
+            homePath === "popular.limit" ? "featured" : "events",
+            { force: true }
+          );
+        }
+
+        setHomeEditorStatus("Cambios pendientes en HomePage. Presiona Guardar para persistir.");
+        return;
+      }
+
+      var eventIndexRaw = target.getAttribute("data-event-index");
+      var eventField = target.getAttribute("data-event-field");
+      var navbarIndexRaw = target.getAttribute("data-navbar-index");
+      var navbarField = target.getAttribute("data-navbar-field");
+      var testimonialIndexRaw = target.getAttribute("data-testimonial-index");
+      var testimonialField = target.getAttribute("data-testimonial-field");
+      var footerColumnIndexRaw = target.getAttribute("data-footer-column-index");
+      var footerColumnField = target.getAttribute("data-footer-column-field");
+      var footerLinkIndexRaw = target.getAttribute("data-footer-link-index");
+      var footerLinkField = target.getAttribute("data-footer-link-field");
+      if (navbarIndexRaw !== null && navbarField) {
+        var navbarIndex = Number(navbarIndexRaw);
+        if (!Number.isInteger(navbarIndex) || navbarIndex < 0) return;
+        if (!state.drafts.home.navbar.links[navbarIndex]) return;
+
+        state.drafts.home.navbar.links[navbarIndex][navbarField] = String(target.value || "").trim();
+        normalizeHomeEditorCollections();
+        setHomeEditorStatus("Cambios pendientes en HomePage. Presiona Guardar para persistir.");
+        return;
+      }
+
+      if (testimonialIndexRaw !== null && testimonialField) {
+        var testimonialIndex = Number(testimonialIndexRaw);
+        if (!Number.isInteger(testimonialIndex) || testimonialIndex < 0) return;
+        if (!state.drafts.home.testimonials.items[testimonialIndex]) return;
+
+        if (testimonialField === "stars") {
+          state.drafts.home.testimonials.items[testimonialIndex].stars = normalizeHomeTestimonialStars(
+            target.value,
+            5
+          );
+        } else {
+          state.drafts.home.testimonials.items[testimonialIndex][testimonialField] = String(
+            target.value || ""
+          ).trim();
+        }
+        normalizeHomeEditorCollections();
+        setHomeEditorStatus("Cambios pendientes en HomePage. Presiona Guardar para persistir.");
+        return;
+      }
+
+      if (footerColumnIndexRaw !== null && footerColumnField) {
+        var footerColumnIndex = Number(footerColumnIndexRaw);
+        if (!Number.isInteger(footerColumnIndex) || footerColumnIndex < 0) return;
+        if (!state.drafts.home.footer.columns[footerColumnIndex]) return;
+        state.drafts.home.footer.columns[footerColumnIndex][footerColumnField] = String(
+          target.value || ""
+        ).trim();
+        normalizeHomeEditorCollections();
+        setHomeEditorStatus("Cambios pendientes en HomePage. Presiona Guardar para persistir.");
+        return;
+      }
+
+      if (footerColumnIndexRaw !== null && footerLinkIndexRaw !== null && footerLinkField) {
+        var footerLinksColumnIndex = Number(footerColumnIndexRaw);
+        var footerLinkIndex = Number(footerLinkIndexRaw);
+        if (!Number.isInteger(footerLinksColumnIndex) || footerLinksColumnIndex < 0) return;
+        if (!Number.isInteger(footerLinkIndex) || footerLinkIndex < 0) return;
+        if (!state.drafts.home.footer.columns[footerLinksColumnIndex]) return;
+        if (!state.drafts.home.footer.columns[footerLinksColumnIndex].links[footerLinkIndex]) return;
+        state.drafts.home.footer.columns[footerLinksColumnIndex].links[footerLinkIndex][footerLinkField] =
+          String(target.value || "").trim();
+        normalizeHomeEditorCollections();
+        setHomeEditorStatus("Cambios pendientes en HomePage. Presiona Guardar para persistir.");
+        return;
+      }
+
+      if (eventIndexRaw === null || !eventField) return;
+
+      var eventIndex = Number(eventIndexRaw);
+      if (!Number.isInteger(eventIndex) || eventIndex < 0) return;
+      if (!state.drafts.home.eventsPreview.items[eventIndex]) return;
+
+      state.drafts.home.eventsPreview.items[eventIndex][eventField] = String(target.value || "").trim();
+      normalizeHomeEditorCollections();
+      setHomeEditorStatus("Cambios pendientes en HomePage. Presiona Guardar para persistir.");
+    });
+
+    elements.homeSectionsContent.addEventListener("change", function (event) {
+      var target = event.target;
+      var homePath = target.getAttribute("data-home-path");
+      if (homePath) {
+        if (target.tagName === "SELECT") {
+          var value = target.value;
+          setHomeValueByPath(homePath, value);
+          normalizeHomeEditorCollections();
+          setHomeEditorStatus("Cambios pendientes en HomePage. Presiona Guardar para persistir.");
+        }
+        return;
+      }
+
+      var testimonialIndexRaw = target.getAttribute("data-testimonial-index");
+      var testimonialField = target.getAttribute("data-testimonial-field");
+      if (testimonialIndexRaw === null || testimonialField !== "stars") {
+        return;
+      }
+
+      var testimonialIndex = Number(testimonialIndexRaw);
+      if (!Number.isInteger(testimonialIndex) || testimonialIndex < 0) return;
+      if (!state.drafts.home.testimonials.items[testimonialIndex]) return;
+
+      state.drafts.home.testimonials.items[testimonialIndex].stars = normalizeHomeTestimonialStars(
+        target.value,
+        5
+      );
+      normalizeHomeEditorCollections();
+      setHomeEditorStatus("Cambios pendientes en HomePage. Presiona Guardar para persistir.");
+    });
+
+    elements.homeSectionsContent.addEventListener("fig-toggle-change", function (event) {
+      var control = event.target.closest("[data-toggle-control]");
+      if (!control) return;
+
+      var homePath = control.getAttribute("data-home-path");
+      if (!homePath) return;
+
+      var checked = event.detail && typeof event.detail.checked === "boolean"
+        ? event.detail.checked
+        : getToggleChecked(control);
+
+      setHomeValueByPath(homePath, checked);
+      normalizeHomeEditorCollections();
+      setHomeEditorStatus("Cambios pendientes en HomePage. Presiona Guardar para persistir.");
+    });
+
+    elements.homeSectionsContent.addEventListener("click", function (event) {
+      var addNavbarLinkButton = event.target.closest("[data-navbar-add-button]");
+      if (addNavbarLinkButton) {
+        state.drafts.home.navbar.links.push({
+          label: "Nuevo link",
+          url: "#"
+        });
+        normalizeHomeEditorCollections();
+        renderHomeEditor();
+        setActiveHomeSection("navbar", { force: true });
+        setHomeEditorStatus("Cambios pendientes en Navbar.");
+        return;
+      }
+
+      var navbarActionButton = event.target.closest("[data-navbar-action]");
+      if (navbarActionButton) {
+        var navbarAction = navbarActionButton.getAttribute("data-navbar-action");
+        var navbarIndex = Number(navbarActionButton.getAttribute("data-navbar-index"));
+        if (!Number.isInteger(navbarIndex) || navbarIndex < 0) return;
+
+        var navbarLinks = state.drafts.home.navbar.links.slice();
+        if (navbarAction === "remove") {
+          navbarLinks.splice(navbarIndex, 1);
+        } else if (navbarAction === "up" && navbarIndex > 0) {
+          var previousLink = navbarLinks[navbarIndex - 1];
+          navbarLinks[navbarIndex - 1] = navbarLinks[navbarIndex];
+          navbarLinks[navbarIndex] = previousLink;
+        } else if (navbarAction === "down" && navbarIndex < navbarLinks.length - 1) {
+          var nextLink = navbarLinks[navbarIndex + 1];
+          navbarLinks[navbarIndex + 1] = navbarLinks[navbarIndex];
+          navbarLinks[navbarIndex] = nextLink;
+        }
+
+        state.drafts.home.navbar.links = navbarLinks;
+        normalizeHomeEditorCollections();
+        renderHomeEditor();
+        setActiveHomeSection("navbar", { force: true });
+        setHomeEditorStatus("Cambios pendientes en Navbar.");
+        return;
+      }
+
+      var addFeaturedButton = event.target.closest("[data-featured-add-button]");
+      if (addFeaturedButton) {
+        var selectElement = elements.homeSectionsContent.querySelector("[data-featured-add-select]");
+        var selectedId = selectElement ? String(selectElement.value || "").trim() : "";
+        if (!selectedId) {
+          setHomeEditorStatus("Selecciona un item antes de agregarlo a featuredIds.");
+          return;
+        }
+
+        if (state.drafts.home.popular.featuredIds.includes(selectedId)) {
+          setHomeEditorStatus("Ese item ya esta en featuredIds.");
+          return;
+        }
+
+        if (state.drafts.home.popular.featuredIds.length >= HOME_FEATURED_LIMIT) {
+          setHomeEditorStatus("Limite alcanzado: maximo " + HOME_FEATURED_LIMIT + " featuredIds.");
+          return;
+        }
+
+        state.drafts.home.popular.featuredIds.push(selectedId);
+        normalizeHomeEditorCollections();
+        renderHomeEditor();
+        setActiveHomeSection("featured", { force: true });
+        setHomeEditorStatus("Cambios pendientes en Featured.");
+        return;
+      }
+
+      var featuredSyncButton = event.target.closest("[data-featured-sync-button]");
+      if (featuredSyncButton) {
+        var itemFeaturedIds = getAllMenuItems()
+          .filter(function (entry) {
+            return Boolean(entry.item && entry.item.featured);
+          })
+          .map(function (entry) {
+            return entry.item.id;
+          })
+          .filter(Boolean);
+
+        var uniqueFeaturedIds = [];
+        itemFeaturedIds.forEach(function (itemId) {
+          if (!uniqueFeaturedIds.includes(itemId)) {
+            uniqueFeaturedIds.push(itemId);
+          }
+        });
+
+        if (uniqueFeaturedIds.length > HOME_FEATURED_LIMIT) {
+          uniqueFeaturedIds = uniqueFeaturedIds.slice(uniqueFeaturedIds.length - HOME_FEATURED_LIMIT);
+        }
+
+        state.drafts.home.popular.featuredIds = uniqueFeaturedIds;
+        normalizeHomeEditorCollections();
+        renderHomeEditor();
+        setActiveHomeSection("featured", { force: true });
+        setHomeEditorStatus("FeaturedIds sincronizados desde menu.item.featured.");
+        return;
+      }
+
+      var featuredActionButton = event.target.closest("[data-featured-action]");
+      if (featuredActionButton) {
+        var action = featuredActionButton.getAttribute("data-featured-action");
+        if (action !== "remove") return;
+
+        var featuredIndex = Number(featuredActionButton.getAttribute("data-featured-index"));
+        if (!Number.isInteger(featuredIndex) || featuredIndex < 0) return;
+
+        var featuredIds = state.drafts.home.popular.featuredIds.slice();
+        featuredIds.splice(featuredIndex, 1);
+
+        state.drafts.home.popular.featuredIds = featuredIds;
+        normalizeHomeEditorCollections();
+        renderHomeEditor();
+        setActiveHomeSection("featured", { force: true });
+        setHomeEditorStatus("Cambios pendientes en Featured.");
+        return;
+      }
+
+      var addTestimonialButton = event.target.closest("[data-testimonial-add-button]");
+      if (addTestimonialButton) {
+        if (state.drafts.home.testimonials.items.length >= HOME_TESTIMONIALS_LIMIT) {
+          setHomeEditorStatus(
+            "Limite alcanzado: maximo " + HOME_TESTIMONIALS_LIMIT + " testimonios."
+          );
+          return;
+        }
+
+        var nextIndex = state.drafts.home.testimonials.items.length;
+        var fallbackItem = HOME_TESTIMONIALS_DEFAULT_ITEMS[nextIndex] || {
+          name: "Nuevo cliente",
+          role: "Cliente",
+          text: "Escribe el testimonio aqui.",
+          stars: 5
+        };
+        state.drafts.home.testimonials.items.push({
+          name: String(fallbackItem.name || ("Cliente " + (nextIndex + 1))).trim(),
+          role: String(fallbackItem.role || "Cliente").trim(),
+          text: String(fallbackItem.text || "").trim(),
+          stars: normalizeHomeTestimonialStars(fallbackItem.stars, 5)
+        });
+        normalizeHomeEditorCollections();
+        renderHomeEditor();
+        setActiveHomeSection("testimonials", { force: true });
+        setHomeEditorStatus("Cambios pendientes en Testimonials.");
+        return;
+      }
+
+      var removeTestimonialButton = event.target.closest("[data-testimonial-remove]");
+      if (removeTestimonialButton) {
+        var testimonialRemoveIndex = Number(
+          removeTestimonialButton.getAttribute("data-testimonial-remove")
+        );
+        if (!Number.isInteger(testimonialRemoveIndex) || testimonialRemoveIndex < 0) return;
+        state.drafts.home.testimonials.items.splice(testimonialRemoveIndex, 1);
+        normalizeHomeEditorCollections();
+        renderHomeEditor();
+        setActiveHomeSection("testimonials", { force: true });
+        setHomeEditorStatus("Cambios pendientes en Testimonials.");
+        return;
+      }
+
+      var addFooterLinkButton = event.target.closest("[data-footer-link-add]");
+      if (addFooterLinkButton) {
+        var footerColumnIndex = Number(addFooterLinkButton.getAttribute("data-footer-link-add"));
+        if (!Number.isInteger(footerColumnIndex) || footerColumnIndex < 0) return;
+        if (!state.drafts.home.footer.columns[footerColumnIndex]) return;
+
+        var footerLinks = state.drafts.home.footer.columns[footerColumnIndex].links;
+        if (!Array.isArray(footerLinks)) {
+          footerLinks = [];
+          state.drafts.home.footer.columns[footerColumnIndex].links = footerLinks;
+        }
+        if (footerLinks.length >= HOME_FOOTER_LINKS_LIMIT) {
+          setHomeEditorStatus(
+            "Limite alcanzado: maximo " + HOME_FOOTER_LINKS_LIMIT + " links por columna."
+          );
+          return;
+        }
+
+        footerLinks.push({
+          label: "Nuevo link",
+          url: "#"
+        });
+        normalizeHomeEditorCollections();
+        renderHomeEditor();
+        setActiveHomeSection("footer", { force: true });
+        setHomeEditorStatus("Cambios pendientes en Footer.");
+        return;
+      }
+
+      var removeFooterLinkButton = event.target.closest("[data-footer-link-remove]");
+      if (removeFooterLinkButton) {
+        var removeToken = String(removeFooterLinkButton.getAttribute("data-footer-link-remove") || "");
+        var tokens = removeToken.split(":");
+        if (tokens.length !== 2) return;
+        var removeColumnIndex = Number(tokens[0]);
+        var removeLinkIndex = Number(tokens[1]);
+        if (!Number.isInteger(removeColumnIndex) || removeColumnIndex < 0) return;
+        if (!Number.isInteger(removeLinkIndex) || removeLinkIndex < 0) return;
+        if (!state.drafts.home.footer.columns[removeColumnIndex]) return;
+        state.drafts.home.footer.columns[removeColumnIndex].links.splice(removeLinkIndex, 1);
+        normalizeHomeEditorCollections();
+        renderHomeEditor();
+        setActiveHomeSection("footer", { force: true });
+        setHomeEditorStatus("Cambios pendientes en Footer.");
+        return;
+      }
+
+      var addEventButton = event.target.closest("[data-event-add-button]");
+      if (addEventButton) {
+        state.drafts.home.eventsPreview.items.push({
+          id: "evento_" + (state.drafts.home.eventsPreview.items.length + 1),
+          title: "Nuevo evento",
+          subtitle: ""
+        });
+        normalizeHomeEditorCollections();
+        renderHomeEditor();
+        setActiveHomeSection("events", { force: true });
+        setHomeEditorStatus("Cambios pendientes en Eventos.");
+        return;
+      }
+
+      var removeEventButton = event.target.closest("[data-event-remove]");
+      if (removeEventButton) {
+        var removeIndex = Number(removeEventButton.getAttribute("data-event-remove"));
+        if (!Number.isInteger(removeIndex) || removeIndex < 0) return;
+        state.drafts.home.eventsPreview.items.splice(removeIndex, 1);
+        normalizeHomeEditorCollections();
+        renderHomeEditor();
+        setActiveHomeSection("events", { force: true });
+        setHomeEditorStatus("Cambios pendientes en Eventos.");
+      }
+    });
+
+    elements.homeSectionsContent.addEventListener("dragstart", function (event) {
+      var handle = event.target.closest("[data-featured-drag-handle]");
+      if (!handle) return;
+
+      var sourceIndex = Number(handle.getAttribute("data-featured-index"));
+      if (!Number.isInteger(sourceIndex) || sourceIndex < 0) return;
+
+      resetFeaturedDragState();
+      dragState.featuredIndex = sourceIndex;
+      dragState.featuredDropIndex = sourceIndex;
+
+      var featuredItem = handle.closest(".home-featured-item");
+      if (featuredItem) {
+        featuredItem.classList.add("home-featured-item--dragging");
+      }
+      var featuredList = elements.homeSectionsContent.querySelector(".home-featured-list");
+      if (featuredList) {
+        featuredList.classList.add("home-featured-list--dragging");
+      }
+
+      if (event.dataTransfer) {
+        event.dataTransfer.effectAllowed = "move";
+        event.dataTransfer.setData("text/plain", String(sourceIndex));
+        if (featuredItem) {
+          event.dataTransfer.setDragImage(
+            featuredItem,
+            Math.round(featuredItem.offsetWidth / 2),
+            Math.round(featuredItem.offsetHeight / 2)
+          );
+        }
+      }
+    });
+
+    elements.homeSectionsContent.addEventListener("dragover", function (event) {
+      if (!Number.isInteger(dragState.featuredIndex) || dragState.featuredIndex < 0) return;
+
+      var targetItem = event.target.closest(".home-featured-item");
+      if (!targetItem) return;
+
+      var resolvedDrop = resolveFeaturedDropTarget(
+        targetItem,
+        dragState.featuredIndex
+      );
+      event.preventDefault();
+      if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = "move";
+      }
+
+      clearFeaturedDropMarkers();
+      if (!resolvedDrop) return;
+      dragState.featuredDropIndex = resolvedDrop.index;
+      targetItem.classList.add("home-featured-item--drop-target");
+    });
+
+    elements.homeSectionsContent.addEventListener("drop", function (event) {
+      if (!Number.isInteger(dragState.featuredIndex) || dragState.featuredIndex < 0) return;
+
+      var sourceIndex = dragState.featuredIndex;
+      var targetItem = event.target.closest(".home-featured-item");
+      if (!targetItem) {
+        resetFeaturedDragState();
+        return;
+      }
+
+      event.preventDefault();
+      var resolvedDrop = resolveFeaturedDropTarget(
+        targetItem,
+        sourceIndex
+      );
+      if (!resolvedDrop) {
+        resetFeaturedDragState();
+        return;
+      }
+
+      var beforeRects = captureFeaturedItemRects();
+      var featuredIds = state.drafts.home.popular.featuredIds.slice();
+      var sourceId = featuredIds[sourceIndex];
+      var targetId = featuredIds[resolvedDrop.index];
+      if (typeof sourceId === "undefined" || typeof targetId === "undefined") {
+        resetFeaturedDragState();
+        return;
+      }
+      featuredIds[sourceIndex] = targetId;
+      featuredIds[resolvedDrop.index] = sourceId;
+
+      state.drafts.home.popular.featuredIds = featuredIds;
+      normalizeHomeEditorCollections();
+      renderHomeEditor();
+      setActiveHomeSection("featured", { force: true });
+      animateFeaturedReorder(beforeRects);
+      setHomeEditorStatus("Cambios pendientes en Featured.");
+      resetFeaturedDragState();
+    });
+
+    elements.homeSectionsContent.addEventListener("dragend", function (event) {
+      var handle = event.target.closest("[data-featured-drag-handle]");
+      if (!handle && !Number.isInteger(dragState.featuredIndex)) return;
+      resetFeaturedDragState();
+    });
+
+    if (elements.homeSaveButton) {
+      elements.homeSaveButton.addEventListener("click", function () {
+        saveHomeEditorChanges();
+      });
+    }
+
+    if (elements.homeExportJsonButton) {
+      elements.homeExportJsonButton.addEventListener("click", function () {
+        exportCurrentDrafts();
+      });
+    }
+
+    if (elements.homePublishPreviewButton) {
+      elements.homePublishPreviewButton.addEventListener("click", function () {
+        publishChanges("preview");
+      });
+    }
+
+    if (elements.homePublishProductionButton) {
+      elements.homePublishProductionButton.addEventListener("click", function () {
+        publishChanges("production");
+      });
+    }
+  }
+
+  function bindIngredientsEditorEvents() {
+    if (elements.ingredientsSearchInput) {
+      elements.ingredientsSearchInput.addEventListener("input", function () {
+        state.ingredientsEditor.search = elements.ingredientsSearchInput.value || "";
+        renderIngredientsList();
+      });
+    }
+
+    if (elements.ingredientsList) {
+      elements.ingredientsList.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-select-ingredient]");
+        if (!button) return;
+        selectIngredientForEditing(button.getAttribute("data-select-ingredient"), { skipRoute: false });
+      });
+    }
+
+    if (elements.ingredientsNewButton) {
+      elements.ingredientsNewButton.addEventListener("click", function () {
+        beginNewIngredientDraft({ skipRoute: false });
+      });
+    }
+
+    if (elements.ingredientsBackButton) {
+      elements.ingredientsBackButton.addEventListener("click", function () {
+        returnToIngredientsCatalog({ skipRoute: false });
+      });
+    }
+
+    if (elements.ingredientsFieldId) {
+      elements.ingredientsFieldId.addEventListener("input", syncIngredientsEditorDraftFromForm);
+    }
+    if (elements.ingredientsFieldLabel) {
+      elements.ingredientsFieldLabel.addEventListener("input", syncIngredientsEditorDraftFromForm);
+    }
+    if (elements.ingredientsFieldIcon) {
+      elements.ingredientsFieldIcon.addEventListener("input", function () {
+        syncIngredientsEditorDraftFromForm();
+        renderIngredientsIconSelect(elements.ingredientsFieldIcon.value || "");
+      });
+    }
+
+    if (elements.ingredientsFieldIconSelect) {
+      elements.ingredientsFieldIconSelect.addEventListener("change", function () {
+        var selected = String(elements.ingredientsFieldIconSelect.value || "").trim();
+        elements.ingredientsFieldIcon.value = selected;
+        syncIngredientsEditorDraftFromForm();
+      });
+    }
+
+    if (elements.ingredientsAliasAddButton) {
+      elements.ingredientsAliasAddButton.addEventListener("click", function () {
+        addAliasToIngredientsDraft();
+      });
+    }
+    if (elements.ingredientsAliasInput) {
+      elements.ingredientsAliasInput.addEventListener("keydown", function (event) {
+        if (event.key !== "Enter") return;
+        event.preventDefault();
+        addAliasToIngredientsDraft();
+      });
+    }
+    if (elements.ingredientsAliasList) {
+      elements.ingredientsAliasList.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-remove-ingredient-alias]");
+        if (!button) return;
+        removeAliasFromIngredientsDraft(button.getAttribute("data-remove-ingredient-alias"));
+      });
+    }
+
+    if (elements.ingredientsTagsList) {
+      elements.ingredientsTagsList.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-toggle-ingredient-tag]");
+        if (!button) return;
+        toggleIngredientMeta("tags", button.getAttribute("data-toggle-ingredient-tag"));
+      });
+    }
+
+    if (elements.ingredientsAllergensList) {
+      elements.ingredientsAllergensList.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-toggle-ingredient-allergen]");
+        if (!button) return;
+        toggleIngredientMeta("allergens", button.getAttribute("data-toggle-ingredient-allergen"));
+      });
+    }
+
+    if (elements.ingredientsTagsCatalog) {
+      elements.ingredientsTagsCatalog.addEventListener("input", function (event) {
+        var input = event.target.closest("[data-ingredients-catalog-kind='tags']");
+        if (!input) return;
+        updateIngredientsCatalogLabel(
+          "tags",
+          input.getAttribute("data-ingredients-catalog-id"),
+          input.value
+        );
+      });
+    }
+
+    if (elements.ingredientsAllergensCatalog) {
+      elements.ingredientsAllergensCatalog.addEventListener("input", function (event) {
+        var input = event.target.closest("[data-ingredients-catalog-kind='allergens']");
+        if (!input) return;
+        updateIngredientsCatalogLabel(
+          "allergens",
+          input.getAttribute("data-ingredients-catalog-id"),
+          input.value
+        );
+      });
+    }
+
+    if (elements.ingredientsSaveButton) {
+      elements.ingredientsSaveButton.addEventListener("click", function () {
+        saveIngredientsEditorDraft();
+      });
+    }
+
+    if (elements.ingredientsDeleteButton) {
+      elements.ingredientsDeleteButton.addEventListener("click", function () {
+        deleteSelectedIngredientDraft();
+      });
+    }
+
+    if (elements.ingredientsExportJsonButton) {
+      elements.ingredientsExportJsonButton.addEventListener("click", function () {
+        exportCurrentDrafts();
+      });
+    }
+
+    if (elements.ingredientsPublishPreviewButton) {
+      elements.ingredientsPublishPreviewButton.addEventListener("click", function () {
+        publishChanges("preview");
+      });
+    }
+
+    if (elements.ingredientsPublishProductionButton) {
+      elements.ingredientsPublishProductionButton.addEventListener("click", function () {
+        publishChanges("production");
+      });
+    }
+  }
+
   function bindEvents() {
+    mountItemEditorToggles();
+
     elements.loginButton.addEventListener("click", function () {
       openIdentityModal();
     });
 
     elements.logoutButton.addEventListener("click", function () {
       closeSidebarUserMenu();
+      if (isDevAuthBypassEnabled()) {
+        setDevAuthBypass(false);
+        window.location.reload();
+        return;
+      }
       var identity = getIdentity();
       if (!identity) return;
       identity.logout();
@@ -2655,13 +7738,23 @@
     bindSidebarEvents();
     bindMenuBrowserEvents();
     bindItemEditorEvents();
+    bindHomeEditorEvents();
+    bindIngredientsEditorEvents();
 
     window.addEventListener("resize", function () {
       syncSidebarViewportState();
+      syncAllSidebarAccordionCategoryHeights();
+      updateSidebarActiveIndicator();
       refreshMenuScrollAnchors();
       requestMenuScrollSpyUpdate();
+      refreshHomeScrollAnchors();
+      requestHomeScrollSpyUpdate();
+      refreshIngredientsScrollAnchors();
+      requestIngredientsScrollSpyUpdate();
     });
     window.addEventListener("scroll", requestMenuScrollSpyUpdate, { passive: true });
+    window.addEventListener("scroll", requestHomeScrollSpyUpdate, { passive: true });
+    window.addEventListener("scroll", requestIngredientsScrollSpyUpdate, { passive: true });
     syncSidebarViewportState();
 
     window.addEventListener("hashchange", applyRoute);
@@ -2686,8 +7779,18 @@
   }
 
   function initAuth() {
+    applyDevAuthBypassQueryToggle();
+    if (isDevAuthBypassEnabled()) {
+      activateLocalAuthBypass();
+      return;
+    }
+
     var identity = getIdentity();
     if (!identity) {
+      if (isLocalDevHost()) {
+        activateLocalAuthBypass();
+        return;
+      }
       showLoginView("No se pudo cargar Netlify Identity.");
       elements.loginButton.disabled = true;
       return;
@@ -2714,15 +7817,39 @@
       state.data = null;
       state.drafts.menu = null;
       state.drafts.availability = null;
+      state.drafts.home = null;
+      state.drafts.ingredients = null;
       state.hasDataLoaded = false;
       state.currentPanel = "dashboard";
+      state.visiblePanel = "dashboard";
+      state.sidebarAccordionOpenKey = "";
+      state.sidebarAccordionPendingKey = "";
       state.menuActiveAnchor = { categoryId: "", subcategoryId: "" };
       state.menuViewGroups = [];
       state.menuAnchorTargets = [];
+      state.homeActiveSectionId = "";
+      state.homeAnchorTargets = [];
+      state.ingredientsAnchorTargets = [];
       if (state.menuScrollSpyFrame) {
         window.cancelAnimationFrame(state.menuScrollSpyFrame);
         state.menuScrollSpyFrame = 0;
       }
+      if (state.homeScrollSpyFrame) {
+        window.cancelAnimationFrame(state.homeScrollSpyFrame);
+        state.homeScrollSpyFrame = 0;
+      }
+      if (state.ingredientsScrollSpyFrame) {
+        window.cancelAnimationFrame(state.ingredientsScrollSpyFrame);
+        state.ingredientsScrollSpyFrame = 0;
+      }
+      if (state.sidebarAccordionTimer) {
+        window.clearTimeout(state.sidebarAccordionTimer);
+        state.sidebarAccordionTimer = 0;
+      }
+      clearAllSidebarAccordionOpeningMotions();
+      clearSidebarIndicatorSyncTimers();
+      clearPanelTransitionTimers();
+      state.panelTransitionToken += 1;
       state.itemEditor = {
         isOpen: false,
         isNew: false,
@@ -2736,9 +7863,28 @@
         availability: { available: true, soldOutReason: "" }
       };
 
+      applySidebarAccordionState("");
+      if (elements.dashboardContent) {
+        elements.dashboardContent.classList.remove("is-panel-fading");
+        elements.dashboardContent.classList.remove("is-panel-fade-out");
+      }
+      updateSidebarActiveIndicator();
+      state.ingredientsEditor = {
+        view: "catalog",
+        search: "",
+        activeCategoryId: "",
+        catalogSections: null,
+        selectedIngredientId: "",
+        selectedIsNew: false,
+        draft: null,
+        validationReport: null
+      };
+
       setDataStatus("Inicia sesion para cargar datos.");
       setMenuBrowserStatus("");
       setItemEditorStatus("");
+      setHomeEditorStatus("");
+      setIngredientsEditorStatus("");
       showItemEditorErrors([]);
       setDraftsBanner(false);
       updateDashboardMetrics();
@@ -2748,6 +7894,10 @@
       var message = "Error de autenticacion.";
       if (error && error.message) {
         message = error.message;
+      }
+      if (isLocalDevHost()) {
+        activateLocalAuthBypass();
+        return;
       }
       showLoginView(message);
     });

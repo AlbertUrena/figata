@@ -85,6 +85,7 @@
                 </button>
 
                 <nav class="sidebar-nav" aria-label="Figata admin sections">
+                  <span id="sidebar-nav-active-indicator" class="sidebar-nav-active-indicator" aria-hidden="true"></span>
                   <button id="sidebar-nav-dashboard" class="sidebar-nav__item" type="button">
                     <span class="sidebar-nav__icon" aria-hidden="true">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
@@ -105,14 +106,25 @@
 
                   <div id="sidebar-menu-accordion" class="sidebar-menu-accordion" aria-hidden="true"></div>
 
-                  <a class="sidebar-nav__item" href="/admin/cms/#/collections/home">
+                  <button id="sidebar-nav-homepage" class="sidebar-nav__item" type="button">
                     <span class="sidebar-nav__icon" aria-hidden="true">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
                         <path d="M298.2 72.6C310.5 61.2 329.5 61.2 341.7 72.6L432 156.3L432 144C432 126.3 446.3 112 464 112L496 112C513.7 112 528 126.3 528 144L528 245.5L565.8 280.6C575.4 289.6 578.6 303.5 573.8 315.7C569 327.9 557.2 336 544 336L528 336L528 512C528 547.3 499.3 576 464 576L176 576C140.7 576 112 547.3 112 512L112 336L96 336C82.8 336 71 327.9 66.2 315.7C61.4 303.5 64.6 289.5 74.2 280.6L298.2 72.6zM304 384C277.5 384 256 405.5 256 432L256 528L384 528L384 432C384 405.5 362.5 384 336 384L304 384z"></path>
                       </svg>
                     </span>
-                    <span class="sidebar-nav__label">Home</span>
-                  </a>
+                    <span class="sidebar-nav__label">HomePage</span>
+                  </button>
+                  <div id="sidebar-homepage-accordion" class="sidebar-menu-accordion" aria-hidden="true"></div>
+
+                  <button id="sidebar-nav-ingredients" class="sidebar-nav__item" type="button">
+                    <span class="sidebar-nav__icon" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                        <path d="M337.6 70.3C323.9 57.6 302.9 57.6 289.2 70.3C278.5 80.2 219.1 136.6 176.5 219.5C133.8 302.5 106.7 412.8 160.4 496.2C201.9 560.7 269.1 590.4 313.4 596.9C359.5 603.7 406.3 587.5 445.9 547.9C515.1 478.7 539.7 387.4 521.2 300.6C503.4 217.3 446.8 143.7 337.6 70.3zM274.6 365.8C256.2 384.2 226.4 384.2 208 365.8C189.6 347.4 189.6 317.6 208 299.2C232.6 274.6 268.3 246.9 311.3 222.9C331.2 211.8 355.7 218.9 366.8 238.7C377.9 258.6 370.9 283.1 351 294.2C318.7 312.2 292.8 332.1 274.6 350.3C270.4 354.5 270.4 361.5 274.6 365.8z"></path>
+                      </svg>
+                    </span>
+                    <span class="sidebar-nav__label">Ingredients</span>
+                  </button>
+                  <div id="sidebar-ingredients-accordion" class="sidebar-menu-accordion" aria-hidden="true"></div>
 
                   <a class="sidebar-nav__item" href="/admin/cms/#/collections/availability">
                     <span class="sidebar-nav__icon" aria-hidden="true">
@@ -245,12 +257,19 @@
                   </div>
                 </article>
 
-                <a class="dash-card" href="/admin/cms/#/collections/home">
+                <button id="open-homepage-editor-button" class="dash-card dash-card--button" type="button">
                   <p class="dash-card__eyebrow">Homepage</p>
-                  <h2>Home</h2>
+                  <h2>HomePage</h2>
                   <p id="metric-home" class="dash-card__metric">-</p>
                   <p>Hero, featured y links.</p>
-                </a>
+                </button>
+
+                <button id="open-ingredients-editor-button" class="dash-card dash-card--button" type="button">
+                  <p class="dash-card__eyebrow">Catalogo</p>
+                  <h2>Ingredients</h2>
+                  <p id="metric-ingredients" class="dash-card__metric">-</p>
+                  <p>Ingredientes, tags y alergenos.</p>
+                </button>
 
                 <a class="dash-card" href="/admin/cms/#/collections/availability">
                   <p class="dash-card__eyebrow">Operacion</p>
@@ -389,10 +408,7 @@
 
                       <p id="item-price-preview" class="inline-help">DOP 0</p>
 
-                      <label class="toggle-field">
-                        <input id="item-field-featured" type="checkbox" />
-                        <span>Featured</span>
-                      </label>
+                      <div id="item-field-featured-toggle-mount"></div>
                     </section>
 
                     <section class="item-tab-panel" data-tab-panel="descriptions">
@@ -448,6 +464,7 @@
                         <span>Media picker</span>
                         <select id="item-media-picker"></select>
                       </label>
+                      <p id="item-media-status" class="media-status"></p>
 
                       <div class="media-preview-box">
                         <img id="item-media-preview" alt="Preview media" />
@@ -455,10 +472,7 @@
                     </section>
 
                     <section class="item-tab-panel" data-tab-panel="availability">
-                      <label class="toggle-field">
-                        <input id="item-availability-toggle" type="checkbox" />
-                        <span>Disponible</span>
-                      </label>
+                      <div id="item-availability-toggle-mount"></div>
 
                       <label class="field">
                         <span>Razon agotado</span>
@@ -472,15 +486,9 @@
                         <input id="item-field-spicy-level" type="range" min="0" max="3" step="1" />
                       </label>
 
-                      <label class="toggle-field">
-                        <input id="item-field-vegetarian" type="checkbox" />
-                        <span>Vegetariano</span>
-                      </label>
+                      <div id="item-field-vegetarian-toggle-mount"></div>
 
-                      <label class="toggle-field">
-                        <input id="item-field-vegan" type="checkbox" />
-                        <span>Vegano</span>
-                      </label>
+                      <div id="item-field-vegan-toggle-mount"></div>
 
                       <details class="advanced-box">
                         <summary>Advanced (legacy)</summary>
@@ -525,6 +533,149 @@
                   </div>
                 </aside>
               </div>
+            </section>
+
+            <section id="home-editor-panel" class="home-editor is-hidden" aria-label="HomePage Editor">
+              <div class="home-editor__header">
+                <div>
+                  <p class="kicker">HomePage Editor</p>
+                  <h2>Secciones del homepage</h2>
+                  <p class="home-editor__subtitle">
+                    Edita Hero, Featured, Delivery, Testimonials, Eventos, Footer y secciones relacionadas.
+                  </p>
+                </div>
+                <div class="home-editor__actions">
+                  <button id="home-save-button" class="btn btn-primary" type="button">Guardar</button>
+                  <button id="home-export-json-button" class="btn btn-ghost" type="button">
+                    Exportar JSON
+                  </button>
+                  <button id="home-publish-preview-button" class="btn btn-primary" type="button">
+                    Publish Preview
+                  </button>
+                  <button id="home-publish-production-button" class="btn btn-ghost" type="button">
+                    Publish Production
+                  </button>
+                </div>
+              </div>
+
+              <p id="home-editor-status" class="status-message" role="status" aria-live="polite"></p>
+
+              <div class="home-editor__layout">
+                <div id="home-sections-content" class="home-sections-content"></div>
+              </div>
+            </section>
+
+            <section id="ingredients-editor-panel" class="ingredients-editor is-hidden" aria-label="Ingredients Editor">
+              <div class="ingredients-editor__header">
+                <div>
+                  <p class="kicker">Ingredients Editor</p>
+                  <h2 id="ingredients-panel-title">Catalogo de ingredientes</h2>
+                  <p id="ingredients-panel-subtitle" class="ingredients-editor__subtitle">
+                    Explora el catalogo en cards. Click en un ingrediente para abrir su editor.
+                  </p>
+                </div>
+                <div id="ingredients-catalog-actions" class="ingredients-editor__actions">
+                  <button id="ingredients-new-button" class="btn btn-primary" type="button">Nuevo ingrediente</button>
+                </div>
+                <div id="ingredients-editor-actions" class="ingredients-editor__actions is-hidden">
+                  <button id="ingredients-save-button" class="btn btn-primary" type="button">Guardar</button>
+                  <button id="ingredients-export-json-button" class="btn btn-ghost" type="button">
+                    Exportar JSON
+                  </button>
+                  <button id="ingredients-publish-preview-button" class="btn btn-primary" type="button">
+                    Publish Preview
+                  </button>
+                  <button id="ingredients-publish-production-button" class="btn btn-ghost" type="button">
+                    Publish Production
+                  </button>
+                </div>
+              </div>
+
+              <p id="ingredients-editor-status" class="status-message" role="status" aria-live="polite"></p>
+
+              <section id="ingredients-catalog-view" class="ingredients-catalog-view" aria-label="Catalogo de ingredientes">
+                <div class="ingredients-catalog-view__toolbar card">
+                  <label class="field">
+                    <span>Buscar ingrediente</span>
+                    <input id="ingredients-search-input" type="search" placeholder="Ej: mozzarella, pomodoro..." />
+                  </label>
+                  <p id="ingredients-catalog-count" class="inline-help">-</p>
+                  <p id="ingredients-global-warning" class="inline-help"></p>
+                </div>
+                <div id="ingredients-list" class="ingredients-categories-content"></div>
+              </section>
+
+              <section id="ingredients-detail-view" class="ingredients-detail-view card is-hidden" aria-label="Editor de ingrediente">
+                <div class="ingredients-detail-view__header">
+                  <button id="ingredients-back-button" class="btn btn-ghost" type="button">Volver al catalogo</button>
+                  <div>
+                    <p class="kicker">Ingredients / Item</p>
+                    <h3 id="ingredients-detail-title">Editar ingrediente</h3>
+                  </div>
+                </div>
+
+                <div class="ingredients-editor__grid">
+                  <label class="field">
+                    <span>ID</span>
+                    <input id="ingredients-field-id" type="text" />
+                  </label>
+
+                  <label class="field">
+                    <span>Label</span>
+                    <input id="ingredients-field-label" type="text" />
+                  </label>
+
+                  <label class="field">
+                    <span>Icon (catalogo)</span>
+                    <select id="ingredients-field-icon-select"></select>
+                  </label>
+
+                  <label class="field">
+                    <span>Icon ID / path manual</span>
+                    <input id="ingredients-field-icon" type="text" placeholder="Ej: queso o /assets/Ingredients/queso.webp" />
+                  </label>
+
+                  <div class="field" data-span="full">
+                    <span>Aliases</span>
+                    <div class="field-inline">
+                      <input id="ingredients-alias-input" type="text" placeholder="Alias (normalizado automaticamente)" />
+                      <button id="ingredients-alias-add-button" class="btn btn-ghost" type="button">Agregar</button>
+                    </div>
+                    <ul id="ingredients-alias-list" class="chip-list"></ul>
+                  </div>
+
+                  <div class="field" data-span="full">
+                    <span>Tags</span>
+                    <div id="ingredients-tags-list" class="token-search-results"></div>
+                  </div>
+
+                  <div class="field" data-span="full">
+                    <span>Alergenos</span>
+                    <div id="ingredients-allergens-list" class="token-search-results"></div>
+                  </div>
+
+                  <div class="field" data-span="full">
+                    <span>Impacto en menu</span>
+                    <p id="ingredients-impact-count" class="inline-help">-</p>
+                    <ul id="ingredients-impact-list" class="ingredients-impact-list"></ul>
+                  </div>
+
+                  <div class="field" data-span="full">
+                    <span>Tags (catalogo)</span>
+                    <div id="ingredients-tags-catalog" class="ingredients-catalog-list"></div>
+                  </div>
+
+                  <div class="field" data-span="full">
+                    <span>Alergenos (catalogo)</span>
+                    <div id="ingredients-allergens-catalog" class="ingredients-catalog-list"></div>
+                  </div>
+                </div>
+
+                <div class="ingredients-editor__footer">
+                  <button id="ingredients-delete-button" class="btn btn-danger" type="button">Eliminar ingrediente</button>
+                  <p id="ingredients-validation-summary" class="inline-help"></p>
+                </div>
+              </section>
             </section>
           </div>
         </div>

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node scripts/dev-server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "check:admin-ui": "node scripts/check_admin_ui.js",
     "validate:home": "node scripts/validate_home_json.js",
     "validate:media": "node scripts/validate_media_json.js",
     "validate:restaurant": "node scripts/validate_restaurant_json.js"

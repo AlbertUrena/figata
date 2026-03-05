@@ -1,8 +1,8 @@
 {
   "version": 1,
   "schema": "figata.media.v1",
-  "updatedAt": "2026-03-04T07:08:00.306Z",
-  "updatedBy": "codex",
+  "updatedAt": "2026-03-05T17:42:20.299Z",
+  "updatedBy": "admin-app",
   "notes": "Mapa oficial de media por item. Si una variante falta, el frontend aplica fallback controlado.",
   "items": {
     "berenjenas_parmesana": {
@@ -87,7 +87,7 @@
       "version": 1
     },
     "margherita": {
-      "card": "menu/margherita.webp",
+      "card": "assets/menu/margherita.webp",
       "hover": "menu/hover/margherita-hover.webp",
       "modal": "menu/margherita.webp",
       "gallery": [],
@@ -132,9 +132,9 @@
       "version": 1
     },
     "filetti": {
-      "card": "assets/menu/placeholders/card.svg",
+      "card": "assets/menu/filetti.webp",
       "hover": "",
-      "modal": "assets/menu/placeholders/card.svg",
+      "modal": "assets/menu/filetti.webp",
       "gallery": [],
       "alt": "Filetti",
       "dominantColor": "",
@@ -258,9 +258,9 @@
       "version": 1
     },
     "bellezza": {
-      "card": "assets/menu/placeholders/card.svg",
+      "card": "assets/menu/bellezza.webp",
       "hover": "",
-      "modal": "assets/menu/placeholders/card.svg",
+      "modal": "assets/menu/bellezza.webp",
       "gallery": [],
       "alt": "Bellezza",
       "dominantColor": "",
