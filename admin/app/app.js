@@ -11,6 +11,9 @@
 
   var SIDEBAR_COLLAPSE_KEY = "figata_admin_sidebar_collapsed";
   var MENU_PLACEHOLDER_IMAGE = "assets/menu/placeholders/card.svg";
+  var LOCAL_DRAFTS_MENU_KEY = "figata_admin_drafts_menu";
+  var LOCAL_DRAFTS_AVAILABILITY_KEY = "figata_admin_drafts_availability";
+  var LOCAL_DRAFTS_FLAG_KEY = "figata_admin_has_drafts";
 
   var state = {
     data: null,
@@ -31,6 +34,7 @@
     },
     isDataLoading: false,
     hasDataLoaded: false,
+    isPublishing: false,
     currentPanel: "dashboard",
     sidebarCollapsed: false,
     menuActiveAnchor: {
@@ -88,6 +92,10 @@
     sessionAvatar: document.getElementById("session-avatar"),
     loginMessage: document.getElementById("login-message"),
     dataStatus: document.getElementById("data-status"),
+    draftsBanner: document.getElementById("drafts-banner"),
+    draftsBannerText: document.getElementById("drafts-banner-text"),
+    draftsBannerExportButton: document.getElementById("drafts-banner-export-button"),
+    draftsBannerClearButton: document.getElementById("drafts-banner-clear-button"),
 
     metricMenu: document.getElementById("metric-menu"),
     metricHome: document.getElementById("metric-home"),
@@ -104,8 +112,11 @@
     itemEditorTitle: document.getElementById("item-editor-title"),
     itemEditorStatus: document.getElementById("item-editor-status"),
     itemEditorErrors: document.getElementById("item-editor-errors"),
+    itemEditorActions: document.querySelector(".menu-item-editor__actions"),
     itemSaveButton: document.getElementById("item-save-button"),
     itemSaveCloseButton: document.getElementById("item-save-close-button"),
+    itemExportJsonButton: document.getElementById("item-export-json-button"),
+    itemPublishButton: document.getElementById("item-publish-button"),
     itemCancelButton: document.getElementById("item-cancel-button"),
     itemDeleteButton: document.getElementById("item-delete-button"),
 
@@ -220,6 +231,195 @@
 
   function setDataStatus(message) {
     elements.dataStatus.textContent = message || "";
+  }
+
+  function setDraftsBanner(show, message) {
+    if (!elements.draftsBanner) return;
+    elements.draftsBanner.classList.toggle("is-hidden", !show);
+    if (typeof message === "string" && elements.draftsBannerText) {
+      elements.draftsBannerText.textContent = message;
+    }
+  }
+
+  function clearPersistedDraftsStorage() {
+    try {
+      window.localStorage.removeItem(LOCAL_DRAFTS_MENU_KEY);
+      window.localStorage.removeItem(LOCAL_DRAFTS_AVAILABILITY_KEY);
+      window.localStorage.removeItem(LOCAL_DRAFTS_FLAG_KEY);
+    } catch (_error) {
+      // ignore storage errors
+    }
+  }
+
+  function persistDraftsToLocalStorage() {
+    if (!state.drafts.menu || !state.drafts.availability) return;
+    try {
+      window.localStorage.setItem(LOCAL_DRAFTS_MENU_KEY, JSON.stringify(state.drafts.menu));
+      window.localStorage.setItem(LOCAL_DRAFTS_AVAILABILITY_KEY, JSON.stringify(state.drafts.availability));
+      window.localStorage.setItem(LOCAL_DRAFTS_FLAG_KEY, "1");
+    } catch (_error) {
+      // ignore storage errors
+    }
+  }
+
+  function hydrateDraftsFromLocalStorage() {
+    try {
+      if (window.localStorage.getItem(LOCAL_DRAFTS_FLAG_KEY) !== "1") {
+        return false;
+      }
+
+      var menuRaw = window.localStorage.getItem(LOCAL_DRAFTS_MENU_KEY);
+      var availabilityRaw = window.localStorage.getItem(LOCAL_DRAFTS_AVAILABILITY_KEY);
+
+      if (!menuRaw || !availabilityRaw) {
+        clearPersistedDraftsStorage();
+        return false;
+      }
+
+      var restoredMenu = JSON.parse(menuRaw);
+      var restoredAvailability = JSON.parse(availabilityRaw);
+
+      if (!restoredMenu || !Array.isArray(restoredMenu.sections)) {
+        clearPersistedDraftsStorage();
+        return false;
+      }
+
+      if (!restoredAvailability || !Array.isArray(restoredAvailability.items)) {
+        clearPersistedDraftsStorage();
+        return false;
+      }
+
+      state.drafts.menu = restoredMenu;
+      state.drafts.availability = restoredAvailability;
+      ensureMenuDraft();
+      ensureAvailabilityDraft();
+      return true;
+    } catch (_error) {
+      clearPersistedDraftsStorage();
+      return false;
+    }
+  }
+
+  function downloadJsonFile(filename, payload) {
+    var jsonContent = JSON.stringify(payload, null, 2) + "\n";
+    var blob = new Blob([jsonContent], { type: "application/json;charset=utf-8" });
+    var url = window.URL.createObjectURL(blob);
+    var link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.setTimeout(function () {
+      window.URL.revokeObjectURL(url);
+    }, 0);
+  }
+
+  function exportCurrentDrafts() {
+    if (!state.drafts.menu || !state.drafts.availability) {
+      setItemEditorStatus("No hay drafts cargados para exportar.");
+      return;
+    }
+
+    downloadJsonFile("menu.updated.json", state.drafts.menu);
+    downloadJsonFile("availability.updated.json", state.drafts.availability);
+
+    if (elements.dataStatus) {
+      setDataStatus("JSON exportados: menu.updated.json + availability.updated.json");
+    }
+  }
+
+  async function publishChanges() {
+    if (state.isPublishing) {
+      return;
+    }
+
+    if (!state.drafts.menu || !state.drafts.availability) {
+      setItemEditorStatus("Error: no hay drafts para publicar.");
+      return;
+    }
+
+    var identity = getIdentity();
+    var user = identity && typeof identity.currentUser === "function"
+      ? identity.currentUser()
+      : null;
+    if (!user || typeof user.jwt !== "function") {
+      setItemEditorStatus("Error: inicia sesion para publicar.");
+      setDataStatus("Publish failed: Not logged in");
+      return;
+    }
+
+    state.isPublishing = true;
+    var publishButton = elements.itemPublishButton;
+    var defaultPublishLabel = publishButton && publishButton.getAttribute("data-default-label")
+      ? publishButton.getAttribute("data-default-label")
+      : "Publish";
+    if (publishButton && !publishButton.getAttribute("data-default-label")) {
+      publishButton.setAttribute("data-default-label", defaultPublishLabel);
+    }
+    if (publishButton) {
+      publishButton.disabled = true;
+      publishButton.textContent = "Publishing...";
+    }
+    setItemEditorStatus("Publishing...");
+    setDataStatus("Publishing...");
+
+    try {
+      var token = await user.jwt();
+      var response = await fetch("/.netlify/functions/publish", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({
+          menu: state.drafts.menu,
+          availability: state.drafts.availability
+        })
+      });
+
+      var responseText = await response.text();
+      var payload = null;
+      if (responseText) {
+        try {
+          payload = JSON.parse(responseText);
+        } catch (_error) {
+          payload = null;
+        }
+      }
+
+      if (!response.ok) {
+        var errorMessage = payload && payload.error
+          ? payload.error
+          : (responseText || ("HTTP " + response.status));
+        throw new Error(errorMessage);
+      }
+
+      setItemEditorStatus("Published ✓");
+      if (payload && payload.commit) {
+        setDataStatus("Published ✓ (" + payload.commit + ")");
+      } else {
+        setDataStatus("Published ✓");
+      }
+      if (publishButton) {
+        publishButton.textContent = "Published ✓";
+      }
+    } catch (error) {
+      var message = error && error.message ? error.message : "Unknown error";
+      setItemEditorStatus("Publish failed");
+      setDataStatus("Publish failed: " + message);
+      if (publishButton) {
+        publishButton.textContent = "Publish failed";
+      }
+    } finally {
+      state.isPublishing = false;
+      if (publishButton) {
+        publishButton.disabled = false;
+        window.setTimeout(function () {
+          publishButton.textContent = defaultPublishLabel;
+        }, 1800);
+      }
+    }
   }
 
   function setMenuBrowserStatus(message) {
@@ -555,6 +755,7 @@
 
       state.drafts.menu = deepClone(state.data.menu);
       state.drafts.availability = deepClone(state.data.availability);
+      var restoredFromLocalDrafts = hydrateDraftsFromLocalStorage();
       ensureMenuDraft();
       ensureAvailabilityDraft();
       buildIndexes();
@@ -564,7 +765,16 @@
       renderMenuBrowser();
       renderSidebarMenuAccordion();
 
-      setDataStatus("JSON cargados correctamente (" + new Date().toLocaleTimeString("es-DO") + ").");
+      if (restoredFromLocalDrafts) {
+        setDraftsBanner(true, "Drafts restaurados (Clear drafts | Export)");
+        setDataStatus("Drafts locales restaurados y aplicados.");
+      } else {
+        setDraftsBanner(false);
+      }
+
+      if (!restoredFromLocalDrafts) {
+        setDataStatus("JSON cargados correctamente (" + new Date().toLocaleTimeString("es-DO") + ").");
+      }
       setMenuBrowserStatus("");
       setItemEditorStatus("");
       showItemEditorErrors([]);
@@ -580,6 +790,35 @@
 
   function ensureDataLoaded(forceReload) {
     loadAllData(Boolean(forceReload));
+  }
+
+  function resetDraftsToBaseData() {
+    if (!state.data || !state.data.menu || !state.data.availability) {
+      clearPersistedDraftsStorage();
+      setDraftsBanner(false);
+      return;
+    }
+
+    state.drafts.menu = deepClone(state.data.menu);
+    state.drafts.availability = deepClone(state.data.availability);
+    ensureMenuDraft();
+    ensureAvailabilityDraft();
+    buildIndexes();
+    updateDashboardMetrics();
+    renderMenuBrowser();
+    renderSidebarMenuAccordion();
+
+    if (state.currentPanel === "menu-item") {
+      openMenuBrowser({ skipRoute: true });
+    } else {
+      applyRoute();
+    }
+
+    clearPersistedDraftsStorage();
+    setDraftsBanner(false);
+    setDataStatus("Drafts locales limpiados. Se restauro el estado base de /data.");
+    setItemEditorStatus("");
+    showItemEditorErrors([]);
   }
 
   function getMenuSections() {
@@ -1107,7 +1346,7 @@
 
   function resolveCardImageForItem(item) {
     var mediaEntry = getMediaEntryForItem(item.id);
-    var path = (mediaEntry && mediaEntry.card) || item.image || MENU_PLACEHOLDER_IMAGE;
+    var path = item.image || (mediaEntry && mediaEntry.card) || MENU_PLACEHOLDER_IMAGE;
     return resolveAssetPath(path);
   }
 
@@ -1281,8 +1520,7 @@
       featured: false,
       spicy_level: 0,
       vegetarian: false,
-      vegan: false,
-      available: true
+      vegan: false
     };
   }
 
@@ -1536,8 +1774,6 @@
     state.itemEditor.availability.available = Boolean(elements.itemAvailabilityToggle.checked);
     state.itemEditor.availability.soldOutReason = elements.itemAvailabilityReason.value.trim();
 
-    draft.available = state.itemEditor.availability.available;
-
     renderItemPreview();
   }
 
@@ -1560,7 +1796,11 @@
     }
 
     var draft = deepClone(itemPosition.item);
-    var availabilityEntry = getAvailabilityEntry(draft.id, true);
+    var availabilityEntry = getAvailabilityEntry(draft.id, false);
+    var fallbackAvailable =
+      typeof draft.available === "boolean"
+        ? Boolean(draft.available)
+        : true;
 
     state.itemEditor.isOpen = true;
     state.itemEditor.isNew = Boolean(options.isNew);
@@ -1571,7 +1811,7 @@
     state.itemEditor.tags = Array.isArray(draft.tags) ? draft.tags.slice() : [];
     state.itemEditor.allergens = Array.isArray(draft.allergens) ? draft.allergens.slice() : [];
     state.itemEditor.availability = {
-      available: availabilityEntry ? Boolean(availabilityEntry.available) : true,
+      available: availabilityEntry ? Boolean(availabilityEntry.available) : fallbackAvailable,
       soldOutReason: availabilityEntry ? (availabilityEntry.soldOutReason || "") : ""
     };
 
@@ -1842,6 +2082,7 @@
     }
 
     var draft = deepClone(state.itemEditor.draft);
+    delete draft.available;
     var sourcePosition = findItemPositionById(draft.id);
     var targetSection = getSectionForCategory(draft.category);
 
@@ -1886,8 +2127,6 @@
     availabilityEntry.available = Boolean(state.itemEditor.availability.available);
     availabilityEntry.soldOutReason = state.itemEditor.availability.soldOutReason || "";
 
-    draft.available = availabilityEntry.available;
-
     state.itemEditor.sourceSectionId = persistedPosition ? persistedPosition.sectionId : targetSection.id;
     state.itemEditor.sourceItemIndex = persistedPosition ? persistedPosition.itemIndex : -1;
     state.itemEditor.draft = deepClone(draft);
@@ -1895,6 +2134,8 @@
     updateDashboardMetrics();
     renderMenuBrowser();
     renderSidebarMenuAccordion();
+    persistDraftsToLocalStorage();
+    setDraftsBanner(true, "Drafts locales activos (Clear drafts | Export)");
 
     showItemEditorErrors([]);
 
@@ -1942,6 +2183,8 @@
     updateDashboardMetrics();
     renderMenuBrowser();
     renderSidebarMenuAccordion();
+    persistDraftsToLocalStorage();
+    setDraftsBanner(true, "Drafts locales activos (Clear drafts | Export)");
 
     openMenuBrowser({ skipRoute: false });
     setMenuBrowserStatus("Item eliminado: " + draft.id);
@@ -2234,6 +2477,18 @@
       commitCurrentItemChanges(true);
     });
 
+    if (elements.itemExportJsonButton) {
+      elements.itemExportJsonButton.addEventListener("click", function () {
+        exportCurrentDrafts();
+      });
+    }
+
+    if (elements.itemPublishButton) {
+      elements.itemPublishButton.addEventListener("click", function () {
+        publishChanges();
+      });
+    }
+
     elements.itemCancelButton.addEventListener("click", cancelItemEditor);
     elements.itemDeleteButton.addEventListener("click", deleteCurrentItem);
 
@@ -2341,6 +2596,18 @@
       ensureDataLoaded(true);
     });
 
+    if (elements.draftsBannerExportButton) {
+      elements.draftsBannerExportButton.addEventListener("click", function () {
+        exportCurrentDrafts();
+      });
+    }
+
+    if (elements.draftsBannerClearButton) {
+      elements.draftsBannerClearButton.addEventListener("click", function () {
+        resetDraftsToBaseData();
+      });
+    }
+
     bindSidebarEvents();
     bindMenuBrowserEvents();
     bindItemEditorEvents();
@@ -2429,6 +2696,7 @@
       setMenuBrowserStatus("");
       setItemEditorStatus("");
       showItemEditorErrors([]);
+      setDraftsBanner(false);
       updateDashboardMetrics();
     });
 

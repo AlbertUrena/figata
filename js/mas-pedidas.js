@@ -659,6 +659,7 @@
       const totalDuration = COVER_IN_DURATION_MS + COVER_HOLD_DURATION_MS + COVER_OUT_DURATION_MS;
       const coverOutStart = COVER_IN_DURATION_MS + COVER_HOLD_DURATION_MS;
       const coverOutMorphEnd = coverOutStart + COVER_OUT_MORPH_DURATION_MS;
+      const pageRevealStartY = Math.abs(PAGE_PUSH_Y_PX);
       let previewDeactivated = false;
 
       const finish = () => {
@@ -690,9 +691,12 @@
 
         setCoverTransform(coverTranslateY);
 
-        if (elapsed <= PAGE_PUSH_DURATION_MS) {
-          const pagePushProgress = easeCoverEnter(elapsed / PAGE_PUSH_DURATION_MS);
-          setPagePush(lerp(PAGE_PUSH_Y_PX, 0, pagePushProgress));
+        if (!previewDeactivated) {
+          setPagePush(PAGE_PUSH_Y_PX);
+        } else if (elapsed <= totalDuration) {
+          const revealProgress = clamp((elapsed - coverOutStart) / COVER_OUT_DURATION_MS);
+          const easedReveal = easePreviewRise(revealProgress);
+          setPagePush(lerp(pageRevealStartY, 0, easedReveal));
         } else {
           setPagePush(0);
         }
@@ -721,6 +725,7 @@
           previewDeactivated = true;
           setPreviewOpen(false);
           resetPreviewCardAnimation();
+          setPagePush(pageRevealStartY);
         }
 
         if (elapsed < totalDuration) {

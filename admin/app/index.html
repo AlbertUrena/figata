@@ -218,6 +218,18 @@
 
             <p id="data-status" class="data-status" role="status" aria-live="polite">Cargando datos...</p>
 
+            <div id="drafts-banner" class="drafts-banner is-hidden" role="status" aria-live="polite">
+              <span id="drafts-banner-text">Drafts restaurados (Clear drafts | Export)</span>
+              <div class="drafts-banner__actions">
+                <button id="drafts-banner-export-button" class="btn btn-ghost btn-inline" type="button">
+                  Export
+                </button>
+                <button id="drafts-banner-clear-button" class="btn btn-ghost btn-inline" type="button">
+                  Clear drafts
+                </button>
+              </div>
+            </div>
+
             <section id="dashboard-panel" aria-label="Accesos rapidos">
               <section class="cards-grid">
                 <article class="dash-card dash-card--interactive">
@@ -307,6 +319,12 @@
                   <button id="item-save-button" class="btn btn-primary" type="button">Guardar</button>
                   <button id="item-save-close-button" class="btn btn-ghost" type="button">
                     Guardar y cerrar
+                  </button>
+                  <button id="item-publish-button" class="btn btn-primary" type="button">
+                    Publish
+                  </button>
+                  <button id="item-export-json-button" class="btn btn-ghost" type="button">
+                    Exportar JSON
                   </button>
                   <button id="item-cancel-button" class="btn btn-ghost" type="button">Cancelar</button>
                   <button id="item-delete-button" class="btn btn-danger" type="button">Eliminar item</button>
