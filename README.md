@@ -1,6 +1,9 @@
 # figata
 Official website for Figata - pizza & wine.
 
+## CMS publish
+- Flujo y modos de publicacion CMS: `docs/cms-publish.md`.
+
 ## Fuentes de datos
 - Menu: `data/menu.json`
 - Home: `data/home.json`

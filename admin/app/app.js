@@ -116,7 +116,8 @@
     itemSaveButton: document.getElementById("item-save-button"),
     itemSaveCloseButton: document.getElementById("item-save-close-button"),
     itemExportJsonButton: document.getElementById("item-export-json-button"),
-    itemPublishButton: document.getElementById("item-publish-button"),
+    itemPublishPreviewButton: document.getElementById("item-publish-preview-button"),
+    itemPublishProductionButton: document.getElementById("item-publish-production-button"),
     itemCancelButton: document.getElementById("item-cancel-button"),
     itemDeleteButton: document.getElementById("item-delete-button"),
 
@@ -329,7 +330,9 @@
     }
   }
 
-  async function publishChanges() {
+  async function publishChanges(target) {
+    var publishTarget = target === "production" ? "production" : "preview";
+
     if (state.isPublishing) {
       return;
     }
@@ -337,6 +340,15 @@
     if (!state.drafts.menu || !state.drafts.availability) {
       setItemEditorStatus("Error: no hay drafts para publicar.");
       return;
+    }
+
+    if (publishTarget === "production") {
+      var confirmed = window.confirm(
+        "Esto dispara deploy de produccion. ¿Seguro?\n\nPresiona OK para Confirmar."
+      );
+      if (!confirmed) {
+        return;
+      }
     }
 
     var identity = getIdentity();
@@ -350,19 +362,34 @@
     }
 
     state.isPublishing = true;
-    var publishButton = elements.itemPublishButton;
-    var defaultPublishLabel = publishButton && publishButton.getAttribute("data-default-label")
-      ? publishButton.getAttribute("data-default-label")
-      : "Publish";
-    if (publishButton && !publishButton.getAttribute("data-default-label")) {
-      publishButton.setAttribute("data-default-label", defaultPublishLabel);
+    var previewButton = elements.itemPublishPreviewButton;
+    var productionButton = elements.itemPublishProductionButton;
+    var activeButton = publishTarget === "production" ? productionButton : previewButton;
+
+    var previewDefaultLabel = previewButton && previewButton.getAttribute("data-default-label")
+      ? previewButton.getAttribute("data-default-label")
+      : "Publish Preview";
+    var productionDefaultLabel = productionButton && productionButton.getAttribute("data-default-label")
+      ? productionButton.getAttribute("data-default-label")
+      : "Publish Production";
+
+    if (previewButton && !previewButton.getAttribute("data-default-label")) {
+      previewButton.setAttribute("data-default-label", previewDefaultLabel);
     }
-    if (publishButton) {
-      publishButton.disabled = true;
-      publishButton.textContent = "Publishing...";
+    if (productionButton && !productionButton.getAttribute("data-default-label")) {
+      productionButton.setAttribute("data-default-label", productionDefaultLabel);
     }
-    setItemEditorStatus("Publishing...");
-    setDataStatus("Publishing...");
+
+    if (previewButton) previewButton.disabled = true;
+    if (productionButton) productionButton.disabled = true;
+    if (activeButton) {
+      activeButton.textContent = publishTarget === "production"
+        ? "Publishing production..."
+        : "Publishing preview...";
+    }
+
+    setItemEditorStatus(publishTarget === "production" ? "Publishing production..." : "Publishing preview...");
+    setDataStatus(publishTarget === "production" ? "Publishing production..." : "Publishing preview...");
 
     try {
       var token = await user.jwt();
@@ -374,7 +401,8 @@
         },
         body: JSON.stringify({
           menu: state.drafts.menu,
-          availability: state.drafts.availability
+          availability: state.drafts.availability,
+          target: publishTarget
         })
       });
 
@@ -395,30 +423,40 @@
         throw new Error(errorMessage);
       }
 
-      setItemEditorStatus("Published ✓");
-      if (payload && payload.commit) {
-        setDataStatus("Published ✓ (" + payload.commit + ")");
+      if (payload && payload.skipped) {
+        var skippedLabel = publishTarget === "production"
+          ? "No changes (production)"
+          : "No changes (preview)";
+        setItemEditorStatus(skippedLabel);
+        setDataStatus("No changes to publish (" + publishTarget + ").");
+        if (activeButton) activeButton.textContent = skippedLabel;
       } else {
-        setDataStatus("Published ✓");
-      }
-      if (publishButton) {
-        publishButton.textContent = "Published ✓";
+        var successLabel = publishTarget === "production"
+          ? "Published ✓ (production)"
+          : "Published ✓ (preview)";
+        setItemEditorStatus(successLabel);
+        if (payload && payload.commit) {
+          setDataStatus(successLabel + " (" + payload.commit + ")");
+        } else {
+          setDataStatus(successLabel);
+        }
+        if (activeButton) activeButton.textContent = successLabel;
       }
     } catch (error) {
       var message = error && error.message ? error.message : "Unknown error";
       setItemEditorStatus("Publish failed");
       setDataStatus("Publish failed: " + message);
-      if (publishButton) {
-        publishButton.textContent = "Publish failed";
+      if (activeButton) {
+        activeButton.textContent = "Publish failed";
       }
     } finally {
       state.isPublishing = false;
-      if (publishButton) {
-        publishButton.disabled = false;
-        window.setTimeout(function () {
-          publishButton.textContent = defaultPublishLabel;
-        }, 1800);
-      }
+      if (previewButton) previewButton.disabled = false;
+      if (productionButton) productionButton.disabled = false;
+      window.setTimeout(function () {
+        if (previewButton) previewButton.textContent = previewDefaultLabel;
+        if (productionButton) productionButton.textContent = productionDefaultLabel;
+      }, 1800);
     }
   }
 
@@ -2483,9 +2521,15 @@
       });
     }
 
-    if (elements.itemPublishButton) {
-      elements.itemPublishButton.addEventListener("click", function () {
-        publishChanges();
+    if (elements.itemPublishPreviewButton) {
+      elements.itemPublishPreviewButton.addEventListener("click", function () {
+        publishChanges("preview");
+      });
+    }
+
+    if (elements.itemPublishProductionButton) {
+      elements.itemPublishProductionButton.addEventListener("click", function () {
+        publishChanges("production");
       });
     }
 

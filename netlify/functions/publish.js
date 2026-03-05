@@ -2,7 +2,11 @@
 // TOKEN: GITHUB_TOKEN or GH_TOKEN
 // OWNER: GITHUB_OWNER or GH_OWNER
 // REPO: GITHUB_REPO or GH_REPO
-// BRANCH: GITHUB_BRANCH or GH_BRANCH
+// Production branch: GH_BRANCH or GITHUB_BRANCH (defaults to master)
+// Preview branch: CMS_PREVIEW_BRANCH (defaults to cms-preview)
+var RATE_LIMIT_WINDOW_MS = 30 * 1000;
+var publishRateLimitByUser = Object.create(null);
+
 function jsonResponse(statusCode, payload) {
   return {
     statusCode: statusCode,
@@ -27,10 +31,49 @@ async function parseJsonBody(eventBody) {
   }
 
   try {
-    return JSON.parse(eventBody);
+    return JSON.parse(String(eventBody));
   } catch (_error) {
     return null;
   }
+}
+
+function normalizeJsonValue(value) {
+  try {
+    return JSON.stringify(value);
+  } catch (_error) {
+    return null;
+  }
+}
+
+function getUserKey(user) {
+  if (!user || typeof user !== "object") {
+    return "anonymous";
+  }
+
+  return String(
+    user.sub ||
+    user.id ||
+    user.email ||
+    (user.user_metadata && user.user_metadata.email) ||
+    "anonymous"
+  );
+}
+
+function checkRateLimit(userKey) {
+  var now = Date.now();
+  var lastPublishAt = publishRateLimitByUser[userKey] || 0;
+  var elapsedMs = now - lastPublishAt;
+  if (elapsedMs < RATE_LIMIT_WINDOW_MS) {
+    return Math.ceil((RATE_LIMIT_WINDOW_MS - elapsedMs) / 1000);
+  }
+
+  publishRateLimitByUser[userKey] = now;
+  return 0;
+}
+
+function decodeBase64Content(content) {
+  if (!content) return "";
+  return Buffer.from(String(content).replace(/\n/g, ""), "base64").toString("utf8");
 }
 
 async function readGithubFile(owner, repo, branch, path, token) {
@@ -57,7 +100,87 @@ async function readGithubFile(owner, repo, branch, path, token) {
     throw new Error("GitHub response missing sha for " + path);
   }
 
-  return data.sha;
+  var normalized = null;
+  var decodedContent = decodeBase64Content(data.content);
+  if (decodedContent) {
+    try {
+      normalized = normalizeJsonValue(JSON.parse(decodedContent));
+    } catch (_error) {
+      normalized = decodedContent.trim();
+    }
+  }
+
+  return {
+    sha: data.sha,
+    normalized: normalized
+  };
+}
+
+async function readBranchHeadSha(owner, repo, branch, token) {
+  var encodedBranch = branch.split("/").map(encodeURIComponent).join("/");
+  var url = "https://api.github.com/repos/" +
+    encodeURIComponent(owner) + "/" +
+    encodeURIComponent(repo) + "/git/ref/heads/" +
+    encodedBranch;
+
+  var response = await fetch(url, {
+    method: "GET",
+    headers: githubHeaders(token)
+  });
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  var data = await response.json().catch(function () {
+    return {};
+  });
+
+  if (!response.ok) {
+    throw new Error(data.message || ("GitHub branch lookup failed for " + branch));
+  }
+
+  return data && data.object && data.object.sha ? data.object.sha : null;
+}
+
+async function ensureBranchExists(owner, repo, branch, baseBranch, token) {
+  var branchSha = await readBranchHeadSha(owner, repo, branch, token);
+  if (branchSha) {
+    return branchSha;
+  }
+
+  var baseSha = await readBranchHeadSha(owner, repo, baseBranch, token);
+  if (!baseSha) {
+    throw new Error("Base branch not found: " + baseBranch);
+  }
+
+  var url = "https://api.github.com/repos/" +
+    encodeURIComponent(owner) + "/" +
+    encodeURIComponent(repo) + "/git/refs";
+
+  var response = await fetch(url, {
+    method: "POST",
+    headers: githubHeaders(token),
+    body: JSON.stringify({
+      ref: "refs/heads/" + branch,
+      sha: baseSha
+    })
+  });
+
+  if (response.status === 422) {
+    // Branch could have been created concurrently.
+    return baseSha;
+  }
+
+  var data = await response.json().catch(function () {
+    return {};
+  });
+
+  if (!response.ok) {
+    throw new Error(data.message || ("Unable to create preview branch: " + branch));
+  }
+
+  return data && data.object && data.object.sha ? data.object.sha : baseSha;
 }
 
 async function writeGithubFile(owner, repo, branch, path, token, commitMessage, payload, sha) {
@@ -104,13 +227,13 @@ exports.handler = async function (event, context) {
   var githubToken = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
   var githubOwner = process.env.GITHUB_OWNER || process.env.GH_OWNER;
   var githubRepo = process.env.GITHUB_REPO || process.env.GH_REPO;
-  var githubBranch = process.env.GITHUB_BRANCH || process.env.GH_BRANCH;
+  var productionBranch = process.env.GH_BRANCH || process.env.GITHUB_BRANCH || "master";
+  var previewBranch = process.env.CMS_PREVIEW_BRANCH || "cms-preview";
 
   var missing = [];
   if (!githubToken) missing.push("token");
   if (!githubOwner) missing.push("owner");
   if (!githubRepo) missing.push("repo");
-  if (!githubBranch) missing.push("branch");
 
   if (missing.length) {
     return jsonResponse(500, {
@@ -120,13 +243,36 @@ exports.handler = async function (event, context) {
         token: ["GITHUB_TOKEN", "GH_TOKEN"],
         owner: ["GITHUB_OWNER", "GH_OWNER"],
         repo: ["GITHUB_REPO", "GH_REPO"],
-        branch: ["GITHUB_BRANCH", "GH_BRANCH"]
+        productionBranch: ["GH_BRANCH", "GITHUB_BRANCH", "default: master"],
+        previewBranch: ["CMS_PREVIEW_BRANCH", "default: cms-preview"]
       }
     });
   }
 
   var body = await parseJsonBody(event.body);
-  if (!body || !body.menu || !body.availability) {
+  if (!body || typeof body !== "object" || typeof body.menu === "undefined" || typeof body.availability === "undefined") {
+    return jsonResponse(400, { error: "Invalid payload" });
+  }
+
+  var target = typeof body.target === "string" ? body.target : "preview";
+  if (target !== "preview" && target !== "production") {
+    return jsonResponse(400, { error: "Invalid target. Use 'preview' or 'production'." });
+  }
+
+  var targetBranch = target === "production" ? productionBranch : previewBranch;
+
+  var userKey = getUserKey(user);
+  var retryAfterSeconds = checkRateLimit(userKey);
+  if (retryAfterSeconds > 0) {
+    return jsonResponse(429, {
+      error: "Publish rate limit exceeded. Try again in a few seconds.",
+      retryAfterSeconds: retryAfterSeconds
+    });
+  }
+
+  var normalizedMenu = normalizeJsonValue(body.menu);
+  var normalizedAvailability = normalizeJsonValue(body.availability);
+  if (!normalizedMenu || !normalizedAvailability) {
     return jsonResponse(400, { error: "Invalid payload" });
   }
 
@@ -134,51 +280,89 @@ exports.handler = async function (event, context) {
     var menuPath = "data/menu.json";
     var availabilityPath = "data/availability.json";
 
-    var menuSha = await readGithubFile(
+    if (target === "preview" && targetBranch !== productionBranch) {
+      await ensureBranchExists(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        productionBranch,
+        githubToken
+      );
+    }
+
+    var menuRemote = await readGithubFile(
       githubOwner,
       githubRepo,
-      githubBranch,
+      targetBranch,
       menuPath,
       githubToken
     );
 
-    var menuCommitSha = await writeGithubFile(
+    var availabilityRemote = await readGithubFile(
       githubOwner,
       githubRepo,
-      githubBranch,
-      menuPath,
-      githubToken,
-      "CMS: update menu",
-      body.menu,
-      menuSha
-    );
-
-    var availabilitySha = await readGithubFile(
-      githubOwner,
-      githubRepo,
-      githubBranch,
+      targetBranch,
       availabilityPath,
       githubToken
     );
 
-    var availabilityCommitSha = await writeGithubFile(
-      githubOwner,
-      githubRepo,
-      githubBranch,
-      availabilityPath,
-      githubToken,
-      "CMS: update availability",
-      body.availability,
-      availabilitySha
-    );
+    var menuChanged = menuRemote.normalized !== normalizedMenu;
+    var availabilityChanged = availabilityRemote.normalized !== normalizedAvailability;
+
+    if (!menuChanged && !availabilityChanged) {
+      return jsonResponse(200, {
+        success: true,
+        skipped: true,
+        reason: "no changes",
+        target: target,
+        branch: targetBranch
+      });
+    }
+
+    var latestCommitSha = null;
+
+    if (menuChanged) {
+      latestCommitSha = await writeGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        menuPath,
+        githubToken,
+        "CMS: update menu (" + target + ")",
+        body.menu,
+        menuRemote.sha
+      );
+    }
+
+    if (availabilityChanged) {
+      latestCommitSha = await writeGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        availabilityPath,
+        githubToken,
+        "CMS: update availability (" + target + ")",
+        body.availability,
+        availabilityRemote.sha
+      ) || latestCommitSha;
+    }
 
     return jsonResponse(200, {
       success: true,
-      commit: availabilityCommitSha || menuCommitSha || null
+      skipped: false,
+      target: target,
+      branch: targetBranch,
+      changed: {
+        menu: menuChanged,
+        availability: availabilityChanged
+      },
+      commit: latestCommitSha
     });
   } catch (error) {
     return jsonResponse(500, {
-      error: error && error.message ? error.message : "Publish failed"
+      error: error && error.message ? error.message : "Publish failed",
+      target: target,
+      branch: targetBranch
     });
   }
 };
