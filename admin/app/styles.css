@@ -326,7 +326,7 @@ code {
   margin: 10px 12px 12px;
   border: 0;
   border-radius: 6px;
-  background: rgba(18, 32, 54, 0.42);
+  background: #121d25;
   border-top: 1px solid rgba(0, 0, 0, 0.2);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   color: inherit;
@@ -344,6 +344,11 @@ code {
 .sidebar-search:hover,
 .sidebar-search:focus-visible {
   background: rgba(18, 32, 54, 0.56);
+  color: rgb(50, 230, 226);
+}
+
+.sidebar-search:hover .sidebar-search-left svg,
+.sidebar-search:focus-visible .sidebar-search-left svg {
   color: rgb(50, 230, 226);
 }
 
@@ -379,7 +384,7 @@ code {
 
 .sidebar-shortcut {
   display: inline-flex;
-  gap: 4px;
+  gap: 0;
   align-items: baseline;
   margin-left: 8px;
   padding: 8px 10px 8px 0;
@@ -390,10 +395,10 @@ code {
 
 .sidebar-shortcut kbd {
   font-family: inherit;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 1;
-  color: rgba(200, 210, 223, 0.85);
+  color: #7E8792;
 }
 
 .sidebar-nav {

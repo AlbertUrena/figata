@@ -563,211 +563,28 @@
     }
   }
 
+  // --- Publish (from modules/publish.js) ---
   async function publishChanges(target) {
-    var publishTarget = target === "production" ? "production" : "preview";
-
-    if (state.isPublishing) {
-      return;
-    }
-
-    if (
-      !state.drafts.menu ||
-      !state.drafts.availability ||
-      !state.drafts.home ||
-      !state.drafts.ingredients ||
-      !state.drafts.categories
-    ) {
-      setCurrentEditorStatus("Error: no hay drafts para publicar.");
-      return;
-    }
-    ensureMediaStore();
-    ensureIngredientsDraft();
-    ensureCategoriesDraft();
-    var normalizedIngredientsResult = normalizeIngredientsAliasesPayload(state.drafts.ingredients, { mutate: false });
-    var ingredientsPayloadForPublish = normalizedIngredientsResult.payload;
-    var ingredientsNormalizationReport = normalizedIngredientsResult.report;
-
-    if (publishTarget === "production") {
-      var confirmed = window.confirm(
-        "Esto dispara deploy de produccion. ¿Seguro?\n\nPresiona OK para Confirmar."
-      );
-      if (!confirmed) {
-        return;
-      }
-    }
-
-    var identity = getIdentity();
-    var user = identity && typeof identity.currentUser === "function"
-      ? identity.currentUser()
-      : null;
-    if (!user || typeof user.jwt !== "function") {
-      setCurrentEditorStatus("Inicia sesión para publicar.");
-      setDataStatus("Publish blocked: Inicia sesión para publicar.");
-      return;
-    }
-
-    var ingredientsValidation = validateIngredientsDraftData(state.drafts.ingredients);
-    state.ingredientsEditor.validationReport = ingredientsValidation;
-    if (state.currentPanel === "ingredients-editor") {
-      renderIngredientsEditorValidationSummary(ingredientsValidation);
-      renderIngredientsGlobalWarnings(ingredientsValidation);
-    }
-    if (ingredientsValidation.errors.length) {
-      setCurrentEditorStatus(
-        "No se puede publicar: corrige " + ingredientsValidation.errors.length + " errores en Ingredients."
-      );
-      setDataStatus("Publish blocked: Ingredients tiene errores de validacion.");
-      return;
-    }
-
-    var categoriesValidation = validateCategoriesDraftData(state.drafts.categories);
-    state.categoriesEditor.validationReport = categoriesValidation;
-    if (state.currentPanel === "categories-editor") {
-      renderCategoriesValidationSummary(categoriesValidation);
-      renderCategoriesGlobalWarnings(categoriesValidation);
-    }
-    if (categoriesValidation.errors.length) {
-      setCurrentEditorStatus(
-        "No se puede publicar: corrige " + categoriesValidation.errors.length + " errores en Categories."
-      );
-      setDataStatus("Publish blocked: Categories tiene errores de validacion.");
-      return;
-    }
-
-    state.isPublishing = true;
-    var publishButtonSets = [
-      { preview: elements.itemPublishPreviewButton, production: elements.itemPublishProductionButton },
-      { preview: elements.homePublishPreviewButton, production: elements.homePublishProductionButton },
-      { preview: elements.ingredientsPublishPreviewButton, production: elements.ingredientsPublishProductionButton }
-    ];
-
-    publishButtonSets.forEach(function (buttonSet) {
-      if (!buttonSet.preview && !buttonSet.production) return;
-      if (buttonSet.preview && !buttonSet.preview.getAttribute("data-default-label")) {
-        buttonSet.preview.setAttribute("data-default-label", "Publish Preview");
-      }
-      if (buttonSet.production && !buttonSet.production.getAttribute("data-default-label")) {
-        buttonSet.production.setAttribute("data-default-label", "Publish Production");
-      }
-      if (buttonSet.preview) buttonSet.preview.disabled = true;
-      if (buttonSet.production) buttonSet.production.disabled = true;
+    return window.FigataAdmin.publish.publishChanges(target, {
+      state: state,
+      publishButtonSets: [
+        { preview: elements.itemPublishPreviewButton, production: elements.itemPublishProductionButton },
+        { preview: elements.homePublishPreviewButton, production: elements.homePublishProductionButton },
+        { preview: elements.ingredientsPublishPreviewButton, production: elements.ingredientsPublishProductionButton }
+      ],
+      setCurrentEditorStatus: setCurrentEditorStatus,
+      setDataStatus: setDataStatus,
+      ensureMediaStore: ensureMediaStore,
+      ensureIngredientsDraft: ensureIngredientsDraft,
+      ensureCategoriesDraft: ensureCategoriesDraft,
+      normalizeIngredientsAliasesPayload: normalizeIngredientsAliasesPayload,
+      validateIngredientsDraftData: validateIngredientsDraftData,
+      validateCategoriesDraftData: validateCategoriesDraftData,
+      renderIngredientsEditorValidationSummary: renderIngredientsEditorValidationSummary,
+      renderIngredientsGlobalWarnings: renderIngredientsGlobalWarnings,
+      renderCategoriesValidationSummary: renderCategoriesValidationSummary,
+      renderCategoriesGlobalWarnings: renderCategoriesGlobalWarnings
     });
-
-    var currentButtons = publishButtonSets[0];
-    if (state.currentPanel === "home-editor") {
-      currentButtons = publishButtonSets[1];
-    } else if (state.currentPanel === "ingredients-editor") {
-      currentButtons = publishButtonSets[2];
-    }
-    var activeButton = publishTarget === "production" ? currentButtons.production : currentButtons.preview;
-
-    if (activeButton) {
-      activeButton.textContent = publishTarget === "production"
-        ? "Publishing production..."
-        : "Publishing preview...";
-    }
-
-    setCurrentEditorStatus(
-      publishTarget === "production" ? "Publishing production..." : "Publishing preview..."
-    );
-    setDataStatus(publishTarget === "production" ? "Publishing production..." : "Publishing preview...");
-
-    try {
-      var token = await user.jwt();
-      var response = await fetch("/.netlify/functions/publish", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + token
-        },
-        body: JSON.stringify({
-          menu: state.drafts.menu,
-          availability: state.drafts.availability,
-          home: state.drafts.home,
-          ingredients: ingredientsPayloadForPublish,
-          categories: state.drafts.categories,
-          media: state.data.media,
-          target: publishTarget
-        })
-      });
-
-      var responseText = await response.text();
-      var payload = null;
-      if (responseText) {
-        try {
-          payload = JSON.parse(responseText);
-        } catch (_error) {
-          payload = null;
-        }
-      }
-
-      if (!response.ok) {
-        var errorMessage = payload && payload.error
-          ? payload.error
-          : (responseText || ("HTTP " + response.status));
-        throw new Error(errorMessage);
-      }
-
-      if (payload && payload.skipped) {
-        var skippedLabel = publishTarget === "production"
-          ? "No changes (production)"
-          : "No changes (preview)";
-        var skippedAliasSuffix =
-          ingredientsNormalizationReport.changedAliases || ingredientsNormalizationReport.droppedAliases
-            ? " · aliases normalizados: " +
-              ingredientsNormalizationReport.changedAliases +
-              " ajustados, " +
-              ingredientsNormalizationReport.droppedAliases +
-              " removidos"
-            : "";
-        setCurrentEditorStatus(skippedLabel);
-        setDataStatus("No changes to publish (" + publishTarget + ")." + skippedAliasSuffix);
-        if (activeButton) activeButton.textContent = skippedLabel;
-      } else {
-        var successLabel = publishTarget === "production"
-          ? "Published ✓ (production)"
-          : "Published ✓ (preview)";
-        var successAliasSuffix =
-          ingredientsNormalizationReport.changedAliases || ingredientsNormalizationReport.droppedAliases
-            ? " · aliases normalizados: " +
-              ingredientsNormalizationReport.changedAliases +
-              " ajustados, " +
-              ingredientsNormalizationReport.droppedAliases +
-              " removidos"
-            : "";
-        setCurrentEditorStatus(successLabel);
-        if (payload && payload.commit) {
-          setDataStatus(successLabel + " (" + payload.commit + ")" + successAliasSuffix);
-        } else {
-          setDataStatus(successLabel + successAliasSuffix);
-        }
-        if (activeButton) activeButton.textContent = successLabel;
-      }
-    } catch (error) {
-      var message = error && error.message ? error.message : "Unknown error";
-      setCurrentEditorStatus("Publish failed");
-      setDataStatus("Publish failed: " + message);
-      if (activeButton) {
-        activeButton.textContent = "Publish failed";
-      }
-    } finally {
-      state.isPublishing = false;
-      publishButtonSets.forEach(function (buttonSet) {
-        if (buttonSet.preview) buttonSet.preview.disabled = false;
-        if (buttonSet.production) buttonSet.production.disabled = false;
-      });
-      window.setTimeout(function () {
-        publishButtonSets.forEach(function (buttonSet) {
-          if (buttonSet.preview) {
-            buttonSet.preview.textContent = buttonSet.preview.getAttribute("data-default-label") || "Publish Preview";
-          }
-          if (buttonSet.production) {
-            buttonSet.production.textContent =
-              buttonSet.production.getAttribute("data-default-label") || "Publish Production";
-          }
-        });
-      }, 1800);
-    }
   }
 
   function setMenuBrowserStatus(message) {
