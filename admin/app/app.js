@@ -638,114 +638,35 @@
     applyRoute();
   }
 
-  function readStoredSidebarCollapsed() {
-    try {
-      return window.localStorage.getItem(SIDEBAR_COLLAPSE_KEY) === "1";
-    } catch (_error) {
-      return false;
-    }
+  // --- Sidebar (from modules/sidebar.js) ---
+  var SB = window.FigataAdmin.sidebar;
+  function _sbCtx() {
+    return {
+      state: state,
+      elements: {
+        sidebar: elements.sidebar,
+        sidebarToggleButton: elements.sidebarToggleButton,
+        sidebarUserMenu: elements.sidebarUserMenu,
+        sidebarUserButton: elements.sidebarUserButton
+      },
+      waitForTransition: waitForTransition,
+      clearAllSidebarAccordionOpeningMotions: clearAllSidebarAccordionOpeningMotions,
+      applySidebarAccordionState: applySidebarAccordionState,
+      getSidebarAccordionKeyForPanel: getSidebarAccordionKeyForPanel,
+      getSidebarOpenAccordionKeyFromDom: getSidebarOpenAccordionKeyFromDom,
+      transitionSidebarAccordions: transitionSidebarAccordions,
+      updateSidebarActiveIndicator: updateSidebarActiveIndicator
+    };
   }
-
-  function isCompactViewport() {
-    return window.matchMedia("(max-width: 900px)").matches;
-  }
-
-  function setSidebarCollapsed(nextCollapsed, options) {
-    if (!elements.sidebar) return;
-
-    var wasCollapsed = Boolean(state.sidebarCollapsed);
-    var allowCollapse = !isCompactViewport();
-    var collapsed = Boolean(nextCollapsed) && allowCollapse;
-    var didCollapseStateChange = wasCollapsed !== collapsed;
-    state.sidebarCollapsed = collapsed;
-    state.sidebarCollapseSyncToken += 1;
-    var collapseSyncToken = state.sidebarCollapseSyncToken;
-
-    elements.sidebar.setAttribute("data-collapsed", collapsed ? "true" : "false");
-    elements.sidebarToggleButton.setAttribute("aria-pressed", collapsed ? "true" : "false");
-
-    if (options && options.persist) {
-      try {
-        window.localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? "1" : "0");
-      } catch (_error) {
-        // ignore storage errors
-      }
-    }
-
-    if (collapsed) {
-      closeSidebarUserMenu();
-    }
-
-    if (didCollapseStateChange) {
-      clearAllSidebarAccordionOpeningMotions();
-      if (collapsed) {
-        applySidebarAccordionState("");
-      } else {
-        waitForTransition(elements.sidebar, { properties: ["width"] }).then(function () {
-          if (state.sidebarCollapseSyncToken !== collapseSyncToken) return;
-          if (state.sidebarCollapsed || state.isPanelTransitioning) return;
-
-          var accordionKeyForPanel = getSidebarAccordionKeyForPanel(state.currentPanel);
-          if (!accordionKeyForPanel) {
-            applySidebarAccordionState("");
-            return;
-          }
-
-          // Force a close->open path so reopening happens after sidebar expansion.
-          state.sidebarAccordionOpenKey = getSidebarOpenAccordionKeyFromDom() || "";
-          transitionSidebarAccordions(accordionKeyForPanel).catch(function () {
-            // ignore accordion restoration interruptions during rapid UI updates
-          });
-        });
-      }
-    }
-
-    window.requestAnimationFrame(updateSidebarActiveIndicator);
-  }
-
-  function syncSidebarViewportState() {
-    if (isCompactViewport()) {
-      setSidebarCollapsed(false, { persist: false });
-      return;
-    }
-    setSidebarCollapsed(readStoredSidebarCollapsed(), { persist: false });
-  }
-
-  function isSidebarUserMenuOpen() {
-    return !elements.sidebarUserMenu.classList.contains("is-hidden");
-  }
-
-  function closeSidebarUserMenu() {
-    elements.sidebarUserMenu.classList.add("is-hidden");
-    elements.sidebarUserButton.setAttribute("aria-expanded", "false");
-  }
-
-  function openSidebarUserMenu() {
-    elements.sidebarUserMenu.classList.remove("is-hidden");
-    elements.sidebarUserButton.setAttribute("aria-expanded", "true");
-  }
-
-  function toggleSidebarUserMenu() {
-    if (isSidebarUserMenuOpen()) {
-      closeSidebarUserMenu();
-      return;
-    }
-    openSidebarUserMenu();
-  }
-
-  /* ===========================
-     SIDEBAR NAV
-  =========================== */
-
-  function syncUxTimingCssVars() {
-    if (!document || !document.documentElement || !document.documentElement.style) return;
-    var rootStyle = document.documentElement.style;
-    rootStyle.setProperty("--ux-sidebar-transition", UX_TIMING.accordionSwitchDelayMs + "ms");
-    rootStyle.setProperty("--ux-sidebar-stagger-step", UX_TIMING.accordionStaggerStepMs + "ms");
-    rootStyle.setProperty("--ux-panel-fade", UX_TIMING.panelFadeInCleanupDelayMs + "ms");
-    rootStyle.setProperty("--ux-indicator-height", UX_TIMING.indicatorSettleMs + "ms");
-    rootStyle.setProperty("--ux-indicator-opacity", UX_TIMING.indicatorOpacityMs + "ms");
-  }
+  function readStoredSidebarCollapsed() { return SB.readStoredSidebarCollapsed(); }
+  function isCompactViewport() { return SB.isCompactViewport(); }
+  function setSidebarCollapsed(nextCollapsed, options) { return SB.setSidebarCollapsed(_sbCtx(), nextCollapsed, options); }
+  function syncSidebarViewportState() { return SB.syncSidebarViewportState(_sbCtx()); }
+  function isSidebarUserMenuOpen() { return SB.isSidebarUserMenuOpen(_sbCtx()); }
+  function closeSidebarUserMenu() { return SB.closeSidebarUserMenu(_sbCtx()); }
+  function openSidebarUserMenu() { return SB.openSidebarUserMenu(_sbCtx()); }
+  function toggleSidebarUserMenu() { return SB.toggleSidebarUserMenu(_sbCtx()); }
+  function syncUxTimingCssVars() { return SB.syncUxTimingCssVars(); }
 
   // --- Navigation infrastructure (from modules/navigation.js) ---
   var N = window.FigataAdmin.navigation;
@@ -817,272 +738,47 @@
      ACCORDION MOTION
   =========================== */
 
-  function setSidebarAccordionElementState(accordionElement, show) {
-    if (!accordionElement) return;
-    var shouldOpen = Boolean(show);
-    var wasOpen = accordionElement.classList.contains("is-open");
-
-    if (shouldOpen === wasOpen) {
-      accordionElement.setAttribute("aria-hidden", shouldOpen ? "false" : "true");
-      if (shouldOpen) {
-        syncSidebarAccordionCategoryHeights(accordionElement);
-      }
-      return;
-    }
-
-    if (shouldOpen) {
-      prepareSidebarAccordionOpeningMotion(accordionElement);
-      accordionElement.classList.add("is-open");
-      accordionElement.setAttribute("aria-hidden", "false");
-      scheduleSidebarAccordionOpeningMotion(accordionElement);
-      return;
-    }
-
-    clearSidebarAccordionOpeningMotion(accordionElement);
-    accordionElement.classList.remove("is-open");
-    accordionElement.setAttribute("aria-hidden", "true");
-  }
-
-  function clearSidebarAccordionOpeningMotion(accordionElement) {
-    if (!accordionElement) return;
-
-    if (accordionElement.__openingMotionFrame) {
-      window.cancelAnimationFrame(accordionElement.__openingMotionFrame);
-      accordionElement.__openingMotionFrame = 0;
-    }
-
-    var categories = accordionElement.querySelectorAll(".sidebar-accordion-category");
-    Array.prototype.forEach.call(categories, function (categoryElement) {
-      categoryElement.classList.remove("is-entering");
-      categoryElement.classList.remove("is-entering-prep");
-      categoryElement.classList.remove("is-entering-active");
-    });
-
-    accordionElement.classList.remove("is-opening");
-    accordionElement.classList.remove("is-opening-active");
-  }
-
-  function prepareSidebarAccordionOpeningMotion(accordionElement) {
-    if (!accordionElement) return;
-
-    clearSidebarAccordionOpeningMotion(accordionElement);
-    accordionElement.classList.add("is-opening");
-    syncSidebarAccordionCategoryHeights(accordionElement);
-
-    var categories = Array.prototype.slice.call(
-      accordionElement.querySelectorAll(".sidebar-accordion-category")
-    );
-
-    categories.forEach(function (categoryElement) {
-      categoryElement.classList.add("is-entering");
-      categoryElement.classList.add("is-entering-prep");
-      categoryElement.classList.remove("is-entering-active");
-    });
-    void accordionElement.offsetHeight;
-  }
-
-  function scheduleSidebarAccordionOpeningMotion(accordionElement) {
-    if (!accordionElement) return;
-
-    var categories = Array.prototype.slice.call(
-      accordionElement.querySelectorAll(".sidebar-accordion-category")
-    );
-
-    accordionElement.__openingMotionFrame = window.requestAnimationFrame(function () {
-      accordionElement.__openingMotionFrame = window.requestAnimationFrame(function () {
-        accordionElement.__openingMotionFrame = 0;
-        accordionElement.classList.add("is-opening-active");
-        categories.forEach(function (categoryElement) {
-          categoryElement.classList.remove("is-entering-prep");
-          categoryElement.classList.add("is-entering-active");
-        });
-      });
-    });
-  }
-
-  function finalizeSidebarAccordionOpeningMotion(accordionElement) {
-    if (!accordionElement) return;
-    clearSidebarAccordionOpeningMotion(accordionElement);
-    accordionElement.classList.add("is-open");
-    accordionElement.setAttribute("aria-hidden", "false");
-  }
-
-  function clearAllSidebarAccordionOpeningMotions() {
-    [elements.sidebarMenuAccordion, elements.sidebarHomepageAccordion, elements.sidebarIngredientsAccordion, elements.sidebarCategoriesAccordion]
-      .filter(Boolean)
-      .forEach(function (accordionElement) {
-        clearSidebarAccordionOpeningMotion(accordionElement);
-      });
-  }
-
-  function syncSidebarAccordionCategoryHeights(accordionElement) {
-    if (!accordionElement) return;
-    var categories = accordionElement.querySelectorAll(".sidebar-accordion-category");
-    Array.prototype.forEach.call(categories, function (categoryElement) {
-      var targetHeight = categoryElement.scrollHeight;
-      if (targetHeight > 0) {
-        categoryElement.style.setProperty("--sidebar-enter-max-height", targetHeight + "px");
-      }
-    });
-  }
-
-  function syncAllSidebarAccordionCategoryHeights() {
-    [elements.sidebarMenuAccordion, elements.sidebarHomepageAccordion, elements.sidebarIngredientsAccordion, elements.sidebarCategoriesAccordion]
-      .filter(Boolean)
-      .forEach(function (accordionElement) {
-        syncSidebarAccordionCategoryHeights(accordionElement);
-      });
-  }
-
-  function showMenuAccordion(show) {
-    setSidebarAccordionElementState(elements.sidebarMenuAccordion, show);
-  }
-
-  function showHomepageAccordion(show) {
-    setSidebarAccordionElementState(elements.sidebarHomepageAccordion, show);
-  }
-
-  function showIngredientsAccordion(show) {
-    setSidebarAccordionElementState(elements.sidebarIngredientsAccordion, show);
-  }
-
-  function showCategoriesAccordion(show) {
-    setSidebarAccordionElementState(elements.sidebarCategoriesAccordion, show);
-  }
-
-  function getSidebarAccordionKeyForPanel(panel) {
-    if (panel === "menu-browser" || panel === "menu-item") return "menu";
-    if (panel === "home-editor") return "homepage";
-    if (panel === "ingredients-editor") {
-      return normalizeIngredientsTab(state.ingredientsEditor.tab) === "icons" ? "" : "ingredients";
-    }
-    if (panel === "categories-editor") return "categories";
-    return "";
-  }
-
-  function getSidebarOpenAccordionKeyFromDom() {
-    if (elements.sidebarMenuAccordion && elements.sidebarMenuAccordion.classList.contains("is-open")) {
-      return "menu";
-    }
-    if (elements.sidebarHomepageAccordion && elements.sidebarHomepageAccordion.classList.contains("is-open")) {
-      return "homepage";
-    }
-    if (elements.sidebarIngredientsAccordion && elements.sidebarIngredientsAccordion.classList.contains("is-open")) {
-      return "ingredients";
-    }
-    if (elements.sidebarCategoriesAccordion && elements.sidebarCategoriesAccordion.classList.contains("is-open")) {
-      return "categories";
-    }
-    return "";
-  }
-
-  function getSidebarAccordionElementByKey(accordionKey) {
-    if (accordionKey === "menu") return elements.sidebarMenuAccordion || null;
-    if (accordionKey === "homepage") return elements.sidebarHomepageAccordion || null;
-    if (accordionKey === "ingredients") return elements.sidebarIngredientsAccordion || null;
-    if (accordionKey === "categories") return elements.sidebarCategoriesAccordion || null;
-    return null;
-  }
-
-  function isSidebarAccordionOpening(accordionKey) {
-    var accordionElement = getSidebarAccordionElementByKey(accordionKey);
-    return Boolean(accordionElement && accordionElement.classList.contains("is-opening"));
-  }
-
-  function applySidebarAccordionState(nextAccordionKey) {
-    var normalizedKey = nextAccordionKey || "";
-    showMenuAccordion(normalizedKey === "menu");
-    showHomepageAccordion(normalizedKey === "homepage");
-    showIngredientsAccordion(normalizedKey === "ingredients");
-    showCategoriesAccordion(normalizedKey === "categories");
-    state.sidebarAccordionOpenKey = normalizedKey;
-  }
-
-  async function transitionSidebarAccordions(nextAccordionKey) {
-    var normalizedKey = nextAccordionKey || "";
-    state.sidebarAccordionTransitionToken += 1;
-    var transitionToken = state.sidebarAccordionTransitionToken;
-    var isTransitionCurrent = function () {
-      return state.sidebarAccordionTransitionToken === transitionToken;
+  // --- Accordion & Indicator (from modules/accordion.js) ---
+  var AC = window.FigataAdmin.accordion;
+  function _acCtx() {
+    return {
+      state: state,
+      elements: {
+        sidebarMenuAccordion: elements.sidebarMenuAccordion,
+        sidebarHomepageAccordion: elements.sidebarHomepageAccordion,
+        sidebarIngredientsAccordion: elements.sidebarIngredientsAccordion,
+        sidebarCategoriesAccordion: elements.sidebarCategoriesAccordion,
+        sidebarNav: elements.sidebarNav,
+        sidebarNavActiveIndicator: elements.sidebarNavActiveIndicator
+      },
+      normalizeIngredientsTab: normalizeIngredientsTab,
+      setNavigationState: setNavigationState,
+      waitForTransition: waitForTransition,
+      waitNextFrame: waitNextFrame,
+      waitForAnimation: waitForAnimation
     };
-
-    clearAllSidebarAccordionOpeningMotions();
-
-    if (state.sidebarCollapsed) {
-      // Keep DOM accordions closed while collapsed; only remember target intent.
-      applySidebarAccordionState("");
-      state.sidebarAccordionOpenKey = normalizedKey;
-      return;
-    }
-
-    var currentOpenKey = getSidebarOpenAccordionKeyFromDom() || "";
-    state.sidebarAccordionOpenKey = currentOpenKey;
-
-    if (currentOpenKey === normalizedKey) {
-      applySidebarAccordionState(normalizedKey);
-      return;
-    }
-
-    setNavigationState(NAVIGATION_STATES.closingAccordion);
-    var currentAccordionElement = getSidebarAccordionElementByKey(currentOpenKey);
-    applySidebarAccordionState("");
-    if (!isTransitionCurrent()) return;
-    if (currentAccordionElement) {
-      await waitForTransition(currentAccordionElement, { properties: ["max-height"] });
-      if (!isTransitionCurrent()) return;
-    } else if (normalizedKey) {
-      // Ensure closed baseline is painted before opening from a fully closed state.
-      await waitNextFrame();
-      if (!isTransitionCurrent()) return;
-    }
-
-    if (!normalizedKey) return;
-
-    setNavigationState(NAVIGATION_STATES.openingAccordion);
-    applySidebarAccordionState(normalizedKey);
-    if (!isTransitionCurrent()) return;
-
-    var nextAccordionElement = getSidebarAccordionElementByKey(normalizedKey);
-    if (nextAccordionElement) {
-      await waitForAnimation(nextAccordionElement, { subtree: true });
-      if (!isTransitionCurrent()) return;
-      finalizeSidebarAccordionOpeningMotion(nextAccordionElement);
-    }
   }
-
-  function updateSidebarActiveIndicator() {
-    if (!elements.sidebarNav || !elements.sidebarNavActiveIndicator) return;
-    var activeItem = elements.sidebarNav.querySelector(".sidebar-nav__item.is-active");
-    if (!activeItem) {
-      elements.sidebarNavActiveIndicator.classList.remove("is-visible");
-      return;
-    }
-
-    var visibleHeight = Math.max(8, activeItem.offsetHeight - 14);
-    var top = Math.max(0, activeItem.offsetTop - elements.sidebarNav.scrollTop + 7);
-    elements.sidebarNavActiveIndicator.style.height = visibleHeight + "px";
-    elements.sidebarNavActiveIndicator.style.transform = "translateY(" + top + "px)";
-    elements.sidebarNavActiveIndicator.classList.add("is-visible");
-  }
-
-  function clearSidebarIndicatorSyncTimers() {
-    if (state.sidebarIndicatorSyncFrame) {
-      window.cancelAnimationFrame(state.sidebarIndicatorSyncFrame);
-      state.sidebarIndicatorSyncFrame = 0;
-    }
-  }
-
-  function scheduleSidebarActiveIndicatorSync() {
-    clearSidebarIndicatorSyncTimers();
-    updateSidebarActiveIndicator();
-
-    state.sidebarIndicatorSyncFrame = window.requestAnimationFrame(function () {
-      state.sidebarIndicatorSyncFrame = window.requestAnimationFrame(function () {
-        state.sidebarIndicatorSyncFrame = 0;
-        updateSidebarActiveIndicator();
-      });
-    });
-  }
+  function setSidebarAccordionElementState(accordionElement, show) { return AC.setSidebarAccordionElementState(accordionElement, show); }
+  function clearSidebarAccordionOpeningMotion(accordionElement) { return AC.clearSidebarAccordionOpeningMotion(accordionElement); }
+  function prepareSidebarAccordionOpeningMotion(accordionElement) { return AC.prepareSidebarAccordionOpeningMotion(accordionElement); }
+  function scheduleSidebarAccordionOpeningMotion(accordionElement) { return AC.scheduleSidebarAccordionOpeningMotion(accordionElement); }
+  function finalizeSidebarAccordionOpeningMotion(accordionElement) { return AC.finalizeSidebarAccordionOpeningMotion(accordionElement); }
+  function clearAllSidebarAccordionOpeningMotions() { return AC.clearAllSidebarAccordionOpeningMotions(_acCtx()); }
+  function syncSidebarAccordionCategoryHeights(accordionElement) { return AC.syncSidebarAccordionCategoryHeights(accordionElement); }
+  function syncAllSidebarAccordionCategoryHeights() { return AC.syncAllSidebarAccordionCategoryHeights(_acCtx()); }
+  function showMenuAccordion(show) { return AC.showMenuAccordion(_acCtx(), show); }
+  function showHomepageAccordion(show) { return AC.showHomepageAccordion(_acCtx(), show); }
+  function showIngredientsAccordion(show) { return AC.showIngredientsAccordion(_acCtx(), show); }
+  function showCategoriesAccordion(show) { return AC.showCategoriesAccordion(_acCtx(), show); }
+  function getSidebarAccordionKeyForPanel(panel) { return AC.getSidebarAccordionKeyForPanel(_acCtx(), panel); }
+  function getSidebarOpenAccordionKeyFromDom() { return AC.getSidebarOpenAccordionKeyFromDom(_acCtx()); }
+  function getSidebarAccordionElementByKey(accordionKey) { return AC.getSidebarAccordionElementByKey(_acCtx(), accordionKey); }
+  function isSidebarAccordionOpening(accordionKey) { return AC.isSidebarAccordionOpening(_acCtx(), accordionKey); }
+  function applySidebarAccordionState(nextAccordionKey) { return AC.applySidebarAccordionState(_acCtx(), nextAccordionKey); }
+  function transitionSidebarAccordions(nextAccordionKey) { return AC.transitionSidebarAccordions(_acCtx(), nextAccordionKey); }
+  function updateSidebarActiveIndicator() { return AC.updateSidebarActiveIndicator(_acCtx()); }
+  function clearSidebarIndicatorSyncTimers() { return AC.clearSidebarIndicatorSyncTimers(_acCtx()); }
+  function scheduleSidebarActiveIndicatorSync() { return AC.scheduleSidebarActiveIndicatorSync(_acCtx()); }
 
   function getPanelScrollSpyAdapter(panel) {
     if (panel === "menu-browser") {
