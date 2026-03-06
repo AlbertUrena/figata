@@ -66,6 +66,10 @@
   const toRuntimeSubcategory = (subcategory) => {
     const id = normalizeId(subcategory?.id);
     const label = normalizeText(subcategory?.label) || id;
+    const visible =
+      typeof subcategory?.visible === 'boolean'
+        ? subcategory.visible
+        : normalizeBoolean(subcategory?.enabled, true);
 
     return {
       id,
@@ -76,7 +80,8 @@
       description: normalizeText(subcategory?.description),
       icon: normalizeText(subcategory?.icon),
       order: normalizeNumber(subcategory?.order, 9999),
-      enabled: normalizeBoolean(subcategory?.enabled, true),
+      enabled: visible,
+      visible,
       showOnHome: normalizeBoolean(subcategory?.showOnHome, false),
     };
   };
@@ -84,6 +89,10 @@
   const toRuntimeCategory = (category) => {
     const id = normalizeId(category?.id);
     const label = normalizeText(category?.label) || id;
+    const visible =
+      typeof category?.visible === 'boolean'
+        ? category.visible
+        : normalizeBoolean(category?.enabled, true);
     const subcategories = (Array.isArray(category?.subcategories) ? category.subcategories : [])
       .map(toRuntimeSubcategory)
       .filter((subcategory) => Boolean(subcategory.id));
@@ -97,7 +106,8 @@
       description: normalizeText(category?.description),
       icon: normalizeText(category?.icon),
       order: normalizeNumber(category?.order, 9999),
-      enabled: normalizeBoolean(category?.enabled, true),
+      enabled: visible,
+      visible,
       showOnHome: normalizeBoolean(category?.showOnHome, false),
       legacyIds: normalizeStringArray(category?.legacyIds),
       subcategories: subcategories.sort(compareByOrderAndLabel),
@@ -118,6 +128,7 @@
       icon: '',
       order: index + 1,
       enabled: true,
+      visible: true,
       showOnHome: false,
       legacyIds: [],
       subcategories: [],
@@ -570,6 +581,7 @@
     icon: subcategory.icon,
     order: subcategory.order,
     enabled: subcategory.enabled,
+    visible: subcategory.visible,
     showOnHome: subcategory.showOnHome,
   });
 
@@ -583,6 +595,7 @@
     icon: category.icon,
     order: category.order,
     enabled: category.enabled,
+    visible: category.visible,
     showOnHome: category.showOnHome,
     legacyIds: category.legacyIds.slice(),
     subcategories: category.subcategories.map(serializeSubcategory),

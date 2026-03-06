@@ -161,6 +161,9 @@ async function handleLocalSaveDrafts(req, res) {
     if (typeof payload.ingredients !== "undefined") {
       writeJsonFile("data/ingredients.json", payload.ingredients);
     }
+    if (typeof payload.categories !== "undefined") {
+      writeJsonFile("data/categories.json", payload.categories);
+    }
     if (typeof payload.media !== "undefined") {
       writeJsonFile("data/media.json", payload.media);
     }
@@ -173,6 +176,9 @@ async function handleLocalSaveDrafts(req, res) {
   const files = ["data/menu.json", "data/availability.json", "data/home.json"];
   if (typeof payload.ingredients !== "undefined") {
     files.push("data/ingredients.json");
+  }
+  if (typeof payload.categories !== "undefined") {
+    files.push("data/categories.json");
   }
   if (typeof payload.media !== "undefined") {
     files.push("data/media.json");

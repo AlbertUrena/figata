@@ -17,6 +17,7 @@
   var LOCAL_DRAFTS_AVAILABILITY_KEY = "figata_admin_drafts_availability";
   var LOCAL_DRAFTS_HOME_KEY = "figata_admin_drafts_home";
   var LOCAL_DRAFTS_INGREDIENTS_KEY = "figata_admin_drafts_ingredients";
+  var LOCAL_DRAFTS_CATEGORIES_KEY = "figata_admin_drafts_categories";
   var LOCAL_DRAFTS_FLAG_KEY = "figata_admin_has_drafts";
   var LOCAL_SAVE_DRAFTS_ENDPOINT = "/__local/save-drafts";
   var MENU_MODAL_PLACEHOLDER_IMAGE = "assets/menu/placeholders/modal.svg";
@@ -377,7 +378,8 @@
       menu: null,
       availability: null,
       home: null,
-      ingredients: null
+      ingredients: null,
+      categories: null
     },
     indexes: {
       categoryList: [],
@@ -419,7 +421,8 @@
     panelPostNavigationActions: {
       "menu-browser": null,
       "home-editor": null,
-      "ingredients-editor": null
+      "ingredients-editor": null,
+      "categories-editor": null
     },
     menuActiveAnchor: {
       categoryId: "",
@@ -433,6 +436,8 @@
     homeScrollSpyFrame: 0,
     ingredientsAnchorTargets: [],
     ingredientsScrollSpyFrame: 0,
+    categoriesAnchorTargets: [],
+    categoriesScrollSpyFrame: 0,
     itemEditor: {
       isOpen: false,
       isNew: false,
@@ -467,6 +472,17 @@
       tabAnimationFrame: 0,
       tabAnimationTimer: 0,
       tabAnimationTargetVisibilityMap: null
+    },
+    categoriesEditor: {
+      activeCategoryId: "",
+      validationReport: null,
+      usageByCategoryId: {},
+      draftBySourceIndex: {},
+      newDraft: null
+    },
+    commandPalette: {
+      isOpen: false,
+      selectedIndex: 0
     }
   };
 
@@ -477,7 +493,8 @@
     menuBrowserPanel: document.getElementById("menu-browser-panel"),
     menuItemPanel: document.getElementById("menu-item-panel"),
     homeEditorPanel: document.getElementById("home-editor-panel"),
-    ingredientsEditorPanel: document.getElementById("ingredients-editor-panel")
+    ingredientsEditorPanel: document.getElementById("ingredients-editor-panel"),
+    categoriesEditorPanel: document.getElementById("categories-editor-panel")
   };
 
   var elements = {
@@ -491,14 +508,22 @@
     sidebarNavMenu: document.getElementById("sidebar-nav-menu"),
     sidebarNavHomepage: document.getElementById("sidebar-nav-homepage"),
     sidebarNavIngredients: document.getElementById("sidebar-nav-ingredients"),
+    sidebarNavCategories: document.getElementById("sidebar-nav-categories"),
     sidebarMenuAccordion: document.getElementById("sidebar-menu-accordion"),
     sidebarHomepageAccordion: document.getElementById("sidebar-homepage-accordion"),
     sidebarIngredientsAccordion: document.getElementById("sidebar-ingredients-accordion"),
+    sidebarCategoriesAccordion: document.getElementById("sidebar-categories-accordion"),
     sidebarUserButton: document.getElementById("sidebar-user-button"),
     sidebarUserMenu: document.getElementById("sidebar-user-menu"),
     sidebarUserMenuName: document.getElementById("sidebar-user-menu-name"),
     sidebarUserMenuEmail: document.getElementById("sidebar-user-menu-email"),
     dashboardContent: document.querySelector(".dashboard-content"),
+    commandPaletteShell: document.getElementById("command-palette-shell"),
+    commandPaletteOverlay: document.getElementById("command-palette-overlay"),
+    commandPaletteDialog: document.getElementById("command-palette-dialog"),
+    commandPaletteInput: document.getElementById("command-palette-input"),
+    commandPaletteList: document.getElementById("command-palette-list"),
+    commandPaletteLive: document.getElementById("command-palette-live"),
 
     loginButton: document.getElementById("login-button"),
     logoutButton: document.getElementById("logout-button"),
@@ -506,6 +531,7 @@
     openMenuBrowserButton: document.getElementById("open-menu-browser-button"),
     openHomepageEditorButton: document.getElementById("open-homepage-editor-button"),
     openIngredientsEditorButton: document.getElementById("open-ingredients-editor-button"),
+    openCategoriesEditorButton: document.getElementById("open-categories-editor-button"),
 
     sessionName: document.getElementById("session-name"),
     sessionEmail: document.getElementById("session-email"),
@@ -594,6 +620,16 @@
     ingredientsTagsCatalog: document.getElementById("ingredients-tags-catalog"),
     ingredientsAllergensCatalog: document.getElementById("ingredients-allergens-catalog"),
 
+    categoriesEditorStatus: document.getElementById("categories-editor-status"),
+    categoriesEditorWarning: document.getElementById("categories-editor-warning"),
+    categoriesCardsSummary: document.getElementById("categories-cards-summary"),
+    categoriesCardsContent: document.getElementById("categories-cards-content"),
+    categoriesOrderList: document.getElementById("categories-order-list"),
+    categoriesNewButton: document.getElementById("categories-new-button"),
+    categoriesExportJsonButton: document.getElementById("categories-export-json-button"),
+    categoriesClearDraftsButton: document.getElementById("categories-clear-drafts-button"),
+    categoriesValidationSummary: document.getElementById("categories-validation-summary"),
+
     itemEditorTitle: document.getElementById("item-editor-title"),
     itemEditorStatus: document.getElementById("item-editor-status"),
     itemEditorErrors: document.getElementById("item-editor-errors"),
@@ -665,7 +701,9 @@
   var dragState = {
     ingredientIndex: null,
     featuredIndex: null,
-    featuredDropIndex: null
+    featuredDropIndex: null,
+    categoryOrderIndex: null,
+    categoryOrderDropIndex: null
   };
 
   function deepClone(value) {
@@ -785,6 +823,11 @@
     elements.ingredientsEditorStatus.textContent = message || "";
   }
 
+  function setCategoriesEditorStatus(message) {
+    if (!elements.categoriesEditorStatus) return;
+    elements.categoriesEditorStatus.textContent = message || "";
+  }
+
   function setCurrentEditorStatus(message) {
     if (state.currentPanel === "home-editor") {
       setHomeEditorStatus(message);
@@ -792,6 +835,10 @@
     }
     if (state.currentPanel === "ingredients-editor") {
       setIngredientsEditorStatus(message);
+      return;
+    }
+    if (state.currentPanel === "categories-editor") {
+      setCategoriesEditorStatus(message);
       return;
     }
     setItemEditorStatus(message);
@@ -811,6 +858,7 @@
       window.localStorage.removeItem(LOCAL_DRAFTS_AVAILABILITY_KEY);
       window.localStorage.removeItem(LOCAL_DRAFTS_HOME_KEY);
       window.localStorage.removeItem(LOCAL_DRAFTS_INGREDIENTS_KEY);
+      window.localStorage.removeItem(LOCAL_DRAFTS_CATEGORIES_KEY);
       window.localStorage.removeItem(LOCAL_DRAFTS_FLAG_KEY);
     } catch (_error) {
       // ignore storage errors
@@ -818,12 +866,19 @@
   }
 
   function persistDraftsToLocalStorage() {
-    if (!state.drafts.menu || !state.drafts.availability || !state.drafts.home || !state.drafts.ingredients) return;
+    if (
+      !state.drafts.menu ||
+      !state.drafts.availability ||
+      !state.drafts.home ||
+      !state.drafts.ingredients ||
+      !state.drafts.categories
+    ) return;
     try {
       window.localStorage.setItem(LOCAL_DRAFTS_MENU_KEY, JSON.stringify(state.drafts.menu));
       window.localStorage.setItem(LOCAL_DRAFTS_AVAILABILITY_KEY, JSON.stringify(state.drafts.availability));
       window.localStorage.setItem(LOCAL_DRAFTS_HOME_KEY, JSON.stringify(state.drafts.home));
       window.localStorage.setItem(LOCAL_DRAFTS_INGREDIENTS_KEY, JSON.stringify(state.drafts.ingredients));
+      window.localStorage.setItem(LOCAL_DRAFTS_CATEGORIES_KEY, JSON.stringify(state.drafts.categories));
       window.localStorage.setItem(LOCAL_DRAFTS_FLAG_KEY, "1");
     } catch (_error) {
       // ignore storage errors
@@ -840,6 +895,7 @@
       var availabilityRaw = window.localStorage.getItem(LOCAL_DRAFTS_AVAILABILITY_KEY);
       var homeRaw = window.localStorage.getItem(LOCAL_DRAFTS_HOME_KEY);
       var ingredientsRaw = window.localStorage.getItem(LOCAL_DRAFTS_INGREDIENTS_KEY);
+      var categoriesRaw = window.localStorage.getItem(LOCAL_DRAFTS_CATEGORIES_KEY);
 
       if (!menuRaw || !availabilityRaw) {
         clearPersistedDraftsStorage();
@@ -852,6 +908,9 @@
       var restoredIngredients = ingredientsRaw
         ? JSON.parse(ingredientsRaw)
         : deepClone(state.data && state.data.ingredients);
+      var restoredCategories = categoriesRaw
+        ? JSON.parse(categoriesRaw)
+        : deepClone(state.data && state.data.categories);
 
       if (!restoredMenu || !Array.isArray(restoredMenu.sections)) {
         clearPersistedDraftsStorage();
@@ -873,14 +932,21 @@
         return false;
       }
 
+      if (!restoredCategories || typeof restoredCategories !== "object") {
+        clearPersistedDraftsStorage();
+        return false;
+      }
+
       state.drafts.menu = restoredMenu;
       state.drafts.availability = restoredAvailability;
       state.drafts.home = restoredHome;
       state.drafts.ingredients = restoredIngredients;
+      state.drafts.categories = restoredCategories;
       ensureMenuDraft();
       ensureAvailabilityDraft();
       ensureHomeDraft();
       ensureIngredientsDraft();
+      ensureCategoriesDraft();
       return true;
     } catch (_error) {
       clearPersistedDraftsStorage();
@@ -904,7 +970,13 @@
   }
 
   function exportCurrentDrafts() {
-    if (!state.drafts.menu || !state.drafts.availability || !state.drafts.home || !state.drafts.ingredients) {
+    if (
+      !state.drafts.menu ||
+      !state.drafts.availability ||
+      !state.drafts.home ||
+      !state.drafts.ingredients ||
+      !state.drafts.categories
+    ) {
       setCurrentEditorStatus("No hay drafts cargados para exportar.");
       return;
     }
@@ -912,6 +984,8 @@
 
     var ingredientsValidation = validateIngredientsDraftData(state.drafts.ingredients);
     state.ingredientsEditor.validationReport = ingredientsValidation;
+    var categoriesValidation = validateCategoriesDraftData(state.drafts.categories);
+    state.categoriesEditor.validationReport = categoriesValidation;
     var normalizedIngredientsResult = normalizeIngredientsAliasesPayload(state.drafts.ingredients, { mutate: false });
     var ingredientsExportPayload = normalizedIngredientsResult.payload;
     var aliasNormalizationReport = normalizedIngredientsResult.report;
@@ -920,11 +994,15 @@
     downloadJsonFile("availability.updated.json", state.drafts.availability);
     downloadJsonFile("home.updated.json", state.drafts.home);
     downloadJsonFile("ingredients.updated.json", ingredientsExportPayload);
+    downloadJsonFile("categories.updated.json", state.drafts.categories);
     downloadJsonFile("media.updated.json", state.data.media);
 
     if (elements.dataStatus) {
       var validationSuffix = ingredientsValidation.errors.length
         ? " (ingredients con errores de validacion; revisa panel Ingredients)"
+        : "";
+      var categoriesValidationSuffix = categoriesValidation.errors.length
+        ? " (categories con errores de validacion; revisa panel Categories)"
         : "";
       var aliasNormalizationSuffix = "";
       if (aliasNormalizationReport.changedAliases || aliasNormalizationReport.droppedAliases) {
@@ -936,8 +1014,9 @@
           " removidos)";
       }
       setDataStatus(
-        "JSON exportados: menu.updated.json + availability.updated.json + home.updated.json + ingredients.updated.json + media.updated.json" +
+        "JSON exportados: menu.updated.json + availability.updated.json + home.updated.json + ingredients.updated.json + categories.updated.json + media.updated.json" +
           validationSuffix +
+          categoriesValidationSuffix +
           aliasNormalizationSuffix
       );
     }
@@ -945,7 +1024,13 @@
 
   async function saveDraftsToLocalFiles() {
     if (!isLocalDevHost() || !isDevAuthBypassEnabled()) return;
-    if (!state.drafts.menu || !state.drafts.availability || !state.drafts.home || !state.drafts.ingredients) return;
+    if (
+      !state.drafts.menu ||
+      !state.drafts.availability ||
+      !state.drafts.home ||
+      !state.drafts.ingredients ||
+      !state.drafts.categories
+    ) return;
     ensureMediaStore();
 
     try {
@@ -959,6 +1044,7 @@
           availability: state.drafts.availability,
           home: state.drafts.home,
           ingredients: state.drafts.ingredients,
+          categories: state.drafts.categories,
           media: state.data.media
         })
       });
@@ -973,9 +1059,10 @@
         state.data.availability = deepClone(state.drafts.availability);
         state.data.home = deepClone(state.drafts.home);
         state.data.ingredients = deepClone(state.drafts.ingredients);
+        state.data.categories = deepClone(state.drafts.categories);
       }
 
-      setDataStatus("Guardado local en /data (menu, availability, home, ingredients, media).");
+      setDataStatus("Guardado local en /data (menu, availability, home, ingredients, categories, media).");
     } catch (error) {
       var message = error && error.message ? error.message : "Unknown error";
       setDataStatus("Error guardando JSON local: " + message + " (usa Exportar JSON).");
@@ -989,12 +1076,19 @@
       return;
     }
 
-    if (!state.drafts.menu || !state.drafts.availability || !state.drafts.home || !state.drafts.ingredients) {
+    if (
+      !state.drafts.menu ||
+      !state.drafts.availability ||
+      !state.drafts.home ||
+      !state.drafts.ingredients ||
+      !state.drafts.categories
+    ) {
       setCurrentEditorStatus("Error: no hay drafts para publicar.");
       return;
     }
     ensureMediaStore();
     ensureIngredientsDraft();
+    ensureCategoriesDraft();
     var normalizedIngredientsResult = normalizeIngredientsAliasesPayload(state.drafts.ingredients, { mutate: false });
     var ingredientsPayloadForPublish = normalizedIngredientsResult.payload;
     var ingredientsNormalizationReport = normalizedIngredientsResult.report;
@@ -1029,6 +1123,20 @@
         "No se puede publicar: corrige " + ingredientsValidation.errors.length + " errores en Ingredients."
       );
       setDataStatus("Publish blocked: Ingredients tiene errores de validacion.");
+      return;
+    }
+
+    var categoriesValidation = validateCategoriesDraftData(state.drafts.categories);
+    state.categoriesEditor.validationReport = categoriesValidation;
+    if (state.currentPanel === "categories-editor") {
+      renderCategoriesValidationSummary(categoriesValidation);
+      renderCategoriesGlobalWarnings(categoriesValidation);
+    }
+    if (categoriesValidation.errors.length) {
+      setCurrentEditorStatus(
+        "No se puede publicar: corrige " + categoriesValidation.errors.length + " errores en Categories."
+      );
+      setDataStatus("Publish blocked: Categories tiene errores de validacion.");
       return;
     }
 
@@ -1083,6 +1191,7 @@
           availability: state.drafts.availability,
           home: state.drafts.home,
           ingredients: ingredientsPayloadForPublish,
+          categories: state.drafts.categories,
           media: state.data.media,
           target: publishTarget
         })
@@ -1205,7 +1314,9 @@
 
     elements.sessionName.textContent = displayName;
     elements.sessionEmail.textContent = email;
-    elements.sessionAvatar.textContent = getInitials(displayName);
+    if (elements.sessionAvatar) {
+      elements.sessionAvatar.setAttribute("data-initials", getInitials(displayName));
+    }
     elements.sidebarUserMenuName.textContent = displayName;
     elements.sidebarUserMenuEmail.textContent = email;
     closeSidebarUserMenu();
@@ -1571,6 +1682,237 @@
     });
   }
 
+  function getCommandPaletteItems() {
+    if (!elements.commandPaletteList) return [];
+    return Array.prototype.slice.call(elements.commandPaletteList.querySelectorAll(".command-palette__item"));
+  }
+
+  function isCommandPaletteOpen() {
+    return Boolean(state.commandPalette && state.commandPalette.isOpen);
+  }
+
+  function setCommandPaletteLiveMessage(message) {
+    if (!elements.commandPaletteLive) return;
+    elements.commandPaletteLive.textContent = message || "";
+  }
+
+  function getCommandPaletteItemIndex(itemElement) {
+    if (!itemElement) return -1;
+    var value = Number.parseInt(itemElement.getAttribute("data-command-index"), 10);
+    return Number.isFinite(value) ? value : -1;
+  }
+
+  function setCommandPaletteSelectedIndex(nextIndex, options) {
+    options = options || {};
+    var items = getCommandPaletteItems();
+    if (!items.length) {
+      state.commandPalette.selectedIndex = 0;
+      if (elements.commandPaletteInput) {
+        elements.commandPaletteInput.removeAttribute("aria-activedescendant");
+      }
+      if (elements.commandPaletteList) {
+        elements.commandPaletteList.removeAttribute("aria-activedescendant");
+      }
+      return;
+    }
+
+    var maxIndex = items.length - 1;
+    var normalizedIndex = Number(nextIndex);
+    if (!Number.isFinite(normalizedIndex)) {
+      normalizedIndex = 0;
+    }
+    if (normalizedIndex < 0) normalizedIndex = 0;
+    if (normalizedIndex > maxIndex) normalizedIndex = maxIndex;
+    state.commandPalette.selectedIndex = normalizedIndex;
+
+    items.forEach(function (itemElement, itemIndex) {
+      var isSelected = itemIndex === normalizedIndex;
+      itemElement.setAttribute("data-selected", isSelected ? "true" : "false");
+      itemElement.setAttribute("aria-selected", isSelected ? "true" : "false");
+    });
+
+    var selectedItem = items[normalizedIndex];
+    var selectedId = selectedItem ? selectedItem.id || "" : "";
+    if (elements.commandPaletteInput) {
+      if (selectedId) {
+        elements.commandPaletteInput.setAttribute("aria-activedescendant", selectedId);
+      } else {
+        elements.commandPaletteInput.removeAttribute("aria-activedescendant");
+      }
+    }
+    if (elements.commandPaletteList) {
+      if (selectedId) {
+        elements.commandPaletteList.setAttribute("aria-activedescendant", selectedId);
+      } else {
+        elements.commandPaletteList.removeAttribute("aria-activedescendant");
+      }
+    }
+
+    if (selectedItem && options.scroll !== false) {
+      selectedItem.scrollIntoView({ block: "nearest" });
+    }
+    if (selectedItem) {
+      var label = selectedItem.getAttribute("data-command-label") || selectedItem.textContent || "";
+      setCommandPaletteLiveMessage("Selected: " + String(label).trim());
+    }
+  }
+
+  function openCommandPalette(options) {
+    options = options || {};
+    if (!elements.commandPaletteShell || !elements.commandPaletteDialog) return;
+
+    if (isCommandPaletteOpen()) {
+      if (options.focusInput !== false && elements.commandPaletteInput) {
+        elements.commandPaletteInput.focus({ preventScroll: true });
+      }
+      return;
+    }
+
+    closeSidebarUserMenu();
+    state.commandPalette.isOpen = true;
+    elements.commandPaletteShell.classList.remove("is-hidden");
+    elements.commandPaletteShell.setAttribute("aria-hidden", "false");
+    elements.commandPaletteShell.setAttribute("data-state", "closed");
+    void elements.commandPaletteShell.offsetHeight;
+
+    window.requestAnimationFrame(function () {
+      if (!isCommandPaletteOpen()) return;
+      elements.commandPaletteShell.setAttribute("data-state", "open");
+    });
+
+    if (elements.commandPaletteInput) {
+      elements.commandPaletteInput.value = "";
+    }
+    setCommandPaletteSelectedIndex(0, { scroll: false });
+
+    if (options.focusInput !== false && elements.commandPaletteInput) {
+      window.setTimeout(function () {
+        if (!isCommandPaletteOpen()) return;
+        elements.commandPaletteInput.focus({ preventScroll: true });
+      }, 40);
+    }
+  }
+
+  function closeCommandPalette(options) {
+    options = options || {};
+    if (!elements.commandPaletteShell || !elements.commandPaletteDialog) return;
+
+    if (!isCommandPaletteOpen() && elements.commandPaletteShell.classList.contains("is-hidden")) {
+      return;
+    }
+
+    state.commandPalette.isOpen = false;
+    elements.commandPaletteShell.setAttribute("data-state", "closed");
+    elements.commandPaletteShell.setAttribute("aria-hidden", "true");
+    setCommandPaletteLiveMessage("");
+
+    var finalizeClose = function () {
+      if (isCommandPaletteOpen()) return;
+      elements.commandPaletteShell.classList.add("is-hidden");
+    };
+
+    if (options.immediate) {
+      finalizeClose();
+    } else {
+      waitForTransition(elements.commandPaletteDialog, { properties: ["opacity", "transform"] })
+        .then(finalizeClose)
+        .catch(finalizeClose);
+    }
+
+    if (options.returnFocusToSearch !== false && elements.sidebarSearchButton && !state.sidebarCollapsed) {
+      elements.sidebarSearchButton.focus({ preventScroll: true });
+    }
+  }
+
+  function toggleCommandPalette() {
+    if (isCommandPaletteOpen()) {
+      closeCommandPalette();
+      return;
+    }
+    openCommandPalette();
+  }
+
+  function activateCommandPaletteItem(itemElement) {
+    if (!itemElement) return;
+    var label = itemElement.getAttribute("data-command-label") || itemElement.textContent || "Command";
+    setDataStatus("Command Palette demo: \"" + String(label).trim() + "\" (accion aun no conectada).");
+    closeCommandPalette({ returnFocusToSearch: false });
+  }
+
+  function handleCommandPaletteKeydown(event) {
+    if (!event || !isCommandPaletteOpen()) return false;
+
+    var items = getCommandPaletteItems();
+    if (!items.length) return false;
+    var currentIndex = Number(state.commandPalette.selectedIndex || 0);
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setCommandPaletteSelectedIndex(Math.min(currentIndex + 1, items.length - 1));
+      return true;
+    }
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setCommandPaletteSelectedIndex(Math.max(currentIndex - 1, 0));
+      return true;
+    }
+    if (event.key === "Home") {
+      event.preventDefault();
+      setCommandPaletteSelectedIndex(0);
+      return true;
+    }
+    if (event.key === "End") {
+      event.preventDefault();
+      setCommandPaletteSelectedIndex(items.length - 1);
+      return true;
+    }
+    if (event.key === "Enter") {
+      event.preventDefault();
+      activateCommandPaletteItem(items[currentIndex] || null);
+      return true;
+    }
+
+    return false;
+  }
+
+  function bindCommandPaletteEvents() {
+    if (!elements.commandPaletteShell || !elements.commandPaletteDialog) return;
+
+    if (elements.commandPaletteOverlay) {
+      elements.commandPaletteOverlay.addEventListener("click", function () {
+        closeCommandPalette();
+      });
+    }
+
+    elements.commandPaletteDialog.addEventListener("mousedown", function (event) {
+      event.stopPropagation();
+    });
+
+    elements.commandPaletteDialog.addEventListener("click", function (event) {
+      event.stopPropagation();
+    });
+
+    if (elements.commandPaletteList) {
+      elements.commandPaletteList.addEventListener("mousemove", function (event) {
+        var itemElement = event.target.closest(".command-palette__item");
+        if (!itemElement) return;
+        var itemIndex = getCommandPaletteItemIndex(itemElement);
+        if (itemIndex < 0 || itemIndex === state.commandPalette.selectedIndex) return;
+        setCommandPaletteSelectedIndex(itemIndex, { scroll: false });
+      });
+
+      elements.commandPaletteList.addEventListener("click", function (event) {
+        var itemElement = event.target.closest(".command-palette__item");
+        if (!itemElement) return;
+        var itemIndex = getCommandPaletteItemIndex(itemElement);
+        if (itemIndex >= 0) {
+          setCommandPaletteSelectedIndex(itemIndex, { scroll: false });
+        }
+        activateCommandPaletteItem(itemElement);
+      });
+    }
+  }
+
   function createNavigationTimelineCancelError() {
     var error = new Error("Navigation timeline cancelled");
     error.cancelled = true;
@@ -1751,7 +2093,7 @@
   }
 
   function clearAllSidebarAccordionOpeningMotions() {
-    [elements.sidebarMenuAccordion, elements.sidebarHomepageAccordion, elements.sidebarIngredientsAccordion]
+    [elements.sidebarMenuAccordion, elements.sidebarHomepageAccordion, elements.sidebarIngredientsAccordion, elements.sidebarCategoriesAccordion]
       .filter(Boolean)
       .forEach(function (accordionElement) {
         clearSidebarAccordionOpeningMotion(accordionElement);
@@ -1770,7 +2112,7 @@
   }
 
   function syncAllSidebarAccordionCategoryHeights() {
-    [elements.sidebarMenuAccordion, elements.sidebarHomepageAccordion, elements.sidebarIngredientsAccordion]
+    [elements.sidebarMenuAccordion, elements.sidebarHomepageAccordion, elements.sidebarIngredientsAccordion, elements.sidebarCategoriesAccordion]
       .filter(Boolean)
       .forEach(function (accordionElement) {
         syncSidebarAccordionCategoryHeights(accordionElement);
@@ -1789,12 +2131,17 @@
     setSidebarAccordionElementState(elements.sidebarIngredientsAccordion, show);
   }
 
+  function showCategoriesAccordion(show) {
+    setSidebarAccordionElementState(elements.sidebarCategoriesAccordion, show);
+  }
+
   function getSidebarAccordionKeyForPanel(panel) {
     if (panel === "menu-browser" || panel === "menu-item") return "menu";
     if (panel === "home-editor") return "homepage";
     if (panel === "ingredients-editor") {
       return normalizeIngredientsTab(state.ingredientsEditor.tab) === "icons" ? "" : "ingredients";
     }
+    if (panel === "categories-editor") return "categories";
     return "";
   }
 
@@ -1808,6 +2155,9 @@
     if (elements.sidebarIngredientsAccordion && elements.sidebarIngredientsAccordion.classList.contains("is-open")) {
       return "ingredients";
     }
+    if (elements.sidebarCategoriesAccordion && elements.sidebarCategoriesAccordion.classList.contains("is-open")) {
+      return "categories";
+    }
     return "";
   }
 
@@ -1815,6 +2165,7 @@
     if (accordionKey === "menu") return elements.sidebarMenuAccordion || null;
     if (accordionKey === "homepage") return elements.sidebarHomepageAccordion || null;
     if (accordionKey === "ingredients") return elements.sidebarIngredientsAccordion || null;
+    if (accordionKey === "categories") return elements.sidebarCategoriesAccordion || null;
     return null;
   }
 
@@ -1828,6 +2179,7 @@
     showMenuAccordion(normalizedKey === "menu");
     showHomepageAccordion(normalizedKey === "homepage");
     showIngredientsAccordion(normalizedKey === "ingredients");
+    showCategoriesAccordion(normalizedKey === "categories");
     state.sidebarAccordionOpenKey = normalizedKey;
   }
 
@@ -1943,6 +2295,13 @@
         request: requestIngredientsScrollSpyUpdate
       };
     }
+    if (panel === "categories-editor") {
+      return {
+        refresh: refreshCategoriesScrollAnchors,
+        update: updateCategoriesScrollSpy,
+        request: requestCategoriesScrollSpyUpdate
+      };
+    }
     return null;
   }
 
@@ -1989,6 +2348,7 @@
     views.menuItemPanel.classList.add("is-hidden");
     views.homeEditorPanel.classList.add("is-hidden");
     views.ingredientsEditorPanel.classList.add("is-hidden");
+    views.categoriesEditorPanel.classList.add("is-hidden");
 
     if (panel === "menu-browser") {
       views.menuBrowserPanel.classList.remove("is-hidden");
@@ -1998,6 +2358,8 @@
       views.homeEditorPanel.classList.remove("is-hidden");
     } else if (panel === "ingredients-editor") {
       views.ingredientsEditorPanel.classList.remove("is-hidden");
+    } else if (panel === "categories-editor") {
+      views.categoriesEditorPanel.classList.remove("is-hidden");
     } else {
       views.dashboardPanel.classList.remove("is-hidden");
     }
@@ -2005,8 +2367,9 @@
     var isMenuPanel = panel === "menu-browser" || panel === "menu-item";
     var isHomePanel = panel === "home-editor";
     var isIngredientsPanel = panel === "ingredients-editor";
+    var isCategoriesPanel = panel === "categories-editor";
     if (elements.topbar) {
-      elements.topbar.classList.toggle("is-hidden", isMenuPanel || isHomePanel || isIngredientsPanel);
+      elements.topbar.classList.toggle("is-hidden", isMenuPanel || isHomePanel || isIngredientsPanel || isCategoriesPanel);
     }
 
     state.visiblePanel = panel;
@@ -2022,6 +2385,7 @@
     var isMenuPanel = panel === "menu-browser" || panel === "menu-item";
     var isHomePanel = panel === "home-editor";
     var isIngredientsPanel = panel === "ingredients-editor";
+    var isCategoriesPanel = panel === "categories-editor";
     elements.sidebarNavDashboard.classList.toggle("is-active", panel === "dashboard");
     elements.sidebarNavMenu.classList.toggle("is-active", isMenuPanel);
     if (elements.sidebarNavHomepage) {
@@ -2029,6 +2393,9 @@
     }
     if (elements.sidebarNavIngredients) {
       elements.sidebarNavIngredients.classList.toggle("is-active", isIngredientsPanel);
+    }
+    if (elements.sidebarNavCategories) {
+      elements.sidebarNavCategories.classList.toggle("is-active", isCategoriesPanel);
     }
     elements.sidebarHomeButton.classList.toggle("is-active", panel === "dashboard");
 
@@ -2709,6 +3076,64 @@
     });
   }
 
+  function resolveCategoryVisibility(category) {
+    if (category && typeof category.visible === "boolean") {
+      return category.visible;
+    }
+    if (category && typeof category.enabled === "boolean") {
+      return category.enabled;
+    }
+    return true;
+  }
+
+  function normalizeCategoryDraftEntry(entry, index) {
+    var safeEntry = entry && typeof entry === "object" ? deepClone(entry) : {};
+    var fallbackOrder = index + 1;
+    var orderValue = Number(safeEntry.order);
+    var visible = resolveCategoryVisibility(safeEntry);
+
+    safeEntry.id = String(safeEntry.id || "").trim();
+    safeEntry.label = String(safeEntry.label || "").trim();
+    safeEntry.order = Number.isFinite(orderValue)
+      ? Math.max(1, Math.round(orderValue))
+      : fallbackOrder;
+    safeEntry.visible = visible;
+    safeEntry.enabled = visible;
+    if (!Array.isArray(safeEntry.subcategories)) {
+      safeEntry.subcategories = [];
+    }
+
+    return safeEntry;
+  }
+
+  function ensureCategoriesDraft() {
+    if (!state.drafts.categories || typeof state.drafts.categories !== "object") {
+      state.drafts.categories = deepClone((state.data && state.data.categories) || {});
+    }
+
+    if (!state.drafts.categories || typeof state.drafts.categories !== "object") {
+      state.drafts.categories = {};
+    }
+
+    if (!Number.isFinite(Number(state.drafts.categories.version))) {
+      state.drafts.categories.version = 1;
+    } else {
+      state.drafts.categories.version = Number(state.drafts.categories.version);
+    }
+
+    if (!state.drafts.categories.schema) {
+      state.drafts.categories.schema = "figata.menu.categories.v1";
+    }
+
+    if (!Array.isArray(state.drafts.categories.categories)) {
+      state.drafts.categories.categories = [];
+    }
+
+    state.drafts.categories.categories = state.drafts.categories.categories.map(function (entry, index) {
+      return normalizeCategoryDraftEntry(entry, index);
+    });
+  }
+
   function normalizeIngredientAliasValue(value) {
     return normalizeText(value)
       .replace(/[^a-z0-9]+/g, "_")
@@ -3204,6 +3629,158 @@
       report.warnings.push(
         report.menuReferenceReport.invalidItems.length +
         " items del menu tienen ingredientes invalidos (" +
+        report.menuReferenceReport.invalidReferencesCount + " refs)."
+      );
+    }
+
+    return report;
+  }
+
+  function getMenuCategoryReferenceReport(categoriesById) {
+    var report = {
+      invalidItems: [],
+      invalidReferencesCount: 0
+    };
+
+    getAllMenuItems().forEach(function (entry) {
+      var item = entry && entry.item ? entry.item : null;
+      if (!item) return;
+      var categoryId = String(item.category || "").trim();
+      if (!categoryId || categoriesById[categoryId]) return;
+
+      report.invalidReferencesCount += 1;
+      report.invalidItems.push({
+        id: item.id || "",
+        label: item.name || item.id || "Item sin nombre",
+        category: categoryId
+      });
+    });
+
+    return report;
+  }
+
+  function validateCategoriesDraftData(categoriesDraft) {
+    var sharedContract = window.FigataCategoriesContract;
+    if (
+      sharedContract &&
+      typeof sharedContract.validateCategoriesContract === "function"
+    ) {
+      return sharedContract.validateCategoriesContract(categoriesDraft, {
+        menuPayload: state.drafts && state.drafts.menu ? state.drafts.menu : null
+      });
+    }
+
+    var source = categoriesDraft && typeof categoriesDraft === "object" ? categoriesDraft : {};
+    var categories = Array.isArray(source.categories) ? source.categories : [];
+    var report = {
+      errors: [],
+      warnings: [],
+      categoryIssuesById: {},
+      duplicateIds: [],
+      duplicateOrders: [],
+      menuReferenceReport: {
+        invalidItems: [],
+        invalidReferencesCount: 0
+      },
+      issues: []
+    };
+
+    function ensureCategoryIssueBucket(categoryId) {
+      var key = String(categoryId || "").trim() || "__unknown__";
+      if (!report.categoryIssuesById[key]) {
+        report.categoryIssuesById[key] = {
+          errors: [],
+          warnings: []
+        };
+      }
+      return report.categoryIssuesById[key];
+    }
+
+    function pushCategoryIssue(categoryId, severity, message) {
+      var bucket = ensureCategoryIssueBucket(categoryId);
+      if (severity === "error") {
+        bucket.errors.push(message);
+        report.errors.push(message);
+      } else {
+        bucket.warnings.push(message);
+        report.warnings.push(message);
+      }
+      report.issues.push({
+        severity: severity,
+        scope: "category",
+        id: categoryId,
+        message: message
+      });
+    }
+
+    if (!Array.isArray(source.categories)) {
+      report.errors.push("categories.categories debe ser un array");
+      return report;
+    }
+
+    var idsCount = {};
+    var orderToIds = {};
+    var validCategoriesById = {};
+
+    categories.forEach(function (entry, index) {
+      var safeEntry = entry && typeof entry === "object" ? entry : null;
+      if (!safeEntry) {
+        pushCategoryIssue("index_" + index, "error", "Categoria invalida en index " + index + " (debe ser objeto)");
+        return;
+      }
+
+      var categoryId = String(safeEntry.id || "").trim();
+      var categoryLabel = String(safeEntry.label || "").trim();
+      var issueKey = categoryId || ("index_" + index);
+      var orderValue = Number(safeEntry.order);
+
+      if (!categoryId) {
+        pushCategoryIssue(issueKey, "error", "Categoria sin id en index " + index);
+      } else {
+        idsCount[categoryId] = (idsCount[categoryId] || 0) + 1;
+        validCategoriesById[categoryId] = true;
+      }
+
+      if (!categoryLabel) {
+        pushCategoryIssue(issueKey, "error", "Categoria sin label: " + issueKey);
+      }
+
+      if (!Number.isFinite(orderValue)) {
+        pushCategoryIssue(issueKey, "warning", "Categoria sin order numerico: " + issueKey);
+      } else {
+        var normalizedOrder = Math.max(1, Math.round(orderValue));
+        if (!orderToIds[normalizedOrder]) {
+          orderToIds[normalizedOrder] = [];
+        }
+        orderToIds[normalizedOrder].push(issueKey);
+      }
+
+      if (typeof safeEntry.visible !== "boolean" && typeof safeEntry.enabled !== "boolean") {
+        pushCategoryIssue(issueKey, "warning", "Categoria sin visible/enabled explicito: " + issueKey);
+      }
+    });
+
+    Object.keys(idsCount).forEach(function (categoryId) {
+      if (idsCount[categoryId] <= 1) return;
+      report.duplicateIds.push(categoryId);
+      report.errors.push("ID de categoria duplicado: " + categoryId);
+    });
+
+    Object.keys(orderToIds).forEach(function (orderValue) {
+      var ids = orderToIds[orderValue];
+      if (!Array.isArray(ids) || ids.length <= 1) return;
+      report.duplicateOrders.push({
+        order: Number(orderValue),
+        ids: ids.slice()
+      });
+      report.errors.push("Order duplicado en categorias (" + orderValue + "): " + ids.join(", "));
+    });
+
+    report.menuReferenceReport = getMenuCategoryReferenceReport(validCategoriesById);
+    if (report.menuReferenceReport.invalidItems.length) {
+      report.warnings.push(
+        report.menuReferenceReport.invalidItems.length +
+        " menu items reference missing category (" +
         report.menuReferenceReport.invalidReferencesCount + " refs)."
       );
     }
@@ -3773,14 +4350,20 @@
   function buildIndexes() {
     ensureMediaStore();
     ensureIngredientsDraft();
-    var categoriesRaw = (((state.data || {}).categories || {}).categories || []).filter(function (category) {
-      return category && category.enabled !== false;
+    ensureCategoriesDraft();
+    var categoriesSource = (state.drafts && state.drafts.categories) || ((state.data || {}).categories) || {};
+    var categoriesRaw = (categoriesSource.categories || []).map(function (category, index) {
+      return normalizeCategoryDraftEntry(category, index);
+    }).filter(function (category) {
+      return category && category.id && resolveCategoryVisibility(category);
     });
 
     state.indexes.categoryList = sortByOrder(categoriesRaw).map(function (category) {
       var categoryCopy = deepClone(category);
+      categoryCopy.visible = resolveCategoryVisibility(categoryCopy);
+      categoryCopy.enabled = categoryCopy.visible;
       categoryCopy.subcategories = sortByOrder((categoryCopy.subcategories || []).filter(function (sub) {
-        return sub && sub.enabled !== false;
+        return sub && resolveCategoryVisibility(sub);
       }));
       return categoryCopy;
     });
@@ -3878,12 +4461,14 @@
       state.drafts.availability = deepClone(state.data.availability);
       state.drafts.home = deepClone(state.data.home);
       state.drafts.ingredients = deepClone(state.data.ingredients || {});
+      state.drafts.categories = deepClone(state.data.categories || {});
       state.indexes.localMenuMediaPaths = await fetchLocalMenuMediaPaths();
       var restoredFromLocalDrafts = hydrateDraftsFromLocalStorage();
       ensureMenuDraft();
       ensureAvailabilityDraft();
       ensureHomeDraft();
       ensureIngredientsDraft();
+      ensureCategoriesDraft();
       buildIndexes();
       state.hasDataLoaded = true;
       updateDashboardMetrics();
@@ -3891,6 +4476,7 @@
       renderMenuBrowser();
       renderSidebarMenuAccordion();
       renderSidebarHomepageAccordion();
+      renderSidebarCategoriesAccordion();
 
       if (restoredFromLocalDrafts) {
         setDraftsBanner(true, "Drafts restaurados (Clear drafts | Export)");
@@ -3906,6 +4492,7 @@
       setItemEditorStatus("");
       setHomeEditorStatus("");
       setIngredientsEditorStatus("");
+      setCategoriesEditorStatus("");
       showItemEditorErrors([]);
       applyRoute();
     } catch (error) {
@@ -3922,7 +4509,14 @@
   }
 
   function resetDraftsToBaseData() {
-    if (!state.data || !state.data.menu || !state.data.availability || !state.data.home || !state.data.ingredients) {
+    if (
+      !state.data ||
+      !state.data.menu ||
+      !state.data.availability ||
+      !state.data.home ||
+      !state.data.ingredients ||
+      !state.data.categories
+    ) {
       clearPersistedDraftsStorage();
       setDraftsBanner(false);
       return;
@@ -3932,15 +4526,18 @@
     state.drafts.availability = deepClone(state.data.availability);
     state.drafts.home = deepClone(state.data.home);
     state.drafts.ingredients = deepClone(state.data.ingredients || {});
+    state.drafts.categories = deepClone(state.data.categories || {});
     ensureMenuDraft();
     ensureAvailabilityDraft();
     ensureHomeDraft();
     ensureIngredientsDraft();
+    ensureCategoriesDraft();
     buildIndexes();
     updateDashboardMetrics();
     renderMenuBrowser();
     renderSidebarMenuAccordion();
     renderSidebarHomepageAccordion();
+    renderSidebarCategoriesAccordion();
     if (state.currentPanel === "ingredients-editor") {
       renderIngredientsEditor();
     }
@@ -3957,6 +4554,7 @@
     setItemEditorStatus("");
     setHomeEditorStatus("");
     setIngredientsEditorStatus("");
+    setCategoriesEditorStatus("");
     showItemEditorErrors([]);
   }
 
@@ -5475,7 +6073,18 @@
     var menuItemsCount = getAllMenuItems().length;
     elements.metricMenu.textContent = menuItemsCount + " items";
 
-    elements.metricCategories.textContent = state.indexes.categoryList.length + " categorias";
+    ensureCategoriesDraft();
+    var categoriesDraft = state.drafts.categories || {};
+    var categoriesList = Array.isArray(categoriesDraft.categories) ? categoriesDraft.categories : [];
+    var hiddenCategoriesCount = categoriesList.filter(function (category) {
+      return !resolveCategoryVisibility(category);
+    }).length;
+    var categoriesValidation = validateCategoriesDraftData(categoriesDraft);
+    state.categoriesEditor.validationReport = categoriesValidation;
+    var categoriesAlertsCount = categoriesValidation.errors.length + categoriesValidation.warnings.length;
+    elements.metricCategories.textContent = categoriesList.length + " categorias" +
+      (hiddenCategoriesCount ? (" · " + hiddenCategoriesCount + " hidden") : "") +
+      (categoriesAlertsCount ? (" · " + categoriesAlertsCount + " alertas") : "");
 
     var menuItemIds = new Set(getAllMenuItems().map(function (entry) {
       return entry.item.id;
@@ -5532,6 +6141,7 @@
     setItemEditorStatus("");
     setHomeEditorStatus("");
     setIngredientsEditorStatus("");
+    setCategoriesEditorStatus("");
   }
 
   function openMenuBrowser(options) {
@@ -5551,6 +6161,859 @@
     renderSidebarMenuAccordion();
     setHomeEditorStatus("");
     setIngredientsEditorStatus("");
+    setCategoriesEditorStatus("");
+  }
+
+  function openCategoriesEditor(options) {
+    options = options || {};
+    if (!options.skipRoute) {
+      navigateToRoute("/categories", { replace: Boolean(options.replaceRoute) });
+      return;
+    }
+
+    if (!state.hasDataLoaded) {
+      ensureDataLoaded(false);
+      return;
+    }
+
+    ensureCategoriesDraft();
+    setActivePanel("categories-editor");
+    if (!String(state.categoriesEditor.activeCategoryId || "").trim()) {
+      var firstCategoryEntry = getDraftCategoriesSorted()[0];
+      if (firstCategoryEntry && firstCategoryEntry.raw && firstCategoryEntry.raw.id) {
+        state.categoriesEditor.activeCategoryId = firstCategoryEntry.raw.id;
+      }
+    }
+    renderCategoriesEditor();
+
+    setMenuBrowserStatus("");
+    setItemEditorStatus("");
+    setHomeEditorStatus("");
+    setIngredientsEditorStatus("");
+    if (!options.keepStatus) {
+      setCategoriesEditorStatus("");
+    }
+    showItemEditorErrors([]);
+  }
+
+  function getDraftCategoriesRaw() {
+    ensureCategoriesDraft();
+    if (!Array.isArray(state.drafts.categories.categories)) {
+      state.drafts.categories.categories = [];
+    }
+    return state.drafts.categories.categories;
+  }
+
+  function getDraftCategoriesSorted() {
+    return getDraftCategoriesRaw().map(function (entry, sourceIndex) {
+      return {
+        sourceIndex: sourceIndex,
+        raw: normalizeCategoryDraftEntry(entry, sourceIndex)
+      };
+    }).sort(function (a, b) {
+      var aOrder = Number(a.raw.order);
+      var bOrder = Number(b.raw.order);
+      if (Number.isFinite(aOrder) && Number.isFinite(bOrder) && aOrder !== bOrder) {
+        return aOrder - bOrder;
+      }
+      if (Number.isFinite(aOrder) && !Number.isFinite(bOrder)) return -1;
+      if (!Number.isFinite(aOrder) && Number.isFinite(bOrder)) return 1;
+      var byLabel = normalizeText(a.raw.label || a.raw.id).localeCompare(normalizeText(b.raw.label || b.raw.id));
+      if (byLabel !== 0) return byLabel;
+      return a.sourceIndex - b.sourceIndex;
+    });
+  }
+
+  function getNextCategoryOrder() {
+    var maxOrder = 0;
+    getDraftCategoriesRaw().forEach(function (entry) {
+      var value = Number(entry && entry.order);
+      if (Number.isFinite(value) && value > maxOrder) {
+        maxOrder = Math.round(value);
+      }
+    });
+    return Math.max(1, maxOrder + 1);
+  }
+
+  function buildMenuCategoryUsageMap() {
+    var usageById = {};
+    getAllMenuItems().forEach(function (entry) {
+      var item = entry && entry.item ? entry.item : null;
+      if (!item) return;
+      var categoryId = String(item.category || "").trim();
+      if (!categoryId) return;
+      if (!usageById[categoryId]) {
+        usageById[categoryId] = [];
+      }
+      usageById[categoryId].push({
+        id: item.id || "",
+        label: item.name || item.id || "Item sin nombre"
+      });
+    });
+
+    Object.keys(usageById).forEach(function (categoryId) {
+      usageById[categoryId].sort(function (a, b) {
+        return normalizeText(a.label || a.id).localeCompare(normalizeText(b.label || b.id));
+      });
+    });
+
+    return usageById;
+  }
+
+  function getCategoryUsageEntries(categoryId) {
+    var normalizedId = String(categoryId || "").trim();
+    if (!normalizedId) return [];
+    var usageMap = state.categoriesEditor.usageByCategoryId || {};
+    return Array.isArray(usageMap[normalizedId]) ? usageMap[normalizedId].slice() : [];
+  }
+
+  function createCategoryEditorDraft(categoryId, sourceEntry) {
+    var source = normalizeCategoryDraftEntry(sourceEntry || {}, 0);
+    return {
+      id: String(categoryId || source.id || "").trim(),
+      label: String(source.label || "").trim(),
+      order: Number.isFinite(Number(source.order))
+        ? Math.max(1, Math.round(Number(source.order)))
+        : getNextCategoryOrder(),
+      visible: resolveCategoryVisibility(source)
+    };
+  }
+
+  function parseCategorySourceIndex(value) {
+    var parsed = Number(value);
+    if (!Number.isInteger(parsed) || parsed < 0) return null;
+    return parsed;
+  }
+
+  function getCategoryEntryBySourceIndex(sourceIndex) {
+    var parsedSourceIndex = parseCategorySourceIndex(sourceIndex);
+    if (parsedSourceIndex === null) return null;
+    var source = getDraftCategoriesRaw();
+    if (parsedSourceIndex >= source.length) return null;
+    return normalizeCategoryDraftEntry(source[parsedSourceIndex], parsedSourceIndex);
+  }
+
+  function getCategoryDraftInlineIssues(draft, sourceIndex) {
+    var safeDraft = draft || {};
+    var nextId = String(safeDraft.id || "").trim();
+    var nextLabel = String(safeDraft.label || "").trim();
+    var issues = [];
+
+    if (!nextId) {
+      issues.push("ID requerido.");
+    } else {
+      var duplicated = getDraftCategoriesRaw().some(function (entry, index) {
+        if (index === sourceIndex) return false;
+        return String((entry && entry.id) || "").trim() === nextId;
+      });
+      if (duplicated) {
+        issues.push("ID duplicado: " + nextId);
+      }
+    }
+
+    if (!nextLabel) {
+      issues.push("Label requerido.");
+    }
+
+    var orderValue = Number(safeDraft.order);
+    if (!Number.isFinite(orderValue) || orderValue < 1) {
+      issues.push("Order invalido.");
+    }
+
+    return issues;
+  }
+
+  function getCategoriesCardDraft(sourceIndex, sourceEntry) {
+    var parsedSourceIndex = parseCategorySourceIndex(sourceIndex);
+    if (parsedSourceIndex === null) return createCategoryEditorDraft("", sourceEntry || {});
+    if (!state.categoriesEditor.draftBySourceIndex) {
+      state.categoriesEditor.draftBySourceIndex = {};
+    }
+
+    var key = String(parsedSourceIndex);
+    if (!state.categoriesEditor.draftBySourceIndex[key]) {
+      state.categoriesEditor.draftBySourceIndex[key] = createCategoryEditorDraft(
+        sourceEntry && sourceEntry.id ? sourceEntry.id : "",
+        sourceEntry || {}
+      );
+    }
+    return state.categoriesEditor.draftBySourceIndex[key];
+  }
+
+  function clearCategoryCardDraft(sourceIndex) {
+    var parsedSourceIndex = parseCategorySourceIndex(sourceIndex);
+    if (parsedSourceIndex === null) return;
+    if (!state.categoriesEditor.draftBySourceIndex) return;
+    delete state.categoriesEditor.draftBySourceIndex[String(parsedSourceIndex)];
+  }
+
+  function updateCategoryDraftField(options) {
+    options = options || {};
+    var isNew = Boolean(options.isNew);
+    var field = String(options.field || "").trim();
+    if (!field) return false;
+
+    var draft = null;
+    if (isNew) {
+      if (!state.categoriesEditor.newDraft) {
+        state.categoriesEditor.newDraft = createCategoryEditorDraft("", {
+          id: "",
+          label: "",
+          order: getNextCategoryOrder(),
+          visible: true
+        });
+      }
+      draft = state.categoriesEditor.newDraft;
+    } else {
+      var sourceEntry = getCategoryEntryBySourceIndex(options.sourceIndex);
+      if (!sourceEntry) return false;
+      draft = getCategoriesCardDraft(options.sourceIndex, sourceEntry);
+    }
+
+    if (!draft) return false;
+
+    if (field === "visible") {
+      draft.visible = Boolean(options.value);
+      return true;
+    }
+
+    if (field === "order") {
+      var orderValue = Number(options.value);
+      draft.order = Number.isFinite(orderValue) ? Math.max(1, Math.round(orderValue)) : getNextCategoryOrder();
+      return true;
+    }
+
+    if (field === "id" || field === "label") {
+      draft[field] = String(options.value || "").trim();
+      return true;
+    }
+
+    return false;
+  }
+
+  function renderCategoriesValidationSummary(report) {
+    if (!elements.categoriesValidationSummary) return;
+    var safeReport = report || { errors: [], warnings: [] };
+    var errorsCount = Array.isArray(safeReport.errors) ? safeReport.errors.length : 0;
+    var warningsCount = Array.isArray(safeReport.warnings) ? safeReport.warnings.length : 0;
+
+    if (!errorsCount && !warningsCount) {
+      elements.categoriesValidationSummary.textContent = "categories-contract: sin errores ni warnings.";
+      elements.categoriesValidationSummary.classList.remove("is-warning");
+      return;
+    }
+
+    elements.categoriesValidationSummary.textContent =
+      "categories-contract: " + errorsCount + " errores, " + warningsCount + " warnings.";
+    elements.categoriesValidationSummary.classList.toggle("is-warning", errorsCount > 0 || warningsCount > 0);
+  }
+
+  function renderCategoriesGlobalWarnings(report) {
+    if (!elements.categoriesEditorWarning) return;
+    var safeReport = report || {};
+    var warnings = Array.isArray(safeReport.warnings) ? safeReport.warnings : [];
+    var menuReferenceReport = safeReport.menuReferenceReport || { invalidItems: [], invalidReferencesCount: 0 };
+    var invalidItems = Array.isArray(menuReferenceReport.invalidItems)
+      ? menuReferenceReport.invalidItems
+      : [];
+
+    var warningText = "";
+    if (invalidItems.length) {
+      var preview = invalidItems.slice(0, 4).map(function (entry) {
+        var itemId = entry.id || entry.label || "item";
+        var categoryId = String(entry.category || "").trim() || "(empty)";
+        return itemId + " -> " + categoryId;
+      }).join(" | ");
+      warningText =
+        "Warning: menu item references missing category (" +
+        menuReferenceReport.invalidReferencesCount +
+        " refs)." + (preview ? (" " + preview) : "");
+    } else if (warnings.length) {
+      warningText = "Warning: " + warnings[0];
+    }
+
+    elements.categoriesEditorWarning.textContent = warningText;
+    elements.categoriesEditorWarning.classList.toggle("is-warning", Boolean(warningText));
+  }
+
+  function buildCategoryUsageHtml(usageEntries) {
+    if (!usageEntries.length) {
+      return "<li>No hay items usando esta categoria.</li>";
+    }
+    return usageEntries.map(function (entry) {
+      return "<li>" + escapeHtml(entry.id || entry.label || "-") + "</li>";
+    }).join("");
+  }
+
+  function buildCategoryCardHtml(entry, sortedIndex, report) {
+    var sourceEntry = entry.raw;
+    var sourceIndex = entry.sourceIndex;
+    var draft = getCategoriesCardDraft(sourceIndex, sourceEntry);
+    var draftId = String(draft.id || "").trim();
+    var usageEntries = getCategoryUsageEntries(draftId || sourceEntry.id);
+    var isVisible = Boolean(draft.visible);
+    var isActive = String(state.categoriesEditor.activeCategoryId || "").trim() === String(sourceEntry.id || "").trim();
+    var cardClassName = "categories-section card" + (isActive ? " is-active" : "");
+    var anchorId = sourceEntry.id ? getCategoriesSectionAnchorId(sourceEntry.id) : "";
+    var issueBucket = report && report.categoryIssuesById
+      ? report.categoryIssuesById[sourceEntry.id || ("index_" + sourceIndex)]
+      : null;
+    var issueCount = issueBucket
+      ? (issueBucket.errors.length + issueBucket.warnings.length)
+      : 0;
+    var inlineIssues = getCategoryDraftInlineIssues(draft, sourceIndex);
+    var issueText = inlineIssues.length
+      ? inlineIssues[0]
+      : (issueCount ? ((issueBucket.errors.length || 0) + " errores · " + (issueBucket.warnings.length || 0) + " warnings") : "Sin alertas para esta categoria.");
+    var issueClassName = "inline-help categories-section__issues" + ((inlineIssues.length || issueCount) ? " is-warning" : "");
+    var toggleId = "categories-visible-" + sourceIndex;
+    var hasAnchor = Boolean(String(sourceEntry.id || "").trim());
+
+    var visibleToggleHtml = renderToggle({
+      id: toggleId,
+      label: "Visible",
+      checked: isVisible,
+      dataAttributes: {
+        "data-categories-field": "visible",
+        "data-categories-source-index": String(sourceIndex)
+      }
+    });
+
+    return (
+      "<section class=\"" + cardClassName + "\" " +
+      (anchorId ? ("id=\"" + anchorId + "\" ") : "") +
+      "tabindex=\"-1\" data-categories-card-id=\"" + escapeHtml(sourceEntry.id || "") + "\" " +
+      "data-categories-anchor=\"" + (hasAnchor ? "true" : "false") + "\" data-categories-id=\"" + escapeHtml(sourceEntry.id || "") + "\" " +
+      "data-categories-source-index=\"" + sourceIndex + "\">" +
+      "<header class=\"categories-section__header\">" +
+      "<div class=\"categories-section__title-wrap\">" +
+      "<p class=\"kicker\">Category " + (sortedIndex + 1) + "</p>" +
+      "<h3>" + escapeHtml(draft.label || draft.id || "Categoria sin label") + "</h3>" +
+      "<p class=\"inline-help\">" + escapeHtml((draft.id || "(sin id)") + " · " + (isVisible ? "visible" : "hidden") + " · " + usageEntries.length + " items") + "</p>" +
+      "</div>" +
+      "<div class=\"categories-section__actions\">" +
+      "<button class=\"btn btn-primary\" type=\"button\" data-categories-action=\"save\" data-categories-source-index=\"" + sourceIndex + "\">Guardar</button>" +
+      "<button class=\"btn btn-ghost\" type=\"button\" data-categories-action=\"cancel\" data-categories-source-index=\"" + sourceIndex + "\">Cancelar</button>" +
+      "<button class=\"btn btn-danger\" type=\"button\" data-categories-action=\"delete\" data-categories-source-index=\"" + sourceIndex + "\">Delete</button>" +
+      "</div>" +
+      "</header>" +
+      "<div class=\"categories-section__grid\">" +
+      "<label class=\"field\"><span>ID</span><input type=\"text\" value=\"" + escapeHtml(draft.id || "") + "\" data-categories-field=\"id\" data-categories-source-index=\"" + sourceIndex + "\" /></label>" +
+      "<label class=\"field\"><span>Label</span><input type=\"text\" value=\"" + escapeHtml(draft.label || "") + "\" data-categories-field=\"label\" data-categories-source-index=\"" + sourceIndex + "\" /></label>" +
+      "<label class=\"field\"><span>Order</span><input type=\"number\" min=\"1\" step=\"1\" value=\"" + escapeHtml(String(Number(draft.order) || (sortedIndex + 1))) + "\" data-categories-field=\"order\" data-categories-source-index=\"" + sourceIndex + "\" /></label>" +
+      "<div class=\"categories-section__toggle\">" + visibleToggleHtml + "</div>" +
+      "</div>" +
+      "<section class=\"categories-usage\">" +
+      "<h4>Used by menu items</h4>" +
+      "<p class=\"inline-help\">Used by menu items: " + usageEntries.length + "</p>" +
+      "<ul class=\"categories-usage-list\">" + buildCategoryUsageHtml(usageEntries) + "</ul>" +
+      "</section>" +
+      "<p class=\"" + issueClassName + "\">" + escapeHtml(issueText) + "</p>" +
+      "</section>"
+    );
+  }
+
+  function buildNewCategoryCardHtml() {
+    if (!state.categoriesEditor.newDraft) return "";
+    var draft = state.categoriesEditor.newDraft;
+    var usageEntries = getCategoryUsageEntries(draft.id);
+    var inlineIssues = getCategoryDraftInlineIssues(draft, null);
+    var issueText = inlineIssues.length ? inlineIssues[0] : "Completa ID y Label para crear la categoria.";
+    var issueClassName = "inline-help categories-section__issues" + (inlineIssues.length ? " is-warning" : "");
+    var visibleToggleHtml = renderToggle({
+      id: "categories-visible-new",
+      label: "Visible",
+      checked: Boolean(draft.visible),
+      dataAttributes: {
+        "data-categories-field": "visible",
+        "data-categories-new": "true"
+      }
+    });
+
+    return (
+      "<section class=\"categories-section card categories-section--new\" id=\"categories-section-new\" tabindex=\"-1\" data-categories-new-card=\"true\">" +
+      "<header class=\"categories-section__header\">" +
+      "<div class=\"categories-section__title-wrap\">" +
+      "<p class=\"kicker\">Category / New</p>" +
+      "<h3>New category</h3>" +
+      "<p class=\"inline-help\">Define identidad, visibilidad y orden.</p>" +
+      "</div>" +
+      "<div class=\"categories-section__actions\">" +
+      "<button class=\"btn btn-primary\" type=\"button\" data-categories-action=\"save-new\">Guardar</button>" +
+      "<button class=\"btn btn-ghost\" type=\"button\" data-categories-action=\"cancel-new\">Cancelar</button>" +
+      "</div>" +
+      "</header>" +
+      "<div class=\"categories-section__grid\">" +
+      "<label class=\"field\"><span>ID</span><input type=\"text\" value=\"" + escapeHtml(draft.id || "") + "\" data-categories-field=\"id\" data-categories-new=\"true\" /></label>" +
+      "<label class=\"field\"><span>Label</span><input type=\"text\" value=\"" + escapeHtml(draft.label || "") + "\" data-categories-field=\"label\" data-categories-new=\"true\" /></label>" +
+      "<label class=\"field\"><span>Order</span><input type=\"number\" min=\"1\" step=\"1\" value=\"" + escapeHtml(String(Number(draft.order) || getNextCategoryOrder())) + "\" data-categories-field=\"order\" data-categories-new=\"true\" /></label>" +
+      "<div class=\"categories-section__toggle\">" + visibleToggleHtml + "</div>" +
+      "</div>" +
+      "<section class=\"categories-usage\">" +
+      "<h4>Used by menu items</h4>" +
+      "<p class=\"inline-help\">Used by menu items: " + usageEntries.length + "</p>" +
+      "<ul class=\"categories-usage-list\">" + buildCategoryUsageHtml(usageEntries) + "</ul>" +
+      "</section>" +
+      "<p class=\"" + issueClassName + "\">" + escapeHtml(issueText) + "</p>" +
+      "</section>"
+    );
+  }
+
+  function renderCategoriesOrderList() {
+    if (!elements.categoriesOrderList) return;
+    var sortedEntries = getDraftCategoriesSorted();
+    if (!sortedEntries.length) {
+      elements.categoriesOrderList.innerHTML = "<li class=\"home-editor__hint\">No hay categorias para ordenar.</li>";
+      return;
+    }
+
+    var html = sortedEntries.map(function (entry, sortedIndex) {
+      var category = entry.raw || {};
+      var categoryId = String(category.id || "").trim();
+      var usageCount = getCategoryUsageEntries(categoryId).length;
+      return (
+        "<li class=\"home-featured-item categories-order-item\" data-categories-order-index=\"" + sortedIndex + "\" data-categories-order-id=\"" + escapeHtml(categoryId) + "\">" +
+        "<button class=\"home-featured-item__handle\" type=\"button\" draggable=\"true\" data-categories-order-handle data-categories-order-index=\"" +
+        sortedIndex + "\" aria-label=\"Arrastrar para reordenar " + escapeHtml(category.label || categoryId) + "\"></button>" +
+        "<div class=\"home-featured-item__thumb categories-order-item__thumb\"><span>" + (sortedIndex + 1) + "</span></div>" +
+        "<div class=\"home-featured-item__footer\">" +
+        "<span class=\"home-featured-item__label\">" + escapeHtml(category.label || categoryId || "Sin label") + "</span>" +
+        "<span class=\"categories-order-item__meta\">" + escapeHtml((categoryId || "(sin id)") + " · " + usageCount + " items") + "</span>" +
+        "</div>" +
+        "</li>"
+      );
+    }).join("");
+
+    elements.categoriesOrderList.innerHTML = html;
+  }
+
+  function renderCategoriesEditor() {
+    ensureCategoriesDraft();
+    state.categoriesEditor.usageByCategoryId = buildMenuCategoryUsageMap();
+    state.categoriesEditor.validationReport = validateCategoriesDraftData(state.drafts.categories);
+
+    var sortedEntries = getDraftCategoriesSorted();
+    var visibleCount = sortedEntries.filter(function (entry) {
+      return resolveCategoryVisibility(entry.raw);
+    }).length;
+    var hiddenCount = Math.max(0, sortedEntries.length - visibleCount);
+
+    var activeCategoryId = String(state.categoriesEditor.activeCategoryId || "").trim();
+    var hasActiveCategory = sortedEntries.some(function (entry) {
+      return String((entry.raw && entry.raw.id) || "").trim() === activeCategoryId;
+    });
+    if ((!activeCategoryId || !hasActiveCategory) && sortedEntries.length) {
+      state.categoriesEditor.activeCategoryId = sortedEntries[0].raw.id;
+    } else if (!sortedEntries.length) {
+      state.categoriesEditor.activeCategoryId = "";
+    }
+
+    if (elements.categoriesCardsSummary) {
+      elements.categoriesCardsSummary.textContent =
+        sortedEntries.length + " categorias · " + visibleCount + " visibles" +
+        (hiddenCount ? (" · " + hiddenCount + " hidden") : "");
+    }
+
+    renderCategoriesValidationSummary(state.categoriesEditor.validationReport);
+    renderCategoriesGlobalWarnings(state.categoriesEditor.validationReport);
+
+    if (elements.categoriesCardsContent) {
+      var cardsHtml = [];
+      var newCardHtml = buildNewCategoryCardHtml();
+      if (newCardHtml) {
+        cardsHtml.push(newCardHtml);
+      }
+      cardsHtml = cardsHtml.concat(sortedEntries.map(function (entry, index) {
+        return buildCategoryCardHtml(entry, index, state.categoriesEditor.validationReport);
+      }));
+      elements.categoriesCardsContent.innerHTML = cardsHtml.length
+        ? cardsHtml.join("")
+        : "<section class=\"categories-section card\"><p class=\"home-editor__hint\">No hay categorias.</p></section>";
+    }
+
+    renderCategoriesOrderList();
+    renderSidebarCategoriesAccordion();
+    if (elements.categoriesCardsContent) {
+      bindToggles(elements.categoriesCardsContent, {
+        onChange: function (checked, control) {
+          if (!control) return;
+          var field = String(control.getAttribute("data-categories-field") || "").trim();
+          if (field !== "visible") return;
+          var sourceIndex = control.getAttribute("data-categories-source-index");
+          var isNew = control.getAttribute("data-categories-new") === "true";
+          var changed = updateCategoryDraftField({
+            field: "visible",
+            value: Boolean(checked),
+            sourceIndex: sourceIndex,
+            isNew: isNew
+          });
+          if (!changed) return;
+          setCategoriesEditorStatus("Cambios pendientes en Categories. Presiona Guardar en el card.");
+        }
+      });
+    }
+    refreshCategoriesScrollAnchors();
+    setActiveCategoriesSection(state.categoriesEditor.activeCategoryId, { force: true });
+    requestCategoriesScrollSpyUpdate();
+  }
+
+  function beginNewCategoryDraft(options) {
+    options = options || {};
+    if (!options.skipRoute) {
+      navigateToRoute("/categories");
+      return;
+    }
+
+    ensureCategoriesDraft();
+    setActivePanel("categories-editor");
+    state.categoriesEditor.newDraft = createCategoryEditorDraft("", {
+      id: "",
+      label: "",
+      order: getNextCategoryOrder(),
+      visible: true
+    });
+    renderCategoriesEditor();
+    window.requestAnimationFrame(function () {
+      var newCard = document.getElementById("categories-section-new");
+      if (!newCard) return;
+      var targetTop = window.scrollY + newCard.getBoundingClientRect().top - UX_TIMING.anchorScrollOffsetPx;
+      window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
+    });
+
+    if (!options.silent) {
+      setCategoriesEditorStatus("Nueva categoria lista. Define ID y Label, luego guarda.");
+    }
+  }
+
+  function selectCategoryForEditing(categoryId, options) {
+    options = options || {};
+    var normalizedId = String(categoryId || "").trim();
+    if (!normalizedId) return false;
+
+    if (!options.skipRoute) {
+      navigateToRoute("/categories/" + encodeURIComponent(normalizedId));
+      return true;
+    }
+
+    ensureCategoriesDraft();
+    setActivePanel("categories-editor");
+    renderCategoriesEditor();
+    scrollToCategoriesSection(normalizedId, { instant: Boolean(options.instant) });
+    setActiveCategoriesSection(normalizedId, { force: true });
+    if (!options.silent) {
+      setCategoriesEditorStatus("Editando categoria: " + normalizedId);
+    }
+    return true;
+  }
+
+  function applyCategoriesDraftMutation(statusMessage) {
+    state.categoriesEditor.draftBySourceIndex = {};
+    buildIndexes();
+    updateDashboardMetrics();
+    renderMenuBrowser();
+    renderSidebarMenuAccordion();
+    renderSidebarHomepageAccordion();
+    renderSidebarCategoriesAccordion();
+    persistDraftsToLocalStorage();
+    setDraftsBanner(true, "Drafts locales activos (Clear drafts | Export)");
+    saveDraftsToLocalFiles();
+    renderCategoriesEditor();
+
+    if (statusMessage) {
+      setCategoriesEditorStatus(statusMessage);
+    }
+  }
+
+  function saveCategoryDraftBySourceIndex(sourceIndex) {
+    var parsedSourceIndex = parseCategorySourceIndex(sourceIndex);
+    if (parsedSourceIndex === null) {
+      setCategoriesEditorStatus("No se pudo resolver la categoria para guardar.");
+      return false;
+    }
+
+    ensureCategoriesDraft();
+    var categoriesList = getDraftCategoriesRaw();
+    if (parsedSourceIndex >= categoriesList.length) {
+      setCategoriesEditorStatus("No se encontro la categoria para guardar.");
+      return false;
+    }
+
+    var sourceEntry = normalizeCategoryDraftEntry(categoriesList[parsedSourceIndex], parsedSourceIndex);
+    var draft = getCategoriesCardDraft(parsedSourceIndex, sourceEntry);
+    var nextId = String(draft.id || "").trim();
+    var nextLabel = String(draft.label || "").trim();
+    var nextOrder = Number.isFinite(Number(draft.order))
+      ? Math.max(1, Math.round(Number(draft.order)))
+      : getNextCategoryOrder();
+    var nextVisible = Boolean(draft.visible);
+
+    if (!nextId) {
+      setCategoriesEditorStatus("ID requerido. Define un ID unico para la categoria.");
+      return false;
+    }
+    if (!nextLabel) {
+      setCategoriesEditorStatus("Label requerido. Define un nombre visible para la categoria.");
+      return false;
+    }
+
+    var duplicateId = categoriesList.some(function (entry, index) {
+      if (index === parsedSourceIndex) return false;
+      return String((entry && entry.id) || "").trim() === nextId;
+    });
+    if (duplicateId) {
+      setCategoriesEditorStatus("El ID ya existe: " + nextId);
+      return false;
+    }
+
+    var nextEntry = deepClone(categoriesList[parsedSourceIndex] || {});
+    var previousId = String(nextEntry.id || "").trim();
+    nextEntry.id = nextId;
+    nextEntry.label = nextLabel;
+    nextEntry.order = nextOrder;
+    nextEntry.visible = nextVisible;
+    nextEntry.enabled = nextVisible;
+    categoriesList[parsedSourceIndex] = normalizeCategoryDraftEntry(nextEntry, parsedSourceIndex);
+
+    clearCategoryCardDraft(parsedSourceIndex);
+    if (String(state.categoriesEditor.activeCategoryId || "").trim() === previousId || !state.categoriesEditor.activeCategoryId) {
+      state.categoriesEditor.activeCategoryId = nextId;
+    }
+
+    if (previousId && window.location.hash === "#/categories/" + encodeURIComponent(previousId)) {
+      setHashSilently("/categories/" + encodeURIComponent(nextId));
+    }
+
+    var report = validateCategoriesDraftData(state.drafts.categories);
+    var issuesCount = report.errors.length + report.warnings.length;
+    applyCategoriesDraftMutation(
+      issuesCount
+        ? ("Categoria guardada en drafts con " + report.errors.length + " errores y " + report.warnings.length + " warnings.")
+        : "Categoria guardada en drafts locales."
+    );
+    return true;
+  }
+
+  function saveNewCategoryDraft() {
+    ensureCategoriesDraft();
+    if (!state.categoriesEditor.newDraft) {
+      setCategoriesEditorStatus("No hay nueva categoria para guardar.");
+      return false;
+    }
+
+    var draft = state.categoriesEditor.newDraft;
+    var nextId = String(draft.id || "").trim();
+    var nextLabel = String(draft.label || "").trim();
+    var nextOrder = Number.isFinite(Number(draft.order))
+      ? Math.max(1, Math.round(Number(draft.order)))
+      : getNextCategoryOrder();
+    var nextVisible = Boolean(draft.visible);
+
+    if (!nextId) {
+      setCategoriesEditorStatus("ID requerido. Define un ID unico para la categoria.");
+      return false;
+    }
+    if (!nextLabel) {
+      setCategoriesEditorStatus("Label requerido. Define un nombre visible para la categoria.");
+      return false;
+    }
+
+    var duplicateId = getDraftCategoriesRaw().some(function (entry) {
+      return String((entry && entry.id) || "").trim() === nextId;
+    });
+    if (duplicateId) {
+      setCategoriesEditorStatus("El ID ya existe: " + nextId);
+      return false;
+    }
+
+    getDraftCategoriesRaw().push(normalizeCategoryDraftEntry({
+      id: nextId,
+      label: nextLabel,
+      order: nextOrder,
+      visible: nextVisible,
+      enabled: nextVisible,
+      subcategories: []
+    }, getDraftCategoriesRaw().length));
+    state.categoriesEditor.newDraft = null;
+    state.categoriesEditor.activeCategoryId = nextId;
+    applyCategoriesDraftMutation("Categoria guardada en drafts locales.");
+    setHashSilently("/categories/" + encodeURIComponent(nextId));
+    window.requestAnimationFrame(function () {
+      scrollToCategoriesSection(nextId);
+    });
+    return true;
+  }
+
+  function saveCategoriesEditorDraft() {
+    setCategoriesEditorStatus("Usa Guardar en el card de la categoria.");
+  }
+
+  function deleteCategoryBySourceIndex(sourceIndex) {
+    var parsedSourceIndex = parseCategorySourceIndex(sourceIndex);
+    if (parsedSourceIndex === null) {
+      setCategoriesEditorStatus("No se pudo resolver la categoria para eliminar.");
+      return false;
+    }
+
+    ensureCategoriesDraft();
+    var sourceEntry = getCategoryEntryBySourceIndex(parsedSourceIndex);
+    if (!sourceEntry) {
+      setCategoriesEditorStatus("No se encontro la categoria para eliminar.");
+      return false;
+    }
+    var categoryId = String(sourceEntry.id || "").trim();
+    if (!categoryId) {
+      setCategoriesEditorStatus("La categoria no tiene ID valido.");
+      return false;
+    }
+
+    var usageEntries = getCategoryUsageEntries(categoryId);
+    if (usageEntries.length) {
+      setCategoriesEditorStatus(
+        "This category is used by " + usageEntries.length + " menu items. Move or reassign them before deleting."
+      );
+      return false;
+    }
+
+    var confirmed = window.confirm("Eliminar categoria '" + categoryId + "'?");
+    if (!confirmed) return false;
+
+    state.drafts.categories.categories = getDraftCategoriesRaw().filter(function (_entry, index) {
+      return index !== parsedSourceIndex;
+    }).map(function (entry, index) {
+      return normalizeCategoryDraftEntry(entry, index);
+    });
+    state.categoriesEditor.draftBySourceIndex = {};
+
+    var remaining = getDraftCategoriesSorted();
+    state.categoriesEditor.activeCategoryId = remaining.length ? remaining[0].raw.id : "";
+    if (window.location.hash === "#/categories/" + encodeURIComponent(categoryId)) {
+      setHashSilently("/categories");
+    }
+
+    applyCategoriesDraftMutation("Categoria eliminada: " + categoryId);
+    return true;
+  }
+
+  function deleteSelectedCategory() {
+    setCategoriesEditorStatus("Usa Delete en el card de la categoria.");
+  }
+
+  function cancelCategoryDraftBySourceIndex(sourceIndex) {
+    var parsedSourceIndex = parseCategorySourceIndex(sourceIndex);
+    if (parsedSourceIndex === null) return;
+    clearCategoryCardDraft(parsedSourceIndex);
+    renderCategoriesEditor();
+    setCategoriesEditorStatus("Cambios descartados.");
+  }
+
+  function cancelCategoriesEditorDraft() {
+    if (state.categoriesEditor.newDraft) {
+      state.categoriesEditor.newDraft = null;
+      renderCategoriesEditor();
+      setCategoriesEditorStatus("Borrador nuevo descartado.");
+      return;
+    }
+    setCategoriesEditorStatus("Usa Cancelar en el card de la categoria.");
+  }
+
+  function captureCategoriesOrderItemRects() {
+    if (!elements.categoriesOrderList) return null;
+    var rectsById = {};
+    var items = elements.categoriesOrderList.querySelectorAll(".categories-order-item[data-categories-order-id]");
+    Array.prototype.forEach.call(items, function (item) {
+      var itemId = String(item.getAttribute("data-categories-order-id") || "").trim();
+      if (!itemId) return;
+      rectsById[itemId] = item.getBoundingClientRect();
+    });
+    return rectsById;
+  }
+
+  function animateCategoriesOrderReorder(previousRectsById) {
+    if (!previousRectsById || !elements.categoriesOrderList) return;
+    var items = elements.categoriesOrderList.querySelectorAll(".categories-order-item[data-categories-order-id]");
+    var animatedItems = [];
+    Array.prototype.forEach.call(items, function (item) {
+      var itemId = String(item.getAttribute("data-categories-order-id") || "").trim();
+      if (!itemId || !previousRectsById[itemId]) return;
+      var previousRect = previousRectsById[itemId];
+      var nextRect = item.getBoundingClientRect();
+      var deltaX = previousRect.left - nextRect.left;
+      var deltaY = previousRect.top - nextRect.top;
+      if (!deltaX && !deltaY) return;
+
+      item.style.transition = "none";
+      item.style.transform = "translate(" + deltaX + "px, " + deltaY + "px)";
+      animatedItems.push(item);
+    });
+
+    if (!animatedItems.length) return;
+    window.requestAnimationFrame(function () {
+      animatedItems.forEach(function (item) {
+        item.style.transition = "transform 180ms cubic-bezier(0.2, 0, 0, 1)";
+        item.style.transform = "translate(0, 0)";
+        var cleanup = function () {
+          item.style.transition = "";
+          item.style.transform = "";
+          item.removeEventListener("transitionend", cleanup);
+        };
+        item.addEventListener("transitionend", cleanup);
+        window.setTimeout(cleanup, 220);
+      });
+    });
+  }
+
+  function clearCategoriesDropMarkers() {
+    if (!elements.categoriesOrderList) return;
+    var highlighted = elements.categoriesOrderList.querySelectorAll(".home-featured-item--drop-target");
+    Array.prototype.forEach.call(highlighted, function (item) {
+      item.classList.remove("home-featured-item--drop-target");
+    });
+  }
+
+  function resetCategoriesDragState() {
+    dragState.categoryOrderIndex = null;
+    dragState.categoryOrderDropIndex = null;
+    clearCategoriesDropMarkers();
+    if (!elements.categoriesOrderList) return;
+    var draggingItem = elements.categoriesOrderList.querySelector(".home-featured-item--dragging");
+    if (draggingItem) {
+      draggingItem.classList.remove("home-featured-item--dragging");
+    }
+    elements.categoriesOrderList.classList.remove("home-featured-list--dragging");
+  }
+
+  function resolveCategoriesOrderDropTarget(targetItem, sourceIndex) {
+    var targetIndex = Number(targetItem.getAttribute("data-categories-order-index"));
+    if (!Number.isInteger(targetIndex) || targetIndex < 0) return null;
+    if (targetIndex === sourceIndex) return null;
+    return { index: targetIndex };
+  }
+
+  function applyCategoriesReorder(sourceSortedIndex, targetSortedIndex) {
+    if (!Number.isInteger(sourceSortedIndex) || !Number.isInteger(targetSortedIndex)) return false;
+    if (sourceSortedIndex < 0 || targetSortedIndex < 0) return false;
+    if (sourceSortedIndex === targetSortedIndex) return false;
+
+    var sorted = getDraftCategoriesSorted();
+    if (sourceSortedIndex >= sorted.length || targetSortedIndex >= sorted.length) return false;
+
+    var reordered = sorted.slice();
+    var sourceEntry = reordered[sourceSortedIndex];
+    var targetEntry = reordered[targetSortedIndex];
+    reordered[sourceSortedIndex] = targetEntry;
+    reordered[targetSortedIndex] = sourceEntry;
+
+    state.drafts.categories.categories = reordered.map(function (entry, index) {
+      var nextEntry = normalizeCategoryDraftEntry(entry.raw, index);
+      nextEntry.order = index + 1;
+      nextEntry.visible = resolveCategoryVisibility(nextEntry);
+      nextEntry.enabled = nextEntry.visible;
+      return nextEntry;
+    });
+    state.categoriesEditor.draftBySourceIndex = {};
+
+    applyCategoriesDraftMutation("Order actualizado en drafts.");
+    return true;
   }
 
   function getHomeSectionAnchorId(sectionId) {
@@ -6418,6 +7881,7 @@
     showItemEditorErrors([]);
     setHomeEditorStatus("");
     setIngredientsEditorStatus("");
+    setCategoriesEditorStatus("");
   }
 
   function createIngredientsEditorDraft(ingredientId, sourceEntry) {
@@ -6601,6 +8065,18 @@
       state.ingredientsEditor.tabAnimationTargetVisibilityMap = null;
       state.ingredientsEditor.tabAnimationTimer = 0;
     }, 520);
+  }
+
+  function setHashSilently(path) {
+    var normalizedPath = String(path || "").trim();
+    if (!normalizedPath) return;
+    if (normalizedPath.charAt(0) !== "/") {
+      normalizedPath = "/" + normalizedPath;
+    }
+    var targetHash = "#" + normalizedPath;
+    if (window.location.hash === targetHash) return;
+    var base = window.location.pathname + window.location.search;
+    window.history.replaceState({}, document.title, base + targetHash);
   }
 
   function renderIngredientsEditorValidationSummary(report) {
@@ -6897,6 +8373,155 @@
     state.ingredientsScrollSpyFrame = window.requestAnimationFrame(function () {
       state.ingredientsScrollSpyFrame = 0;
       updateIngredientsScrollSpy(false);
+    });
+  }
+
+  function getCategoriesSectionAnchorId(categoryId) {
+    return "categories-section-" + cssSafe(categoryId);
+  }
+
+  function updateSidebarCategoriesAccordionActiveClasses() {
+    if (!elements.sidebarCategoriesAccordion) return;
+    var activeCategoryId = String(state.categoriesEditor.activeCategoryId || "").trim();
+    var buttons = elements.sidebarCategoriesAccordion.querySelectorAll("[data-scroll-categories-section]");
+    Array.prototype.forEach.call(buttons, function (button) {
+      var sectionId = String(button.getAttribute("data-scroll-categories-section") || "").trim();
+      button.classList.toggle("is-active", Boolean(activeCategoryId && sectionId === activeCategoryId));
+    });
+  }
+
+  function updateCategoriesCardsActiveClasses() {
+    if (!elements.categoriesCardsContent) return;
+    var activeCategoryId = String(state.categoriesEditor.activeCategoryId || "").trim();
+    var cards = elements.categoriesCardsContent.querySelectorAll("[data-categories-card-id]");
+    Array.prototype.forEach.call(cards, function (card) {
+      var cardId = String(card.getAttribute("data-categories-card-id") || "").trim();
+      card.classList.toggle("is-active", Boolean(activeCategoryId && cardId === activeCategoryId));
+    });
+  }
+
+  function renderSidebarCategoriesAccordion() {
+    if (!elements.sidebarCategoriesAccordion) return;
+    if (!state.hasDataLoaded) {
+      elements.sidebarCategoriesAccordion.innerHTML = "";
+      return;
+    }
+
+    var sortedEntries = getDraftCategoriesSorted();
+    if (!sortedEntries.length) {
+      elements.sidebarCategoriesAccordion.innerHTML = "";
+      return;
+    }
+
+    var html = sortedEntries.map(function (entry, index) {
+      var category = entry.raw || {};
+      var categoryId = String(category.id || "").trim();
+      if (!categoryId) return "";
+      var isActive = String(state.categoriesEditor.activeCategoryId || "").trim() === categoryId;
+      var buttonClass = "sidebar-accordion-category__toggle" + (isActive ? " is-active" : "");
+      return (
+        "<div class=\"sidebar-accordion-category\" style=\"--sidebar-stagger-index:" + index + "\" data-categories-sidebar-id=\"" + escapeHtml(categoryId) + "\">" +
+        "<button class=\"" + buttonClass + "\" type=\"button\" data-scroll-categories-section=\"" +
+        escapeHtml(categoryId) + "\"><span>" + escapeHtml(category.label || categoryId) + "</span></button>" +
+        "</div>"
+      );
+    }).filter(Boolean).join("");
+
+    elements.sidebarCategoriesAccordion.innerHTML = html;
+    updateSidebarCategoriesAccordionActiveClasses();
+    syncSidebarAccordionCategoryHeights(elements.sidebarCategoriesAccordion);
+  }
+
+  function setActiveCategoriesSection(categoryId, options) {
+    options = options || {};
+    var nextCategoryId = String(categoryId || "").trim();
+    if (state.categoriesEditor.activeCategoryId === nextCategoryId && !options.force) {
+      return;
+    }
+
+    state.categoriesEditor.activeCategoryId = nextCategoryId;
+    if (nextCategoryId) {
+      setNavigationCurrentSection("categories:" + nextCategoryId);
+    } else if (state.currentPanel === "categories-editor") {
+      setNavigationCurrentSection("");
+    }
+
+    if (!options.skipClassUpdate) {
+      updateSidebarCategoriesAccordionActiveClasses();
+      updateCategoriesCardsActiveClasses();
+    }
+  }
+
+  function scrollToCategoriesSection(categoryId, options) {
+    options = options || {};
+    var normalizedId = String(categoryId || "").trim();
+    if (!normalizedId) return;
+
+    var anchor = document.getElementById(getCategoriesSectionAnchorId(normalizedId));
+    if (!anchor) return;
+
+    setActiveCategoriesSection(normalizedId, { force: true });
+    var targetTop = window.scrollY + anchor.getBoundingClientRect().top - UX_TIMING.anchorScrollOffsetPx;
+    var scrollBehavior = options.instant ? "auto" : "smooth";
+    var lockDurationMs = getProgrammaticScrollLockDuration(targetTop, scrollBehavior);
+    runWithProgrammaticScrollLock(function () {
+      window.scrollTo({
+        top: Math.max(0, targetTop),
+        behavior: scrollBehavior
+      });
+    }, lockDurationMs, "categories:" + normalizedId);
+    if (typeof anchor.focus === "function") {
+      try {
+        anchor.focus({ preventScroll: true });
+      } catch (_error) {
+        anchor.focus();
+      }
+    }
+  }
+
+  function refreshCategoriesScrollAnchors() {
+    if (!elements.categoriesCardsContent) {
+      state.categoriesAnchorTargets = [];
+      return;
+    }
+
+    state.categoriesAnchorTargets = Array.prototype.slice
+      .call(elements.categoriesCardsContent.querySelectorAll("[data-categories-anchor='true']"))
+      .map(function (anchorElement) {
+        return {
+          categoryId: anchorElement.getAttribute("data-categories-id") || "",
+          element: anchorElement
+        };
+      });
+  }
+
+  function updateCategoriesScrollSpy(force) {
+    if (state.currentPanel !== "categories-editor") return;
+    if (state.visiblePanel !== "categories-editor") return;
+    if (!canRunScrollSpy(Boolean(force))) return;
+    if (isSidebarAccordionOpening("categories")) return;
+    if (!state.categoriesAnchorTargets.length) return;
+
+    var activeAnchor = findActiveAnchorTarget(
+      state.categoriesAnchorTargets,
+      UX_TIMING.scrollSpyThresholdPx
+    );
+    if (!activeAnchor) return;
+
+    setActiveCategoriesSection(activeAnchor.categoryId, { force: Boolean(force) });
+  }
+
+  function requestCategoriesScrollSpyUpdate() {
+    if (state.currentPanel !== "categories-editor") return;
+    if (state.visiblePanel !== "categories-editor") return;
+    if (state.isPanelTransitioning) return;
+    if (!isNavigationStateIdle()) return;
+    if (isSidebarAccordionOpening("categories")) return;
+    if (state.categoriesScrollSpyFrame) return;
+
+    state.categoriesScrollSpyFrame = window.requestAnimationFrame(function () {
+      state.categoriesScrollSpyFrame = 0;
+      updateCategoriesScrollSpy(false);
     });
   }
 
@@ -7667,13 +9292,12 @@
       return (
         "<li class=\"ingredients-grid__item\">" +
         "<button class=\"ingredients-card ingredients-impact-card ingredients-icon-used-by-card\" type=\"button\" " +
-        "data-jump-icon-ingredient=\"" + escapeHtml(entry.id) + "\" title=\"" + escapeHtml(entry.id) + "\">" +
+        "data-jump-icon-ingredient=\"" + escapeHtml(entry.id) + "\" title=\"" + escapeHtml(entry.label || entry.id) + "\">" +
         "<span class=\"ingredients-card__media\">" +
         "<img src=\"" + escapeHtml(normalizedImagePath) + "\" alt=\"" + escapeHtml(entry.label) + "\" loading=\"lazy\" " +
         "onerror=\"this.onerror=null;this.src='/" + escapeHtml(MENU_PLACEHOLDER_IMAGE) + "';\" />" +
         "</span>" +
         "<span class=\"ingredients-card__label\">" + escapeHtml(entry.label || entry.id) + "</span>" +
-        "<span class=\"ingredients-icon-card__key\">" + escapeHtml(entry.id) + "</span>" +
         "</button>" +
         "</li>"
       );
@@ -7741,7 +9365,6 @@
       previousTab = normalizeIngredientsTab(state.ingredientsEditor.lastRenderedTab || state.ingredientsEditor.tab);
     }
     state.ingredientsEditor.tab = normalizeIngredientsTab(state.ingredientsEditor.tab);
-    var isTabChanged = previousTab !== state.ingredientsEditor.tab;
     if (state.ingredientsEditor.tab === "icons") {
       ensureIngredientsIconSelection();
     } else {
@@ -7761,26 +9384,8 @@
     var isIconsEditView = isIconsTab && state.ingredientsEditor.iconsView === "edit";
     var isCatalogActionsVisible = !isIngredientsEditView && !isIconsEditView;
     var tabVisibilityMap = getIngredientsTabVisibilityMap(isIconsTab, isIngredientsEditView, isIconsEditView);
-
-    if (isTabChanged) {
-      animateIngredientsTabSwitch(tabVisibilityMap);
-    } else {
-      var hasTabAnimationInFlight = Boolean(
-        state.ingredientsEditor.tabAnimationFrame || state.ingredientsEditor.tabAnimationTimer
-      );
-      if (
-        hasTabAnimationInFlight &&
-        areIngredientsTabVisibilityMapsEqual(
-          state.ingredientsEditor.tabAnimationTargetVisibilityMap,
-          tabVisibilityMap
-        )
-      ) {
-        // Keep current fade out/in running; avoid snapping classes on re-render.
-      } else {
-        clearIngredientsTabSwitchAnimation();
-        applyIngredientsTabVisibility(tabVisibilityMap);
-      }
-    }
+    clearIngredientsTabSwitchAnimation();
+    applyIngredientsTabVisibility(tabVisibilityMap);
     if (elements.ingredientsCatalogActions) {
       elements.ingredientsCatalogActions.classList.toggle("is-hidden", !isCatalogActionsVisible);
     }
@@ -7871,12 +9476,16 @@
     if (wasIngredientsPanelActive) {
       setNavigationCurrentPanel("ingredients-editor");
       setActiveSidebarNav("ingredients-editor", { syncIndicator: false });
-      state.sidebarAccordionTransitionToken += 1;
-      clearAllSidebarAccordionOpeningMotions();
-      applySidebarAccordionState(targetTab === "icons" ? "" : "ingredients");
-      if (!state.navigation.isProgrammaticScroll) {
-        setNavigationState(NAVIGATION_STATES.idle, { force: true });
-      }
+      var targetAccordionKey = targetTab === "icons" ? "" : "ingredients";
+      transitionSidebarAccordions(targetAccordionKey)
+        .catch(function () {
+          // ignore accordion interruptions during rapid tab switching
+        })
+        .finally(function () {
+          if (!state.navigation.isProgrammaticScroll) {
+            setNavigationState(NAVIGATION_STATES.idle, { force: true });
+          }
+        });
       scheduleSidebarActiveIndicatorSync();
     } else {
       setActivePanel("ingredients-editor");
@@ -7886,6 +9495,7 @@
     setItemEditorStatus("");
     setHomeEditorStatus("");
     setIngredientsEditorStatus("");
+    setCategoriesEditorStatus("");
     showItemEditorErrors([]);
     renderIngredientsEditor();
   }
@@ -8533,6 +10143,17 @@
       return { name: "ingredients", tab: "ingredients" };
     }
 
+    if (parts[0] === "categories" && parts[1]) {
+      return {
+        name: "categories-section",
+        categoryId: decodeURIComponent(parts.slice(1).join("/"))
+      };
+    }
+
+    if (parts[0] === "categories") {
+      return { name: "categories" };
+    }
+
     return { name: "dashboard" };
   }
 
@@ -8683,6 +10304,32 @@
       return;
     }
 
+    if (route.name === "categories") {
+      if (!state.hasDataLoaded) {
+        ensureDataLoaded(false);
+        return;
+      }
+      openCategoriesEditor({ skipRoute: true });
+      return;
+    }
+
+    if (route.name === "categories-section") {
+      if (!state.hasDataLoaded) {
+        ensureDataLoaded(false);
+        return;
+      }
+      var categoriesSectionId = String(route.categoryId || "").trim();
+      if (categoriesSectionId) {
+        clearPanelPostNavigationActions();
+        queuePanelPostNavigationAction("categories-editor", function () {
+          scrollToCategoriesSection(categoriesSectionId);
+          setActiveCategoriesSection(categoriesSectionId, { force: true });
+        });
+      }
+      openCategoriesEditor({ skipRoute: true });
+      return;
+    }
+
     openDashboard({ skipRoute: true });
   }
 
@@ -8716,12 +10363,19 @@
       });
     }
 
+    if (elements.sidebarNavCategories) {
+      elements.sidebarNavCategories.addEventListener("click", function () {
+        clearPanelPostNavigationActions();
+        navigateToRoute("/categories");
+      });
+    }
+
     elements.sidebarToggleButton.addEventListener("click", function () {
       setSidebarCollapsed(!state.sidebarCollapsed, { persist: true });
     });
 
     elements.sidebarSearchButton.addEventListener("click", function () {
-      setDataStatus("Buscador global en construccion. Usa el sidebar para navegar por ahora.");
+      openCommandPalette();
     });
 
     elements.sidebarUserButton.addEventListener("click", function () {
@@ -8796,11 +10450,34 @@
       });
     }
 
+    if (elements.sidebarCategoriesAccordion) {
+      elements.sidebarCategoriesAccordion.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-scroll-categories-section]");
+        if (!button) return;
+        var categoryId = button.getAttribute("data-scroll-categories-section") || "";
+        if (!categoryId) return;
+
+        if (state.currentPanel !== "categories-editor") {
+          clearPanelPostNavigationActions();
+          queuePanelPostNavigationAction("categories-editor", function () {
+            scrollToCategoriesSection(categoryId);
+            setActiveCategoriesSection(categoryId, { force: true });
+          });
+          navigateToRoute("/categories/" + encodeURIComponent(categoryId));
+          return;
+        }
+
+        scrollToCategoriesSection(categoryId);
+        setActiveCategoriesSection(categoryId, { force: true });
+        setHashSilently("/categories/" + encodeURIComponent(categoryId));
+      });
+    }
+
     if (elements.sidebarNav) {
       elements.sidebarNav.addEventListener("scroll", updateSidebarActiveIndicator, { passive: true });
     }
 
-    [elements.sidebarMenuAccordion, elements.sidebarHomepageAccordion, elements.sidebarIngredientsAccordion]
+    [elements.sidebarMenuAccordion, elements.sidebarHomepageAccordion, elements.sidebarIngredientsAccordion, elements.sidebarCategoriesAccordion]
       .filter(Boolean)
       .forEach(function (accordionElement) {
         accordionElement.addEventListener("transitionend", function (event) {
@@ -8827,6 +10504,12 @@
     if (elements.openIngredientsEditorButton) {
       elements.openIngredientsEditorButton.addEventListener("click", function () {
         openIngredientsEditor({ skipRoute: false });
+      });
+    }
+
+    if (elements.openCategoriesEditorButton) {
+      elements.openCategoriesEditorButton.addEventListener("click", function () {
+        openCategoriesEditor({ skipRoute: false });
       });
     }
 
@@ -9593,6 +11276,8 @@
           var tab = normalizeIngredientsTab(tabButton.getAttribute("data-ingredients-tab"));
           if (state.hasDataLoaded && state.currentPanel === "ingredients-editor") {
             openIngredientsEditor({ skipRoute: true, tab: tab });
+            setHashSilently(tab === "icons" ? "/ingredients/icons" : "/ingredients");
+            return;
           }
           if (tab === "icons") {
             navigateToRoute("/ingredients/icons");
@@ -9819,6 +11504,169 @@
     }
   }
 
+  function bindCategoriesEditorEvents() {
+    if (elements.categoriesNewButton) {
+      elements.categoriesNewButton.addEventListener("click", function () {
+        beginNewCategoryDraft({ skipRoute: true });
+      });
+    }
+
+    if (elements.categoriesExportJsonButton) {
+      elements.categoriesExportJsonButton.addEventListener("click", function () {
+        exportCurrentDrafts();
+      });
+    }
+
+    if (elements.categoriesClearDraftsButton) {
+      elements.categoriesClearDraftsButton.addEventListener("click", function () {
+        resetDraftsToBaseData();
+      });
+    }
+
+    if (elements.categoriesCardsContent) {
+      elements.categoriesCardsContent.addEventListener("click", function (event) {
+        var actionButton = event.target.closest("[data-categories-action]");
+        if (actionButton) {
+          var action = actionButton.getAttribute("data-categories-action") || "";
+          var sourceIndex = actionButton.getAttribute("data-categories-source-index");
+          if (action === "save") {
+            saveCategoryDraftBySourceIndex(sourceIndex);
+            return;
+          }
+          if (action === "cancel") {
+            cancelCategoryDraftBySourceIndex(sourceIndex);
+            return;
+          }
+          if (action === "delete") {
+            deleteCategoryBySourceIndex(sourceIndex);
+            return;
+          }
+          if (action === "save-new") {
+            saveNewCategoryDraft();
+            return;
+          }
+          if (action === "cancel-new") {
+            state.categoriesEditor.newDraft = null;
+            renderCategoriesEditor();
+            setCategoriesEditorStatus("Borrador nuevo descartado.");
+            return;
+          }
+        }
+
+        var card = event.target.closest("[data-categories-card-id]");
+        if (!card) return;
+        var cardId = String(card.getAttribute("data-categories-card-id") || "").trim();
+        if (!cardId) return;
+        setActiveCategoriesSection(cardId, { force: true });
+      });
+
+      elements.categoriesCardsContent.addEventListener("focusin", function (event) {
+        var card = event.target.closest("[data-categories-card-id]");
+        if (!card) return;
+        var cardId = String(card.getAttribute("data-categories-card-id") || "").trim();
+        if (!cardId) return;
+        setActiveCategoriesSection(cardId, { force: true });
+        setHashSilently("/categories/" + encodeURIComponent(cardId));
+      });
+
+      var syncCardField = function (event) {
+        var input = event.target.closest("[data-categories-field]");
+        if (!input) return;
+        var field = String(input.getAttribute("data-categories-field") || "").trim();
+        if (!field || field === "visible") return;
+        var sourceIndex = input.getAttribute("data-categories-source-index");
+        var isNew = input.getAttribute("data-categories-new") === "true";
+        var changed = updateCategoryDraftField({
+          field: field,
+          value: input.value,
+          sourceIndex: sourceIndex,
+          isNew: isNew
+        });
+        if (!changed) return;
+        setCategoriesEditorStatus("Cambios pendientes en Categories. Presiona Guardar en el card.");
+      };
+
+      elements.categoriesCardsContent.addEventListener("input", syncCardField);
+      elements.categoriesCardsContent.addEventListener("change", syncCardField);
+    }
+
+    if (elements.categoriesOrderList) {
+      elements.categoriesOrderList.addEventListener("dragstart", function (event) {
+        var handle = event.target.closest("[data-categories-order-handle]");
+        if (!handle) return;
+        var sourceIndex = Number(handle.getAttribute("data-categories-order-index"));
+        if (!Number.isInteger(sourceIndex) || sourceIndex < 0) return;
+
+        resetCategoriesDragState();
+        dragState.categoryOrderIndex = sourceIndex;
+        dragState.categoryOrderDropIndex = sourceIndex;
+
+        var orderItem = handle.closest(".categories-order-item");
+        if (orderItem) {
+          orderItem.classList.add("home-featured-item--dragging");
+        }
+        elements.categoriesOrderList.classList.add("home-featured-list--dragging");
+
+        if (event.dataTransfer) {
+          event.dataTransfer.effectAllowed = "move";
+          event.dataTransfer.setData("text/plain", String(sourceIndex));
+          if (orderItem) {
+            event.dataTransfer.setDragImage(
+              orderItem,
+              Math.round(orderItem.offsetWidth / 2),
+              Math.round(orderItem.offsetHeight / 2)
+            );
+          }
+        }
+      });
+
+      elements.categoriesOrderList.addEventListener("dragover", function (event) {
+        if (!Number.isInteger(dragState.categoryOrderIndex) || dragState.categoryOrderIndex < 0) return;
+        var targetItem = event.target.closest(".categories-order-item");
+        if (!targetItem) return;
+
+        var resolvedDrop = resolveCategoriesOrderDropTarget(targetItem, dragState.categoryOrderIndex);
+        event.preventDefault();
+        if (event.dataTransfer) {
+          event.dataTransfer.dropEffect = "move";
+        }
+
+        clearCategoriesDropMarkers();
+        if (!resolvedDrop) return;
+        dragState.categoryOrderDropIndex = resolvedDrop.index;
+        targetItem.classList.add("home-featured-item--drop-target");
+      });
+
+      elements.categoriesOrderList.addEventListener("drop", function (event) {
+        if (!Number.isInteger(dragState.categoryOrderIndex) || dragState.categoryOrderIndex < 0) return;
+        var sourceIndex = dragState.categoryOrderIndex;
+        var targetItem = event.target.closest(".categories-order-item");
+        if (!targetItem) {
+          resetCategoriesDragState();
+          return;
+        }
+
+        event.preventDefault();
+        var resolvedDrop = resolveCategoriesOrderDropTarget(targetItem, sourceIndex);
+        if (!resolvedDrop) {
+          resetCategoriesDragState();
+          return;
+        }
+
+        var beforeRects = captureCategoriesOrderItemRects();
+        applyCategoriesReorder(sourceIndex, resolvedDrop.index);
+        animateCategoriesOrderReorder(beforeRects);
+        resetCategoriesDragState();
+      });
+
+      elements.categoriesOrderList.addEventListener("dragend", function (event) {
+        var handle = event.target.closest("[data-categories-order-handle]");
+        if (!handle && !Number.isInteger(dragState.categoryOrderIndex)) return;
+        resetCategoriesDragState();
+      });
+    }
+  }
+
   function bindEvents() {
     mountItemEditorToggles();
     syncUxTimingCssVars();
@@ -9858,10 +11706,12 @@
     }
 
     bindSidebarEvents();
+    bindCommandPaletteEvents();
     bindMenuBrowserEvents();
     bindItemEditorEvents();
     bindHomeEditorEvents();
     bindIngredientsEditorEvents();
+    bindCategoriesEditorEvents();
 
     window.addEventListener("resize", function () {
       syncSidebarViewportState();
@@ -9882,14 +11732,25 @@
     });
 
     window.addEventListener("keydown", function (event) {
-      if (event.key === "Escape" && isSidebarUserMenuOpen()) {
-        closeSidebarUserMenu();
+      if (event.key === "Escape") {
+        if (isCommandPaletteOpen()) {
+          event.preventDefault();
+          closeCommandPalette();
+          return;
+        }
+        if (isSidebarUserMenuOpen()) {
+          closeSidebarUserMenu();
+        }
       }
 
       var isShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k";
-      if (!isShortcut) return;
-      event.preventDefault();
-      elements.sidebarSearchButton.click();
+      if (isShortcut) {
+        event.preventDefault();
+        toggleCommandPalette();
+        return;
+      }
+
+      handleCommandPaletteKeydown(event);
     });
   }
 
@@ -9928,12 +11789,14 @@
 
     identity.on("logout", function () {
       showLoginView();
+      closeCommandPalette({ immediate: true, returnFocusToSearch: false });
 
       state.data = null;
       state.drafts.menu = null;
       state.drafts.availability = null;
       state.drafts.home = null;
       state.drafts.ingredients = null;
+      state.drafts.categories = null;
       state.hasDataLoaded = false;
       state.currentPanel = "dashboard";
       state.visiblePanel = "dashboard";
@@ -9944,6 +11807,7 @@
       state.homeActiveSectionId = "";
       state.homeAnchorTargets = [];
       state.ingredientsAnchorTargets = [];
+      state.categoriesAnchorTargets = [];
       if (state.menuScrollSpyFrame) {
         window.cancelAnimationFrame(state.menuScrollSpyFrame);
         state.menuScrollSpyFrame = 0;
@@ -9955,6 +11819,10 @@
       if (state.ingredientsScrollSpyFrame) {
         window.cancelAnimationFrame(state.ingredientsScrollSpyFrame);
         state.ingredientsScrollSpyFrame = 0;
+      }
+      if (state.categoriesScrollSpyFrame) {
+        window.cancelAnimationFrame(state.categoriesScrollSpyFrame);
+        state.categoriesScrollSpyFrame = 0;
       }
       clearAllSidebarAccordionOpeningMotions();
       clearSidebarIndicatorSyncTimers();
@@ -9998,12 +11866,24 @@
         draft: null,
         validationReport: null
       };
+      state.categoriesEditor = {
+        activeCategoryId: "",
+        validationReport: null,
+        usageByCategoryId: {},
+        draftBySourceIndex: {},
+        newDraft: null
+      };
+      state.commandPalette = {
+        isOpen: false,
+        selectedIndex: 0
+      };
 
       setDataStatus("Inicia sesion para cargar datos.");
       setMenuBrowserStatus("");
       setItemEditorStatus("");
       setHomeEditorStatus("");
       setIngredientsEditorStatus("");
+      setCategoriesEditorStatus("");
       showItemEditorErrors([]);
       setDraftsBanner(false);
       updateDashboardMetrics();

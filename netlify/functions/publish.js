@@ -5,6 +5,7 @@
 // Production branch: GH_BRANCH or GITHUB_BRANCH (defaults to master)
 // Preview branch: CMS_PREVIEW_BRANCH (defaults to cms-preview)
 var ingredientsContract = require("../../shared/ingredients-contract.js");
+var categoriesContract = require("../../shared/categories-contract.js");
 var RATE_LIMIT_WINDOW_MS = 30 * 1000;
 var publishRateLimitByUser = Object.create(null);
 
@@ -50,6 +51,12 @@ function validateIngredientsPayload(payload, menuPayload) {
   return ingredientsContract.validateIngredientsContract(payload, {
     menuPayload: menuPayload,
     normalizeAliases: true
+  });
+}
+
+function validateCategoriesPayload(payload, menuPayload) {
+  return categoriesContract.validateCategoriesContract(payload, {
+    menuPayload: menuPayload
   });
 }
 
@@ -284,6 +291,8 @@ exports.handler = async function (event, context) {
   var normalizedHome = hasHomePayload ? normalizeJsonValue(body.home) : null;
   var hasIngredientsPayload = typeof body.ingredients !== "undefined";
   var normalizedIngredients = hasIngredientsPayload ? normalizeJsonValue(body.ingredients) : null;
+  var hasCategoriesPayload = typeof body.categories !== "undefined";
+  var normalizedCategories = hasCategoriesPayload ? normalizeJsonValue(body.categories) : null;
   var hasMediaPayload = typeof body.media !== "undefined";
   var normalizedMedia = hasMediaPayload ? normalizeJsonValue(body.media) : null;
   if (
@@ -291,6 +300,7 @@ exports.handler = async function (event, context) {
     !normalizedAvailability ||
     (hasHomePayload && !normalizedHome) ||
     (hasIngredientsPayload && !normalizedIngredients) ||
+    (hasCategoriesPayload && !normalizedCategories) ||
     (hasMediaPayload && !normalizedMedia)
   ) {
     return jsonResponse(400, { error: "Invalid payload" });
@@ -313,11 +323,29 @@ exports.handler = async function (event, context) {
     }
   }
 
+  var categoriesValidation = hasCategoriesPayload
+    ? validateCategoriesPayload(body.categories, body.menu)
+    : { errors: [], warnings: [] };
+  if (categoriesValidation.errors.length) {
+    return jsonResponse(400, {
+      error: "Invalid categories payload",
+      details: categoriesValidation.errors.slice(0, 30),
+      warnings: categoriesValidation.warnings.slice(0, 20)
+    });
+  }
+  if (hasCategoriesPayload) {
+    normalizedCategories = normalizeJsonValue(body.categories);
+    if (!normalizedCategories) {
+      return jsonResponse(400, { error: "Invalid payload" });
+    }
+  }
+
   try {
     var menuPath = "data/menu.json";
     var availabilityPath = "data/availability.json";
     var homePath = "data/home.json";
     var ingredientsPath = "data/ingredients.json";
+    var categoriesPath = "data/categories.json";
     var mediaPath = "data/media.json";
 
     if (target === "preview" && targetBranch !== productionBranch) {
@@ -368,6 +396,17 @@ exports.handler = async function (event, context) {
       );
     }
 
+    var categoriesRemote = null;
+    if (hasCategoriesPayload) {
+      categoriesRemote = await readGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        categoriesPath,
+        githubToken
+      );
+    }
+
     var mediaRemote = null;
     if (hasMediaPayload) {
       mediaRemote = await readGithubFile(
@@ -385,16 +424,22 @@ exports.handler = async function (event, context) {
     var ingredientsChanged = hasIngredientsPayload
       ? ingredientsRemote.normalized !== normalizedIngredients
       : false;
+    var categoriesChanged = hasCategoriesPayload
+      ? categoriesRemote.normalized !== normalizedCategories
+      : false;
     var mediaChanged = hasMediaPayload ? mediaRemote.normalized !== normalizedMedia : false;
+    var validationWarnings = ingredientsValidation.warnings
+      .concat(categoriesValidation.warnings)
+      .slice(0, 20);
 
-    if (!menuChanged && !availabilityChanged && !homeChanged && !ingredientsChanged && !mediaChanged) {
+    if (!menuChanged && !availabilityChanged && !homeChanged && !ingredientsChanged && !categoriesChanged && !mediaChanged) {
       return jsonResponse(200, {
         success: true,
         skipped: true,
         reason: "no changes",
         target: target,
         branch: targetBranch,
-        validationWarnings: ingredientsValidation.warnings.slice(0, 20)
+        validationWarnings: validationWarnings
       });
     }
 
@@ -452,6 +497,19 @@ exports.handler = async function (event, context) {
       ) || latestCommitSha;
     }
 
+    if (categoriesChanged) {
+      latestCommitSha = await writeGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        categoriesPath,
+        githubToken,
+        "CMS: update categories (" + target + ")",
+        body.categories,
+        categoriesRemote.sha
+      ) || latestCommitSha;
+    }
+
     if (mediaChanged) {
       latestCommitSha = await writeGithubFile(
         githubOwner,
@@ -475,9 +533,10 @@ exports.handler = async function (event, context) {
         availability: availabilityChanged,
         home: homeChanged,
         ingredients: ingredientsChanged,
+        categories: categoriesChanged,
         media: mediaChanged
       },
-      validationWarnings: ingredientsValidation.warnings.slice(0, 20),
+      validationWarnings: validationWarnings,
       commit: latestCommitSha
     });
   } catch (error) {
