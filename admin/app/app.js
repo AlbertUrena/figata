@@ -777,236 +777,36 @@
 
   function waitForAnimation(element, options) { return N.waitForAnimation(element, options); }
 
-  function getCommandPaletteItems() {
-    if (!elements.commandPaletteList) return [];
-    return Array.prototype.slice.call(elements.commandPaletteList.querySelectorAll(".command-palette__item"));
-  }
-
-  function isCommandPaletteOpen() {
-    return Boolean(state.commandPalette && state.commandPalette.isOpen);
-  }
-
-  function setCommandPaletteLiveMessage(message) {
-    if (!elements.commandPaletteLive) return;
-    elements.commandPaletteLive.textContent = message || "";
-  }
-
-  function getCommandPaletteItemIndex(itemElement) {
-    if (!itemElement) return -1;
-    var value = Number.parseInt(itemElement.getAttribute("data-command-index"), 10);
-    return Number.isFinite(value) ? value : -1;
-  }
-
-  function setCommandPaletteSelectedIndex(nextIndex, options) {
-    options = options || {};
-    var items = getCommandPaletteItems();
-    if (!items.length) {
-      state.commandPalette.selectedIndex = 0;
-      if (elements.commandPaletteInput) {
-        elements.commandPaletteInput.removeAttribute("aria-activedescendant");
-      }
-      if (elements.commandPaletteList) {
-        elements.commandPaletteList.removeAttribute("aria-activedescendant");
-      }
-      return;
-    }
-
-    var maxIndex = items.length - 1;
-    var normalizedIndex = Number(nextIndex);
-    if (!Number.isFinite(normalizedIndex)) {
-      normalizedIndex = 0;
-    }
-    if (normalizedIndex < 0) normalizedIndex = 0;
-    if (normalizedIndex > maxIndex) normalizedIndex = maxIndex;
-    state.commandPalette.selectedIndex = normalizedIndex;
-
-    items.forEach(function (itemElement, itemIndex) {
-      var isSelected = itemIndex === normalizedIndex;
-      itemElement.setAttribute("data-selected", isSelected ? "true" : "false");
-      itemElement.setAttribute("aria-selected", isSelected ? "true" : "false");
-    });
-
-    var selectedItem = items[normalizedIndex];
-    var selectedId = selectedItem ? selectedItem.id || "" : "";
-    if (elements.commandPaletteInput) {
-      if (selectedId) {
-        elements.commandPaletteInput.setAttribute("aria-activedescendant", selectedId);
-      } else {
-        elements.commandPaletteInput.removeAttribute("aria-activedescendant");
-      }
-    }
-    if (elements.commandPaletteList) {
-      if (selectedId) {
-        elements.commandPaletteList.setAttribute("aria-activedescendant", selectedId);
-      } else {
-        elements.commandPaletteList.removeAttribute("aria-activedescendant");
-      }
-    }
-
-    if (selectedItem && options.scroll !== false) {
-      selectedItem.scrollIntoView({ block: "nearest" });
-    }
-    if (selectedItem) {
-      var label = selectedItem.getAttribute("data-command-label") || selectedItem.textContent || "";
-      setCommandPaletteLiveMessage("Selected: " + String(label).trim());
-    }
-  }
-
-  function openCommandPalette(options) {
-    options = options || {};
-    if (!elements.commandPaletteShell || !elements.commandPaletteDialog) return;
-
-    if (isCommandPaletteOpen()) {
-      if (options.focusInput !== false && elements.commandPaletteInput) {
-        elements.commandPaletteInput.focus({ preventScroll: true });
-      }
-      return;
-    }
-
-    closeSidebarUserMenu();
-    state.commandPalette.isOpen = true;
-    elements.commandPaletteShell.classList.remove("is-hidden");
-    elements.commandPaletteShell.setAttribute("aria-hidden", "false");
-    elements.commandPaletteShell.setAttribute("data-state", "closed");
-    void elements.commandPaletteShell.offsetHeight;
-
-    window.requestAnimationFrame(function () {
-      if (!isCommandPaletteOpen()) return;
-      elements.commandPaletteShell.setAttribute("data-state", "open");
-    });
-
-    if (elements.commandPaletteInput) {
-      elements.commandPaletteInput.value = "";
-    }
-    setCommandPaletteSelectedIndex(0, { scroll: false });
-
-    if (options.focusInput !== false && elements.commandPaletteInput) {
-      window.setTimeout(function () {
-        if (!isCommandPaletteOpen()) return;
-        elements.commandPaletteInput.focus({ preventScroll: true });
-      }, 40);
-    }
-  }
-
-  function closeCommandPalette(options) {
-    options = options || {};
-    if (!elements.commandPaletteShell || !elements.commandPaletteDialog) return;
-
-    if (!isCommandPaletteOpen() && elements.commandPaletteShell.classList.contains("is-hidden")) {
-      return;
-    }
-
-    state.commandPalette.isOpen = false;
-    elements.commandPaletteShell.setAttribute("data-state", "closed");
-    elements.commandPaletteShell.setAttribute("aria-hidden", "true");
-    setCommandPaletteLiveMessage("");
-
-    var finalizeClose = function () {
-      if (isCommandPaletteOpen()) return;
-      elements.commandPaletteShell.classList.add("is-hidden");
+  // --- Command Palette (from modules/command-palette.js) ---
+  var CP = window.FigataAdmin.commandPalette;
+  function _cpCtx() {
+    return {
+      state: state,
+      elements: {
+        shell: elements.commandPaletteShell,
+        dialog: elements.commandPaletteDialog,
+        overlay: elements.commandPaletteOverlay,
+        input: elements.commandPaletteInput,
+        list: elements.commandPaletteList,
+        live: elements.commandPaletteLive,
+        searchButton: elements.sidebarSearchButton
+      },
+      closeSidebarUserMenu: closeSidebarUserMenu,
+      waitForTransition: waitForTransition,
+      setDataStatus: setDataStatus
     };
-
-    if (options.immediate) {
-      finalizeClose();
-    } else {
-      waitForTransition(elements.commandPaletteDialog, { properties: ["opacity", "transform"] })
-        .then(finalizeClose)
-        .catch(finalizeClose);
-    }
-
-    if (options.returnFocusToSearch !== false && elements.sidebarSearchButton && !state.sidebarCollapsed) {
-      elements.sidebarSearchButton.focus({ preventScroll: true });
-    }
   }
-
-  function toggleCommandPalette() {
-    if (isCommandPaletteOpen()) {
-      closeCommandPalette();
-      return;
-    }
-    openCommandPalette();
-  }
-
-  function activateCommandPaletteItem(itemElement) {
-    if (!itemElement) return;
-    var label = itemElement.getAttribute("data-command-label") || itemElement.textContent || "Command";
-    setDataStatus("Command Palette demo: \"" + String(label).trim() + "\" (accion aun no conectada).");
-    closeCommandPalette({ returnFocusToSearch: false });
-  }
-
-  function handleCommandPaletteKeydown(event) {
-    if (!event || !isCommandPaletteOpen()) return false;
-
-    var items = getCommandPaletteItems();
-    if (!items.length) return false;
-    var currentIndex = Number(state.commandPalette.selectedIndex || 0);
-
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      setCommandPaletteSelectedIndex(Math.min(currentIndex + 1, items.length - 1));
-      return true;
-    }
-    if (event.key === "ArrowUp") {
-      event.preventDefault();
-      setCommandPaletteSelectedIndex(Math.max(currentIndex - 1, 0));
-      return true;
-    }
-    if (event.key === "Home") {
-      event.preventDefault();
-      setCommandPaletteSelectedIndex(0);
-      return true;
-    }
-    if (event.key === "End") {
-      event.preventDefault();
-      setCommandPaletteSelectedIndex(items.length - 1);
-      return true;
-    }
-    if (event.key === "Enter") {
-      event.preventDefault();
-      activateCommandPaletteItem(items[currentIndex] || null);
-      return true;
-    }
-
-    return false;
-  }
-
-  function bindCommandPaletteEvents() {
-    if (!elements.commandPaletteShell || !elements.commandPaletteDialog) return;
-
-    if (elements.commandPaletteOverlay) {
-      elements.commandPaletteOverlay.addEventListener("click", function () {
-        closeCommandPalette();
-      });
-    }
-
-    elements.commandPaletteDialog.addEventListener("mousedown", function (event) {
-      event.stopPropagation();
-    });
-
-    elements.commandPaletteDialog.addEventListener("click", function (event) {
-      event.stopPropagation();
-    });
-
-    if (elements.commandPaletteList) {
-      elements.commandPaletteList.addEventListener("mousemove", function (event) {
-        var itemElement = event.target.closest(".command-palette__item");
-        if (!itemElement) return;
-        var itemIndex = getCommandPaletteItemIndex(itemElement);
-        if (itemIndex < 0 || itemIndex === state.commandPalette.selectedIndex) return;
-        setCommandPaletteSelectedIndex(itemIndex, { scroll: false });
-      });
-
-      elements.commandPaletteList.addEventListener("click", function (event) {
-        var itemElement = event.target.closest(".command-palette__item");
-        if (!itemElement) return;
-        var itemIndex = getCommandPaletteItemIndex(itemElement);
-        if (itemIndex >= 0) {
-          setCommandPaletteSelectedIndex(itemIndex, { scroll: false });
-        }
-        activateCommandPaletteItem(itemElement);
-      });
-    }
-  }
+  function getCommandPaletteItems() { return CP.getItems(_cpCtx()); }
+  function isCommandPaletteOpen() { return CP.isOpen(_cpCtx()); }
+  function setCommandPaletteLiveMessage(message) { return CP.setLiveMessage(_cpCtx(), message); }
+  function getCommandPaletteItemIndex(itemElement) { return CP.getItemIndex(itemElement); }
+  function setCommandPaletteSelectedIndex(nextIndex, options) { return CP.setSelectedIndex(_cpCtx(), nextIndex, options); }
+  function openCommandPalette(options) { return CP.open(_cpCtx(), options); }
+  function closeCommandPalette(options) { return CP.close(_cpCtx(), options); }
+  function toggleCommandPalette() { return CP.toggle(_cpCtx()); }
+  function activateCommandPaletteItem(itemElement) { return CP.activateItem(_cpCtx(), itemElement); }
+  function handleCommandPaletteKeydown(event) { return CP.handleKeydown(_cpCtx(), event); }
+  function bindCommandPaletteEvents() { return CP.bindEvents(_cpCtx()); }
 
   function createNavigationTimelineCancelError() { return N.createNavigationTimelineCancelError(); }
   function isNavigationTimelineCurrent(timelineToken) { return N.isNavigationTimelineCurrent(state, timelineToken); }
