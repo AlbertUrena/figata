@@ -381,87 +381,21 @@
   var U = window.FigataAdmin.utils;
   function deepClone(value) { return U.deepClone(value); }
 
-  function getIdentity() {
-    return window.netlifyIdentity || null;
-  }
-
-  function isLocalDevHost() {
-    var hostname = window.location.hostname;
-    return hostname === "127.0.0.1" || hostname === "localhost" || hostname === "[::1]";
-  }
-
-  function setDevAuthBypass(enabled) {
-    try {
-      if (enabled) {
-        window.localStorage.setItem(DEV_AUTH_BYPASS_KEY, "1");
-      } else {
-        window.localStorage.removeItem(DEV_AUTH_BYPASS_KEY);
-      }
-    } catch (_error) {
-      // ignore storage errors
-    }
-  }
-
-  function isDevAuthBypassEnabled() {
-    if (!isLocalDevHost()) return false;
-    try {
-      return window.localStorage.getItem(DEV_AUTH_BYPASS_KEY) === "1";
-    } catch (_error) {
-      return false;
-    }
-  }
-
-  function applyDevAuthBypassQueryToggle() {
-    if (!isLocalDevHost()) return;
-    var params = new URLSearchParams(window.location.search);
-    var value = params.get("devAuthBypass");
-    if (value === "1") {
-      setDevAuthBypass(true);
-    } else if (value === "0") {
-      setDevAuthBypass(false);
-    }
-  }
-
-  function createLocalBypassUser() {
-    return {
-      id: "local-dev-bypass",
-      email: "local-admin@figata.local",
-      user_metadata: {
-        name: "Local Admin (Bypass)"
-      }
-    };
-  }
+  // --- Auth (from modules/auth.js) ---
+  var A = window.FigataAdmin.auth;
+  function getIdentity() { return A.getIdentity(); }
+  function isLocalDevHost() { return A.isLocalDevHost(); }
+  function setDevAuthBypass(enabled) { return A.setDevAuthBypass(enabled); }
+  function isDevAuthBypassEnabled() { return A.isDevAuthBypassEnabled(); }
+  function applyDevAuthBypassQueryToggle() { return A.applyDevAuthBypassQueryToggle(); }
+  function createLocalBypassUser() { return A.createLocalBypassUser(); }
+  function getUserEmail(user) { return A.getUserEmail(user); }
+  function getUserDisplayName(user) { return A.getUserDisplayName(user); }
 
   function activateLocalAuthBypass() {
     setDevAuthBypass(true);
     showDashboardShell(createLocalBypassUser());
     setDataStatus("Modo local sin login activo. Publish requiere Netlify Identity real.");
-  }
-
-  function getUserEmail(user) {
-    if (!user) return "";
-    return user.email || (user.user_metadata && user.user_metadata.email) || "Usuario autenticado";
-  }
-
-  function getUserDisplayName(user) {
-    if (!user) return "Usuario";
-
-    var metadata = user.user_metadata || {};
-    var appMetadata = user.app_metadata || {};
-    var name =
-      metadata.full_name ||
-      metadata.name ||
-      appMetadata.full_name ||
-      appMetadata.name ||
-      "";
-
-    if (name) return String(name).trim();
-
-    var email = getUserEmail(user);
-    var localPart = String(email || "").split("@")[0];
-    if (localPart) return localPart;
-
-    return "Usuario";
   }
 
   function getInitials(value) { return U.getInitials(value); }
