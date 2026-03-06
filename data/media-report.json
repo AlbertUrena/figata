@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-05T17:07:40.060Z",
+  "generatedAt": "2026-03-06T01:47:45.277Z",
   "summary": {
     "errors": 0,
     "warnings": 2,
@@ -9,13 +9,13 @@
     "unknownMediaItems": 0,
     "missingVariants": 35,
     "brokenPaths": 0,
-    "duplicatedPaths": 8
+    "duplicatedPaths": 9
   },
   "details": {
     "errors": [],
     "warnings": [
       "Variantes faltantes en media.items: 35",
-      "Rutas duplicadas potencialmente innecesarias: 8"
+      "Rutas duplicadas potencialmente innecesarias: 9"
     ],
     "missingMediaItems": [],
     "unknownMediaItems": [],
@@ -237,6 +237,19 @@
           },
           {
             "itemId": "quattro_formaggi_truffle",
+            "variant": "modal"
+          }
+        ]
+      },
+      {
+        "path": "assets/menu/bellezza.webp",
+        "uses": [
+          {
+            "itemId": "bellezza",
+            "variant": "card"
+          },
+          {
+            "itemId": "bellezza",
             "variant": "modal"
           }
         ]

@@ -13,8 +13,6 @@ Official website for Figata - pizza & wine.
 - Categorias: `data/categories.json`
 - Disponibilidad: `data/availability.json`
 - Ingredientes + iconos: `data/ingredients.json`
-- Alias de ingredientes: `data/ingredients-usage.json`
-- `data/menu-index.json` es solo referencia/tooling (no runtime en UI).
 
 ## Como agregar un item nuevo al menu
 1. Agrega el item dentro de su seccion en `data/menu.json` (`sections[].items[]`).
@@ -165,4 +163,4 @@ Cada categoria define:
 1. Agrega el asset en `assets/Ingredients/`.
 2. Registra el icono en `data/ingredients.json` bajo `icons`.
 3. Asocia el ingrediente en `data/ingredients.json` bajo `ingredients` (`icon`, `label`/`name`, `aliases`).
-4. Si necesitas matching legacy, agrega mapeo en `data/ingredients-usage.json` bajo `ingredientAliasesToIcon`.
+4. Usa `aliases` en cada ingrediente para cubrir variantes legacy o nombres alternos.

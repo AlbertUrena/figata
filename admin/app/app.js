@@ -21,12 +21,38 @@
   var LOCAL_SAVE_DRAFTS_ENDPOINT = "/__local/save-drafts";
   var MENU_MODAL_PLACEHOLDER_IMAGE = "assets/menu/placeholders/modal.svg";
   var DEV_AUTH_BYPASS_KEY = "figata_admin_dev_auth_bypass";
-  var SIDEBAR_ACCORDION_SWITCH_DELAY_MS = 260;
-  var SIDEBAR_ACCORDION_OPEN_DELAY_MS = 0;
-  var SIDEBAR_ACCORDION_STAGGER_STEP_MS = 40;
-  var SIDEBAR_ACCORDION_STAGGER_BASE_MS = 170;
-  var PANEL_FADE_OUT_DELAY_MS = 88;
-  var PANEL_FADE_IN_CLEANUP_DELAY_MS = 176;
+  var UX_TIMING = {
+    accordionSwitchDelayMs: 260,
+    accordionOpenDelayMs: 120,
+    accordionStaggerStepMs: 40,
+    accordionStaggerBaseMs: 170,
+    accordionSettleBufferMs: 70,
+    panelFadeOutDelayMs: 88,
+    panelFadeInCleanupDelayMs: 176,
+    indicatorSettleMs: 280,
+    indicatorOpacityMs: 180,
+    anchorScrollOffsetPx: 96,
+    scrollSpyThresholdPx: 154,
+    programmaticScrollLockMs: 460,
+    programmaticScrollUnlockBufferMs: 24
+  };
+  var DEBUG_NAVIGATION = false;
+  var NAVIGATION_STATES = {
+    idle: "idle",
+    switchingPanel: "switchingPanel",
+    closingAccordion: "closingAccordion",
+    openingAccordion: "openingAccordion",
+    scrollingToAnchor: "scrollingToAnchor",
+    syncingScrollSpy: "syncingScrollSpy"
+  };
+  var NAVIGATION_STATE_GRAPH = {
+    idle: ["idle", "switchingPanel", "scrollingToAnchor", "syncingScrollSpy"],
+    switchingPanel: ["switchingPanel", "closingAccordion", "openingAccordion", "scrollingToAnchor", "syncingScrollSpy", "idle"],
+    closingAccordion: ["closingAccordion", "openingAccordion", "switchingPanel", "scrollingToAnchor", "syncingScrollSpy", "idle"],
+    openingAccordion: ["openingAccordion", "switchingPanel", "scrollingToAnchor", "syncingScrollSpy", "idle"],
+    scrollingToAnchor: ["scrollingToAnchor", "syncingScrollSpy", "switchingPanel", "idle"],
+    syncingScrollSpy: ["syncingScrollSpy", "idle", "switchingPanel", "scrollingToAnchor"]
+  };
   var HOME_FEATURED_LIMIT = 8;
   var HOME_ANNOUNCEMENT_TYPES = ["highlight", "warning", "info"];
   var HOME_DEFAULT_NAVBAR_LINKS = [
@@ -209,6 +235,14 @@
     { id: "frutos_secos", label: "Frutos Secos" },
     { id: "otros", label: "Otros" }
   ];
+  var INGREDIENT_ISSUE_ICON_SVG =
+    '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3" aria-hidden="true" focusable="false">' +
+    '<path d="M508.5-291.5Q520-303 520-320t-11.5-28.5Q497-360 480-360t-28.5 11.5Q440-337 440-320t11.5 28.5Q463-280 480-280t28.5-11.5ZM440-440h80v-240h-80v240Zm40 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/>' +
+    "</svg>";
+  var INGREDIENT_NAV_BADGE_ICON_SVG =
+    '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor" aria-hidden="true" focusable="false">' +
+    '<path d="M640-80q-100 0-170-70t-70-170q0-100 70-170t170-70q100 0 170 70t70 170q0 100-70 170T640-80Zm0-80q66 0 113-47t47-113q0-66-47-113t-113-47q-66 0-113 47t-47 113q0 66 47 113t113 47Zm-480 0q-33 0-56.5-23.5T80-240v-304q0-8 1.5-16t4.5-16l80-184h-6q-17 0-28.5-11.5T120-800v-40q0-17 11.5-28.5T160-880h280q17 0 28.5 11.5T480-840v40q0 17-11.5 28.5T440-760h-6l66 152q-19 10-36 21t-32 25l-84-198h-96l-92 216v304h170q5 21 13.5 41.5T364-160H160Zm480-440q-42 0-71-29t-29-71q0-42 29-71t71-29v200q0-42 29-71t71-29q42 0 71 29t29 71H640Z"/>' +
+    "</svg>";
   var INGREDIENT_CATEGORY_BY_ID = {
     burrata_fresca: "lacteos_quesos",
     fior_di_latte: "lacteos_quesos",
@@ -352,6 +386,7 @@
       ingredientList: [],
       iconsById: {},
       iconList: [],
+      iconUsageByKey: {},
       tagsById: {},
       tagList: [],
       allergensById: {},
@@ -367,13 +402,25 @@
     visiblePanel: "dashboard",
     sidebarCollapsed: false,
     sidebarAccordionOpenKey: "",
-    sidebarAccordionPendingKey: "",
-    sidebarAccordionTimer: 0,
+    sidebarAccordionTransitionToken: 0,
     sidebarIndicatorSyncFrame: 0,
-    sidebarIndicatorSyncTimers: [],
-    panelFadeOutTimer: 0,
-    panelFadeInTimer: 0,
-    panelTransitionToken: 0,
+    sidebarCollapseSyncToken: 0,
+    navigationTimelineToken: 0,
+    navigationTimelineActiveToken: 0,
+    isPanelTransitioning: false,
+    navigation: {
+      currentState: NAVIGATION_STATES.idle,
+      currentPanel: "dashboard",
+      currentSection: "",
+      isProgrammaticScroll: false
+    },
+    programmaticScrollLockUntil: 0,
+    programmaticScrollLockTimer: 0,
+    panelPostNavigationActions: {
+      "menu-browser": null,
+      "home-editor": null,
+      "ingredients-editor": null
+    },
     menuActiveAnchor: {
       categoryId: "",
       subcategoryId: ""
@@ -402,6 +449,8 @@
       }
     },
     ingredientsEditor: {
+      tab: "ingredients",
+      lastRenderedTab: "ingredients",
       view: "catalog",
       search: "",
       activeCategoryId: "",
@@ -409,7 +458,15 @@
       selectedIngredientId: "",
       selectedIsNew: false,
       draft: null,
-      validationReport: null
+      validationReport: null,
+      iconsView: "catalog",
+      iconSearch: "",
+      selectedIconKey: "",
+      selectedIconIsNew: false,
+      iconDraft: null,
+      tabAnimationFrame: 0,
+      tabAnimationTimer: 0,
+      tabAnimationTargetVisibilityMap: null
     }
   };
 
@@ -473,7 +530,6 @@
     menuClearFilterButton: document.getElementById("menu-clear-filter-button"),
     menuNewItemButton: document.getElementById("menu-new-item-button"),
     homeEditorStatus: document.getElementById("home-editor-status"),
-    homeSectionsNav: document.getElementById("home-sections-nav"),
     homeSectionsContent: document.getElementById("home-sections-content"),
     homeSaveButton: document.getElementById("home-save-button"),
     homeExportJsonButton: document.getElementById("home-export-json-button"),
@@ -482,27 +538,46 @@
     ingredientsEditorStatus: document.getElementById("ingredients-editor-status"),
     ingredientsPanelTitle: document.getElementById("ingredients-panel-title"),
     ingredientsPanelSubtitle: document.getElementById("ingredients-panel-subtitle"),
+    ingredientsTabsNav: document.getElementById("ingredients-tabs-nav"),
+    ingredientsTabs: Array.prototype.slice.call(document.querySelectorAll(".ingredients-tab")),
+    ingredientsTabIngredients: document.getElementById("ingredients-tab-ingredients"),
+    ingredientsTabIcons: document.getElementById("ingredients-tab-icons"),
     ingredientsCatalogView: document.getElementById("ingredients-catalog-view"),
     ingredientsDetailView: document.getElementById("ingredients-detail-view"),
+    ingredientsIconsCatalogView: document.getElementById("ingredients-icons-catalog-view"),
+    ingredientsIconsDetailView: document.getElementById("ingredients-icons-detail-view"),
     ingredientsCatalogActions: document.getElementById("ingredients-catalog-actions"),
     ingredientsEditorActions: document.getElementById("ingredients-editor-actions"),
     ingredientsBackButton: document.getElementById("ingredients-back-button"),
     ingredientsDetailTitle: document.getElementById("ingredients-detail-title"),
+    ingredientsIconsBackButton: document.getElementById("ingredients-icons-back-button"),
+    ingredientsIconsDetailTitle: document.getElementById("ingredients-icons-detail-title"),
     ingredientsSearchInput: document.getElementById("ingredients-search-input"),
     ingredientsCatalogCount: document.getElementById("ingredients-catalog-count"),
     ingredientsGlobalWarning: document.getElementById("ingredients-global-warning"),
     ingredientsList: document.getElementById("ingredients-list"),
     ingredientsNewButton: document.getElementById("ingredients-new-button"),
+    ingredientsNormalizeAliasesButton: document.getElementById("ingredients-normalize-aliases-button"),
+    ingredientsNewIconButton: document.getElementById("ingredients-new-icon-button"),
+    ingredientsIconsSearchInput: document.getElementById("ingredients-icons-search-input"),
+    ingredientsIconsCatalogCount: document.getElementById("ingredients-icons-catalog-count"),
+    ingredientsIconsGlobalWarning: document.getElementById("ingredients-icons-global-warning"),
+    ingredientsIconsList: document.getElementById("ingredients-icons-list"),
     ingredientsSaveButton: document.getElementById("ingredients-save-button"),
     ingredientsExportJsonButton: document.getElementById("ingredients-export-json-button"),
     ingredientsPublishPreviewButton: document.getElementById("ingredients-publish-preview-button"),
     ingredientsPublishProductionButton: document.getElementById("ingredients-publish-production-button"),
     ingredientsDeleteButton: document.getElementById("ingredients-delete-button"),
+    ingredientsIconDeleteButton: document.getElementById("ingredients-icon-delete-button"),
     ingredientsValidationSummary: document.getElementById("ingredients-validation-summary"),
+    ingredientsIconValidationSummary: document.getElementById("ingredients-icon-validation-summary"),
     ingredientsFieldId: document.getElementById("ingredients-field-id"),
     ingredientsFieldLabel: document.getElementById("ingredients-field-label"),
     ingredientsFieldIconSelect: document.getElementById("ingredients-field-icon-select"),
     ingredientsFieldIcon: document.getElementById("ingredients-field-icon"),
+    ingredientsFieldIconOptions: document.getElementById("ingredients-icon-options"),
+    ingredientsFieldIconPreview: document.getElementById("ingredients-field-icon-preview"),
+    ingredientsViewIconButton: document.getElementById("ingredients-view-icon-button"),
     ingredientsAliasInput: document.getElementById("ingredients-alias-input"),
     ingredientsAliasAddButton: document.getElementById("ingredients-alias-add-button"),
     ingredientsAliasList: document.getElementById("ingredients-alias-list"),
@@ -510,6 +585,12 @@
     ingredientsAllergensList: document.getElementById("ingredients-allergens-list"),
     ingredientsImpactCount: document.getElementById("ingredients-impact-count"),
     ingredientsImpactList: document.getElementById("ingredients-impact-list"),
+    ingredientsIconFieldKey: document.getElementById("ingredients-icon-field-key"),
+    ingredientsIconFieldLabel: document.getElementById("ingredients-icon-field-label"),
+    ingredientsIconFieldPath: document.getElementById("ingredients-icon-field-path"),
+    ingredientsIconPreview: document.getElementById("ingredients-icon-preview"),
+    ingredientsIconUsedByCount: document.getElementById("ingredients-icon-used-by-count"),
+    ingredientsIconUsedByList: document.getElementById("ingredients-icon-used-by-list"),
     ingredientsTagsCatalog: document.getElementById("ingredients-tags-catalog"),
     ingredientsAllergensCatalog: document.getElementById("ingredients-allergens-catalog"),
 
@@ -831,20 +912,33 @@
 
     var ingredientsValidation = validateIngredientsDraftData(state.drafts.ingredients);
     state.ingredientsEditor.validationReport = ingredientsValidation;
+    var normalizedIngredientsResult = normalizeIngredientsAliasesPayload(state.drafts.ingredients, { mutate: false });
+    var ingredientsExportPayload = normalizedIngredientsResult.payload;
+    var aliasNormalizationReport = normalizedIngredientsResult.report;
 
     downloadJsonFile("menu.updated.json", state.drafts.menu);
     downloadJsonFile("availability.updated.json", state.drafts.availability);
     downloadJsonFile("home.updated.json", state.drafts.home);
-    downloadJsonFile("ingredients.updated.json", state.drafts.ingredients);
+    downloadJsonFile("ingredients.updated.json", ingredientsExportPayload);
     downloadJsonFile("media.updated.json", state.data.media);
 
     if (elements.dataStatus) {
       var validationSuffix = ingredientsValidation.errors.length
         ? " (ingredients con errores de validacion; revisa panel Ingredients)"
         : "";
+      var aliasNormalizationSuffix = "";
+      if (aliasNormalizationReport.changedAliases || aliasNormalizationReport.droppedAliases) {
+        aliasNormalizationSuffix =
+          " · aliases normalizados en export (" +
+          aliasNormalizationReport.changedAliases +
+          " ajustados, " +
+          aliasNormalizationReport.droppedAliases +
+          " removidos)";
+      }
       setDataStatus(
         "JSON exportados: menu.updated.json + availability.updated.json + home.updated.json + ingredients.updated.json + media.updated.json" +
-          validationSuffix
+          validationSuffix +
+          aliasNormalizationSuffix
       );
     }
   }
@@ -901,6 +995,9 @@
     }
     ensureMediaStore();
     ensureIngredientsDraft();
+    var normalizedIngredientsResult = normalizeIngredientsAliasesPayload(state.drafts.ingredients, { mutate: false });
+    var ingredientsPayloadForPublish = normalizedIngredientsResult.payload;
+    var ingredientsNormalizationReport = normalizedIngredientsResult.report;
 
     if (publishTarget === "production") {
       var confirmed = window.confirm(
@@ -985,7 +1082,7 @@
           menu: state.drafts.menu,
           availability: state.drafts.availability,
           home: state.drafts.home,
-          ingredients: state.drafts.ingredients,
+          ingredients: ingredientsPayloadForPublish,
           media: state.data.media,
           target: publishTarget
         })
@@ -1012,18 +1109,34 @@
         var skippedLabel = publishTarget === "production"
           ? "No changes (production)"
           : "No changes (preview)";
+        var skippedAliasSuffix =
+          ingredientsNormalizationReport.changedAliases || ingredientsNormalizationReport.droppedAliases
+            ? " · aliases normalizados: " +
+              ingredientsNormalizationReport.changedAliases +
+              " ajustados, " +
+              ingredientsNormalizationReport.droppedAliases +
+              " removidos"
+            : "";
         setCurrentEditorStatus(skippedLabel);
-        setDataStatus("No changes to publish (" + publishTarget + ").");
+        setDataStatus("No changes to publish (" + publishTarget + ")." + skippedAliasSuffix);
         if (activeButton) activeButton.textContent = skippedLabel;
       } else {
         var successLabel = publishTarget === "production"
           ? "Published ✓ (production)"
           : "Published ✓ (preview)";
+        var successAliasSuffix =
+          ingredientsNormalizationReport.changedAliases || ingredientsNormalizationReport.droppedAliases
+            ? " · aliases normalizados: " +
+              ingredientsNormalizationReport.changedAliases +
+              " ajustados, " +
+              ingredientsNormalizationReport.droppedAliases +
+              " removidos"
+            : "";
         setCurrentEditorStatus(successLabel);
         if (payload && payload.commit) {
-          setDataStatus(successLabel + " (" + payload.commit + ")");
+          setDataStatus(successLabel + " (" + payload.commit + ")" + successAliasSuffix);
         } else {
-          setDataStatus(successLabel);
+          setDataStatus(successLabel + successAliasSuffix);
         }
         if (activeButton) activeButton.textContent = successLabel;
       }
@@ -1118,9 +1231,13 @@
   function setSidebarCollapsed(nextCollapsed, options) {
     if (!elements.sidebar) return;
 
+    var wasCollapsed = Boolean(state.sidebarCollapsed);
     var allowCollapse = !isCompactViewport();
     var collapsed = Boolean(nextCollapsed) && allowCollapse;
+    var didCollapseStateChange = wasCollapsed !== collapsed;
     state.sidebarCollapsed = collapsed;
+    state.sidebarCollapseSyncToken += 1;
+    var collapseSyncToken = state.sidebarCollapseSyncToken;
 
     elements.sidebar.setAttribute("data-collapsed", collapsed ? "true" : "false");
     elements.sidebarToggleButton.setAttribute("aria-pressed", collapsed ? "true" : "false");
@@ -1135,6 +1252,30 @@
 
     if (collapsed) {
       closeSidebarUserMenu();
+    }
+
+    if (didCollapseStateChange) {
+      clearAllSidebarAccordionOpeningMotions();
+      if (collapsed) {
+        applySidebarAccordionState("");
+      } else {
+        waitForTransition(elements.sidebar, { properties: ["width"] }).then(function () {
+          if (state.sidebarCollapseSyncToken !== collapseSyncToken) return;
+          if (state.sidebarCollapsed || state.isPanelTransitioning) return;
+
+          var accordionKeyForPanel = getSidebarAccordionKeyForPanel(state.currentPanel);
+          if (!accordionKeyForPanel) {
+            applySidebarAccordionState("");
+            return;
+          }
+
+          // Force a close->open path so reopening happens after sidebar expansion.
+          state.sidebarAccordionOpenKey = getSidebarOpenAccordionKeyFromDom() || "";
+          transitionSidebarAccordions(accordionKeyForPanel).catch(function () {
+            // ignore accordion restoration interruptions during rapid UI updates
+          });
+        });
+      }
     }
 
     window.requestAnimationFrame(updateSidebarActiveIndicator);
@@ -1170,6 +1311,355 @@
     openSidebarUserMenu();
   }
 
+  /* ===========================
+     SIDEBAR NAV
+  =========================== */
+
+  function syncUxTimingCssVars() {
+    if (!document || !document.documentElement || !document.documentElement.style) return;
+    var rootStyle = document.documentElement.style;
+    rootStyle.setProperty("--ux-sidebar-transition", UX_TIMING.accordionSwitchDelayMs + "ms");
+    rootStyle.setProperty("--ux-sidebar-stagger-step", UX_TIMING.accordionStaggerStepMs + "ms");
+    rootStyle.setProperty("--ux-panel-fade", UX_TIMING.panelFadeInCleanupDelayMs + "ms");
+    rootStyle.setProperty("--ux-indicator-height", UX_TIMING.indicatorSettleMs + "ms");
+    rootStyle.setProperty("--ux-indicator-opacity", UX_TIMING.indicatorOpacityMs + "ms");
+  }
+
+  function getNavigationState() {
+    return (state.navigation && state.navigation.currentState) || NAVIGATION_STATES.idle;
+  }
+
+  function canTransitionNavigationState(fromState, toState) {
+    var from = NAVIGATION_STATE_GRAPH[fromState];
+    if (!Array.isArray(from)) return false;
+    return from.indexOf(toState) !== -1;
+  }
+
+  function setNavigationState(nextState, options) {
+    options = options || {};
+
+    var normalizedNext = String(nextState || "").trim();
+    if (!normalizedNext || !NAVIGATION_STATE_GRAPH[normalizedNext]) {
+      normalizedNext = NAVIGATION_STATES.idle;
+    }
+
+    var current = getNavigationState();
+    if (current === normalizedNext) return true;
+
+    var isAllowed = canTransitionNavigationState(current, normalizedNext);
+    if (!isAllowed && !options.force) {
+      if (DEBUG_NAVIGATION) {
+        console.warn("[Nav] blocked transition " + current + " -> " + normalizedNext);
+      }
+      return false;
+    }
+
+    state.navigation.currentState = normalizedNext;
+    if (DEBUG_NAVIGATION) {
+      console.debug("[Nav] " + current + " -> " + normalizedNext);
+    }
+    return true;
+  }
+
+  function setNavigationCurrentPanel(panel) {
+    state.navigation.currentPanel = panel || "dashboard";
+  }
+
+  function setNavigationCurrentSection(sectionKey) {
+    state.navigation.currentSection = sectionKey || "";
+  }
+
+  function isNavigationStateIdle() {
+    return getNavigationState() === NAVIGATION_STATES.idle;
+  }
+
+  function canRunScrollSpy(forceSync) {
+    if (isProgrammaticScrollLocked()) return false;
+    var currentState = getNavigationState();
+    if (currentState === NAVIGATION_STATES.idle) return true;
+    if (Boolean(forceSync) && currentState === NAVIGATION_STATES.syncingScrollSpy) return true;
+    return false;
+  }
+
+  function isProgrammaticScrollLocked() {
+    return Boolean(state.navigation.isProgrammaticScroll) || Date.now() < state.programmaticScrollLockUntil;
+  }
+
+  function clearProgrammaticScrollLock(options) {
+    if (state.programmaticScrollLockTimer) {
+      window.clearTimeout(state.programmaticScrollLockTimer);
+      state.programmaticScrollLockTimer = 0;
+    }
+    state.programmaticScrollLockUntil = 0;
+    state.navigation.isProgrammaticScroll = false;
+    if (!options || options.syncScrollSpy !== false) {
+      setNavigationState(NAVIGATION_STATES.syncingScrollSpy);
+      requestCurrentPanelScrollSpySync();
+      window.requestAnimationFrame(function () {
+        if (!state.navigation.isProgrammaticScroll && !state.isPanelTransitioning) {
+          setNavigationState(NAVIGATION_STATES.idle);
+        }
+      });
+    } else if (!state.isPanelTransitioning) {
+      setNavigationState(NAVIGATION_STATES.idle);
+    }
+  }
+
+  function lockProgrammaticScroll(durationMs, sectionKey) {
+    var lockMs = Math.max(0, Number(durationMs || UX_TIMING.programmaticScrollLockMs));
+    var now = Date.now();
+    var nextExpiry = now + lockMs;
+    state.navigation.isProgrammaticScroll = true;
+    setNavigationState(NAVIGATION_STATES.scrollingToAnchor);
+    if (sectionKey) {
+      setNavigationCurrentSection(sectionKey);
+    }
+    if (nextExpiry > state.programmaticScrollLockUntil) {
+      state.programmaticScrollLockUntil = nextExpiry;
+    }
+    if (state.programmaticScrollLockTimer) {
+      window.clearTimeout(state.programmaticScrollLockTimer);
+      state.programmaticScrollLockTimer = 0;
+    }
+    var remainingMs = Math.max(0, state.programmaticScrollLockUntil - now);
+    state.programmaticScrollLockTimer = window.setTimeout(function () {
+      clearProgrammaticScrollLock({ syncScrollSpy: true });
+    }, remainingMs + UX_TIMING.programmaticScrollUnlockBufferMs);
+  }
+
+  function runWithProgrammaticScrollLock(callback, durationMs, sectionKey) {
+    lockProgrammaticScroll(durationMs, sectionKey);
+    if (typeof callback === "function") {
+      callback();
+    }
+  }
+
+  function queuePanelPostNavigationAction(panel, callback) {
+    if (!state.panelPostNavigationActions || typeof callback !== "function") return;
+    state.panelPostNavigationActions[panel] = callback;
+  }
+
+  function flushPanelPostNavigationAction(panel) {
+    if (!state.panelPostNavigationActions) return false;
+    var callback = state.panelPostNavigationActions[panel];
+    if (typeof callback !== "function") return false;
+
+    Object.keys(state.panelPostNavigationActions).forEach(function (panelKey) {
+      state.panelPostNavigationActions[panelKey] = null;
+    });
+    window.requestAnimationFrame(function () {
+      callback();
+    });
+    return true;
+  }
+
+  function clearPanelPostNavigationActions() {
+    if (!state.panelPostNavigationActions) return;
+    Object.keys(state.panelPostNavigationActions).forEach(function (panelKey) {
+      state.panelPostNavigationActions[panelKey] = null;
+    });
+  }
+
+  function waitNextFrame() {
+    return new Promise(function (resolve) {
+      window.requestAnimationFrame(function () {
+        window.requestAnimationFrame(resolve);
+      });
+    });
+  }
+
+  function parseCssTimeToMs(value) {
+    var normalized = String(value || "").trim();
+    if (!normalized) return 0;
+    var numeric = Number.parseFloat(normalized);
+    if (!Number.isFinite(numeric)) return 0;
+    return normalized.indexOf("ms") !== -1 ? numeric : numeric * 1000;
+  }
+
+  function hasTransitionDuration(element) {
+    if (!element || !element.isConnected) return false;
+    var style = window.getComputedStyle(element);
+    var durations = String(style.transitionDuration || "").split(",").map(parseCssTimeToMs);
+    var delays = String(style.transitionDelay || "").split(",").map(parseCssTimeToMs);
+    return durations.some(function (durationMs, index) {
+      var delayMs = delays[index] !== undefined ? delays[index] : (delays.length ? delays[delays.length - 1] : 0);
+      return durationMs + delayMs > 0;
+    });
+  }
+
+  function getRunningAnimations(element, subtree) {
+    if (!element || typeof element.getAnimations !== "function") return [];
+    return element.getAnimations({ subtree: Boolean(subtree) }).filter(function (animation) {
+      if (!animation) return false;
+      return animation.playState === "running" || animation.playState === "pending";
+    });
+  }
+
+  function waitForTransition(element, options) {
+    options = options || {};
+    var properties = Array.isArray(options.properties) ? options.properties : [];
+    if (!element || !element.isConnected || !hasTransitionDuration(element)) {
+      return waitNextFrame();
+    }
+    var initialValues = {};
+    if (properties.length) {
+      var initialStyle = window.getComputedStyle(element);
+      properties.forEach(function (propertyName) {
+        initialValues[propertyName] = initialStyle.getPropertyValue(propertyName);
+      });
+    }
+
+    return new Promise(function (resolve) {
+      var isSettled = false;
+      var cleanup = function () {
+        element.removeEventListener("transitionend", onTransitionDone);
+        element.removeEventListener("transitioncancel", onTransitionDone);
+      };
+      var settle = function () {
+        if (isSettled) return;
+        isSettled = true;
+        cleanup();
+        resolve();
+      };
+      var onTransitionDone = function (event) {
+        if (!event || event.target !== element) return;
+        if (properties.length && properties.indexOf(event.propertyName) === -1) return;
+        settle();
+      };
+
+      element.addEventListener("transitionend", onTransitionDone);
+      element.addEventListener("transitioncancel", onTransitionDone);
+
+      waitNextFrame().then(function () {
+        if (isSettled) return;
+        if (typeof element.getAnimations === "function") {
+          if (!getRunningAnimations(element, false).length) {
+            settle();
+          }
+          return;
+        }
+
+        if (!properties.length) return;
+        var style = window.getComputedStyle(element);
+        var hasPropertyChange = properties.some(function (propertyName) {
+          return style.getPropertyValue(propertyName) !== initialValues[propertyName];
+        });
+        if (!hasPropertyChange) {
+          settle();
+        }
+      });
+    });
+  }
+
+  function waitForAnimation(element, options) {
+    options = options || {};
+    if (!element || !element.isConnected) {
+      return waitNextFrame();
+    }
+    if (typeof element.getAnimations !== "function") {
+      return waitForTransition(element, options);
+    }
+
+    return waitNextFrame().then(function () {
+      var activeAnimations = getRunningAnimations(element, options.subtree === true);
+      if (!activeAnimations.length) return null;
+      return Promise.all(activeAnimations.map(function (animation) {
+        return animation.finished.catch(function () {
+          return null;
+        });
+      }));
+    });
+  }
+
+  function createNavigationTimelineCancelError() {
+    var error = new Error("Navigation timeline cancelled");
+    error.cancelled = true;
+    return error;
+  }
+
+  function isNavigationTimelineCurrent(timelineToken) {
+    return (
+      Number(timelineToken) > 0 &&
+      state.navigationTimelineActiveToken === timelineToken &&
+      state.navigationTimelineToken === timelineToken
+    );
+  }
+
+  function assertNavigationTimelineActive(timelineToken) {
+    if (!isNavigationTimelineCurrent(timelineToken)) {
+      throw createNavigationTimelineCancelError();
+    }
+  }
+
+  async function runNavigationTimeline(steps, options) {
+    options = options || {};
+    var normalizedSteps = Array.isArray(steps) ? steps.slice() : [];
+    var previousToken = state.navigationTimelineActiveToken;
+
+    state.navigationTimelineToken += 1;
+    var timelineToken = state.navigationTimelineToken;
+    state.navigationTimelineActiveToken = timelineToken;
+
+    if (previousToken && previousToken !== timelineToken && DEBUG_NAVIGATION) {
+      console.debug("[TIMELINE] cancel previous #" + previousToken);
+    }
+
+    if (DEBUG_NAVIGATION) {
+      console.debug("[TIMELINE] start #" + timelineToken + (options.label ? " (" + options.label + ")" : ""));
+    }
+
+    try {
+      for (var stepIndex = 0; stepIndex < normalizedSteps.length; stepIndex += 1) {
+        assertNavigationTimelineActive(timelineToken);
+        var stepEntry = normalizedSteps[stepIndex];
+        var stepName = "step-" + (stepIndex + 1);
+        var stepRunner = null;
+
+        if (typeof stepEntry === "function") {
+          stepRunner = stepEntry;
+        } else if (stepEntry && typeof stepEntry.run === "function") {
+          stepRunner = stepEntry.run;
+          if (stepEntry.name) {
+            stepName = stepEntry.name;
+          }
+        }
+
+        if (!stepRunner) continue;
+        if (DEBUG_NAVIGATION) {
+          console.debug("[TIMELINE] step: " + stepName);
+        }
+        await stepRunner({
+          token: timelineToken,
+          assertActive: function () {
+            assertNavigationTimelineActive(timelineToken);
+          }
+        });
+        assertNavigationTimelineActive(timelineToken);
+      }
+
+      if (DEBUG_NAVIGATION) {
+        console.debug("[TIMELINE] done #" + timelineToken);
+      }
+      return { cancelled: false, token: timelineToken };
+    } catch (error) {
+      if (error && error.cancelled) {
+        if (DEBUG_NAVIGATION) {
+          console.debug("[TIMELINE] cancelled #" + timelineToken);
+        }
+        return { cancelled: true, token: timelineToken };
+      }
+      throw error;
+    } finally {
+      if (state.navigationTimelineActiveToken === timelineToken) {
+        state.navigationTimelineActiveToken = 0;
+      }
+    }
+  }
+
+  /* ===========================
+     ACCORDION MOTION
+  =========================== */
+
   function setSidebarAccordionElementState(accordionElement, show) {
     if (!accordionElement) return;
     var shouldOpen = Boolean(show);
@@ -1203,16 +1693,6 @@
       window.cancelAnimationFrame(accordionElement.__openingMotionFrame);
       accordionElement.__openingMotionFrame = 0;
     }
-    if (accordionElement.__openingMotionTimer) {
-      window.clearTimeout(accordionElement.__openingMotionTimer);
-      accordionElement.__openingMotionTimer = 0;
-    }
-    if (Array.isArray(accordionElement.__openingCategoryTimers) && accordionElement.__openingCategoryTimers.length) {
-      accordionElement.__openingCategoryTimers.forEach(function (timerId) {
-        window.clearTimeout(timerId);
-      });
-      accordionElement.__openingCategoryTimers = [];
-    }
 
     var categories = accordionElement.querySelectorAll(".sidebar-accordion-category");
     Array.prototype.forEach.call(categories, function (categoryElement) {
@@ -1242,7 +1722,6 @@
       categoryElement.classList.remove("is-entering-active");
     });
     void accordionElement.offsetHeight;
-    accordionElement.__openingCategoryTimers = [];
   }
 
   function scheduleSidebarAccordionOpeningMotion(accordionElement) {
@@ -1251,36 +1730,24 @@
     var categories = Array.prototype.slice.call(
       accordionElement.querySelectorAll(".sidebar-accordion-category")
     );
-    var categoriesCount = categories.length;
-    var lastIndex = Math.max(0, categoriesCount - 1);
-    var settleDelay = SIDEBAR_ACCORDION_STAGGER_BASE_MS +
-      Math.min(lastIndex, 14) * SIDEBAR_ACCORDION_STAGGER_STEP_MS +
-      70;
 
     accordionElement.__openingMotionFrame = window.requestAnimationFrame(function () {
       accordionElement.__openingMotionFrame = window.requestAnimationFrame(function () {
         accordionElement.__openingMotionFrame = 0;
         accordionElement.classList.add("is-opening-active");
-        categories.forEach(function (categoryElement, categoryIndex) {
-          var categoryTimerId = window.setTimeout(function () {
-            categoryElement.classList.remove("is-entering-prep");
-            categoryElement.classList.add("is-entering-active");
-          }, categoryIndex * SIDEBAR_ACCORDION_STAGGER_STEP_MS);
-          accordionElement.__openingCategoryTimers.push(categoryTimerId);
+        categories.forEach(function (categoryElement) {
+          categoryElement.classList.remove("is-entering-prep");
+          categoryElement.classList.add("is-entering-active");
         });
       });
     });
+  }
 
-    accordionElement.__openingMotionTimer = window.setTimeout(function () {
-      accordionElement.__openingMotionTimer = 0;
-      categories.forEach(function (categoryElement) {
-        categoryElement.classList.remove("is-entering");
-        categoryElement.classList.remove("is-entering-prep");
-        categoryElement.classList.remove("is-entering-active");
-      });
-      accordionElement.classList.remove("is-opening");
-      accordionElement.classList.remove("is-opening-active");
-    }, settleDelay);
+  function finalizeSidebarAccordionOpeningMotion(accordionElement) {
+    if (!accordionElement) return;
+    clearSidebarAccordionOpeningMotion(accordionElement);
+    accordionElement.classList.add("is-open");
+    accordionElement.setAttribute("aria-hidden", "false");
   }
 
   function clearAllSidebarAccordionOpeningMotions() {
@@ -1325,7 +1792,9 @@
   function getSidebarAccordionKeyForPanel(panel) {
     if (panel === "menu-browser" || panel === "menu-item") return "menu";
     if (panel === "home-editor") return "homepage";
-    if (panel === "ingredients-editor") return "ingredients";
+    if (panel === "ingredients-editor") {
+      return normalizeIngredientsTab(state.ingredientsEditor.tab) === "icons" ? "" : "ingredients";
+    }
     return "";
   }
 
@@ -1362,61 +1831,56 @@
     state.sidebarAccordionOpenKey = normalizedKey;
   }
 
-  function transitionSidebarAccordions(nextAccordionKey, options) {
-    options = options || {};
+  async function transitionSidebarAccordions(nextAccordionKey) {
     var normalizedKey = nextAccordionKey || "";
-    var currentOpenKey = getSidebarOpenAccordionKeyFromDom() || state.sidebarAccordionOpenKey || "";
-    state.sidebarAccordionOpenKey = currentOpenKey;
-    state.sidebarAccordionPendingKey = normalizedKey;
+    state.sidebarAccordionTransitionToken += 1;
+    var transitionToken = state.sidebarAccordionTransitionToken;
+    var isTransitionCurrent = function () {
+      return state.sidebarAccordionTransitionToken === transitionToken;
+    };
 
-    if (state.sidebarAccordionTimer) {
-      window.clearTimeout(state.sidebarAccordionTimer);
-      state.sidebarAccordionTimer = 0;
-    }
     clearAllSidebarAccordionOpeningMotions();
 
-    var shouldDelayIndicator = Boolean(options.delayIndicatorUntilClosed);
-    var shouldDelayOpen = Boolean(options.delayOpenUntilIndicator);
-    var shouldSyncIndicator = options.syncIndicator !== false;
-
-    if (currentOpenKey === normalizedKey) {
-      applySidebarAccordionState(normalizedKey);
-      if (shouldSyncIndicator) {
-        scheduleSidebarActiveIndicatorSync();
-      }
+    if (state.sidebarCollapsed) {
+      // Keep DOM accordions closed while collapsed; only remember target intent.
+      applySidebarAccordionState("");
+      state.sidebarAccordionOpenKey = normalizedKey;
       return;
     }
 
+    var currentOpenKey = getSidebarOpenAccordionKeyFromDom() || "";
+    state.sidebarAccordionOpenKey = currentOpenKey;
+
+    if (currentOpenKey === normalizedKey) {
+      applySidebarAccordionState(normalizedKey);
+      return;
+    }
+
+    setNavigationState(NAVIGATION_STATES.closingAccordion);
+    var currentAccordionElement = getSidebarAccordionElementByKey(currentOpenKey);
     applySidebarAccordionState("");
+    if (!isTransitionCurrent()) return;
+    if (currentAccordionElement) {
+      await waitForTransition(currentAccordionElement, { properties: ["max-height"] });
+      if (!isTransitionCurrent()) return;
+    } else if (normalizedKey) {
+      // Ensure closed baseline is painted before opening from a fully closed state.
+      await waitNextFrame();
+      if (!isTransitionCurrent()) return;
+    }
 
-    state.sidebarAccordionTimer = window.setTimeout(function () {
-      state.sidebarAccordionTimer = 0;
-      if (state.sidebarAccordionPendingKey !== normalizedKey) return;
+    if (!normalizedKey) return;
 
-      if (shouldDelayIndicator && shouldSyncIndicator) {
-        scheduleSidebarActiveIndicatorSync();
-      }
+    setNavigationState(NAVIGATION_STATES.openingAccordion);
+    applySidebarAccordionState(normalizedKey);
+    if (!isTransitionCurrent()) return;
 
-      if (!normalizedKey) return;
-
-      var openAccordion = function () {
-        if (state.sidebarAccordionPendingKey !== normalizedKey) return;
-        applySidebarAccordionState(normalizedKey);
-        if (shouldSyncIndicator) {
-          scheduleSidebarActiveIndicatorSync();
-        }
-      };
-
-      if (shouldDelayOpen && SIDEBAR_ACCORDION_OPEN_DELAY_MS > 0) {
-        state.sidebarAccordionTimer = window.setTimeout(function () {
-          state.sidebarAccordionTimer = 0;
-          openAccordion();
-        }, SIDEBAR_ACCORDION_OPEN_DELAY_MS);
-        return;
-      }
-
-      openAccordion();
-    }, SIDEBAR_ACCORDION_SWITCH_DELAY_MS);
+    var nextAccordionElement = getSidebarAccordionElementByKey(normalizedKey);
+    if (nextAccordionElement) {
+      await waitForAnimation(nextAccordionElement, { subtree: true });
+      if (!isTransitionCurrent()) return;
+      finalizeSidebarAccordionOpeningMotion(nextAccordionElement);
+    }
   }
 
   function updateSidebarActiveIndicator() {
@@ -1439,13 +1903,6 @@
       window.cancelAnimationFrame(state.sidebarIndicatorSyncFrame);
       state.sidebarIndicatorSyncFrame = 0;
     }
-
-    if (Array.isArray(state.sidebarIndicatorSyncTimers) && state.sidebarIndicatorSyncTimers.length) {
-      state.sidebarIndicatorSyncTimers.forEach(function (timerId) {
-        window.clearTimeout(timerId);
-      });
-      state.sidebarIndicatorSyncTimers = [];
-    }
   }
 
   function scheduleSidebarActiveIndicatorSync() {
@@ -1453,36 +1910,77 @@
     updateSidebarActiveIndicator();
 
     state.sidebarIndicatorSyncFrame = window.requestAnimationFrame(function () {
-      state.sidebarIndicatorSyncFrame = 0;
-      updateSidebarActiveIndicator();
-    });
-
-    state.sidebarIndicatorSyncTimers = [
-      window.setTimeout(updateSidebarActiveIndicator, 120),
-      window.setTimeout(function () {
+      state.sidebarIndicatorSyncFrame = window.requestAnimationFrame(function () {
+        state.sidebarIndicatorSyncFrame = 0;
         updateSidebarActiveIndicator();
-        clearSidebarIndicatorSyncTimers();
-      }, 280)
-    ];
+      });
+    });
+  }
+
+  function getPanelScrollSpyAdapter(panel) {
+    if (panel === "menu-browser") {
+      return {
+        refresh: refreshMenuScrollAnchors,
+        update: updateMenuScrollSpy,
+        request: requestMenuScrollSpyUpdate
+      };
+    }
+    if (panel === "home-editor") {
+      return {
+        refresh: refreshHomeScrollAnchors,
+        update: updateHomeScrollSpy,
+        request: requestHomeScrollSpyUpdate
+      };
+    }
+    if (
+      panel === "ingredients-editor" &&
+      state.ingredientsEditor.tab === "ingredients" &&
+      state.ingredientsEditor.view === "catalog"
+    ) {
+      return {
+        refresh: refreshIngredientsScrollAnchors,
+        update: updateIngredientsScrollSpy,
+        request: requestIngredientsScrollSpyUpdate
+      };
+    }
+    return null;
   }
 
   function syncVisiblePanelAnchors(panel) {
-    if (panel === "menu-browser") {
-      refreshMenuScrollAnchors();
-      updateMenuScrollSpy(true);
+    var adapter = getPanelScrollSpyAdapter(panel);
+    if (!adapter) return;
+    adapter.refresh();
+    if (isNavigationStateIdle()) {
+      adapter.update(true);
+    }
+  }
+
+  function requestCurrentPanelScrollSpySync() {
+    var adapter = getPanelScrollSpyAdapter(state.currentPanel);
+    if (!adapter) return;
+    if (state.isPanelTransitioning) return;
+    if (isProgrammaticScrollLocked()) return;
+    if (!isNavigationStateIdle() && getNavigationState() !== NAVIGATION_STATES.syncingScrollSpy) {
       return;
     }
-
-    if (panel === "home-editor") {
-      refreshHomeScrollAnchors();
-      updateHomeScrollSpy(true);
-      return;
+    if (isNavigationStateIdle()) {
+      setNavigationState(NAVIGATION_STATES.syncingScrollSpy);
     }
+    adapter.refresh();
+    adapter.update(true);
+    window.requestAnimationFrame(function () {
+      if (state.navigation.isProgrammaticScroll) return;
+      if (state.isPanelTransitioning) return;
+      if (getNavigationState() === NAVIGATION_STATES.syncingScrollSpy) {
+        setNavigationState(NAVIGATION_STATES.idle);
+      }
+    });
+  }
 
-    if (panel === "ingredients-editor" && state.ingredientsEditor.view === "catalog") {
-      refreshIngredientsScrollAnchors();
-      updateIngredientsScrollSpy(true);
-    }
+  function requestCurrentPanelScrollSpyUpdate() {
+    var adapter = getPanelScrollSpyAdapter(state.currentPanel);
+    if (!adapter) return;
+    adapter.request();
   }
 
   function applyPanelVisibility(panel) {
@@ -1512,7 +2010,9 @@
     }
 
     state.visiblePanel = panel;
+    var hadPendingPanelAction = flushPanelPostNavigationAction(panel);
     window.requestAnimationFrame(function () {
+      if (hadPendingPanelAction) return;
       syncVisiblePanelAnchors(panel);
     });
   }
@@ -1537,72 +2037,164 @@
     }
   }
 
+  /* ===========================
+     PANEL TRANSITION
+  =========================== */
+
   function clearPanelTransitionTimers() {
-    if (state.panelFadeOutTimer) {
-      window.clearTimeout(state.panelFadeOutTimer);
-      state.panelFadeOutTimer = 0;
+    if (elements.dashboardContent) {
+      elements.dashboardContent.classList.remove("is-panel-fading");
+      elements.dashboardContent.classList.remove("is-panel-fade-out");
     }
-    if (state.panelFadeInTimer) {
-      window.clearTimeout(state.panelFadeInTimer);
-      state.panelFadeInTimer = 0;
-    }
+    state.isPanelTransitioning = false;
   }
 
-  function setActivePanel(panel) {
-    var previousVisiblePanel = state.visiblePanel || state.currentPanel || "dashboard";
-    var nextAccordionKey = getSidebarAccordionKeyForPanel(panel);
-    var previousAccordionKey = getSidebarOpenAccordionKeyFromDom() || state.sidebarAccordionOpenKey || "";
-    state.sidebarAccordionOpenKey = previousAccordionKey;
-    var hasPendingAccordionTransition =
-      Boolean(state.sidebarAccordionTimer) &&
-      state.sidebarAccordionPendingKey === nextAccordionKey;
-    var shouldSequenceIndicatorMove =
-      Boolean(previousAccordionKey) &&
-      Boolean(nextAccordionKey) &&
-      previousAccordionKey !== nextAccordionKey;
+  async function moveSidebarIndicatorForTimeline(options) {
+    options = options || {};
+    if (!elements.sidebarNavActiveIndicator) return;
+    updateSidebarActiveIndicator();
+    if (options.waitForSettle === false) {
+      await waitNextFrame();
+      return;
+    }
+    await waitForTransition(elements.sidebarNavActiveIndicator, {
+      properties: ["transform", "height", "opacity"]
+    });
+  }
 
-    state.currentPanel = panel;
-    closeSidebarUserMenu();
-    if (hasPendingAccordionTransition) {
-      setActiveSidebarNav(panel, { syncIndicator: false });
-    } else {
-      setActiveSidebarNav(panel, { syncIndicator: !shouldSequenceIndicatorMove });
-      transitionSidebarAccordions(nextAccordionKey, {
-        syncIndicator: true,
-        delayIndicatorUntilClosed: shouldSequenceIndicatorMove,
-        delayOpenUntilIndicator: shouldSequenceIndicatorMove
-      });
+  async function runPanelTransition(fromPanel, toPanel) {
+    var previousVisiblePanel = fromPanel || state.visiblePanel || state.currentPanel || "dashboard";
+    var nextAccordionKey = getSidebarAccordionKeyForPanel(toPanel);
+    var previousAccordionKey = getSidebarOpenAccordionKeyFromDom() || "";
+    var shouldFade = Boolean(elements.dashboardContent && previousVisiblePanel !== toPanel);
+    var shouldSwitchAccordion = previousAccordionKey !== nextAccordionKey;
+
+    state.currentPanel = toPanel;
+    setNavigationCurrentPanel(toPanel);
+    if (previousVisiblePanel !== toPanel) {
+      setNavigationCurrentSection("");
     }
 
-    if (!elements.dashboardContent || previousVisiblePanel === panel) {
-      applyPanelVisibility(panel);
-      if (elements.dashboardContent) {
-        elements.dashboardContent.classList.remove("is-panel-fading");
-        elements.dashboardContent.classList.remove("is-panel-fade-out");
+    clearAllSidebarAccordionOpeningMotions();
+    clearSidebarIndicatorSyncTimers();
+    clearPanelTransitionTimers();
+
+    closeSidebarUserMenu();
+    setNavigationState(NAVIGATION_STATES.switchingPanel, { force: true });
+    state.isPanelTransitioning = true;
+
+    var timelineResult = null;
+    try {
+      timelineResult = await runNavigationTimeline([
+        {
+          name: "fadeOutPanel",
+          run: async function (context) {
+            if (!shouldFade || !elements.dashboardContent) return;
+            elements.dashboardContent.classList.add("is-panel-fading");
+            elements.dashboardContent.classList.add("is-panel-fade-out");
+            await waitNextFrame();
+            context.assertActive();
+          }
+        },
+        {
+          name: "updateSidebarActiveState",
+          run: function () {
+            setActiveSidebarNav(toPanel, { syncIndicator: false });
+          }
+        },
+        {
+          name: "closeCurrentAccordion",
+          run: async function (context) {
+            if (!shouldSwitchAccordion || !previousAccordionKey) return;
+            await transitionSidebarAccordions("");
+            context.assertActive();
+          }
+        },
+        {
+          name: "moveSidebarIndicator",
+          run: async function (context) {
+            await moveSidebarIndicatorForTimeline({ waitForSettle: false });
+            context.assertActive();
+          }
+        },
+        {
+          name: "activatePanelDOM",
+          run: async function (context) {
+            applyPanelVisibility(toPanel);
+            if (shouldFade && elements.dashboardContent) {
+              // Start fade-in as soon as the new panel DOM is visible.
+              elements.dashboardContent.classList.remove("is-panel-fade-out");
+            }
+            await waitNextFrame();
+            context.assertActive();
+          }
+        },
+        {
+          name: "openTargetAccordion",
+          run: async function (context) {
+            if (!shouldSwitchAccordion || !nextAccordionKey) return;
+            await transitionSidebarAccordions(nextAccordionKey);
+            context.assertActive();
+          }
+        },
+        {
+          name: "fadeInPanel",
+          run: async function (context) {
+            if (!elements.dashboardContent) return;
+            if (!shouldFade) {
+              elements.dashboardContent.classList.remove("is-panel-fading");
+              elements.dashboardContent.classList.remove("is-panel-fade-out");
+              return;
+            }
+
+            await waitForTransition(elements.dashboardContent, {
+              properties: ["opacity", "transform"]
+            });
+            elements.dashboardContent.classList.remove("is-panel-fading");
+            context.assertActive();
+          }
+        }
+      ], {
+        label: previousVisiblePanel + " -> " + toPanel
+      });
+    } catch (error) {
+      if (error && error.cancelled) {
+        return;
+      }
+      throw error;
+    }
+
+    if (!timelineResult) return;
+    if (timelineResult.cancelled) {
+      if (state.navigationTimelineToken === timelineResult.token) {
+        state.isPanelTransitioning = false;
+        if (!state.navigation.isProgrammaticScroll) {
+          setNavigationState(NAVIGATION_STATES.idle, { force: true });
+        }
       }
       return;
     }
+    if (state.navigationTimelineToken !== timelineResult.token) return;
 
-    clearPanelTransitionTimers();
-    state.panelTransitionToken += 1;
-    var transitionToken = state.panelTransitionToken;
+    state.isPanelTransitioning = false;
+    if (!state.navigation.isProgrammaticScroll) {
+      setNavigationState(NAVIGATION_STATES.idle, { force: true });
+    }
+    requestCurrentPanelScrollSpySync();
+  }
 
-    elements.dashboardContent.classList.add("is-panel-fading");
-    elements.dashboardContent.classList.add("is-panel-fade-out");
-
-    state.panelFadeOutTimer = window.setTimeout(function () {
-      state.panelFadeOutTimer = 0;
-      if (transitionToken !== state.panelTransitionToken) return;
-
-      applyPanelVisibility(panel);
-      elements.dashboardContent.classList.remove("is-panel-fade-out");
-
-      state.panelFadeInTimer = window.setTimeout(function () {
-        state.panelFadeInTimer = 0;
-        if (transitionToken !== state.panelTransitionToken) return;
-        elements.dashboardContent.classList.remove("is-panel-fading");
-      }, PANEL_FADE_IN_CLEANUP_DELAY_MS);
-    }, PANEL_FADE_OUT_DELAY_MS);
+  function setActivePanel(panel) {
+    runPanelTransition(state.visiblePanel || state.currentPanel || "dashboard", panel)
+      .catch(function (error) {
+        state.isPanelTransitioning = false;
+        clearPanelTransitionTimers();
+        if (!state.navigation.isProgrammaticScroll) {
+          setNavigationState(NAVIGATION_STATES.idle, { force: true });
+        }
+        if (DEBUG_NAVIGATION) {
+          console.error("[TIMELINE] panel transition failed", error);
+        }
+      });
   }
 
   function hashHasAuthToken() {
@@ -2124,6 +2716,154 @@
       .replace(/_+/g, "_");
   }
 
+  function normalizeIngredientAliasList(aliases) {
+    var result = {
+      aliases: [],
+      changedCount: 0,
+      droppedCount: 0,
+      changes: [],
+      dropped: []
+    };
+    if (!Array.isArray(aliases)) {
+      return result;
+    }
+
+    var seen = {};
+    aliases.forEach(function (aliasValue) {
+      var rawAlias = String(aliasValue || "").trim();
+      var normalizedAlias = normalizeIngredientAliasValue(rawAlias);
+      if (!normalizedAlias) {
+        result.droppedCount += 1;
+        result.dropped.push({
+          from: rawAlias,
+          to: "",
+          reason: "invalid"
+        });
+        return;
+      }
+
+      if (rawAlias !== normalizedAlias) {
+        result.changedCount += 1;
+        result.changes.push({
+          from: rawAlias,
+          to: normalizedAlias
+        });
+      }
+
+      if (seen[normalizedAlias]) {
+        result.droppedCount += 1;
+        result.dropped.push({
+          from: rawAlias || normalizedAlias,
+          to: normalizedAlias,
+          reason: "duplicate"
+        });
+        return;
+      }
+
+      seen[normalizedAlias] = true;
+      result.aliases.push(normalizedAlias);
+    });
+
+    return result;
+  }
+
+  function normalizeIngredientsAliasesPayload(ingredientsPayload, options) {
+    options = options || {};
+    var mutate = Boolean(options.mutate);
+    var source = ingredientsPayload && typeof ingredientsPayload === "object"
+      ? ingredientsPayload
+      : {};
+    var payload = mutate ? source : deepClone(source);
+    var ingredientsById = payload.ingredients && typeof payload.ingredients === "object"
+      ? payload.ingredients
+      : {};
+    var report = {
+      changedIngredients: 0,
+      changedAliases: 0,
+      droppedAliases: 0,
+      changes: [],
+      dropped: []
+    };
+
+    Object.keys(ingredientsById).forEach(function (ingredientId) {
+      var ingredient = ingredientsById[ingredientId];
+      if (!ingredient || typeof ingredient !== "object" || !Array.isArray(ingredient.aliases)) return;
+
+      var normalized = normalizeIngredientAliasList(ingredient.aliases);
+      var ingredientChanged = normalized.changedCount > 0 ||
+        normalized.droppedCount > 0 ||
+        normalized.aliases.length !== ingredient.aliases.length;
+      if (!ingredientChanged) return;
+
+      ingredient.aliases = normalized.aliases;
+      report.changedIngredients += 1;
+      report.changedAliases += normalized.changedCount;
+      report.droppedAliases += normalized.droppedCount;
+
+      normalized.changes.forEach(function (change) {
+        report.changes.push({
+          ingredientId: ingredientId,
+          from: change.from,
+          to: change.to
+        });
+      });
+
+      normalized.dropped.forEach(function (drop) {
+        report.dropped.push({
+          ingredientId: ingredientId,
+          from: drop.from,
+          to: drop.to,
+          reason: drop.reason
+        });
+      });
+    });
+
+    return {
+      payload: payload,
+      report: report
+    };
+  }
+
+  function formatIngredientsAliasNormalizationPreview(report, maxLines) {
+    var safeReport = report || {};
+    var changes = Array.isArray(safeReport.changes) ? safeReport.changes : [];
+    var dropped = Array.isArray(safeReport.dropped) ? safeReport.dropped : [];
+    var limit = Number(maxLines);
+    if (!Number.isFinite(limit) || limit < 1) {
+      limit = 10;
+    }
+
+    var lines = [];
+    changes.slice(0, limit).forEach(function (change) {
+      lines.push(
+        "- " + change.ingredientId + ": " +
+        (change.from || "(vacio)") + " -> " + change.to
+      );
+    });
+    if (changes.length > limit) {
+      lines.push("... y " + (changes.length - limit) + " cambios mas.");
+    }
+
+    if (dropped.length) {
+      if (lines.length) lines.push("");
+      lines.push("Aliases removidos:");
+      dropped.slice(0, limit).forEach(function (drop) {
+        var reasonLabel = drop.reason === "duplicate" ? "duplicado" : "invalido";
+        lines.push(
+          "- " + drop.ingredientId + ": " +
+          (drop.from || "(vacio)") +
+          (drop.to ? (" -> " + drop.to) : "") +
+          " (" + reasonLabel + ")"
+        );
+      });
+      if (dropped.length > limit) {
+        lines.push("... y " + (dropped.length - limit) + " removidos mas.");
+      }
+    }
+
+    return lines.join("\n");
+  }
+
   function isLikelyValidIngredientIconPath(value) {
     var path = String(value || "").trim();
     if (!path) return false;
@@ -2133,6 +2873,33 @@
     return /\.(svg|webp|png|jpe?g|gif)$/i.test(path);
   }
 
+  function resolveIngredientIconAssetPath(iconPathValue, ingredientsSource) {
+    var rawPath = String(iconPathValue || "").trim();
+    if (!rawPath) return "";
+    if (/^https?:\/\//i.test(rawPath)) return rawPath;
+    if (rawPath.charAt(0) === "/") return rawPath;
+    if (rawPath.indexOf("assets/") === 0) return "/" + rawPath;
+
+    var basePath = ingredientsSource && typeof ingredientsSource.basePath === "string"
+      ? String(ingredientsSource.basePath).trim()
+      : "";
+    if (!basePath) return rawPath;
+    if (/^https?:\/\//i.test(basePath)) {
+      return basePath.replace(/\/+$/, "") + "/" + rawPath.replace(/^\/+/, "");
+    }
+
+    var normalizedBase = basePath.charAt(0) === "/" ? basePath : "/" + basePath;
+    normalizedBase = normalizedBase.replace(/\/+$/, "") + "/";
+    return normalizedBase + rawPath.replace(/^\/+/, "");
+  }
+
+  function resolveIngredientCatalogIconPath(iconEntry, ingredientsSource) {
+    var rawPath = iconEntry && typeof iconEntry.icon === "string"
+      ? iconEntry.icon.trim()
+      : "";
+    return resolveIngredientIconAssetPath(rawPath, ingredientsSource);
+  }
+
   function resolveIngredientIconPath(ingredient, ingredientsSource) {
     var iconValue = ingredient && typeof ingredient.icon === "string"
       ? ingredient.icon.trim()
@@ -2140,17 +2907,30 @@
     if (!iconValue) return "";
 
     if (isLikelyValidIngredientIconPath(iconValue)) {
-      return iconValue;
+      return resolveIngredientIconAssetPath(iconValue, ingredientsSource);
     }
 
     var iconMap = ingredientsSource && ingredientsSource.icons
       ? ingredientsSource.icons[iconValue]
       : null;
-    if (iconMap && typeof iconMap.icon === "string") {
-      return iconMap.icon.trim();
+    if (iconMap) {
+      return resolveIngredientCatalogIconPath(iconMap, ingredientsSource);
     }
 
     return "";
+  }
+
+  function getIngredientIconUsageEntries(iconKey) {
+    var normalizedKey = String(iconKey || "").trim();
+    if (!normalizedKey) return [];
+    var rawEntries = state.indexes && state.indexes.iconUsageByKey
+      ? state.indexes.iconUsageByKey[normalizedKey]
+      : [];
+    var entries = Array.isArray(rawEntries) ? rawEntries.slice() : [];
+    entries.sort(function (a, b) {
+      return normalizeText(a.label || a.id).localeCompare(normalizeText(b.label || b.id));
+    });
+    return entries;
   }
 
   function getMenuIngredientReferenceReport(ingredientsById) {
@@ -2185,6 +2965,17 @@
   }
 
   function validateIngredientsDraftData(ingredientsDraft) {
+    var sharedContract = window.FigataIngredientsContract;
+    if (
+      sharedContract &&
+      typeof sharedContract.validateIngredientsContract === "function"
+    ) {
+      return sharedContract.validateIngredientsContract(ingredientsDraft, {
+        menuPayload: state.drafts && state.drafts.menu ? state.drafts.menu : null,
+        normalizeAliases: false
+      });
+    }
+
     var source = ingredientsDraft && typeof ingredientsDraft === "object" ? ingredientsDraft : {};
     var ingredientsById = source.ingredients && typeof source.ingredients === "object"
       ? source.ingredients
@@ -2197,6 +2988,8 @@
       errors: [],
       warnings: [],
       ingredientIssuesById: {},
+      iconIssuesByKey: {},
+      iconUsageByKey: {},
       menuReferenceReport: null
     };
 
@@ -2220,6 +3013,31 @@
         report.warnings.push(message);
       }
     }
+
+    function ensureIconIssueBucket(iconKey) {
+      if (!report.iconIssuesByKey[iconKey]) {
+        report.iconIssuesByKey[iconKey] = {
+          errors: [],
+          warnings: []
+        };
+      }
+      return report.iconIssuesByKey[iconKey];
+    }
+
+    function pushIconIssue(iconKey, severity, message) {
+      var bucket = ensureIconIssueBucket(iconKey);
+      if (severity === "error") {
+        bucket.errors.push(message);
+        report.errors.push(message);
+      } else {
+        bucket.warnings.push(message);
+        report.warnings.push(message);
+      }
+    }
+
+    Object.keys(iconsById).forEach(function (iconKey) {
+      report.iconUsageByKey[iconKey] = [];
+    });
 
     Object.keys(tagsById).forEach(function (tagId) {
       var tagEntry = tagsById[tagId] || {};
@@ -2259,6 +3077,14 @@
             "error",
             "Icon invalido en ingrediente '" + ingredientId + "': " + iconValue
           );
+        } else if (iconFromCatalog) {
+          if (!report.iconUsageByKey[iconValue]) {
+            report.iconUsageByKey[iconValue] = [];
+          }
+          report.iconUsageByKey[iconValue].push({
+            id: ingredientId,
+            label: label || ingredientId
+          });
         }
       }
 
@@ -2277,15 +3103,17 @@
           if (rawText !== normalizedAlias) {
             pushIngredientIssue(
               ingredientId,
-              "error",
-              "Alias no normalizado en '" + ingredientId + "': " + rawText + " -> " + normalizedAlias
+              "warning",
+              "Alias legacy en '" + ingredientId + "': " + rawText + " -> " + normalizedAlias +
+              " (se normaliza en export/publish)"
             );
           }
           if (seenAliases[normalizedAlias]) {
             pushIngredientIssue(
               ingredientId,
-              "error",
-              "Alias duplicado en '" + ingredientId + "': " + normalizedAlias
+              "warning",
+              "Alias duplicado tras normalizar en '" + ingredientId + "': " + normalizedAlias +
+              " (se conserva la primera ocurrencia en export/publish)"
             );
             return;
           }
@@ -2339,6 +3167,35 @@
           }
           seenAllergens[allergenId] = true;
         });
+      }
+    });
+
+    Object.keys(iconsById).forEach(function (iconKey) {
+      var iconEntry = iconsById[iconKey];
+      if (!iconEntry || typeof iconEntry !== "object") {
+        pushIconIssue(iconKey, "error", "Icono invalido (debe ser objeto): " + iconKey);
+        return;
+      }
+
+      var iconLabel = String(iconEntry.label || "").trim();
+      if (!iconLabel) {
+        pushIconIssue(iconKey, "warning", "Icono sin label: " + iconKey);
+      }
+
+      var iconPath = String(iconEntry.icon || "").trim();
+      if (!iconPath) {
+        pushIconIssue(iconKey, "warning", "Icono sin path: " + iconKey);
+      } else if (!isLikelyValidIngredientIconPath(iconPath)) {
+        pushIconIssue(iconKey, "warning", "Icono con path potencialmente invalido '" + iconKey + "': " + iconPath);
+      }
+
+      var usageEntries = report.iconUsageByKey[iconKey] || [];
+      usageEntries.sort(function (a, b) {
+        return normalizeText(a.label || a.id).localeCompare(normalizeText(b.label || b.id));
+      });
+      report.iconUsageByKey[iconKey] = usageEntries;
+      if (!usageEntries.length) {
+        pushIconIssue(iconKey, "warning", "Icono sin uso: " + iconKey);
       }
     });
 
@@ -2939,13 +3796,25 @@
     state.indexes.iconList = Object.keys(state.indexes.iconsById).sort(function (a, b) {
       return normalizeText(a).localeCompare(normalizeText(b));
     });
+    state.indexes.iconUsageByKey = {};
+    state.indexes.iconList.forEach(function (iconKey) {
+      state.indexes.iconUsageByKey[iconKey] = [];
+    });
     state.indexes.ingredientList = Object.keys(state.indexes.ingredientsById).map(function (id) {
       var entry = state.indexes.ingredientsById[id] || {};
       var iconPath = resolveIngredientIconPath(entry, ingredientsSource);
+      var iconValue = String(entry.icon || "").trim();
+      if (iconValue && state.indexes.iconUsageByKey[iconValue]) {
+        state.indexes.iconUsageByKey[iconValue].push({
+          id: id,
+          label: entry.label || id
+        });
+      }
       return {
         id: id,
         label: entry.label || id,
-        icon: iconPath
+        icon: iconPath,
+        iconKey: iconValue
       };
     }).sort(function (a, b) {
       return normalizeText(a.label).localeCompare(normalizeText(b.label));
@@ -3439,6 +4308,10 @@
     return categoryId;
   }
 
+  /* ===========================
+     PANEL ADAPTERS + SCROLL SPY
+  =========================== */
+
   function scrollToMenuAnchor(categoryId, subcategoryId) {
     var normalizedCategoryId = mapCategoryToMenuGroup(categoryId);
     var normalizedSubcategoryId = subcategoryId || "";
@@ -3453,10 +4326,28 @@
     }
     if (!element) return;
 
-    var targetTop = window.scrollY + element.getBoundingClientRect().top - 96;
-    window.scrollTo({
-      top: Math.max(0, targetTop),
-      behavior: "smooth"
+    var targetTop = window.scrollY + element.getBoundingClientRect().top - UX_TIMING.anchorScrollOffsetPx;
+    var lockDurationMs = getProgrammaticScrollLockDuration(targetTop, "smooth");
+    runWithProgrammaticScrollLock(function () {
+      window.scrollTo({
+        top: Math.max(0, targetTop),
+        behavior: "smooth"
+      });
+    }, lockDurationMs, "menu:" + normalizedCategoryId + (normalizedSubcategoryId ? ("/" + normalizedSubcategoryId) : ""));
+  }
+
+  function updateSidebarMenuAccordionActiveClasses() {
+    if (!elements.sidebarMenuAccordion) return;
+    var activeCategoryId = state.menuActiveAnchor.categoryId || "";
+    var activeSubcategoryId = state.menuActiveAnchor.subcategoryId || "";
+    var buttons = elements.sidebarMenuAccordion.querySelectorAll("[data-scroll-category]");
+    Array.prototype.forEach.call(buttons, function (button) {
+      var categoryId = button.getAttribute("data-scroll-category") || "";
+      var subcategoryId = button.getAttribute("data-scroll-subcategory") || "";
+      var isActive = subcategoryId
+        ? categoryId === activeCategoryId && subcategoryId === activeSubcategoryId
+        : categoryId === activeCategoryId;
+      button.classList.toggle("is-active", isActive);
     });
   }
 
@@ -3477,10 +4368,74 @@
       categoryId: nextCategoryId,
       subcategoryId: nextSubcategoryId
     };
-
-    if (!options.skipRender) {
-      renderSidebarMenuAccordion();
+    if (nextCategoryId) {
+      setNavigationCurrentSection(
+        "menu:" + nextCategoryId + (nextSubcategoryId ? ("/" + nextSubcategoryId) : "")
+      );
     }
+
+    if (!options.skipClassUpdate) {
+      updateSidebarMenuAccordionActiveClasses();
+    }
+  }
+
+  function getDocumentScrollMetrics() {
+    var scrollElement = document.scrollingElement || document.documentElement || document.body;
+    var scrollTop = window.pageYOffset || window.scrollY || 0;
+    var scrollHeight = scrollElement ? scrollElement.scrollHeight : 0;
+    var viewportHeight = window.innerHeight || (document.documentElement ? document.documentElement.clientHeight : 0) || 0;
+    var maxScrollTop = Math.max(0, scrollHeight - viewportHeight);
+    return {
+      scrollTop: scrollTop,
+      maxScrollTop: maxScrollTop,
+      viewportHeight: viewportHeight,
+      scrollHeight: scrollHeight
+    };
+  }
+
+  function isViewportNearDocumentBottom(tolerancePx) {
+    var tolerance = Math.max(0, Number(tolerancePx || 0));
+    var metrics = getDocumentScrollMetrics();
+    if (metrics.maxScrollTop <= 0) return false;
+    return metrics.scrollTop >= metrics.maxScrollTop - tolerance;
+  }
+
+  function getProgrammaticScrollLockDuration(targetTop, behavior) {
+    var baseLockMs = Math.max(0, Number(UX_TIMING.programmaticScrollLockMs || 0));
+    if (behavior === "auto") return baseLockMs;
+
+    var currentTop = window.pageYOffset || window.scrollY || 0;
+    var distancePx = Math.abs(Number(targetTop || 0) - currentTop);
+    var estimatedMs = Math.round(220 + distancePx * 0.28);
+    var clampedMs = Math.min(1600, Math.max(baseLockMs, estimatedMs));
+    return clampedMs;
+  }
+
+  function findActiveAnchorTarget(anchorTargets, threshold) {
+    if (!Array.isArray(anchorTargets) || !anchorTargets.length) return null;
+    var fallbackTarget = null;
+    var lastConnectedTarget = null;
+    var thresholdMatchTarget = null;
+    anchorTargets.forEach(function (target) {
+      if (!target.element || !target.element.isConnected) return;
+      if (!fallbackTarget) {
+        fallbackTarget = target;
+      }
+      lastConnectedTarget = target;
+      if (target.element.getBoundingClientRect().top - threshold <= 0) {
+        thresholdMatchTarget = target;
+      }
+    });
+
+    if (!lastConnectedTarget) {
+      return fallbackTarget;
+    }
+
+    if (isViewportNearDocumentBottom(2)) {
+      return lastConnectedTarget;
+    }
+
+    return thresholdMatchTarget || fallbackTarget;
   }
 
   function refreshMenuScrollAnchors() {
@@ -3498,18 +4453,15 @@
   function updateMenuScrollSpy(force) {
     if (state.currentPanel !== "menu-browser") return;
     if (state.visiblePanel !== "menu-browser") return;
+    if (!canRunScrollSpy(Boolean(force))) return;
     if (isSidebarAccordionOpening("menu")) return;
     if (!state.menuAnchorTargets.length) return;
 
-    var threshold = 154;
-    var activeTarget = state.menuAnchorTargets[0];
-
-    state.menuAnchorTargets.forEach(function (target) {
-      if (!target.element || !target.element.isConnected) return;
-      if (target.element.getBoundingClientRect().top - threshold <= 0) {
-        activeTarget = target;
-      }
-    });
+    var activeTarget = findActiveAnchorTarget(
+      state.menuAnchorTargets,
+      UX_TIMING.scrollSpyThresholdPx
+    );
+    if (!activeTarget) return;
 
     setActiveMenuAnchor(activeTarget.categoryId, activeTarget.subcategoryId, {
       force: Boolean(force)
@@ -3519,6 +4471,8 @@
   function requestMenuScrollSpyUpdate() {
     if (state.currentPanel !== "menu-browser") return;
     if (state.visiblePanel !== "menu-browser") return;
+    if (state.isPanelTransitioning) return;
+    if (!isNavigationStateIdle()) return;
     if (isSidebarAccordionOpening("menu")) return;
     if (state.menuScrollSpyFrame) return;
 
@@ -3552,6 +4506,7 @@
     }).join("");
 
     elements.sidebarMenuAccordion.innerHTML = html;
+    updateSidebarMenuAccordionActiveClasses();
     syncSidebarAccordionCategoryHeights(elements.sidebarMenuAccordion);
   }
 
@@ -4068,6 +5023,10 @@
 
   function openItemEditor(itemId, options) {
     options = options || {};
+    if (!options.skipRoute) {
+      navigateToRoute("/menu/item/" + encodeURIComponent(itemId));
+      return;
+    }
 
     if (!state.hasDataLoaded) {
       ensureDataLoaded(false);
@@ -4078,9 +5037,7 @@
     if (!itemPosition) {
       setMenuBrowserStatus("No se encontro el item: " + itemId);
       openMenuBrowser({ skipRoute: true });
-      if (!options.skipRoute) {
-        navigateToRoute("/menu", { replace: true });
-      }
+      navigateToRoute("/menu", { replace: true });
       return;
     }
 
@@ -4151,13 +5108,14 @@
     elements.itemDeleteButton.disabled = false;
 
     setActivePanel("menu-item");
-
-    if (!options.skipRoute) {
-      navigateToRoute("/menu/item/" + encodeURIComponent(draft.id));
-    }
   }
 
-  function openNewItemEditor() {
+  function openNewItemEditor(options) {
+    options = options || {};
+    if (!options.skipRoute) {
+      navigateToRoute("/menu/item/new");
+      return;
+    }
     if (!state.hasDataLoaded) {
       ensureDataLoaded(false);
       return;
@@ -4222,7 +5180,6 @@
     elements.itemDeleteButton.disabled = true;
 
     setActivePanel("menu-item");
-    navigateToRoute("/menu/item/" + encodeURIComponent(draft.id));
   }
 
   function addIngredient(ingredientId) {
@@ -4435,18 +5392,24 @@
     showItemEditorErrors([]);
 
     if (closeAfterSave) {
-      openMenuBrowser({ skipRoute: false });
-      setMenuBrowserStatus("Item guardado: " + draft.name + " (" + draft.id + ")");
       var targetCategoryId = mapCategoryToMenuGroup(draft.category);
-      window.setTimeout(function () {
+      clearPanelPostNavigationActions();
+      queuePanelPostNavigationAction("menu-browser", function () {
         scrollToMenuAnchor(targetCategoryId, "");
         setActiveMenuAnchor(targetCategoryId, "", { force: true });
-      }, 40);
+      });
+      openMenuBrowser({ skipRoute: false });
+      setMenuBrowserStatus("Item guardado: " + draft.name + " (" + draft.id + ")");
       return;
     }
 
     setItemEditorStatus("Item guardado correctamente.");
     openItemEditor(draft.id, { skipRoute: true, isNew: false });
+    var itemHash = "#/menu/item/" + encodeURIComponent(draft.id);
+    if (window.location.hash !== itemHash) {
+      var baseUrl = window.location.pathname + window.location.search;
+      window.history.replaceState({}, document.title, baseUrl + itemHash);
+    }
   }
 
   function deleteCurrentItem() {
@@ -4560,19 +5523,23 @@
 
   function openDashboard(options) {
     options = options || {};
+    if (!options.skipRoute) {
+      navigateToRoute("/dashboard", { replace: Boolean(options.replaceRoute) });
+      return;
+    }
     setActivePanel("dashboard");
     setMenuBrowserStatus("");
     setItemEditorStatus("");
     setHomeEditorStatus("");
     setIngredientsEditorStatus("");
-
-    if (!options.skipRoute) {
-      navigateToRoute("/dashboard", { replace: Boolean(options.replaceRoute) });
-    }
   }
 
   function openMenuBrowser(options) {
     options = options || {};
+    if (!options.skipRoute) {
+      navigateToRoute("/menu", { replace: Boolean(options.replaceRoute) });
+      return;
+    }
 
     if (!state.hasDataLoaded) {
       ensureDataLoaded(false);
@@ -4584,14 +5551,6 @@
     renderSidebarMenuAccordion();
     setHomeEditorStatus("");
     setIngredientsEditorStatus("");
-
-    if (!options.skipRoute) {
-      navigateToRoute("/menu", { replace: Boolean(options.replaceRoute) });
-    }
-
-    window.requestAnimationFrame(function () {
-      updateMenuScrollSpy(true);
-    });
   }
 
   function getHomeSectionAnchorId(sectionId) {
@@ -4752,21 +5711,14 @@
     pointer[segments[segments.length - 1]] = value;
   }
 
-  function renderHomeSectionsSidebarNav() {
-    if (!elements.homeSectionsNav) return;
-
-    var html = HOME_EDITOR_SECTIONS.map(function (section) {
-      var buttonClass = "home-sections-nav__button" +
-        (state.homeActiveSectionId === section.id ? " is-active" : "");
-      return (
-        "<button class=\"" + buttonClass + "\" type=\"button\" data-home-nav-section=\"" +
-        escapeHtml(section.id) + "\">" +
-        escapeHtml(section.label) +
-        "</button>"
-      );
-    }).join("");
-
-    elements.homeSectionsNav.innerHTML = html;
+  function updateSidebarHomepageAccordionActiveClasses() {
+    if (!elements.sidebarHomepageAccordion) return;
+    var activeSectionId = normalizeHomeSectionId(state.homeActiveSectionId);
+    var buttons = elements.sidebarHomepageAccordion.querySelectorAll("[data-scroll-home-section]");
+    Array.prototype.forEach.call(buttons, function (button) {
+      var sectionId = button.getAttribute("data-scroll-home-section") || "";
+      button.classList.toggle("is-active", sectionId === activeSectionId);
+    });
   }
 
   function renderSidebarHomepageAccordion() {
@@ -4788,6 +5740,7 @@
     }).join("");
 
     elements.sidebarHomepageAccordion.innerHTML = html;
+    updateSidebarHomepageAccordionActiveClasses();
     syncSidebarAccordionCategoryHeights(elements.sidebarHomepageAccordion);
   }
 
@@ -4799,10 +5752,12 @@
     }
 
     state.homeActiveSectionId = nextSectionId;
+    if (nextSectionId) {
+      setNavigationCurrentSection("homepage:" + nextSectionId);
+    }
 
-    if (!options.skipRender) {
-      renderHomeSectionsSidebarNav();
-      renderSidebarHomepageAccordion();
+    if (!options.skipClassUpdate) {
+      updateSidebarHomepageAccordionActiveClasses();
     }
   }
 
@@ -4811,11 +5766,14 @@
     var anchor = document.getElementById(getHomeSectionAnchorId(normalized));
     if (!anchor) return;
 
-    var targetTop = window.scrollY + anchor.getBoundingClientRect().top - 96;
-    window.scrollTo({
-      top: Math.max(0, targetTop),
-      behavior: "smooth"
-    });
+    var targetTop = window.scrollY + anchor.getBoundingClientRect().top - UX_TIMING.anchorScrollOffsetPx;
+    var lockDurationMs = getProgrammaticScrollLockDuration(targetTop, "smooth");
+    runWithProgrammaticScrollLock(function () {
+      window.scrollTo({
+        top: Math.max(0, targetTop),
+        behavior: "smooth"
+      });
+    }, lockDurationMs, "homepage:" + normalized);
   }
 
   function refreshHomeScrollAnchors() {
@@ -4836,18 +5794,15 @@
   function updateHomeScrollSpy(force) {
     if (state.currentPanel !== "home-editor") return;
     if (state.visiblePanel !== "home-editor") return;
+    if (!canRunScrollSpy(Boolean(force))) return;
     if (isSidebarAccordionOpening("homepage")) return;
     if (!state.homeAnchorTargets.length) return;
 
-    var threshold = 154;
-    var activeAnchor = state.homeAnchorTargets[0];
-
-    state.homeAnchorTargets.forEach(function (target) {
-      if (!target.element || !target.element.isConnected) return;
-      if (target.element.getBoundingClientRect().top - threshold <= 0) {
-        activeAnchor = target;
-      }
-    });
+    var activeAnchor = findActiveAnchorTarget(
+      state.homeAnchorTargets,
+      UX_TIMING.scrollSpyThresholdPx
+    );
+    if (!activeAnchor) return;
 
     setActiveHomeSection(activeAnchor.sectionId, { force: Boolean(force) });
   }
@@ -4855,6 +5810,8 @@
   function requestHomeScrollSpyUpdate() {
     if (state.currentPanel !== "home-editor") return;
     if (state.visiblePanel !== "home-editor") return;
+    if (state.isPanelTransitioning) return;
+    if (!isNavigationStateIdle()) return;
     if (isSidebarAccordionOpening("homepage")) return;
     if (state.homeScrollSpyFrame) return;
     state.homeScrollSpyFrame = window.requestAnimationFrame(function () {
@@ -5233,7 +6190,6 @@
   function renderHomeEditor() {
     ensureHomeDraft();
     normalizeHomeEditorCollections();
-    renderHomeSectionsSidebarNav();
     renderSidebarHomepageAccordion();
 
     var home = state.drafts.home;
@@ -5444,6 +6400,10 @@
 
   function openHomePageEditor(options) {
     options = options || {};
+    if (!options.skipRoute) {
+      navigateToRoute("/homepage", { replace: Boolean(options.replaceRoute) });
+      return;
+    }
 
     if (!state.hasDataLoaded) {
       ensureDataLoaded(false);
@@ -5458,14 +6418,6 @@
     showItemEditorErrors([]);
     setHomeEditorStatus("");
     setIngredientsEditorStatus("");
-
-    if (!options.skipRoute) {
-      navigateToRoute("/homepage", { replace: Boolean(options.replaceRoute) });
-    }
-
-    window.requestAnimationFrame(function () {
-      updateHomeScrollSpy(true);
-    });
   }
 
   function createIngredientsEditorDraft(ingredientId, sourceEntry) {
@@ -5511,19 +6463,168 @@
     };
   }
 
+  function createIngredientsIconEditorDraft(iconKey, sourceEntry) {
+    var source = sourceEntry && typeof sourceEntry === "object" ? sourceEntry : {};
+    var covers = Array.isArray(source.covers) ? source.covers.slice() : [];
+    return {
+      key: String(iconKey || "").trim(),
+      label: String(source.label || "").trim(),
+      path: String(source.icon || "").trim(),
+      covers: covers
+    };
+  }
+
+  function normalizeIngredientsTab(tab) {
+    return String(tab || "").trim() === "icons" ? "icons" : "ingredients";
+  }
+
+  function getIngredientsTabPanels() {
+    return [
+      elements.ingredientsCatalogView,
+      elements.ingredientsDetailView,
+      elements.ingredientsIconsCatalogView,
+      elements.ingredientsIconsDetailView
+    ].filter(Boolean);
+  }
+
+  function getIngredientsTabVisibilityMap(isIconsTab, isIngredientsEditView, isIconsEditView) {
+    var map = {};
+    map["ingredients-catalog-view"] = !isIconsTab && !isIngredientsEditView;
+    map["ingredients-detail-view"] = !isIconsTab && isIngredientsEditView;
+    map["ingredients-icons-catalog-view"] = isIconsTab && !isIconsEditView;
+    map["ingredients-icons-detail-view"] = isIconsTab && isIconsEditView;
+    return map;
+  }
+
+  function applyIngredientsTabVisibility(visibilityMap) {
+    var targetMap = visibilityMap || {};
+    getIngredientsTabPanels().forEach(function (panelElement) {
+      var shouldShow = Boolean(targetMap[panelElement.id]);
+      panelElement.classList.toggle("is-hidden", !shouldShow);
+    });
+  }
+
+  function areIngredientsTabVisibilityMapsEqual(leftMap, rightMap) {
+    var left = leftMap || {};
+    var right = rightMap || {};
+    var panelIds = [
+      "ingredients-catalog-view",
+      "ingredients-detail-view",
+      "ingredients-icons-catalog-view",
+      "ingredients-icons-detail-view"
+    ];
+    return panelIds.every(function (panelId) {
+      return Boolean(left[panelId]) === Boolean(right[panelId]);
+    });
+  }
+
+  function clearIngredientsTabSwitchAnimation() {
+    if (state.ingredientsEditor.tabAnimationFrame) {
+      window.cancelAnimationFrame(state.ingredientsEditor.tabAnimationFrame);
+      state.ingredientsEditor.tabAnimationFrame = 0;
+    }
+    if (state.ingredientsEditor.tabAnimationTimer) {
+      window.clearTimeout(state.ingredientsEditor.tabAnimationTimer);
+      state.ingredientsEditor.tabAnimationTimer = 0;
+    }
+
+    getIngredientsTabPanels().forEach(function (panelElement) {
+      panelElement.classList.remove("is-tab-entering");
+      panelElement.classList.remove("is-tab-entering-active");
+      panelElement.classList.remove("is-tab-leaving");
+    });
+    state.ingredientsEditor.tabAnimationTargetVisibilityMap = null;
+  }
+
+  function setIngredientsTabsVisualState(tab) {
+    if (!elements.ingredientsTabsNav) return;
+    var normalizedTab = normalizeIngredientsTab(tab);
+    var tabIndex = normalizedTab === "icons" ? 1 : 0;
+    elements.ingredientsTabsNav.style.setProperty("--ingredients-tab-index", String(tabIndex));
+  }
+
+  function animateIngredientsTabSwitch(targetVisibilityMap) {
+    var visibilityMap = targetVisibilityMap || {};
+    var panels = getIngredientsTabPanels();
+    if (!panels.length) {
+      applyIngredientsTabVisibility(visibilityMap);
+      return;
+    }
+
+    clearIngredientsTabSwitchAnimation();
+    state.ingredientsEditor.tabAnimationTargetVisibilityMap = Object.assign({}, visibilityMap);
+
+    var outgoingPanels = [];
+    var incomingPanels = [];
+
+    panels.forEach(function (panelElement) {
+      var shouldShow = Boolean(visibilityMap[panelElement.id]);
+      var isVisibleNow = !panelElement.classList.contains("is-hidden");
+      if (isVisibleNow && !shouldShow) {
+        outgoingPanels.push(panelElement);
+      }
+      if (shouldShow) {
+        incomingPanels.push(panelElement);
+      }
+    });
+
+    incomingPanels.forEach(function (panelElement) {
+      panelElement.classList.remove("is-hidden");
+      panelElement.classList.add("is-tab-entering");
+      panelElement.classList.remove("is-tab-entering-active");
+    });
+
+    outgoingPanels.forEach(function (panelElement) {
+      panelElement.classList.remove("is-hidden");
+      panelElement.classList.remove("is-tab-leaving");
+    });
+
+    state.ingredientsEditor.tabAnimationFrame = window.requestAnimationFrame(function () {
+      state.ingredientsEditor.tabAnimationFrame = window.requestAnimationFrame(function () {
+        state.ingredientsEditor.tabAnimationFrame = 0;
+        outgoingPanels.forEach(function (panelElement) {
+          panelElement.classList.add("is-tab-leaving");
+        });
+        incomingPanels.forEach(function (panelElement) {
+          panelElement.classList.add("is-tab-entering-active");
+        });
+      });
+    });
+
+    state.ingredientsEditor.tabAnimationTimer = window.setTimeout(function () {
+      panels.forEach(function (panelElement) {
+        panelElement.classList.remove("is-tab-entering");
+        panelElement.classList.remove("is-tab-entering-active");
+        panelElement.classList.remove("is-tab-leaving");
+      });
+      applyIngredientsTabVisibility(visibilityMap);
+      state.ingredientsEditor.tabAnimationTargetVisibilityMap = null;
+      state.ingredientsEditor.tabAnimationTimer = 0;
+    }, 520);
+  }
+
   function renderIngredientsEditorValidationSummary(report) {
-    if (!elements.ingredientsValidationSummary) return;
+    if (!elements.ingredientsValidationSummary && !elements.ingredientsIconValidationSummary) return;
     var safeReport = report || state.ingredientsEditor.validationReport || {
       errors: [],
       warnings: [],
-      ingredientIssuesById: {}
+      ingredientIssuesById: {},
+      iconIssuesByKey: {}
     };
 
     var summary = "Errores: " + safeReport.errors.length + " · Warnings: " + safeReport.warnings.length;
-    var selectedId = state.ingredientsEditor.selectedIngredientId;
-    var selectedIssues = selectedId && safeReport.ingredientIssuesById
-      ? safeReport.ingredientIssuesById[selectedId]
-      : null;
+    var selectedIssues = null;
+    if (state.ingredientsEditor.tab === "icons") {
+      var selectedIconKey = String(state.ingredientsEditor.selectedIconKey || "").trim();
+      selectedIssues = selectedIconKey && safeReport.iconIssuesByKey
+        ? safeReport.iconIssuesByKey[selectedIconKey]
+        : null;
+    } else {
+      var selectedId = state.ingredientsEditor.selectedIngredientId;
+      selectedIssues = selectedId && safeReport.ingredientIssuesById
+        ? safeReport.ingredientIssuesById[selectedId]
+        : null;
+    }
     if (selectedIssues) {
       var selectedCount = selectedIssues.errors.length + selectedIssues.warnings.length;
       if (selectedCount) {
@@ -5531,11 +6632,15 @@
       }
     }
 
-    elements.ingredientsValidationSummary.textContent = summary;
-    elements.ingredientsValidationSummary.classList.toggle(
-      "is-warning",
-      safeReport.errors.length > 0 || safeReport.warnings.length > 0
-    );
+    [elements.ingredientsValidationSummary, elements.ingredientsIconValidationSummary]
+      .filter(Boolean)
+      .forEach(function (summaryElement) {
+        summaryElement.textContent = summary;
+        summaryElement.classList.toggle(
+          "is-warning",
+          safeReport.errors.length > 0 || safeReport.warnings.length > 0
+        );
+      });
   }
 
   function renderIngredientsGlobalWarnings(report) {
@@ -5583,7 +6688,8 @@
       if (!item.ingredients.includes(normalizedId)) return;
       impacted.push({
         id: item.id || "",
-        label: item.name || item.id || "Item sin nombre"
+        label: item.name || item.id || "Item sin nombre",
+        imagePath: resolveCardImageForItem(item)
       });
     });
     return impacted;
@@ -5675,6 +6781,11 @@
   function setActiveIngredientsCategory(categoryId) {
     var normalizedId = String(categoryId || "").trim();
     state.ingredientsEditor.activeCategoryId = normalizedId;
+    if (normalizedId) {
+      setNavigationCurrentSection("ingredients:" + normalizedId);
+    } else if (state.currentPanel === "ingredients-editor") {
+      setNavigationCurrentSection("");
+    }
     if (!elements.sidebarIngredientsAccordion) return;
 
     var buttons = elements.sidebarIngredientsAccordion.querySelectorAll("[data-scroll-ingredients-category]");
@@ -5723,11 +6834,15 @@
     if (!section) return;
 
     setActiveIngredientsCategory(normalizedId);
-    var targetTop = window.scrollY + section.getBoundingClientRect().top - 96;
-    window.scrollTo({
-      top: Math.max(0, targetTop),
-      behavior: options.instant ? "auto" : "smooth"
-    });
+    var targetTop = window.scrollY + section.getBoundingClientRect().top - UX_TIMING.anchorScrollOffsetPx;
+    var scrollBehavior = options.instant ? "auto" : "smooth";
+    var lockDurationMs = getProgrammaticScrollLockDuration(targetTop, scrollBehavior);
+    runWithProgrammaticScrollLock(function () {
+      window.scrollTo({
+        top: Math.max(0, targetTop),
+        behavior: scrollBehavior
+      });
+    }, lockDurationMs, "ingredients:" + normalizedId);
     if (typeof section.focus === "function") {
       try {
         section.focus({ preventScroll: true });
@@ -5755,32 +6870,28 @@
   function updateIngredientsScrollSpy(force) {
     if (state.currentPanel !== "ingredients-editor") return;
     if (state.visiblePanel !== "ingredients-editor") return;
+    if (!canRunScrollSpy(Boolean(force))) return;
     if (isSidebarAccordionOpening("ingredients")) return;
+    if (state.ingredientsEditor.tab !== "ingredients") return;
     if (state.ingredientsEditor.view !== "catalog") return;
     if (!state.ingredientsAnchorTargets.length) return;
 
-    var threshold = 154;
-    var activeAnchor = state.ingredientsAnchorTargets[0];
-
-    state.ingredientsAnchorTargets.forEach(function (target) {
-      if (!target.element || !target.element.isConnected) return;
-      if (target.element.getBoundingClientRect().top - threshold <= 0) {
-        activeAnchor = target;
-      }
-    });
+    var activeAnchor = findActiveAnchorTarget(
+      state.ingredientsAnchorTargets,
+      UX_TIMING.scrollSpyThresholdPx
+    );
+    if (!activeAnchor) return;
 
     setActiveIngredientsCategory(activeAnchor.categoryId);
-    if (force) {
-      renderSidebarIngredientsAccordion(
-        (state.ingredientsEditor.catalogSections && state.ingredientsEditor.catalogSections.sections) || []
-      );
-    }
   }
 
   function requestIngredientsScrollSpyUpdate() {
     if (state.currentPanel !== "ingredients-editor") return;
     if (state.visiblePanel !== "ingredients-editor") return;
+    if (state.isPanelTransitioning) return;
+    if (!isNavigationStateIdle()) return;
     if (isSidebarAccordionOpening("ingredients")) return;
+    if (state.ingredientsEditor.tab !== "ingredients") return;
     if (state.ingredientsEditor.view !== "catalog") return;
     if (state.ingredientsScrollSpyFrame) return;
     state.ingredientsScrollSpyFrame = window.requestAnimationFrame(function () {
@@ -5893,6 +7004,42 @@
     state.ingredientsEditor.view = "catalog";
   }
 
+  function ensureIngredientsIconSelection() {
+    ensureIngredientsDraft();
+    var iconsById = state.drafts.ingredients.icons || {};
+
+    if (state.ingredientsEditor.iconsView !== "edit") {
+      state.ingredientsEditor.selectedIconIsNew = false;
+      state.ingredientsEditor.iconDraft = null;
+      return;
+    }
+
+    if (state.ingredientsEditor.selectedIconIsNew) {
+      if (!state.ingredientsEditor.iconDraft) {
+        state.ingredientsEditor.iconDraft = createIngredientsIconEditorDraft("", null);
+      }
+      return;
+    }
+
+    if (
+      state.ingredientsEditor.selectedIconKey &&
+      iconsById[state.ingredientsEditor.selectedIconKey]
+    ) {
+      if (!state.ingredientsEditor.iconDraft) {
+        state.ingredientsEditor.iconDraft = createIngredientsIconEditorDraft(
+          state.ingredientsEditor.selectedIconKey,
+          iconsById[state.ingredientsEditor.selectedIconKey]
+        );
+      }
+      return;
+    }
+
+    state.ingredientsEditor.selectedIconKey = "";
+    state.ingredientsEditor.selectedIconIsNew = false;
+    state.ingredientsEditor.iconDraft = null;
+    state.ingredientsEditor.iconsView = "catalog";
+  }
+
   function renderIngredientsList() {
     if (!elements.ingredientsList) return;
     ensureIngredientsDraft();
@@ -5924,9 +7071,16 @@
     var sectionsHtml = visibleSections.map(function (section) {
       var cardsHtml = section.items.map(function (entry) {
         var issuesCount = entry.issues.errors.length + entry.issues.warnings.length;
-        var issueBadge = issuesCount
-          ? "<span class=\"ingredients-card__badge\">E" + entry.issues.errors.length + " · W" + entry.issues.warnings.length + "</span>"
-          : "";
+        var issueBadge = "";
+        if (issuesCount) {
+          var issueTooltip = formatIngredientIssuesTooltip(entry.issues);
+          var escapedIssueTooltip = escapeHtml(issueTooltip);
+          issueBadge =
+            "<span class=\"ingredients-card__badge\" role=\"img\" aria-label=\"" + escapedIssueTooltip +
+            "\" title=\"" + escapedIssueTooltip + "\" data-issues-tooltip=\"" + escapedIssueTooltip + "\">" +
+            INGREDIENT_ISSUE_ICON_SVG +
+            "</span>";
+        }
         var buttonClass = "ingredients-card";
         if (!state.ingredientsEditor.selectedIsNew && state.ingredientsEditor.selectedIngredientId === entry.id) {
           buttonClass += " is-active";
@@ -5979,9 +7133,206 @@
     requestIngredientsScrollSpyUpdate();
   }
 
+  function formatIngredientIssuesTooltip(issues) {
+    var issueBucket = issues && typeof issues === "object" ? issues : {};
+    var errors = Array.isArray(issueBucket.errors) ? issueBucket.errors : [];
+    var warnings = Array.isArray(issueBucket.warnings) ? issueBucket.warnings : [];
+    var parts = [];
+
+    function compactIssueText(messages) {
+      return messages
+        .map(function (message) {
+          return String(message || "").trim();
+        })
+        .filter(Boolean)
+        .join("; ");
+    }
+
+    if (errors.length) {
+      parts.push("Errores (" + errors.length + "): " + compactIssueText(errors));
+    }
+    if (warnings.length) {
+      parts.push("Warnings (" + warnings.length + "): " + compactIssueText(warnings));
+    }
+    return parts.join(" | ");
+  }
+
+  function formatIconIssuesTooltip(issues, options) {
+    options = options || {};
+    var issueBucket = issues && typeof issues === "object" ? issues : {};
+    var errors = Array.isArray(issueBucket.errors) ? issueBucket.errors : [];
+    var warnings = Array.isArray(issueBucket.warnings) ? issueBucket.warnings : [];
+    var parts = [];
+
+    function compactIssueText(messages) {
+      return messages
+        .map(function (message) {
+          return String(message || "").trim();
+        })
+        .filter(Boolean)
+        .join("; ");
+    }
+
+    if (errors.length) {
+      parts.push("Errores (" + errors.length + "): " + compactIssueText(errors));
+    }
+    if (warnings.length) {
+      parts.push("Warnings (" + warnings.length + "): " + compactIssueText(warnings));
+    }
+    if (options.usageCount === 0) {
+      parts.push("Unused");
+    }
+    if (options.hasMissingAsset) {
+      parts.push("Missing asset");
+    }
+    return parts.join(" | ");
+  }
+
+  function buildIngredientsIconsCatalogEntries(report) {
+    ensureIngredientsDraft();
+    var ingredientsSource = state.drafts.ingredients;
+    var iconsById = ingredientsSource.icons || {};
+    var normalizedSearch = normalizeText(state.ingredientsEditor.iconSearch || "");
+    var iconIssuesByKey = report && report.iconIssuesByKey ? report.iconIssuesByKey : {};
+    var iconUsageByKey = report && report.iconUsageByKey ? report.iconUsageByKey : {};
+
+    return Object.keys(iconsById).map(function (iconKey) {
+      var iconEntry = iconsById[iconKey] || {};
+      var label = String(iconEntry.label || "").trim();
+      var pathValue = String(iconEntry.icon || "").trim();
+      var usageEntries = Array.isArray(iconUsageByKey[iconKey]) ? iconUsageByKey[iconKey].slice() : [];
+      usageEntries.sort(function (a, b) {
+        return normalizeText(a.label || a.id).localeCompare(normalizeText(b.label || b.id));
+      });
+      var issues = iconIssuesByKey[iconKey] || { errors: [], warnings: [] };
+      var hasMissingAsset = !pathValue || !isLikelyValidIngredientIconPath(pathValue);
+      var haystack = normalizeText([
+        iconKey,
+        label,
+        pathValue,
+        usageEntries.map(function (entry) {
+          return entry.id + " " + (entry.label || "");
+        }).join(" ")
+      ].join(" "));
+      return {
+        key: iconKey,
+        label: label || iconKey,
+        rawLabel: label,
+        pathValue: pathValue,
+        resolvedPath: resolveIngredientCatalogIconPath(iconEntry, ingredientsSource),
+        usageEntries: usageEntries,
+        issues: issues,
+        isUnused: usageEntries.length === 0,
+        hasMissingAsset: hasMissingAsset,
+        searchHaystack: haystack
+      };
+    }).filter(function (entry) {
+      return !normalizedSearch || entry.searchHaystack.includes(normalizedSearch);
+    }).sort(function (a, b) {
+      var byLabel = normalizeText(a.label).localeCompare(normalizeText(b.label));
+      if (byLabel !== 0) return byLabel;
+      return normalizeText(a.key).localeCompare(normalizeText(b.key));
+    });
+  }
+
+  function renderIngredientsIconsGlobalWarnings(entries) {
+    if (!elements.ingredientsIconsGlobalWarning) return;
+    var list = Array.isArray(entries) ? entries : [];
+    if (!list.length) {
+      elements.ingredientsIconsGlobalWarning.textContent = "Sin iconos para mostrar.";
+      elements.ingredientsIconsGlobalWarning.classList.remove("is-warning");
+      return;
+    }
+
+    var unusedCount = list.filter(function (entry) { return entry.isUnused; }).length;
+    var missingAssetCount = list.filter(function (entry) { return entry.hasMissingAsset; }).length;
+    var issuesCount = list.reduce(function (acc, entry) {
+      return acc + entry.issues.errors.length + entry.issues.warnings.length;
+    }, 0);
+
+    var parts = [
+      list.length + " iconos visibles"
+    ];
+    if (unusedCount) {
+      parts.push(unusedCount + " unused");
+    }
+    if (missingAssetCount) {
+      parts.push(missingAssetCount + " missing asset");
+    }
+    if (issuesCount) {
+      parts.push(issuesCount + " alertas");
+    }
+
+    elements.ingredientsIconsGlobalWarning.textContent = parts.join(" · ");
+    elements.ingredientsIconsGlobalWarning.classList.toggle(
+      "is-warning",
+      unusedCount > 0 || missingAssetCount > 0 || issuesCount > 0
+    );
+  }
+
+  function renderIngredientsIconsList() {
+    if (!elements.ingredientsIconsList) return;
+    ensureIngredientsDraft();
+    var report = state.ingredientsEditor.validationReport || validateIngredientsDraftData(state.drafts.ingredients);
+    var entries = buildIngredientsIconsCatalogEntries(report);
+    var totalCount = Object.keys((state.drafts.ingredients && state.drafts.ingredients.icons) || {}).length;
+
+    if (elements.ingredientsIconsCatalogCount) {
+      elements.ingredientsIconsCatalogCount.textContent =
+        entries.length + " de " + totalCount + " iconos";
+    }
+    renderIngredientsIconsGlobalWarnings(entries);
+
+    if (!entries.length) {
+      elements.ingredientsIconsList.innerHTML = "<li class=\"ingredients-grid__empty\">No hay iconos para mostrar.</li>";
+      return;
+    }
+
+    elements.ingredientsIconsList.innerHTML = entries.map(function (entry) {
+      var issuesCount = entry.issues.errors.length + entry.issues.warnings.length;
+      var usageCount = entry.usageEntries.length;
+      var usageTooltip = usageCount === 1
+        ? "Usado por 1 ingrediente."
+        : "Usado por " + usageCount + " ingredientes.";
+      var escapedUsageTooltip = escapeHtml(usageTooltip);
+      var usageBadge =
+        "<span class=\"ingredients-card__badge ingredients-card__badge--usage\" role=\"img\" aria-label=\"" + escapedUsageTooltip +
+        "\" title=\"" + escapedUsageTooltip + "\" data-issues-tooltip=\"" + escapedUsageTooltip + "\">" +
+        INGREDIENT_NAV_BADGE_ICON_SVG +
+        "</span>";
+
+      var buttonClass = "ingredients-card ingredients-icon-card";
+      if (!state.ingredientsEditor.selectedIconIsNew && state.ingredientsEditor.selectedIconKey === entry.key) {
+        buttonClass += " is-active";
+      }
+      if (issuesCount || entry.isUnused || entry.hasMissingAsset) {
+        buttonClass += " is-warning";
+      }
+
+      var normalizedIconPath = entry.resolvedPath ? resolveAssetPath(entry.resolvedPath) : "";
+
+      return (
+        "<li class=\"ingredients-grid__item\">" +
+        "<button class=\"" + buttonClass + "\" type=\"button\" data-select-icon=\"" + escapeHtml(entry.key) +
+        "\" title=\"" + escapeHtml(entry.label) + "\">" +
+        usageBadge +
+        "<span class=\"ingredients-card__media\">" +
+        (normalizedIconPath
+          ? "<img src=\"" + escapeHtml(normalizedIconPath) + "\" alt=\"" + escapeHtml(entry.label) + "\" loading=\"lazy\" " +
+            "onerror=\"this.onerror=null;this.src='/" + escapeHtml(MENU_PLACEHOLDER_IMAGE) + "';\" />"
+          : "<span class=\"ingredients-card__media-placeholder\">•</span>") +
+        "</span>" +
+        "<span class=\"ingredients-card__label\">" + escapeHtml(entry.label) + "</span>" +
+        "</button>" +
+        "</li>"
+      );
+    }).join("");
+  }
+
   function renderIngredientsIconSelect(selectedIconValue) {
     if (!elements.ingredientsFieldIconSelect) return;
     var options = ['<option value="">(manual / sin icono)</option>'];
+    var datalistOptions = [];
     state.indexes.iconList.forEach(function (iconId) {
       var iconEntry = state.indexes.iconsById[iconId] || {};
       var label = iconEntry.label || iconId;
@@ -5990,10 +7341,78 @@
         escapeHtml(label + " · " + iconId) +
         "</option>"
       );
+      datalistOptions.push(
+        "<option value=\"" + escapeHtml(iconId) + "\" label=\"" + escapeHtml(label) + "\"></option>"
+      );
     });
     elements.ingredientsFieldIconSelect.innerHTML = options.join("");
+    if (elements.ingredientsFieldIconOptions) {
+      elements.ingredientsFieldIconOptions.innerHTML = datalistOptions.join("");
+    }
     var selected = String(selectedIconValue || "").trim();
     elements.ingredientsFieldIconSelect.value = state.indexes.iconsById[selected] ? selected : "";
+  }
+
+  function getIngredientSelectedIconReference(iconValue) {
+    ensureIngredientsDraft();
+    var normalizedValue = String(iconValue || "").trim();
+    if (!normalizedValue) {
+      return {
+        iconKey: "",
+        resolvedPath: "",
+        label: ""
+      };
+    }
+
+    var iconEntry = state.indexes.iconsById[normalizedValue];
+    if (iconEntry) {
+      return {
+        iconKey: normalizedValue,
+        resolvedPath: resolveIngredientCatalogIconPath(iconEntry, state.drafts.ingredients),
+        label: String(iconEntry.label || normalizedValue).trim()
+      };
+    }
+
+    if (isLikelyValidIngredientIconPath(normalizedValue)) {
+      return {
+        iconKey: "",
+        resolvedPath: resolveIngredientIconAssetPath(normalizedValue, state.drafts.ingredients),
+        label: normalizedValue
+      };
+    }
+
+    return {
+      iconKey: "",
+      resolvedPath: "",
+      label: normalizedValue
+    };
+  }
+
+  function renderIngredientsIconPreviewElement(targetElement, iconReference) {
+    if (!targetElement) return;
+    var reference = iconReference || {};
+    var resolvedPath = String(reference.resolvedPath || "").trim();
+    if (!resolvedPath) {
+      targetElement.classList.add("is-empty");
+      targetElement.innerHTML = "<span class=\"ingredients-card__media-placeholder\">•</span>";
+      return;
+    }
+
+    targetElement.classList.remove("is-empty");
+    targetElement.innerHTML =
+      "<img src=\"" + escapeHtml(resolveAssetPath(resolvedPath)) + "\" alt=\"" +
+      escapeHtml(reference.label || "Icono") + "\" loading=\"lazy\" " +
+      "onerror=\"this.onerror=null;this.src='/" + escapeHtml(MENU_PLACEHOLDER_IMAGE) + "';\" />";
+  }
+
+  function renderIngredientFieldIconPreview(iconValue) {
+    var iconReference = getIngredientSelectedIconReference(iconValue);
+    renderIngredientsIconPreviewElement(elements.ingredientsFieldIconPreview, iconReference);
+    if (elements.ingredientsViewIconButton) {
+      elements.ingredientsViewIconButton.disabled = !iconReference.iconKey;
+      elements.ingredientsViewIconButton.setAttribute("data-view-icon-key", iconReference.iconKey || "");
+    }
+    return iconReference;
   }
 
   function renderIngredientsAliasList() {
@@ -6037,8 +7456,8 @@
       var attribute = kind === "tags" ? "data-toggle-ingredient-tag" : "data-toggle-ingredient-allergen";
       return (
         "<button class=\"token-search-result ingredients-meta-chip" + selectedClass + "\" type=\"button\" " +
-        attribute + "=\"" + escapeHtml(id) + "\">" +
-        escapeHtml(label) + " · " + escapeHtml(id) +
+        attribute + "=\"" + escapeHtml(id) + "\" title=\"" + escapeHtml(id) + "\">" +
+        "<span class=\"ingredients-meta-chip__label\">" + escapeHtml(label) + "</span>" +
         "</button>"
       );
     }).join("");
@@ -6063,13 +7482,26 @@
     target.innerHTML = ids.map(function (id) {
       var entry = sourceById[id] || {};
       return (
-        "<label class=\"ingredients-catalog-row\">" +
-        "<span class=\"ingredients-catalog-row__id\">" + escapeHtml(id) + "</span>" +
+        "<label class=\"ingredients-catalog-row\" title=\"ID: " + escapeHtml(id) + "\">" +
         "<input type=\"text\" data-ingredients-catalog-kind=\"" + escapeHtml(kind) + "\" " +
-        "data-ingredients-catalog-id=\"" + escapeHtml(id) + "\" value=\"" + escapeHtml(entry.label || "") + "\" />" +
+        "data-ingredients-catalog-id=\"" + escapeHtml(id) + "\" name=\"ingredients-" + escapeHtml(kind) + "-" +
+        escapeHtml(id) + "\" value=\"" + escapeHtml(entry.label || "") +
+        "\" placeholder=\"Label visible\" aria-label=\"Label para " + escapeHtml(id) + "\" />" +
         "</label>"
       );
     }).join("");
+  }
+
+  function removeLegacyIngredientsCatalogCards() {
+    ["ingredientsTagsCatalog", "ingredientsAllergensCatalog"].forEach(function (elementKey) {
+      var target = elements[elementKey];
+      if (!target) return;
+      var section = target.closest(".ingredients-detail-section");
+      if (section && section.parentNode) {
+        section.parentNode.removeChild(section);
+      }
+      elements[elementKey] = null;
+    });
   }
 
   function renderIngredientImpact(ingredientId) {
@@ -6082,25 +7514,64 @@
     }
 
     var impact = getIngredientMenuImpact(normalizedId);
-    elements.ingredientsImpactCount.textContent = impact.length + " menu items usan este ingrediente.";
+    elements.ingredientsImpactCount.textContent = impact.length === 1
+      ? "1 item del menu usa este ingrediente."
+      : impact.length + " items del menu usan este ingrediente.";
     if (!impact.length) {
-      elements.ingredientsImpactList.innerHTML = "<li class=\"ingredients-list__empty\">Sin impacto en menu.</li>";
+      elements.ingredientsImpactList.innerHTML = "<li class=\"ingredients-grid__empty\">Sin impacto en menu.</li>";
       return;
     }
 
     elements.ingredientsImpactList.innerHTML = impact.slice(0, 10).map(function (entry) {
-      return "<li><strong>" + escapeHtml(entry.label) + "</strong> <small>" + escapeHtml(entry.id) + "</small></li>";
+      var normalizedImagePath = entry.imagePath
+        ? resolveAssetPath(entry.imagePath)
+        : resolveAssetPath(MENU_PLACEHOLDER_IMAGE);
+      return (
+        "<li class=\"ingredients-grid__item\">" +
+        "<article class=\"ingredients-card ingredients-impact-card\" title=\"" + escapeHtml(entry.id) + "\">" +
+        "<span class=\"ingredients-card__media\">" +
+        "<img src=\"" + escapeHtml(normalizedImagePath) + "\" alt=\"" + escapeHtml(entry.label) + "\" loading=\"lazy\" " +
+        "onerror=\"this.onerror=null;this.src='/" + escapeHtml(MENU_PLACEHOLDER_IMAGE) + "';\" />" +
+        "</span>" +
+        "<span class=\"ingredients-card__label\">" + escapeHtml(entry.label) + "</span>" +
+        "</article>" +
+        "</li>"
+      );
     }).join("");
   }
 
   function getIngredientsEditorHeading() {
-    var catalogTitle = "Catalogo de ingredientes";
-    var catalogSubtitle = "Explora el catalogo en cards. Click en un ingrediente para abrir su editor.";
+    var isIconsTab = state.ingredientsEditor.tab === "icons";
+    if (isIconsTab) {
+      if (state.ingredientsEditor.iconsView !== "edit") {
+        return {
+          title: "Catalogo de iconos",
+          subtitle: "Administra iconos del catalogo y revisa su uso en ingredientes."
+        };
+      }
+
+      if (state.ingredientsEditor.selectedIconIsNew) {
+        return {
+          title: "Nuevo icono",
+          subtitle: "Define key, label y path del icono para usarlo en ingredientes."
+        };
+      }
+
+      var iconKey = String(state.ingredientsEditor.selectedIconKey || "").trim();
+      var iconEntry = iconKey && state.drafts.ingredients && state.drafts.ingredients.icons
+        ? state.drafts.ingredients.icons[iconKey]
+        : null;
+      var iconLabel = iconEntry && iconEntry.label ? String(iconEntry.label).trim() : "";
+      return {
+        title: iconLabel || iconKey || "Icono",
+        subtitle: "Edita label/path y revisa impacto en ingredientes."
+      };
+    }
 
     if (state.ingredientsEditor.view !== "edit") {
       return {
-        title: catalogTitle,
-        subtitle: catalogSubtitle
+        title: "Catalogo de ingredientes",
+        subtitle: "Explora el catalogo en cards. Click en un ingrediente para abrir su editor."
       };
     }
 
@@ -6118,10 +7589,8 @@
       ? String(selectedIngredient.label).trim()
       : "";
 
-    var title = label || "Ingrediente sin label";
-
     return {
-      title: title,
+      title: label || "Ingrediente sin label",
       subtitle: "Edita campos, revisa impacto y guarda cambios en drafts."
     };
   }
@@ -6137,6 +7606,7 @@
       elements.ingredientsFieldIcon.value = "";
       elements.ingredientsFieldId.readOnly = true;
       renderIngredientsIconSelect("");
+      renderIngredientFieldIconPreview("");
       renderIngredientsAliasList();
       renderIngredientsMetaSelector("tags");
       renderIngredientsMetaSelector("allergens");
@@ -6159,6 +7629,7 @@
     elements.ingredientsFieldLabel.value = draft.label || "";
     elements.ingredientsFieldIcon.value = draft.icon || "";
     renderIngredientsIconSelect(draft.icon || "");
+    renderIngredientFieldIconPreview(draft.icon || "");
     renderIngredientsAliasList();
     renderIngredientsMetaSelector("tags");
     renderIngredientsMetaSelector("allergens");
@@ -6168,30 +7639,171 @@
     }
   }
 
+  function renderIngredientsIconUsedBy(iconKey) {
+    if (!elements.ingredientsIconUsedByCount || !elements.ingredientsIconUsedByList) return;
+    var normalizedKey = String(iconKey || "").trim();
+    if (!normalizedKey) {
+      elements.ingredientsIconUsedByCount.textContent = "Selecciona un icono para ver impacto.";
+      elements.ingredientsIconUsedByList.innerHTML = "";
+      return;
+    }
+
+    var usageEntries = getIngredientIconUsageEntries(normalizedKey);
+    elements.ingredientsIconUsedByCount.textContent = usageEntries.length === 1
+      ? "Used by 1 ingrediente."
+      : "Used by " + usageEntries.length + " ingredientes.";
+    if (!usageEntries.length) {
+      elements.ingredientsIconUsedByList.innerHTML = "<li class=\"ingredients-grid__empty\">Icono sin uso.</li>";
+      return;
+    }
+
+    var ingredientsById = (state.drafts.ingredients && state.drafts.ingredients.ingredients) || {};
+    elements.ingredientsIconUsedByList.innerHTML = usageEntries.slice(0, 24).map(function (entry) {
+      var ingredient = ingredientsById[entry.id] || {};
+      var iconPath = resolveIngredientIconPath(ingredient, state.drafts.ingredients);
+      var normalizedImagePath = iconPath
+        ? resolveAssetPath(iconPath)
+        : resolveAssetPath(MENU_PLACEHOLDER_IMAGE);
+      return (
+        "<li class=\"ingredients-grid__item\">" +
+        "<button class=\"ingredients-card ingredients-impact-card ingredients-icon-used-by-card\" type=\"button\" " +
+        "data-jump-icon-ingredient=\"" + escapeHtml(entry.id) + "\" title=\"" + escapeHtml(entry.id) + "\">" +
+        "<span class=\"ingredients-card__media\">" +
+        "<img src=\"" + escapeHtml(normalizedImagePath) + "\" alt=\"" + escapeHtml(entry.label) + "\" loading=\"lazy\" " +
+        "onerror=\"this.onerror=null;this.src='/" + escapeHtml(MENU_PLACEHOLDER_IMAGE) + "';\" />" +
+        "</span>" +
+        "<span class=\"ingredients-card__label\">" + escapeHtml(entry.label || entry.id) + "</span>" +
+        "<span class=\"ingredients-icon-card__key\">" + escapeHtml(entry.id) + "</span>" +
+        "</button>" +
+        "</li>"
+      );
+    }).join("");
+  }
+
+  function renderIngredientsIconsForm() {
+    var draft = state.ingredientsEditor.iconDraft;
+    if (elements.ingredientsIconsDetailTitle) {
+      elements.ingredientsIconsDetailTitle.textContent = "Icono";
+    }
+    if (!draft) {
+      if (elements.ingredientsIconFieldKey) {
+        elements.ingredientsIconFieldKey.value = "";
+        elements.ingredientsIconFieldKey.readOnly = true;
+      }
+      if (elements.ingredientsIconFieldLabel) elements.ingredientsIconFieldLabel.value = "";
+      if (elements.ingredientsIconFieldPath) elements.ingredientsIconFieldPath.value = "";
+      renderIngredientsIconPreviewElement(elements.ingredientsIconPreview, { resolvedPath: "", label: "" });
+      renderIngredientsIconUsedBy("");
+      if (elements.ingredientsIconDeleteButton) elements.ingredientsIconDeleteButton.disabled = true;
+      return;
+    }
+
+    if (elements.ingredientsIconsDetailTitle) {
+      if (state.ingredientsEditor.selectedIconIsNew) {
+        elements.ingredientsIconsDetailTitle.textContent = "Nuevo icono";
+      } else {
+        elements.ingredientsIconsDetailTitle.textContent = draft.label || draft.key || "Icono";
+      }
+    }
+
+    if (elements.ingredientsIconFieldKey) {
+      elements.ingredientsIconFieldKey.value = draft.key || "";
+      elements.ingredientsIconFieldKey.readOnly = !state.ingredientsEditor.selectedIconIsNew;
+    }
+    if (elements.ingredientsIconFieldLabel) {
+      elements.ingredientsIconFieldLabel.value = draft.label || "";
+    }
+    if (elements.ingredientsIconFieldPath) {
+      elements.ingredientsIconFieldPath.value = draft.path || "";
+    }
+
+    renderIngredientsIconPreviewElement(elements.ingredientsIconPreview, {
+      resolvedPath: resolveIngredientIconAssetPath(draft.path || "", state.drafts.ingredients),
+      label: draft.label || draft.key || "Icono"
+    });
+    renderIngredientsIconUsedBy(state.ingredientsEditor.selectedIconIsNew ? "" : state.ingredientsEditor.selectedIconKey);
+    if (elements.ingredientsIconDeleteButton) {
+      elements.ingredientsIconDeleteButton.disabled =
+        state.ingredientsEditor.selectedIconIsNew || !state.ingredientsEditor.selectedIconKey;
+    }
+  }
+
   function renderIngredientsEditor() {
     if (!state.hasDataLoaded) return;
     ensureIngredientsDraft();
     buildIndexes();
-    ensureIngredientsEditorSelection();
+    var previousTab = "ingredients";
+    if (elements.ingredientsTabIcons && elements.ingredientsTabIcons.classList.contains("is-active")) {
+      previousTab = "icons";
+    } else if (elements.ingredientsTabIngredients && elements.ingredientsTabIngredients.classList.contains("is-active")) {
+      previousTab = "ingredients";
+    } else {
+      previousTab = normalizeIngredientsTab(state.ingredientsEditor.lastRenderedTab || state.ingredientsEditor.tab);
+    }
+    state.ingredientsEditor.tab = normalizeIngredientsTab(state.ingredientsEditor.tab);
+    var isTabChanged = previousTab !== state.ingredientsEditor.tab;
+    if (state.ingredientsEditor.tab === "icons") {
+      ensureIngredientsIconSelection();
+    } else {
+      ensureIngredientsEditorSelection();
+    }
 
     if (elements.ingredientsSearchInput) {
       elements.ingredientsSearchInput.value = state.ingredientsEditor.search || "";
     }
+    if (elements.ingredientsIconsSearchInput) {
+      elements.ingredientsIconsSearchInput.value = state.ingredientsEditor.iconSearch || "";
+    }
 
     state.ingredientsEditor.validationReport = validateIngredientsDraftData(state.drafts.ingredients);
-    var isEditView = state.ingredientsEditor.view === "edit";
-    if (elements.ingredientsCatalogView) {
-      elements.ingredientsCatalogView.classList.toggle("is-hidden", isEditView);
-    }
-    if (elements.ingredientsDetailView) {
-      elements.ingredientsDetailView.classList.toggle("is-hidden", !isEditView);
+    var isIconsTab = state.ingredientsEditor.tab === "icons";
+    var isIngredientsEditView = !isIconsTab && state.ingredientsEditor.view === "edit";
+    var isIconsEditView = isIconsTab && state.ingredientsEditor.iconsView === "edit";
+    var isCatalogActionsVisible = !isIngredientsEditView && !isIconsEditView;
+    var tabVisibilityMap = getIngredientsTabVisibilityMap(isIconsTab, isIngredientsEditView, isIconsEditView);
+
+    if (isTabChanged) {
+      animateIngredientsTabSwitch(tabVisibilityMap);
+    } else {
+      var hasTabAnimationInFlight = Boolean(
+        state.ingredientsEditor.tabAnimationFrame || state.ingredientsEditor.tabAnimationTimer
+      );
+      if (
+        hasTabAnimationInFlight &&
+        areIngredientsTabVisibilityMapsEqual(
+          state.ingredientsEditor.tabAnimationTargetVisibilityMap,
+          tabVisibilityMap
+        )
+      ) {
+        // Keep current fade out/in running; avoid snapping classes on re-render.
+      } else {
+        clearIngredientsTabSwitchAnimation();
+        applyIngredientsTabVisibility(tabVisibilityMap);
+      }
     }
     if (elements.ingredientsCatalogActions) {
-      elements.ingredientsCatalogActions.classList.toggle("is-hidden", isEditView);
+      elements.ingredientsCatalogActions.classList.toggle("is-hidden", !isCatalogActionsVisible);
     }
     if (elements.ingredientsEditorActions) {
-      elements.ingredientsEditorActions.classList.toggle("is-hidden", !isEditView);
+      elements.ingredientsEditorActions.classList.toggle("is-hidden", isCatalogActionsVisible);
     }
+    if (elements.ingredientsNewButton) {
+      elements.ingredientsNewButton.classList.toggle("is-hidden", isIconsTab || isIngredientsEditView);
+    }
+    if (elements.ingredientsNormalizeAliasesButton) {
+      elements.ingredientsNormalizeAliasesButton.classList.toggle("is-hidden", isIconsTab || isIngredientsEditView);
+    }
+    if (elements.ingredientsNewIconButton) {
+      elements.ingredientsNewIconButton.classList.toggle("is-hidden", !isIconsTab || isIconsEditView);
+    }
+    if (elements.ingredientsTabs && elements.ingredientsTabs.length) {
+      elements.ingredientsTabs.forEach(function (tabButton) {
+        var tabValue = normalizeIngredientsTab(tabButton.getAttribute("data-ingredients-tab"));
+        tabButton.classList.toggle("is-active", tabValue === state.ingredientsEditor.tab);
+      });
+    }
+    setIngredientsTabsVisualState(state.ingredientsEditor.tab);
+
     var heading = getIngredientsEditorHeading();
     if (elements.ingredientsPanelTitle) {
       elements.ingredientsPanelTitle.textContent = heading.title;
@@ -6200,58 +7812,101 @@
       elements.ingredientsPanelSubtitle.textContent = heading.subtitle;
     }
 
-    renderIngredientsList();
-    if (isEditView) {
-      renderIngredientsCatalogEditor("tags");
-      renderIngredientsCatalogEditor("allergens");
-      renderIngredientsForm();
+    if (isIconsTab) {
+      renderIngredientsIconsList();
+      refreshIngredientsScrollAnchors();
+      setActiveIngredientsCategory("");
+      if (isIconsEditView) {
+        renderIngredientsIconsForm();
+      } else {
+        renderIngredientsIconUsedBy("");
+      }
     } else {
-      renderIngredientImpact("");
+      renderIngredientsList();
+      if (isIngredientsEditView) {
+        renderIngredientsForm();
+      } else {
+        renderIngredientImpact("");
+      }
     }
+
     renderIngredientsEditorValidationSummary(state.ingredientsEditor.validationReport);
-    renderIngredientsGlobalWarnings(state.ingredientsEditor.validationReport);
+    if (isIconsTab) {
+      renderIngredientsIconsGlobalWarnings(buildIngredientsIconsCatalogEntries(state.ingredientsEditor.validationReport));
+    } else {
+      renderIngredientsGlobalWarnings(state.ingredientsEditor.validationReport);
+    }
+
+    state.ingredientsEditor.lastRenderedTab = state.ingredientsEditor.tab;
   }
 
   function openIngredientsEditor(options) {
     options = options || {};
+    var targetTab = normalizeIngredientsTab(
+      Object.prototype.hasOwnProperty.call(options, "tab") ? options.tab : "ingredients"
+    );
+    if (!options.skipRoute) {
+      navigateToRoute(targetTab === "icons" ? "/ingredients/icons" : "/ingredients", { replace: Boolean(options.replaceRoute) });
+      return;
+    }
     if (!state.hasDataLoaded) {
       ensureDataLoaded(false);
       return;
     }
 
     ensureIngredientsDraft();
-    state.ingredientsEditor.view = "catalog";
-    state.ingredientsEditor.selectedIsNew = false;
-    state.ingredientsEditor.draft = null;
-    setActivePanel("ingredients-editor");
+    var wasIngredientsPanelActive = state.currentPanel === "ingredients-editor";
+    state.ingredientsEditor.tab = targetTab;
+    if (targetTab === "icons") {
+      state.ingredientsEditor.iconsView = "catalog";
+      state.ingredientsEditor.selectedIconKey = "";
+      state.ingredientsEditor.selectedIconIsNew = false;
+      state.ingredientsEditor.iconDraft = null;
+    } else {
+      state.ingredientsEditor.view = "catalog";
+      state.ingredientsEditor.selectedIsNew = false;
+      state.ingredientsEditor.draft = null;
+    }
+
+    if (wasIngredientsPanelActive) {
+      setNavigationCurrentPanel("ingredients-editor");
+      setActiveSidebarNav("ingredients-editor", { syncIndicator: false });
+      state.sidebarAccordionTransitionToken += 1;
+      clearAllSidebarAccordionOpeningMotions();
+      applySidebarAccordionState(targetTab === "icons" ? "" : "ingredients");
+      if (!state.navigation.isProgrammaticScroll) {
+        setNavigationState(NAVIGATION_STATES.idle, { force: true });
+      }
+      scheduleSidebarActiveIndicatorSync();
+    } else {
+      setActivePanel("ingredients-editor");
+    }
+
     setMenuBrowserStatus("");
     setItemEditorStatus("");
     setHomeEditorStatus("");
+    setIngredientsEditorStatus("");
     showItemEditorErrors([]);
     renderIngredientsEditor();
-
-    if (!options.skipRoute) {
-      navigateToRoute("/ingredients", { replace: Boolean(options.replaceRoute) });
-    }
-
-    window.requestAnimationFrame(function () {
-      updateIngredientsScrollSpy(true);
-    });
   }
 
   function beginNewIngredientDraft(options) {
     options = options || {};
+    if (!options.skipRoute) {
+      navigateToRoute("/ingredients/new");
+      return;
+    }
     ensureIngredientsDraft();
     setActivePanel("ingredients-editor");
+    state.ingredientsEditor.tab = "ingredients";
+    state.ingredientsEditor.iconsView = "catalog";
+    state.ingredientsEditor.selectedIconIsNew = false;
+    state.ingredientsEditor.iconDraft = null;
     state.ingredientsEditor.selectedIngredientId = "";
     state.ingredientsEditor.selectedIsNew = true;
     state.ingredientsEditor.view = "edit";
     state.ingredientsEditor.draft = createIngredientsEditorDraft("", null);
     renderIngredientsEditor();
-
-    if (!options.skipRoute) {
-      navigateToRoute("/ingredients/new");
-    }
 
     setIngredientsEditorStatus("Nuevo ingrediente listo. Define ID unico y guarda.");
   }
@@ -6261,40 +7916,45 @@
     ensureIngredientsDraft();
     var normalizedId = String(ingredientId || "").trim();
     if (!normalizedId) return false;
+    if (!options.skipRoute) {
+      navigateToRoute("/ingredients/" + encodeURIComponent(normalizedId));
+      return true;
+    }
     var source = state.drafts.ingredients.ingredients || {};
     if (!source[normalizedId]) {
-      if (!options.skipRoute) {
-        navigateToRoute("/ingredients", { replace: true });
-      }
       setIngredientsEditorStatus("No se encontro el ingrediente: " + normalizedId);
       return false;
     }
 
     setActivePanel("ingredients-editor");
+    state.ingredientsEditor.tab = "ingredients";
+    state.ingredientsEditor.iconsView = "catalog";
+    state.ingredientsEditor.selectedIconIsNew = false;
+    state.ingredientsEditor.iconDraft = null;
     state.ingredientsEditor.selectedIngredientId = normalizedId;
     state.ingredientsEditor.selectedIsNew = false;
     state.ingredientsEditor.view = "edit";
     state.ingredientsEditor.draft = createIngredientsEditorDraft(normalizedId, source[normalizedId]);
     renderIngredientsEditor();
 
-    if (!options.skipRoute) {
-      navigateToRoute("/ingredients/" + encodeURIComponent(normalizedId));
-    }
-
-    setIngredientsEditorStatus("Editando ingrediente: " + normalizedId);
+    var selectedLabel = source[normalizedId] && source[normalizedId].label
+      ? source[normalizedId].label
+      : normalizedId;
+    setIngredientsEditorStatus("Editando ingrediente: " + selectedLabel);
     return true;
   }
 
   function returnToIngredientsCatalog(options) {
     options = options || {};
+    if (!options.skipRoute) {
+      navigateToRoute("/ingredients");
+      return;
+    }
+    state.ingredientsEditor.tab = "ingredients";
     state.ingredientsEditor.view = "catalog";
     state.ingredientsEditor.selectedIsNew = false;
     state.ingredientsEditor.draft = null;
     renderIngredientsEditor();
-
-    if (!options.skipRoute) {
-      navigateToRoute("/ingredients");
-    }
 
     if (!options.silent) {
       setIngredientsEditorStatus("Catalogo de ingredientes.");
@@ -6305,6 +7965,76 @@
     });
   }
 
+  function beginNewIconDraft(options) {
+    options = options || {};
+    if (!options.skipRoute) {
+      navigateToRoute("/ingredients/icons/new");
+      return;
+    }
+    ensureIngredientsDraft();
+    setActivePanel("ingredients-editor");
+    state.ingredientsEditor.tab = "icons";
+    state.ingredientsEditor.view = "catalog";
+    state.ingredientsEditor.selectedIsNew = false;
+    state.ingredientsEditor.draft = null;
+    state.ingredientsEditor.selectedIconKey = "";
+    state.ingredientsEditor.selectedIconIsNew = true;
+    state.ingredientsEditor.iconsView = "edit";
+    state.ingredientsEditor.iconDraft = createIngredientsIconEditorDraft("", null);
+    renderIngredientsEditor();
+    setIngredientsEditorStatus("Nuevo icono listo. Define key unica y guarda.");
+  }
+
+  function selectIconForEditing(iconKey, options) {
+    options = options || {};
+    ensureIngredientsDraft();
+    var normalizedKey = String(iconKey || "").trim();
+    if (!normalizedKey) return false;
+    if (!options.skipRoute) {
+      navigateToRoute("/ingredients/icons/" + encodeURIComponent(normalizedKey));
+      return true;
+    }
+
+    var source = state.drafts.ingredients.icons || {};
+    if (!source[normalizedKey]) {
+      setIngredientsEditorStatus("No se encontro el icono: " + normalizedKey);
+      return false;
+    }
+
+    setActivePanel("ingredients-editor");
+    state.ingredientsEditor.tab = "icons";
+    state.ingredientsEditor.view = "catalog";
+    state.ingredientsEditor.selectedIsNew = false;
+    state.ingredientsEditor.draft = null;
+    state.ingredientsEditor.selectedIconKey = normalizedKey;
+    state.ingredientsEditor.selectedIconIsNew = false;
+    state.ingredientsEditor.iconsView = "edit";
+    state.ingredientsEditor.iconDraft = createIngredientsIconEditorDraft(normalizedKey, source[normalizedKey]);
+    renderIngredientsEditor();
+
+    var selectedLabel = source[normalizedKey] && source[normalizedKey].label
+      ? source[normalizedKey].label
+      : normalizedKey;
+    setIngredientsEditorStatus("Editando icono: " + selectedLabel);
+    return true;
+  }
+
+  function returnToIngredientsIconsCatalog(options) {
+    options = options || {};
+    if (!options.skipRoute) {
+      navigateToRoute("/ingredients/icons");
+      return;
+    }
+    state.ingredientsEditor.tab = "icons";
+    state.ingredientsEditor.iconsView = "catalog";
+    state.ingredientsEditor.selectedIconIsNew = false;
+    state.ingredientsEditor.iconDraft = null;
+    renderIngredientsEditor();
+    if (!options.silent) {
+      setIngredientsEditorStatus("Catalogo de iconos.");
+    }
+  }
+
   function syncIngredientsEditorDraftFromForm() {
     var draft = state.ingredientsEditor.draft;
     if (!draft) return;
@@ -6312,6 +8042,19 @@
     draft.id = String(elements.ingredientsFieldId.value || "").trim();
     draft.label = String(elements.ingredientsFieldLabel.value || "").trim();
     draft.icon = String(elements.ingredientsFieldIcon.value || "").trim();
+    renderIngredientFieldIconPreview(draft.icon);
+  }
+
+  function syncIngredientsIconDraftFromForm() {
+    var draft = state.ingredientsEditor.iconDraft;
+    if (!draft) return;
+    draft.key = String(elements.ingredientsIconFieldKey && elements.ingredientsIconFieldKey.value || "").trim();
+    draft.label = String(elements.ingredientsIconFieldLabel && elements.ingredientsIconFieldLabel.value || "").trim();
+    draft.path = String(elements.ingredientsIconFieldPath && elements.ingredientsIconFieldPath.value || "").trim();
+    renderIngredientsIconPreviewElement(elements.ingredientsIconPreview, {
+      resolvedPath: resolveIngredientIconAssetPath(draft.path, state.drafts.ingredients),
+      label: draft.label || draft.key || "Icono"
+    });
   }
 
   function addAliasToIngredientsDraft() {
@@ -6395,6 +8138,50 @@
     renderIngredientsMetaSelector("allergens");
     updateDashboardMetrics();
     setIngredientsEditorStatus("Catalogo actualizado. Guarda para persistir.");
+  }
+
+  function normalizeAliasesInIngredientsDraft() {
+    ensureIngredientsDraft();
+    var dryRunResult = normalizeIngredientsAliasesPayload(state.drafts.ingredients, { mutate: false });
+    var report = dryRunResult.report;
+    var totalUpdates = report.changedAliases + report.droppedAliases;
+    if (!totalUpdates) {
+      setIngredientsEditorStatus("No hay aliases pendientes de normalizar.");
+      return;
+    }
+
+    var preview = formatIngredientsAliasNormalizationPreview(report, 10);
+    var confirmationMessage =
+      "Normalizar aliases legacy en Ingredients?\n\n" +
+      "Ingredientes impactados: " + report.changedIngredients + "\n" +
+      "Aliases ajustados: " + report.changedAliases + "\n" +
+      "Aliases removidos (duplicados/invalidos): " + report.droppedAliases +
+      (preview ? ("\n\nPreview:\n" + preview) : "") +
+      "\n\nConfirma para aplicar en drafts.";
+
+    if (!window.confirm(confirmationMessage)) {
+      setIngredientsEditorStatus("Normalizacion de aliases cancelada.");
+      return;
+    }
+
+    var appliedResult = normalizeIngredientsAliasesPayload(state.drafts.ingredients, { mutate: true });
+    var appliedReport = appliedResult.report;
+    buildIndexes();
+    state.ingredientsEditor.validationReport = validateIngredientsDraftData(state.drafts.ingredients);
+    renderIngredientsEditor();
+    persistDraftsToLocalStorage();
+    setDraftsBanner(true, "Drafts locales activos (Clear drafts | Export)");
+    saveDraftsToLocalFiles();
+    updateDashboardMetrics();
+    setIngredientsEditorStatus(
+      "Aliases normalizados en drafts: " +
+      appliedReport.changedAliases +
+      " ajustados, " +
+      appliedReport.droppedAliases +
+      " removidos en " +
+      appliedReport.changedIngredients +
+      " ingredientes."
+    );
   }
 
   function saveIngredientsEditorDraft() {
@@ -6484,6 +8271,76 @@
     }
   }
 
+  function saveIngredientsIconDraft() {
+    ensureIngredientsDraft();
+    if (state.ingredientsEditor.iconsView !== "edit" || !state.ingredientsEditor.iconDraft) {
+      setIngredientsEditorStatus("Selecciona un icono para editar.");
+      return;
+    }
+    syncIngredientsIconDraftFromForm();
+
+    var draft = state.ingredientsEditor.iconDraft;
+    var iconsById = state.drafts.ingredients.icons;
+    var nextSelectedKey = state.ingredientsEditor.selectedIconKey;
+    var previousKey = String(state.ingredientsEditor.selectedIconKey || "").trim();
+
+    var nextKey = state.ingredientsEditor.selectedIconIsNew
+      ? normalizeIngredientAliasValue(draft.key)
+      : previousKey;
+
+    if (!nextKey) {
+      setIngredientsEditorStatus("Key invalida. Define una key unica para el icono.");
+      return;
+    }
+    if (state.ingredientsEditor.selectedIconIsNew && iconsById[nextKey]) {
+      setIngredientsEditorStatus("La key ya existe: " + nextKey);
+      return;
+    }
+
+    var previousEntry = previousKey && iconsById[previousKey] && typeof iconsById[previousKey] === "object"
+      ? iconsById[previousKey]
+      : {};
+    var covers = Array.isArray(previousEntry.covers) ? previousEntry.covers.slice() : [];
+
+    iconsById[nextKey] = {
+      icon: String(draft.path || "").trim(),
+      label: String(draft.label || "").trim(),
+      covers: covers
+    };
+
+    nextSelectedKey = nextKey;
+    state.ingredientsEditor.selectedIconKey = nextKey;
+    state.ingredientsEditor.selectedIconIsNew = false;
+    state.ingredientsEditor.iconDraft = createIngredientsIconEditorDraft(nextKey, iconsById[nextKey]);
+    state.ingredientsEditor.tab = "icons";
+    state.ingredientsEditor.iconsView = "edit";
+
+    buildIndexes();
+    state.ingredientsEditor.validationReport = validateIngredientsDraftData(state.drafts.ingredients);
+    renderIngredientsEditor();
+
+    if (!state.ingredientsEditor.selectedIconIsNew && nextSelectedKey) {
+      var nextHash = "#/ingredients/icons/" + encodeURIComponent(nextSelectedKey);
+      if (window.location.hash !== nextHash) {
+        var baseUrl = window.location.pathname + window.location.search;
+        window.history.replaceState({}, document.title, baseUrl + nextHash);
+      }
+    }
+    persistDraftsToLocalStorage();
+    setDraftsBanner(true, "Drafts locales activos (Clear drafts | Export)");
+    saveDraftsToLocalFiles();
+    updateDashboardMetrics();
+
+    var report = state.ingredientsEditor.validationReport;
+    if (report.errors.length) {
+      setIngredientsEditorStatus(
+        "Guardado en drafts con " + report.errors.length + " errores y " + report.warnings.length + " warnings."
+      );
+    } else {
+      setIngredientsEditorStatus("Icono guardado en drafts locales.");
+    }
+  }
+
   function deleteSelectedIngredientDraft() {
     ensureIngredientsDraft();
     if (state.ingredientsEditor.selectedIsNew) {
@@ -6530,6 +8387,59 @@
     setIngredientsEditorStatus("Ingrediente eliminado: " + ingredientId);
   }
 
+  function deleteSelectedIconDraft() {
+    ensureIngredientsDraft();
+    if (state.ingredientsEditor.selectedIconIsNew) {
+      returnToIngredientsIconsCatalog({ skipRoute: false, silent: true });
+      setIngredientsEditorStatus("Borrador de icono descartado.");
+      return;
+    }
+
+    var iconKey = String(state.ingredientsEditor.selectedIconKey || "").trim();
+    if (!iconKey) {
+      setIngredientsEditorStatus("Selecciona un icono para eliminar.");
+      return;
+    }
+
+    var usageEntries = getIngredientIconUsageEntries(iconKey);
+    if (usageEntries.length) {
+      setIngredientsEditorStatus(
+        "No puedes eliminar '" + iconKey + "': esta en uso por " + usageEntries.length + " ingrediente(s)."
+      );
+      return;
+    }
+
+    var confirmationMessage = "Eliminar icono '" + iconKey + "'?\n\n" +
+      "No hay ingredientes usandolo actualmente.\n" +
+      "Esta accion se guarda en drafts y aplica al publicar.";
+    if (!window.confirm(confirmationMessage)) return;
+
+    delete state.drafts.ingredients.icons[iconKey];
+    state.ingredientsEditor.selectedIconKey = "";
+    state.ingredientsEditor.selectedIconIsNew = false;
+    state.ingredientsEditor.iconsView = "catalog";
+    state.ingredientsEditor.iconDraft = null;
+    state.ingredientsEditor.tab = "icons";
+
+    buildIndexes();
+    state.ingredientsEditor.validationReport = validateIngredientsDraftData(state.drafts.ingredients);
+    renderIngredientsEditor();
+    var catalogHash = "#/ingredients/icons";
+    if (window.location.hash !== catalogHash) {
+      var baseUrl = window.location.pathname + window.location.search;
+      window.history.replaceState({}, document.title, baseUrl + catalogHash);
+    }
+    persistDraftsToLocalStorage();
+    setDraftsBanner(true, "Drafts locales activos (Clear drafts | Export)");
+    saveDraftsToLocalFiles();
+    updateDashboardMetrics();
+    setIngredientsEditorStatus("Icono eliminado: " + iconKey);
+  }
+
+  /* ===========================
+     ROUTER
+  =========================== */
+
   function parseHashRoute() {
     var hash = window.location.hash || "";
     var route = hash.replace(/^#/, "");
@@ -6546,9 +8456,20 @@
     }
 
     if (parts[0] === "menu" && parts[1] === "item" && parts[2]) {
+      var menuItemToken = decodeURIComponent(parts.slice(2).join("/"));
+      if (menuItemToken === "new") {
+        return { name: "menu-item-new" };
+      }
       return {
         name: "menu-item",
-        itemId: decodeURIComponent(parts.slice(2).join("/"))
+        itemId: menuItemToken
+      };
+    }
+
+    if (parts[0] === "menu" && parts[1] && parts[1] !== "item") {
+      return {
+        name: "menu-section",
+        categoryId: decodeURIComponent(parts.slice(1).join("/"))
       };
     }
 
@@ -6556,23 +8477,60 @@
       return { name: "menu" };
     }
 
+    if ((parts[0] === "homepage" || parts[0] === "home") && parts[1]) {
+      return {
+        name: "homepage-section",
+        sectionId: decodeURIComponent(parts.slice(1).join("/"))
+      };
+    }
+
     if (parts[0] === "homepage" || parts[0] === "home") {
       return { name: "homepage" };
     }
 
-    if (parts[0] === "ingredients" && parts[1]) {
-      var ingredientToken = decodeURIComponent(parts.slice(1).join("/"));
-      if (ingredientToken === "new") {
-        return { name: "ingredients-item", isNew: true };
-      }
-      return {
-        name: "ingredients-item",
-        ingredientId: ingredientToken
-      };
-    }
-
     if (parts[0] === "ingredients") {
-      return { name: "ingredients" };
+      if (parts[1] === "icons") {
+        if (parts[2]) {
+          var iconToken = decodeURIComponent(parts.slice(2).join("/"));
+          if (iconToken === "new") {
+            return { name: "ingredients-icon", tab: "icons", isNew: true };
+          }
+          return {
+            name: "ingredients-icon",
+            tab: "icons",
+            iconKey: iconToken
+          };
+        }
+        return { name: "ingredients", tab: "icons" };
+      }
+
+      if (parts[1] === "ingredients") {
+        if (parts[2]) {
+          var ingredientScopedToken = decodeURIComponent(parts.slice(2).join("/"));
+          if (ingredientScopedToken === "new") {
+            return { name: "ingredients-item", tab: "ingredients", isNew: true };
+          }
+          return {
+            name: "ingredients-item",
+            tab: "ingredients",
+            ingredientId: ingredientScopedToken
+          };
+        }
+        return { name: "ingredients", tab: "ingredients" };
+      }
+
+      if (parts[1]) {
+        var ingredientToken = decodeURIComponent(parts.slice(1).join("/"));
+        if (ingredientToken === "new") {
+          return { name: "ingredients-item", isNew: true };
+        }
+        return {
+          name: "ingredients-item",
+          ingredientId: ingredientToken
+        };
+      }
+
+      return { name: "ingredients", tab: "ingredients" };
     }
 
     return { name: "dashboard" };
@@ -6611,10 +8569,36 @@
       return;
     }
 
+    if (route.name === "menu-item-new") {
+      if (!state.hasDataLoaded) {
+        ensureDataLoaded(false);
+        return;
+      }
+      openNewItemEditor({ skipRoute: true });
+      return;
+    }
+
     if (route.name === "menu") {
       if (!state.hasDataLoaded) {
         ensureDataLoaded(false);
         return;
+      }
+      openMenuBrowser({ skipRoute: true });
+      return;
+    }
+
+    if (route.name === "menu-section") {
+      if (!state.hasDataLoaded) {
+        ensureDataLoaded(false);
+        return;
+      }
+      var menuCategoryId = String(route.categoryId || "").trim();
+      if (menuCategoryId) {
+        clearPanelPostNavigationActions();
+        queuePanelPostNavigationAction("menu-browser", function () {
+          scrollToMenuAnchor(menuCategoryId, "");
+          setActiveMenuAnchor(menuCategoryId, "", { force: true });
+        });
       }
       openMenuBrowser({ skipRoute: true });
       return;
@@ -6629,10 +8613,30 @@
       return;
     }
 
+    if (route.name === "homepage-section") {
+      if (!state.hasDataLoaded) {
+        ensureDataLoaded(false);
+        return;
+      }
+      var homeSectionId = String(route.sectionId || "").trim();
+      if (homeSectionId) {
+        clearPanelPostNavigationActions();
+        queuePanelPostNavigationAction("home-editor", function () {
+          scrollToHomeSection(homeSectionId);
+          setActiveHomeSection(homeSectionId, { force: true });
+        });
+      }
+      openHomePageEditor({ skipRoute: true });
+      return;
+    }
+
     if (route.name === "ingredients-item") {
       if (!state.hasDataLoaded) {
         ensureDataLoaded(false);
         return;
+      }
+      if (route.tab === "ingredients" || !route.tab) {
+        state.ingredientsEditor.tab = "ingredients";
       }
       if (route.isNew) {
         beginNewIngredientDraft({ skipRoute: true });
@@ -6649,12 +8653,33 @@
       return;
     }
 
+    if (route.name === "ingredients-icon") {
+      if (!state.hasDataLoaded) {
+        ensureDataLoaded(false);
+        return;
+      }
+      state.ingredientsEditor.tab = "icons";
+      if (route.isNew) {
+        beginNewIconDraft({ skipRoute: true });
+        return;
+      }
+      if (route.iconKey) {
+        var selectedIcon = selectIconForEditing(route.iconKey, { skipRoute: true });
+        if (!selectedIcon) {
+          openIngredientsEditor({ skipRoute: true, tab: "icons" });
+        }
+        return;
+      }
+      openIngredientsEditor({ skipRoute: true, tab: "icons" });
+      return;
+    }
+
     if (route.name === "ingredients") {
       if (!state.hasDataLoaded) {
         ensureDataLoaded(false);
         return;
       }
-      openIngredientsEditor({ skipRoute: true });
+      openIngredientsEditor({ skipRoute: true, tab: route.tab || "ingredients" });
       return;
     }
 
@@ -6663,26 +8688,31 @@
 
   function bindSidebarEvents() {
     elements.sidebarHomeButton.addEventListener("click", function () {
-      openDashboard({ skipRoute: false });
+      clearPanelPostNavigationActions();
+      navigateToRoute("/dashboard");
     });
 
     elements.sidebarNavDashboard.addEventListener("click", function () {
-      openDashboard({ skipRoute: false });
+      clearPanelPostNavigationActions();
+      navigateToRoute("/dashboard");
     });
 
     elements.sidebarNavMenu.addEventListener("click", function () {
-      openMenuBrowser({ skipRoute: false });
+      clearPanelPostNavigationActions();
+      navigateToRoute("/menu");
     });
 
     if (elements.sidebarNavHomepage) {
       elements.sidebarNavHomepage.addEventListener("click", function () {
-        openHomePageEditor({ skipRoute: false });
+        clearPanelPostNavigationActions();
+        navigateToRoute("/homepage");
       });
     }
 
     if (elements.sidebarNavIngredients) {
       elements.sidebarNavIngredients.addEventListener("click", function () {
-        openIngredientsEditor({ skipRoute: false });
+        clearPanelPostNavigationActions();
+        navigateToRoute("/ingredients");
       });
     }
 
@@ -6706,11 +8736,12 @@
       var subcategoryValue = scrollButton.getAttribute("data-scroll-subcategory") || "";
 
       if (state.currentPanel !== "menu-browser") {
-        openMenuBrowser({ skipRoute: false });
-        window.setTimeout(function () {
+        clearPanelPostNavigationActions();
+        queuePanelPostNavigationAction("menu-browser", function () {
           scrollToMenuAnchor(categoryValue, subcategoryValue);
           setActiveMenuAnchor(categoryValue, subcategoryValue, { force: true });
-        }, 40);
+        });
+        navigateToRoute("/menu");
         return;
       }
 
@@ -6725,11 +8756,12 @@
         var sectionId = button.getAttribute("data-scroll-home-section") || "";
 
         if (state.currentPanel !== "home-editor") {
-          openHomePageEditor({ skipRoute: false });
-          window.setTimeout(function () {
+          clearPanelPostNavigationActions();
+          queuePanelPostNavigationAction("home-editor", function () {
             scrollToHomeSection(sectionId);
             setActiveHomeSection(sectionId, { force: true });
-          }, 40);
+          });
+          navigateToRoute("/homepage");
           return;
         }
 
@@ -6746,14 +8778,16 @@
 
         var shouldOpenCatalog =
           state.currentPanel !== "ingredients-editor" ||
+          state.ingredientsEditor.tab !== "ingredients" ||
           state.ingredientsEditor.view !== "catalog";
 
         if (shouldOpenCatalog) {
-          openIngredientsEditor({ skipRoute: false });
-          window.setTimeout(function () {
+          clearPanelPostNavigationActions();
+          queuePanelPostNavigationAction("ingredients-editor", function () {
             scrollToIngredientsCategory(categoryId);
             setActiveIngredientsCategory(categoryId);
-          }, 40);
+          });
+          navigateToRoute("/ingredients");
           return;
         }
 
@@ -6774,6 +8808,7 @@
           if (event.propertyName.indexOf("max-height") === -1) return;
           if (!accordionElement.classList.contains("is-open")) return;
           scheduleSidebarActiveIndicatorSync();
+          requestCurrentPanelScrollSpySync();
         });
       });
   }
@@ -6801,7 +8836,9 @@
         scrollToMenuAnchor(firstGroup.id, "");
         setActiveMenuAnchor(firstGroup.id, "", { force: true });
       } else {
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        runWithProgrammaticScrollLock(function () {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }, UX_TIMING.programmaticScrollLockMs, "menu:top");
       }
       setMenuBrowserStatus("Mostrando menu completo.");
     });
@@ -7032,16 +9069,6 @@
   }
 
   function bindHomeEditorEvents() {
-    if (elements.homeSectionsNav) {
-      elements.homeSectionsNav.addEventListener("click", function (event) {
-        var button = event.target.closest("[data-home-nav-section]");
-        if (!button) return;
-        var sectionId = button.getAttribute("data-home-nav-section") || "";
-        scrollToHomeSection(sectionId);
-        setActiveHomeSection(sectionId, { force: true });
-      });
-    }
-
     if (!elements.homeSectionsContent) return;
 
     elements.homeSectionsContent.addEventListener("input", function (event) {
@@ -7560,10 +9587,33 @@
   }
 
   function bindIngredientsEditorEvents() {
+    if (elements.ingredientsTabs && elements.ingredientsTabs.length) {
+      elements.ingredientsTabs.forEach(function (tabButton) {
+        tabButton.addEventListener("click", function () {
+          var tab = normalizeIngredientsTab(tabButton.getAttribute("data-ingredients-tab"));
+          if (state.hasDataLoaded && state.currentPanel === "ingredients-editor") {
+            openIngredientsEditor({ skipRoute: true, tab: tab });
+          }
+          if (tab === "icons") {
+            navigateToRoute("/ingredients/icons");
+          } else {
+            navigateToRoute("/ingredients");
+          }
+        });
+      });
+    }
+
     if (elements.ingredientsSearchInput) {
       elements.ingredientsSearchInput.addEventListener("input", function () {
         state.ingredientsEditor.search = elements.ingredientsSearchInput.value || "";
         renderIngredientsList();
+      });
+    }
+
+    if (elements.ingredientsIconsSearchInput) {
+      elements.ingredientsIconsSearchInput.addEventListener("input", function () {
+        state.ingredientsEditor.iconSearch = elements.ingredientsIconsSearchInput.value || "";
+        renderIngredientsIconsList();
       });
     }
 
@@ -7575,15 +9625,41 @@
       });
     }
 
+    if (elements.ingredientsIconsList) {
+      elements.ingredientsIconsList.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-select-icon]");
+        if (!button) return;
+        selectIconForEditing(button.getAttribute("data-select-icon"), { skipRoute: false });
+      });
+    }
+
     if (elements.ingredientsNewButton) {
       elements.ingredientsNewButton.addEventListener("click", function () {
         beginNewIngredientDraft({ skipRoute: false });
       });
     }
 
+    if (elements.ingredientsNormalizeAliasesButton) {
+      elements.ingredientsNormalizeAliasesButton.addEventListener("click", function () {
+        normalizeAliasesInIngredientsDraft();
+      });
+    }
+
+    if (elements.ingredientsNewIconButton) {
+      elements.ingredientsNewIconButton.addEventListener("click", function () {
+        beginNewIconDraft({ skipRoute: false });
+      });
+    }
+
     if (elements.ingredientsBackButton) {
       elements.ingredientsBackButton.addEventListener("click", function () {
         returnToIngredientsCatalog({ skipRoute: false });
+      });
+    }
+
+    if (elements.ingredientsIconsBackButton) {
+      elements.ingredientsIconsBackButton.addEventListener("click", function () {
+        returnToIngredientsIconsCatalog({ skipRoute: false });
       });
     }
 
@@ -7605,6 +9681,20 @@
         var selected = String(elements.ingredientsFieldIconSelect.value || "").trim();
         elements.ingredientsFieldIcon.value = selected;
         syncIngredientsEditorDraftFromForm();
+      });
+    }
+
+    if (elements.ingredientsViewIconButton) {
+      elements.ingredientsViewIconButton.addEventListener("click", function () {
+        if (state.ingredientsEditor.tab !== "ingredients") return;
+        var iconReference = getIngredientSelectedIconReference(
+          elements.ingredientsFieldIcon ? elements.ingredientsFieldIcon.value : ""
+        );
+        if (!iconReference.iconKey) {
+          setIngredientsEditorStatus("Este ingrediente usa path manual o no tiene icono de catalogo.");
+          return;
+        }
+        selectIconForEditing(iconReference.iconKey, { skipRoute: false });
       });
     }
 
@@ -7644,6 +9734,26 @@
       });
     }
 
+    if (elements.ingredientsIconFieldKey) {
+      elements.ingredientsIconFieldKey.addEventListener("input", syncIngredientsIconDraftFromForm);
+    }
+    if (elements.ingredientsIconFieldLabel) {
+      elements.ingredientsIconFieldLabel.addEventListener("input", syncIngredientsIconDraftFromForm);
+    }
+    if (elements.ingredientsIconFieldPath) {
+      elements.ingredientsIconFieldPath.addEventListener("input", syncIngredientsIconDraftFromForm);
+    }
+
+    if (elements.ingredientsIconUsedByList) {
+      elements.ingredientsIconUsedByList.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-jump-icon-ingredient]");
+        if (!button) return;
+        var ingredientId = button.getAttribute("data-jump-icon-ingredient") || "";
+        if (!ingredientId) return;
+        selectIngredientForEditing(ingredientId, { skipRoute: false });
+      });
+    }
+
     if (elements.ingredientsTagsCatalog) {
       elements.ingredientsTagsCatalog.addEventListener("input", function (event) {
         var input = event.target.closest("[data-ingredients-catalog-kind='tags']");
@@ -7670,13 +9780,23 @@
 
     if (elements.ingredientsSaveButton) {
       elements.ingredientsSaveButton.addEventListener("click", function () {
-        saveIngredientsEditorDraft();
+        if (state.ingredientsEditor.tab === "icons") {
+          saveIngredientsIconDraft();
+        } else {
+          saveIngredientsEditorDraft();
+        }
       });
     }
 
     if (elements.ingredientsDeleteButton) {
       elements.ingredientsDeleteButton.addEventListener("click", function () {
         deleteSelectedIngredientDraft();
+      });
+    }
+
+    if (elements.ingredientsIconDeleteButton) {
+      elements.ingredientsIconDeleteButton.addEventListener("click", function () {
+        deleteSelectedIconDraft();
       });
     }
 
@@ -7701,6 +9821,8 @@
 
   function bindEvents() {
     mountItemEditorToggles();
+    syncUxTimingCssVars();
+    removeLegacyIngredientsCatalogCards();
 
     elements.loginButton.addEventListener("click", function () {
       openIdentityModal();
@@ -7745,16 +9867,9 @@
       syncSidebarViewportState();
       syncAllSidebarAccordionCategoryHeights();
       updateSidebarActiveIndicator();
-      refreshMenuScrollAnchors();
-      requestMenuScrollSpyUpdate();
-      refreshHomeScrollAnchors();
-      requestHomeScrollSpyUpdate();
-      refreshIngredientsScrollAnchors();
-      requestIngredientsScrollSpyUpdate();
+      requestCurrentPanelScrollSpySync();
     });
-    window.addEventListener("scroll", requestMenuScrollSpyUpdate, { passive: true });
-    window.addEventListener("scroll", requestHomeScrollSpyUpdate, { passive: true });
-    window.addEventListener("scroll", requestIngredientsScrollSpyUpdate, { passive: true });
+    window.addEventListener("scroll", requestCurrentPanelScrollSpyUpdate, { passive: true });
     syncSidebarViewportState();
 
     window.addEventListener("hashchange", applyRoute);
@@ -7823,7 +9938,6 @@
       state.currentPanel = "dashboard";
       state.visiblePanel = "dashboard";
       state.sidebarAccordionOpenKey = "";
-      state.sidebarAccordionPendingKey = "";
       state.menuActiveAnchor = { categoryId: "", subcategoryId: "" };
       state.menuViewGroups = [];
       state.menuAnchorTargets = [];
@@ -7842,14 +9956,19 @@
         window.cancelAnimationFrame(state.ingredientsScrollSpyFrame);
         state.ingredientsScrollSpyFrame = 0;
       }
-      if (state.sidebarAccordionTimer) {
-        window.clearTimeout(state.sidebarAccordionTimer);
-        state.sidebarAccordionTimer = 0;
-      }
       clearAllSidebarAccordionOpeningMotions();
       clearSidebarIndicatorSyncTimers();
       clearPanelTransitionTimers();
-      state.panelTransitionToken += 1;
+      clearPanelPostNavigationActions();
+      clearProgrammaticScrollLock({ syncScrollSpy: false });
+      state.navigationTimelineToken = 0;
+      state.navigationTimelineActiveToken = 0;
+      state.navigation = {
+        currentState: NAVIGATION_STATES.idle,
+        currentPanel: "dashboard",
+        currentSection: "",
+        isProgrammaticScroll: false
+      };
       state.itemEditor = {
         isOpen: false,
         isNew: false,

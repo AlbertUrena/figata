@@ -4,6 +4,7 @@
 // REPO: GITHUB_REPO or GH_REPO
 // Production branch: GH_BRANCH or GITHUB_BRANCH (defaults to master)
 // Preview branch: CMS_PREVIEW_BRANCH (defaults to cms-preview)
+var ingredientsContract = require("../../shared/ingredients-contract.js");
 var RATE_LIMIT_WINDOW_MS = 30 * 1000;
 var publishRateLimitByUser = Object.create(null);
 
@@ -45,125 +46,11 @@ function normalizeJsonValue(value) {
   }
 }
 
-function normalizeText(value) {
-  return String(value || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
-}
-
-function normalizeIngredientAlias(value) {
-  return normalizeText(value)
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "")
-    .replace(/_+/g, "_");
-}
-
-function isLikelyValidIngredientIconPath(value) {
-  var path = String(value || "").trim();
-  if (!path) return false;
-  if (/^https?:\/\//i.test(path)) return true;
-  if (path[0] === "/") return true;
-  if (path.indexOf("assets/") === 0) return true;
-  return /\.(svg|webp|png|jpe?g|gif)$/i.test(path);
-}
-
 function validateIngredientsPayload(payload, menuPayload) {
-  var errors = [];
-  var warnings = [];
-  if (!payload || typeof payload !== "object") {
-    return {
-      errors: ["ingredients debe ser un objeto JSON"],
-      warnings: []
-    };
-  }
-
-  var ingredientsById = payload.ingredients && typeof payload.ingredients === "object"
-    ? payload.ingredients
-    : {};
-  var tagsById = payload.tags && typeof payload.tags === "object" ? payload.tags : {};
-  var allergensById = payload.allergens && typeof payload.allergens === "object" ? payload.allergens : {};
-  var iconsById = payload.icons && typeof payload.icons === "object" ? payload.icons : {};
-
-  Object.keys(ingredientsById).forEach(function (ingredientId) {
-    var ingredient = ingredientsById[ingredientId];
-    if (!ingredient || typeof ingredient !== "object") {
-      errors.push("Ingrediente invalido (objeto esperado): " + ingredientId);
-      return;
-    }
-
-    if (!String(ingredient.label || "").trim()) {
-      warnings.push("Ingrediente sin label: " + ingredientId);
-    }
-
-    var icon = String(ingredient.icon || "").trim();
-    if (!icon) {
-      warnings.push("Ingrediente sin icon: " + ingredientId);
-    } else if (!iconsById[icon] && !isLikelyValidIngredientIconPath(icon)) {
-      errors.push("Icon invalido en ingrediente '" + ingredientId + "': " + icon);
-    }
-
-    if (!Array.isArray(ingredient.aliases)) {
-      errors.push("aliases debe ser array en ingrediente: " + ingredientId);
-    } else {
-      var seenAliases = {};
-      ingredient.aliases.forEach(function (alias) {
-        var rawAlias = String(alias || "").trim();
-        var normalizedAlias = normalizeIngredientAlias(rawAlias);
-        if (!normalizedAlias) {
-          errors.push("Alias vacio/invalido en ingrediente: " + ingredientId);
-          return;
-        }
-        if (rawAlias !== normalizedAlias) {
-          errors.push("Alias no normalizado en '" + ingredientId + "': " + rawAlias);
-        }
-        if (seenAliases[normalizedAlias]) {
-          errors.push("Alias duplicado en '" + ingredientId + "': " + normalizedAlias);
-          return;
-        }
-        seenAliases[normalizedAlias] = true;
-      });
-    }
-
-    if (!Array.isArray(ingredient.tags)) {
-      errors.push("tags debe ser array en ingrediente: " + ingredientId);
-    } else {
-      ingredient.tags.forEach(function (tagId) {
-        if (!tagsById[tagId]) {
-          errors.push("Tag desconocido en ingrediente '" + ingredientId + "': " + tagId);
-        }
-      });
-    }
-
-    if (!Array.isArray(ingredient.allergens)) {
-      errors.push("allergens debe ser array en ingrediente: " + ingredientId);
-    } else {
-      ingredient.allergens.forEach(function (allergenId) {
-        if (!allergensById[allergenId]) {
-          errors.push("Alergeno desconocido en ingrediente '" + ingredientId + "': " + allergenId);
-        }
-      });
-    }
+  return ingredientsContract.validateIngredientsContract(payload, {
+    menuPayload: menuPayload,
+    normalizeAliases: true
   });
-
-  var menuSections = menuPayload && Array.isArray(menuPayload.sections) ? menuPayload.sections : [];
-  menuSections.forEach(function (section) {
-    var items = section && Array.isArray(section.items) ? section.items : [];
-    items.forEach(function (item) {
-      if (!item || !Array.isArray(item.ingredients)) return;
-      var unknown = item.ingredients.filter(function (ingredientId) {
-        return !ingredientsById[ingredientId];
-      });
-      if (!unknown.length) return;
-      warnings.push(
-        "Menu item '" + (item.id || "unknown") + "' referencia ingredientes invalidos: " +
-        unknown.join(", ")
-      );
-    });
-  });
-
-  return { errors: errors, warnings: warnings };
 }
 
 function getUserKey(user) {
@@ -418,6 +305,12 @@ exports.handler = async function (event, context) {
       details: ingredientsValidation.errors.slice(0, 30),
       warnings: ingredientsValidation.warnings.slice(0, 20)
     });
+  }
+  if (hasIngredientsPayload) {
+    normalizedIngredients = normalizeJsonValue(body.ingredients);
+    if (!normalizedIngredients) {
+      return jsonResponse(400, { error: "Invalid payload" });
+    }
   }
 
   try {

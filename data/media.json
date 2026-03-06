@@ -1,7 +1,7 @@
 {
   "version": 1,
   "schema": "figata.media.v1",
-  "updatedAt": "2026-03-05T17:42:20.299Z",
+  "updatedAt": "2026-03-06T02:25:55.241Z",
   "updatedBy": "admin-app",
   "notes": "Mapa oficial de media por item. Si una variante falta, el frontend aplica fallback controlado.",
   "items": {
@@ -24,7 +24,7 @@
       "version": 1
     },
     "bruschetta_classica": {
-      "card": "menu/bruschetta.webp",
+      "card": "assets/menu/bruschetta.webp",
       "hover": "menu/hover/bruschetta-hover.webp",
       "modal": "menu/bruschetta.webp",
       "gallery": [],

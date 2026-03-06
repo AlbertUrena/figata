@@ -8,6 +8,7 @@
       name="description"
       content="Panel interno de administracion para gestionar contenido de Figata."
     />
+    <link rel="icon" type="image/png" href="/assets/favicon-ap.png" />
     <link rel="stylesheet" href="/admin/app/styles.css" />
   </head>
   <body>
@@ -32,33 +33,41 @@
             <div class="sidebar-inner">
               <div class="sidebar-main">
                 <div class="sidebar-head">
-                  <button
-                    id="sidebar-home-button"
-                    class="sidebar-logo"
-                    type="button"
-                    aria-label="Ir al dashboard"
-                  >
-                    <img
-                      class="sidebar-logo-icon"
-                      src="/assets/svg-icons/logo-icon.svg"
-                      alt=""
-                      aria-hidden="true"
-                    />
-                  </button>
+                  <div class="sidebar-head-top">
+                    <button
+                      id="sidebar-home-button"
+                      class="sidebar-logo"
+                      type="button"
+                      aria-label="Ir al dashboard"
+                    >
+                      <img
+                        class="sidebar-logo-icon"
+                        src="/assets/svg-icons/logo-icon.svg"
+                        alt=""
+                        aria-hidden="true"
+                      />
+                    </button>
+                  </div>
 
-                  <button
-                    id="sidebar-toggle-button"
-                    class="sidebar-toggle"
-                    type="button"
-                    aria-label="Colapsar navegacion"
-                    aria-pressed="false"
-                  >
-                    <svg viewBox="0 0 16 16" aria-hidden="true">
-                      <path
-                        d="M1.8 1 0 2.8v10.4L1.8 15h12.4l1.8-1.8V2.8L14.2 1zm4.805 12.2V2.8H14.2v10.4zm-1.8-10.4H1.8v10.4h3.005z"
-                      ></path>
-                    </svg>
-                  </button>
+                  <div class="sidebar-toggle-shell">
+                    <div class="sidebar-toggle-track">
+                      <div class="sidebar-toggle-float">
+                        <button
+                          id="sidebar-toggle-button"
+                          class="sidebar-toggle"
+                          type="button"
+                          aria-label="Colapsar navegacion"
+                          aria-pressed="false"
+                        >
+                          <svg viewBox="0 0 16 16" aria-hidden="true">
+                            <path
+                              d="M1.8 1 0 2.8v10.4L1.8 15h12.4l1.8-1.8V2.8L14.2 1zm4.805 12.2V2.8H14.2v10.4zm-1.8-10.4H1.8v10.4h3.005z"
+                            ></path>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <button
@@ -118,8 +127,8 @@
 
                   <button id="sidebar-nav-ingredients" class="sidebar-nav__item" type="button">
                     <span class="sidebar-nav__icon" aria-hidden="true">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                        <path d="M337.6 70.3C323.9 57.6 302.9 57.6 289.2 70.3C278.5 80.2 219.1 136.6 176.5 219.5C133.8 302.5 106.7 412.8 160.4 496.2C201.9 560.7 269.1 590.4 313.4 596.9C359.5 603.7 406.3 587.5 445.9 547.9C515.1 478.7 539.7 387.4 521.2 300.6C503.4 217.3 446.8 143.7 337.6 70.3zM274.6 365.8C256.2 384.2 226.4 384.2 208 365.8C189.6 347.4 189.6 317.6 208 299.2C232.6 274.6 268.3 246.9 311.3 222.9C331.2 211.8 355.7 218.9 366.8 238.7C377.9 258.6 370.9 283.1 351 294.2C318.7 312.2 292.8 332.1 274.6 350.3C270.4 354.5 270.4 361.5 274.6 365.8z"></path>
+                      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3">
+                        <path d="M640-80q-100 0-170-70t-70-170q0-100 70-170t170-70q100 0 170 70t70 170q0 100-70 170T640-80Zm0-80q66 0 113-47t47-113q0-66-47-113t-113-47q-66 0-113 47t-47 113q0 66 47 113t113 47Zm-480 0q-33 0-56.5-23.5T80-240v-304q0-8 1.5-16t4.5-16l80-184h-6q-17 0-28.5-11.5T120-800v-40q0-17 11.5-28.5T160-880h280q17 0 28.5 11.5T480-840v40q0 17-11.5 28.5T440-760h-6l66 152q-19 10-36 21t-32 25l-84-198h-96l-92 216v304h170q5 21 13.5 41.5T364-160H160Zm480-440q-42 0-71-29t-29-71q0-42 29-71t71-29v200q0-42 29-71t71-29q42 0 71 29t29 71H640Z"></path>
                       </svg>
                     </span>
                     <span class="sidebar-nav__label">Ingredients</span>
@@ -573,9 +582,31 @@
                   <p id="ingredients-panel-subtitle" class="ingredients-editor__subtitle">
                     Explora el catalogo en cards. Click en un ingrediente para abrir su editor.
                   </p>
+                  <nav id="ingredients-tabs-nav" class="ingredients-tabs" aria-label="Ingredients tabs">
+                    <button
+                      id="ingredients-tab-ingredients"
+                      class="ingredients-tab is-active"
+                      type="button"
+                      data-ingredients-tab="ingredients"
+                    >
+                      Ingredients
+                    </button>
+                    <button
+                      id="ingredients-tab-icons"
+                      class="ingredients-tab"
+                      type="button"
+                      data-ingredients-tab="icons"
+                    >
+                      Icons
+                    </button>
+                  </nav>
                 </div>
                 <div id="ingredients-catalog-actions" class="ingredients-editor__actions">
                   <button id="ingredients-new-button" class="btn btn-primary" type="button">Nuevo ingrediente</button>
+                  <button id="ingredients-normalize-aliases-button" class="btn btn-ghost" type="button">
+                    Normalize aliases
+                  </button>
+                  <button id="ingredients-new-icon-button" class="btn btn-primary is-hidden" type="button">Nuevo icono</button>
                 </div>
                 <div id="ingredients-editor-actions" class="ingredients-editor__actions is-hidden">
                   <button id="ingredients-save-button" class="btn btn-primary" type="button">Guardar</button>
@@ -593,7 +624,7 @@
 
               <p id="ingredients-editor-status" class="status-message" role="status" aria-live="polite"></p>
 
-              <section id="ingredients-catalog-view" class="ingredients-catalog-view" aria-label="Catalogo de ingredientes">
+              <section id="ingredients-catalog-view" class="ingredients-catalog-view ingredients-tab-panel" aria-label="Catalogo de ingredientes">
                 <div class="ingredients-catalog-view__toolbar card">
                   <label class="field">
                     <span>Buscar ingrediente</span>
@@ -605,75 +636,178 @@
                 <div id="ingredients-list" class="ingredients-categories-content"></div>
               </section>
 
-              <section id="ingredients-detail-view" class="ingredients-detail-view card is-hidden" aria-label="Editor de ingrediente">
+              <section id="ingredients-detail-view" class="ingredients-detail-view ingredients-tab-panel card is-hidden" aria-label="Editor de ingrediente">
                 <div class="ingredients-detail-view__header">
                   <button id="ingredients-back-button" class="btn btn-ghost" type="button">Volver al catalogo</button>
-                  <div>
+                  <div class="ingredients-detail-view__title-wrap">
                     <p class="kicker">Ingredients / Item</p>
                     <h3 id="ingredients-detail-title">Editar ingrediente</h3>
+                    <p class="ingredients-detail-view__subtitle">
+                      Completa los campos clave, valida clasificacion y revisa el impacto en menu.
+                    </p>
                   </div>
                 </div>
 
-                <div class="ingredients-editor__grid">
-                  <label class="field">
-                    <span>ID</span>
-                    <input id="ingredients-field-id" type="text" />
-                  </label>
+                <div class="ingredients-detail-layout">
+                  <section class="ingredients-detail-section">
+                    <header class="ingredients-detail-section__header">
+                      <h4>Identidad</h4>
+                      <p>ID interno, label visible e icono utilizado en el catalogo.</p>
+                    </header>
+                    <div class="ingredients-editor__grid">
+                      <label class="field ingredients-field">
+                        <span>ID</span>
+                        <input id="ingredients-field-id" type="text" />
+                        <small class="ingredients-field__hint">Solo editable cuando creas un ingrediente nuevo.</small>
+                      </label>
 
-                  <label class="field">
-                    <span>Label</span>
-                    <input id="ingredients-field-label" type="text" />
-                  </label>
+                      <label class="field ingredients-field">
+                        <span>Label</span>
+                        <input id="ingredients-field-label" type="text" />
+                        <small class="ingredients-field__hint">Nombre que se mostrara en el catalogo y editor.</small>
+                      </label>
 
-                  <label class="field">
-                    <span>Icon (catalogo)</span>
-                    <select id="ingredients-field-icon-select"></select>
-                  </label>
+                      <label class="field ingredients-field">
+                        <span>Icon (catalogo)</span>
+                        <select id="ingredients-field-icon-select"></select>
+                        <small class="ingredients-field__hint">Selecciona un icono del catalogo central.</small>
+                      </label>
 
-                  <label class="field">
-                    <span>Icon ID / path manual</span>
-                    <input id="ingredients-field-icon" type="text" placeholder="Ej: queso o /assets/Ingredients/queso.webp" />
-                  </label>
+                      <label class="field ingredients-field">
+                        <span>Icon ID / path manual</span>
+                        <input id="ingredients-field-icon" type="text" list="ingredients-icon-options" placeholder="Ej: queso o /assets/Ingredients/queso.webp" />
+                        <small class="ingredients-field__hint">Puedes usar ID de icono o ruta manual de asset.</small>
+                        <datalist id="ingredients-icon-options"></datalist>
+                      </label>
 
-                  <div class="field" data-span="full">
-                    <span>Aliases</span>
-                    <div class="field-inline">
-                      <input id="ingredients-alias-input" type="text" placeholder="Alias (normalizado automaticamente)" />
-                      <button id="ingredients-alias-add-button" class="btn btn-ghost" type="button">Agregar</button>
+                      <div class="field ingredients-field ingredients-icon-preview-field" data-span="full">
+                        <span>Icono seleccionado</span>
+                        <div class="ingredients-icon-preview-box">
+                          <span id="ingredients-field-icon-preview" class="ingredients-icon-preview" aria-hidden="true"></span>
+                          <button id="ingredients-view-icon-button" class="btn btn-ghost" type="button">
+                            Ver icono
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <ul id="ingredients-alias-list" class="chip-list"></ul>
-                  </div>
+                  </section>
 
-                  <div class="field" data-span="full">
-                    <span>Tags</span>
-                    <div id="ingredients-tags-list" class="token-search-results"></div>
-                  </div>
+                  <section class="ingredients-detail-section">
+                    <header class="ingredients-detail-section__header">
+                      <h4>Busqueda y clasificacion</h4>
+                      <p>Define aliases para matching y asigna tags/alergenos del catalogo.</p>
+                    </header>
+                    <div class="ingredients-editor__grid">
+                      <div class="field ingredients-field" data-span="full">
+                        <span>Aliases</span>
+                        <div class="field-inline ingredients-alias-inline">
+                          <input id="ingredients-alias-input" type="text" placeholder="Alias (normalizado automaticamente)" />
+                          <button id="ingredients-alias-add-button" class="btn btn-ghost" type="button">Agregar</button>
+                        </div>
+                        <ul id="ingredients-alias-list" class="chip-list ingredients-alias-list"></ul>
+                      </div>
 
-                  <div class="field" data-span="full">
-                    <span>Alergenos</span>
-                    <div id="ingredients-allergens-list" class="token-search-results"></div>
-                  </div>
+                      <div class="field ingredients-field" data-span="full">
+                        <span>Tags</span>
+                        <small class="ingredients-field__hint">Puedes seleccionar multiples tags para filtros y badges.</small>
+                        <div id="ingredients-tags-list" class="token-search-results ingredients-meta-list"></div>
+                      </div>
 
-                  <div class="field" data-span="full">
-                    <span>Impacto en menu</span>
+                      <div class="field ingredients-field" data-span="full">
+                        <span>Alergenos</span>
+                        <small class="ingredients-field__hint">Selecciona todos los alergenos que apliquen a este ingrediente.</small>
+                        <div id="ingredients-allergens-list" class="token-search-results ingredients-meta-list"></div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="ingredients-detail-section">
+                    <header class="ingredients-detail-section__header">
+                      <h4>Impacto en menu</h4>
+                      <p>Items que usan este ingrediente actualmente.</p>
+                    </header>
                     <p id="ingredients-impact-count" class="inline-help">-</p>
-                    <ul id="ingredients-impact-list" class="ingredients-impact-list"></ul>
-                  </div>
-
-                  <div class="field" data-span="full">
-                    <span>Tags (catalogo)</span>
-                    <div id="ingredients-tags-catalog" class="ingredients-catalog-list"></div>
-                  </div>
-
-                  <div class="field" data-span="full">
-                    <span>Alergenos (catalogo)</span>
-                    <div id="ingredients-allergens-catalog" class="ingredients-catalog-list"></div>
-                  </div>
+                    <ul id="ingredients-impact-list" class="ingredients-impact-list ingredients-grid"></ul>
+                  </section>
                 </div>
 
                 <div class="ingredients-editor__footer">
                   <button id="ingredients-delete-button" class="btn btn-danger" type="button">Eliminar ingrediente</button>
                   <p id="ingredients-validation-summary" class="inline-help"></p>
+                </div>
+              </section>
+
+              <section id="ingredients-icons-catalog-view" class="ingredients-catalog-view ingredients-tab-panel is-hidden" aria-label="Catalogo de iconos">
+                <div class="ingredients-catalog-view__toolbar card">
+                  <label class="field">
+                    <span>Buscar icono</span>
+                    <input id="ingredients-icons-search-input" type="search" placeholder="Ej: queso, tomate..." />
+                  </label>
+                  <p id="ingredients-icons-catalog-count" class="inline-help">-</p>
+                  <p id="ingredients-icons-global-warning" class="inline-help"></p>
+                </div>
+                <ul id="ingredients-icons-list" class="ingredients-grid"></ul>
+              </section>
+
+              <section id="ingredients-icons-detail-view" class="ingredients-detail-view ingredients-tab-panel card is-hidden" aria-label="Editor de icono">
+                <div class="ingredients-detail-view__header">
+                  <button id="ingredients-icons-back-button" class="btn btn-ghost" type="button">Volver a iconos</button>
+                  <div class="ingredients-detail-view__title-wrap">
+                    <p class="kicker">Ingredients / Icon</p>
+                    <h3 id="ingredients-icons-detail-title">Editar icono</h3>
+                    <p class="ingredients-detail-view__subtitle">
+                      Actualiza label/path y revisa que ingredientes dependen de este icono.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="ingredients-detail-layout">
+                  <section class="ingredients-detail-section">
+                    <header class="ingredients-detail-section__header">
+                      <h4>Identidad de icono</h4>
+                      <p>Key unico, label visible y path del asset.</p>
+                    </header>
+                    <div class="ingredients-editor__grid">
+                      <label class="field ingredients-field">
+                        <span>Key</span>
+                        <input id="ingredients-icon-field-key" type="text" />
+                        <small class="ingredients-field__hint">Solo editable cuando creas un icono nuevo.</small>
+                      </label>
+
+                      <label class="field ingredients-field">
+                        <span>Label</span>
+                        <input id="ingredients-icon-field-label" type="text" />
+                        <small class="ingredients-field__hint">Nombre visible en selectores y catalogo.</small>
+                      </label>
+
+                      <label class="field ingredients-field" data-span="full">
+                        <span>Path / filename</span>
+                        <input id="ingredients-icon-field-path" type="text" placeholder="Ej: queso.webp o /assets/Ingredients/queso.webp" />
+                        <small class="ingredients-field__hint">Si usas filename relativo, se resolvera con basePath.</small>
+                      </label>
+
+                      <div class="field ingredients-field ingredients-icon-preview-field" data-span="full">
+                        <span>Preview</span>
+                        <div class="ingredients-icon-preview-box">
+                          <span id="ingredients-icon-preview" class="ingredients-icon-preview" aria-hidden="true"></span>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="ingredients-detail-section">
+                    <header class="ingredients-detail-section__header">
+                      <h4>Used by</h4>
+                      <p>Ingredientes que usan este icono.</p>
+                    </header>
+                    <p id="ingredients-icon-used-by-count" class="inline-help">-</p>
+                    <ul id="ingredients-icon-used-by-list" class="ingredients-impact-list ingredients-grid"></ul>
+                  </section>
+                </div>
+
+                <div class="ingredients-editor__footer">
+                  <button id="ingredients-icon-delete-button" class="btn btn-danger" type="button">Eliminar icono</button>
+                  <p id="ingredients-icon-validation-summary" class="inline-help"></p>
                 </div>
               </section>
             </section>
@@ -683,6 +817,7 @@
     </main>
 
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <script src="/shared/ingredients-contract.js"></script>
     <script src="/admin/app/app.js"></script>
   </body>
 </html>

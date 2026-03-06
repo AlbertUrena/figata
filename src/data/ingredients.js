@@ -1,6 +1,5 @@
 (() => {
   const INGREDIENTS_URL = new URL('data/ingredients.json', window.location.href);
-  const INGREDIENTS_USAGE_URL = new URL('data/ingredients-usage.json', window.location.href);
 
   let cachedIngredientsStorePromise;
 
@@ -37,14 +36,10 @@
   };
 
   const buildIngredientsStore = async () => {
-    const [ingredientsJson, ingredientsUsageJson] = await Promise.all([
-      fetchJson(INGREDIENTS_URL, 'ingredients.json'),
-      fetchJson(INGREDIENTS_USAGE_URL, 'ingredients-usage.json'),
-    ]);
+    const ingredientsJson = await fetchJson(INGREDIENTS_URL, 'ingredients.json');
 
     const ingredients = ingredientsJson?.ingredients || {};
     const icons = ingredientsJson?.icons || {};
-    const aliasToIconFromUsage = ingredientsUsageJson?.ingredientAliasesToIcon || {};
     const normalizedToIngredientId = new Map();
 
     const registerAlias = (alias, ingredientId) => {
@@ -64,13 +59,6 @@
 
       const aliases = Array.isArray(ingredient?.aliases) ? ingredient.aliases : [];
       aliases.forEach((alias) => registerAlias(alias, ingredientId));
-    });
-
-    Object.entries(aliasToIconFromUsage).forEach(([alias, iconId]) => {
-      const icon = icons?.[iconId];
-      const covers = Array.isArray(icon?.covers) ? icon.covers : [];
-
-      covers.forEach((coveredIngredientId) => registerAlias(alias, coveredIngredientId));
     });
 
     return {

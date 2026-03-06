@@ -2,15 +2,15 @@
   "version": 1,
   "schema": "figata.home.v1",
   "hero": {
-    "title": "Pizza napolitana autentica",
-    "subtitle": "Horneada en horno de lena, con ingredientes seleccionados y maridajes de la casa.",
+    "title": "El nuevo estándar de las pizzas",
+    "subtitle": "Pizzas napoletanas al horno de leña, con masa madre centenaria y una carta curada de vinos y cervezas italianas.",
     "backgroundImage": "assets/home/seamless-bg.webp",
     "ctaPrimary": {
-      "label": "Ver menu",
+      "label": "Menú",
       "url": "#menu"
     },
     "ctaSecondary": {
-      "label": "Reservar",
+      "label": "Nuestra selección de maridajes",
       "url": "#reservar"
     }
   },
@@ -23,9 +23,9 @@
       "pan_ciabatta",
       "tiramisu",
       "diavola",
-      "bruschetta_classica",
       "focaccia_rellena",
-      "margherita_sbagliata"
+      "margherita_sbagliata",
+      "bruschetta_classica"
     ],
     "limit": 8
   },
@@ -91,9 +91,9 @@
   },
   "reservation": {
     "enabled": true,
-    "title": "Reserva tu mesa",
+    "title": "WhatsApp",
     "url": "#reservar",
-    "ctaLabel": "Reservar ahora"
+    "ctaLabel": "Reservar"
   },
   "announcements": {
     "enabled": false,
@@ -114,14 +114,14 @@
   },
   "navbar": {
     "cta": {
-      "label": "Reservar ahora",
+      "label": "Reservar",
       "url": "#reservar",
       "icon": "assets/svg-icons/whatsapp.svg",
-      "title": "Reserva tu mesa"
+      "title": "WhatsApp"
     },
     "links": [
       {
-        "label": "Menu",
+        "label": "Menú",
         "url": "#menu"
       },
       {
@@ -129,7 +129,7 @@
         "url": "#nosotros"
       },
       {
-        "label": "Ubicacion",
+        "label": "Ubicación",
         "url": "#ubicacion"
       },
       {
