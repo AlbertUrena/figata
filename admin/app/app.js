@@ -780,300 +780,68 @@
   function clearSidebarIndicatorSyncTimers() { return AC.clearSidebarIndicatorSyncTimers(_acCtx()); }
   function scheduleSidebarActiveIndicatorSync() { return AC.scheduleSidebarActiveIndicatorSync(_acCtx()); }
 
-  function getPanelScrollSpyAdapter(panel) {
-    if (panel === "menu-browser") {
-      return {
-        refresh: refreshMenuScrollAnchors,
-        update: updateMenuScrollSpy,
-        request: requestMenuScrollSpyUpdate
-      };
-    }
-    if (panel === "home-editor") {
-      return {
-        refresh: refreshHomeScrollAnchors,
-        update: updateHomeScrollSpy,
-        request: requestHomeScrollSpyUpdate
-      };
-    }
-    if (
-      panel === "ingredients-editor" &&
-      state.ingredientsEditor.tab === "ingredients" &&
-      state.ingredientsEditor.view === "catalog"
-    ) {
-      return {
-        refresh: refreshIngredientsScrollAnchors,
-        update: updateIngredientsScrollSpy,
-        request: requestIngredientsScrollSpyUpdate
-      };
-    }
-    if (panel === "categories-editor") {
-      return {
-        refresh: refreshCategoriesScrollAnchors,
-        update: updateCategoriesScrollSpy,
-        request: requestCategoriesScrollSpyUpdate
-      };
-    }
-    return null;
+  // --- Panels (from modules/panels.js) ---
+  var PN = window.FigataAdmin.panels;
+  function _pnCtx() {
+    return {
+      state: state,
+      views: views,
+      elements: {
+        topbar: elements.topbar,
+        dashboardContent: elements.dashboardContent,
+        sidebarNavDashboard: elements.sidebarNavDashboard,
+        sidebarNavMenu: elements.sidebarNavMenu,
+        sidebarNavHomepage: elements.sidebarNavHomepage,
+        sidebarNavIngredients: elements.sidebarNavIngredients,
+        sidebarNavCategories: elements.sidebarNavCategories,
+        sidebarHomeButton: elements.sidebarHomeButton,
+        sidebarNavActiveIndicator: elements.sidebarNavActiveIndicator
+      },
+      // Navigation
+      isNavigationStateIdle: isNavigationStateIdle,
+      getNavigationState: getNavigationState,
+      setNavigationState: setNavigationState,
+      setNavigationCurrentPanel: setNavigationCurrentPanel,
+      setNavigationCurrentSection: setNavigationCurrentSection,
+      isProgrammaticScrollLocked: isProgrammaticScrollLocked,
+      runNavigationTimeline: runNavigationTimeline,
+      waitNextFrame: waitNextFrame,
+      waitForTransition: waitForTransition,
+      // Accordion / sidebar
+      getSidebarAccordionKeyForPanel: getSidebarAccordionKeyForPanel,
+      getSidebarOpenAccordionKeyFromDom: getSidebarOpenAccordionKeyFromDom,
+      clearAllSidebarAccordionOpeningMotions: clearAllSidebarAccordionOpeningMotions,
+      clearSidebarIndicatorSyncTimers: clearSidebarIndicatorSyncTimers,
+      scheduleSidebarActiveIndicatorSync: scheduleSidebarActiveIndicatorSync,
+      updateSidebarActiveIndicator: updateSidebarActiveIndicator,
+      transitionSidebarAccordions: transitionSidebarAccordions,
+      closeSidebarUserMenu: closeSidebarUserMenu,
+      flushPanelPostNavigationAction: flushPanelPostNavigationAction,
+      // Scroll spy adapters (lazy — resolved at call time)
+      refreshMenuScrollAnchors: function () { refreshMenuScrollAnchors(); },
+      updateMenuScrollSpy: function (f) { updateMenuScrollSpy(f); },
+      requestMenuScrollSpyUpdate: function () { requestMenuScrollSpyUpdate(); },
+      refreshHomeScrollAnchors: function () { refreshHomeScrollAnchors(); },
+      updateHomeScrollSpy: function (f) { updateHomeScrollSpy(f); },
+      requestHomeScrollSpyUpdate: function () { requestHomeScrollSpyUpdate(); },
+      refreshIngredientsScrollAnchors: function () { refreshIngredientsScrollAnchors(); },
+      updateIngredientsScrollSpy: function (f) { updateIngredientsScrollSpy(f); },
+      requestIngredientsScrollSpyUpdate: function () { requestIngredientsScrollSpyUpdate(); },
+      refreshCategoriesScrollAnchors: function () { refreshCategoriesScrollAnchors(); },
+      updateCategoriesScrollSpy: function (f) { updateCategoriesScrollSpy(f); },
+      requestCategoriesScrollSpyUpdate: function () { requestCategoriesScrollSpyUpdate(); }
+    };
   }
-
-  function syncVisiblePanelAnchors(panel) {
-    var adapter = getPanelScrollSpyAdapter(panel);
-    if (!adapter) return;
-    adapter.refresh();
-    if (isNavigationStateIdle()) {
-      adapter.update(true);
-    }
-  }
-
-  function requestCurrentPanelScrollSpySync() {
-    var adapter = getPanelScrollSpyAdapter(state.currentPanel);
-    if (!adapter) return;
-    if (state.isPanelTransitioning) return;
-    if (isProgrammaticScrollLocked()) return;
-    if (!isNavigationStateIdle() && getNavigationState() !== NAVIGATION_STATES.syncingScrollSpy) {
-      return;
-    }
-    if (isNavigationStateIdle()) {
-      setNavigationState(NAVIGATION_STATES.syncingScrollSpy);
-    }
-    adapter.refresh();
-    adapter.update(true);
-    window.requestAnimationFrame(function () {
-      if (state.navigation.isProgrammaticScroll) return;
-      if (state.isPanelTransitioning) return;
-      if (getNavigationState() === NAVIGATION_STATES.syncingScrollSpy) {
-        setNavigationState(NAVIGATION_STATES.idle);
-      }
-    });
-  }
-
-  function requestCurrentPanelScrollSpyUpdate() {
-    var adapter = getPanelScrollSpyAdapter(state.currentPanel);
-    if (!adapter) return;
-    adapter.request();
-  }
-
-  function applyPanelVisibility(panel) {
-    views.dashboardPanel.classList.add("is-hidden");
-    views.menuBrowserPanel.classList.add("is-hidden");
-    views.menuItemPanel.classList.add("is-hidden");
-    views.homeEditorPanel.classList.add("is-hidden");
-    views.ingredientsEditorPanel.classList.add("is-hidden");
-    views.categoriesEditorPanel.classList.add("is-hidden");
-
-    if (panel === "menu-browser") {
-      views.menuBrowserPanel.classList.remove("is-hidden");
-    } else if (panel === "menu-item") {
-      views.menuItemPanel.classList.remove("is-hidden");
-    } else if (panel === "home-editor") {
-      views.homeEditorPanel.classList.remove("is-hidden");
-    } else if (panel === "ingredients-editor") {
-      views.ingredientsEditorPanel.classList.remove("is-hidden");
-    } else if (panel === "categories-editor") {
-      views.categoriesEditorPanel.classList.remove("is-hidden");
-    } else {
-      views.dashboardPanel.classList.remove("is-hidden");
-    }
-
-    var isMenuPanel = panel === "menu-browser" || panel === "menu-item";
-    var isHomePanel = panel === "home-editor";
-    var isIngredientsPanel = panel === "ingredients-editor";
-    var isCategoriesPanel = panel === "categories-editor";
-    if (elements.topbar) {
-      elements.topbar.classList.toggle("is-hidden", isMenuPanel || isHomePanel || isIngredientsPanel || isCategoriesPanel);
-    }
-
-    state.visiblePanel = panel;
-    var hadPendingPanelAction = flushPanelPostNavigationAction(panel);
-    window.requestAnimationFrame(function () {
-      if (hadPendingPanelAction) return;
-      syncVisiblePanelAnchors(panel);
-    });
-  }
-
-  function setActiveSidebarNav(panel, options) {
-    options = options || {};
-    var isMenuPanel = panel === "menu-browser" || panel === "menu-item";
-    var isHomePanel = panel === "home-editor";
-    var isIngredientsPanel = panel === "ingredients-editor";
-    var isCategoriesPanel = panel === "categories-editor";
-    elements.sidebarNavDashboard.classList.toggle("is-active", panel === "dashboard");
-    elements.sidebarNavMenu.classList.toggle("is-active", isMenuPanel);
-    if (elements.sidebarNavHomepage) {
-      elements.sidebarNavHomepage.classList.toggle("is-active", isHomePanel);
-    }
-    if (elements.sidebarNavIngredients) {
-      elements.sidebarNavIngredients.classList.toggle("is-active", isIngredientsPanel);
-    }
-    if (elements.sidebarNavCategories) {
-      elements.sidebarNavCategories.classList.toggle("is-active", isCategoriesPanel);
-    }
-    elements.sidebarHomeButton.classList.toggle("is-active", panel === "dashboard");
-
-    if (options.syncIndicator !== false) {
-      scheduleSidebarActiveIndicatorSync();
-    }
-  }
-
-  /* ===========================
-     PANEL TRANSITION
-  =========================== */
-
-  function clearPanelTransitionTimers() {
-    if (elements.dashboardContent) {
-      elements.dashboardContent.classList.remove("is-panel-fading");
-      elements.dashboardContent.classList.remove("is-panel-fade-out");
-    }
-    state.isPanelTransitioning = false;
-  }
-
-  async function moveSidebarIndicatorForTimeline(options) {
-    options = options || {};
-    if (!elements.sidebarNavActiveIndicator) return;
-    updateSidebarActiveIndicator();
-    if (options.waitForSettle === false) {
-      await waitNextFrame();
-      return;
-    }
-    await waitForTransition(elements.sidebarNavActiveIndicator, {
-      properties: ["transform", "height", "opacity"]
-    });
-  }
-
-  async function runPanelTransition(fromPanel, toPanel) {
-    var previousVisiblePanel = fromPanel || state.visiblePanel || state.currentPanel || "dashboard";
-    var nextAccordionKey = getSidebarAccordionKeyForPanel(toPanel);
-    var previousAccordionKey = getSidebarOpenAccordionKeyFromDom() || "";
-    var shouldFade = Boolean(elements.dashboardContent && previousVisiblePanel !== toPanel);
-    var shouldSwitchAccordion = previousAccordionKey !== nextAccordionKey;
-
-    state.currentPanel = toPanel;
-    setNavigationCurrentPanel(toPanel);
-    if (previousVisiblePanel !== toPanel) {
-      setNavigationCurrentSection("");
-    }
-
-    clearAllSidebarAccordionOpeningMotions();
-    clearSidebarIndicatorSyncTimers();
-    clearPanelTransitionTimers();
-
-    closeSidebarUserMenu();
-    setNavigationState(NAVIGATION_STATES.switchingPanel, { force: true });
-    state.isPanelTransitioning = true;
-
-    var timelineResult = null;
-    try {
-      timelineResult = await runNavigationTimeline([
-        {
-          name: "fadeOutPanel",
-          run: async function (context) {
-            if (!shouldFade || !elements.dashboardContent) return;
-            elements.dashboardContent.classList.add("is-panel-fading");
-            elements.dashboardContent.classList.add("is-panel-fade-out");
-            await waitNextFrame();
-            context.assertActive();
-          }
-        },
-        {
-          name: "updateSidebarActiveState",
-          run: function () {
-            setActiveSidebarNav(toPanel, { syncIndicator: false });
-          }
-        },
-        {
-          name: "closeCurrentAccordion",
-          run: async function (context) {
-            if (!shouldSwitchAccordion || !previousAccordionKey) return;
-            await transitionSidebarAccordions("");
-            context.assertActive();
-          }
-        },
-        {
-          name: "moveSidebarIndicator",
-          run: async function (context) {
-            await moveSidebarIndicatorForTimeline({ waitForSettle: false });
-            context.assertActive();
-          }
-        },
-        {
-          name: "activatePanelDOM",
-          run: async function (context) {
-            applyPanelVisibility(toPanel);
-            if (shouldFade && elements.dashboardContent) {
-              // Start fade-in as soon as the new panel DOM is visible.
-              elements.dashboardContent.classList.remove("is-panel-fade-out");
-            }
-            await waitNextFrame();
-            context.assertActive();
-          }
-        },
-        {
-          name: "openTargetAccordion",
-          run: async function (context) {
-            if (!shouldSwitchAccordion || !nextAccordionKey) return;
-            await transitionSidebarAccordions(nextAccordionKey);
-            context.assertActive();
-          }
-        },
-        {
-          name: "fadeInPanel",
-          run: async function (context) {
-            if (!elements.dashboardContent) return;
-            if (!shouldFade) {
-              elements.dashboardContent.classList.remove("is-panel-fading");
-              elements.dashboardContent.classList.remove("is-panel-fade-out");
-              return;
-            }
-
-            await waitForTransition(elements.dashboardContent, {
-              properties: ["opacity", "transform"]
-            });
-            elements.dashboardContent.classList.remove("is-panel-fading");
-            context.assertActive();
-          }
-        }
-      ], {
-        label: previousVisiblePanel + " -> " + toPanel
-      });
-    } catch (error) {
-      if (error && error.cancelled) {
-        return;
-      }
-      throw error;
-    }
-
-    if (!timelineResult) return;
-    if (timelineResult.cancelled) {
-      if (state.navigationTimelineToken === timelineResult.token) {
-        state.isPanelTransitioning = false;
-        if (!state.navigation.isProgrammaticScroll) {
-          setNavigationState(NAVIGATION_STATES.idle, { force: true });
-        }
-      }
-      return;
-    }
-    if (state.navigationTimelineToken !== timelineResult.token) return;
-
-    state.isPanelTransitioning = false;
-    if (!state.navigation.isProgrammaticScroll) {
-      setNavigationState(NAVIGATION_STATES.idle, { force: true });
-    }
-    requestCurrentPanelScrollSpySync();
-  }
-
-  function setActivePanel(panel) {
-    runPanelTransition(state.visiblePanel || state.currentPanel || "dashboard", panel)
-      .catch(function (error) {
-        state.isPanelTransitioning = false;
-        clearPanelTransitionTimers();
-        if (!state.navigation.isProgrammaticScroll) {
-          setNavigationState(NAVIGATION_STATES.idle, { force: true });
-        }
-        if (DEBUG_NAVIGATION) {
-          console.error("[TIMELINE] panel transition failed", error);
-        }
-      });
-  }
+  function getPanelScrollSpyAdapter(panel) { return PN.getPanelScrollSpyAdapter(_pnCtx(), panel); }
+  function syncVisiblePanelAnchors(panel) { return PN.syncVisiblePanelAnchors(_pnCtx(), panel); }
+  function requestCurrentPanelScrollSpySync() { return PN.requestCurrentPanelScrollSpySync(_pnCtx()); }
+  function requestCurrentPanelScrollSpyUpdate() { return PN.requestCurrentPanelScrollSpyUpdate(_pnCtx()); }
+  function applyPanelVisibility(panel) { return PN.applyPanelVisibility(_pnCtx(), panel); }
+  function setActiveSidebarNav(panel, options) { return PN.setActiveSidebarNav(_pnCtx(), panel, options); }
+  function clearPanelTransitionTimers() { return PN.clearPanelTransitionTimers(_pnCtx()); }
+  function moveSidebarIndicatorForTimeline(options) { return PN.moveSidebarIndicatorForTimeline(_pnCtx(), options); }
+  function runPanelTransition(fromPanel, toPanel) { return PN.runPanelTransition(_pnCtx(), fromPanel, toPanel); }
+  function setActivePanel(panel) { return PN.setActivePanel(_pnCtx(), panel); }
 
   function hashHasAuthToken() {
     return /(?:^#|[&#])(invite_token|recovery_token|confirmation_token)=/i.test(window.location.hash);
