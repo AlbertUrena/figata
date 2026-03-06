@@ -447,106 +447,18 @@
     }
   }
 
-  function clearPersistedDraftsStorage() {
-    try {
-      window.localStorage.removeItem(LOCAL_DRAFTS_MENU_KEY);
-      window.localStorage.removeItem(LOCAL_DRAFTS_AVAILABILITY_KEY);
-      window.localStorage.removeItem(LOCAL_DRAFTS_HOME_KEY);
-      window.localStorage.removeItem(LOCAL_DRAFTS_INGREDIENTS_KEY);
-      window.localStorage.removeItem(LOCAL_DRAFTS_CATEGORIES_KEY);
-      window.localStorage.removeItem(LOCAL_DRAFTS_FLAG_KEY);
-    } catch (_error) {
-      // ignore storage errors
-    }
-  }
-
-  function persistDraftsToLocalStorage() {
-    if (
-      !state.drafts.menu ||
-      !state.drafts.availability ||
-      !state.drafts.home ||
-      !state.drafts.ingredients ||
-      !state.drafts.categories
-    ) return;
-    try {
-      window.localStorage.setItem(LOCAL_DRAFTS_MENU_KEY, JSON.stringify(state.drafts.menu));
-      window.localStorage.setItem(LOCAL_DRAFTS_AVAILABILITY_KEY, JSON.stringify(state.drafts.availability));
-      window.localStorage.setItem(LOCAL_DRAFTS_HOME_KEY, JSON.stringify(state.drafts.home));
-      window.localStorage.setItem(LOCAL_DRAFTS_INGREDIENTS_KEY, JSON.stringify(state.drafts.ingredients));
-      window.localStorage.setItem(LOCAL_DRAFTS_CATEGORIES_KEY, JSON.stringify(state.drafts.categories));
-      window.localStorage.setItem(LOCAL_DRAFTS_FLAG_KEY, "1");
-    } catch (_error) {
-      // ignore storage errors
-    }
-  }
-
+  // --- Drafts persistence (from modules/drafts.js) ---
+  var D = window.FigataAdmin.drafts;
+  function clearPersistedDraftsStorage() { return D.clearPersistedDraftsStorage(); }
+  function persistDraftsToLocalStorage() { return D.persistDraftsToLocalStorage(state.drafts); }
   function hydrateDraftsFromLocalStorage() {
-    try {
-      if (window.localStorage.getItem(LOCAL_DRAFTS_FLAG_KEY) !== "1") {
-        return false;
-      }
-
-      var menuRaw = window.localStorage.getItem(LOCAL_DRAFTS_MENU_KEY);
-      var availabilityRaw = window.localStorage.getItem(LOCAL_DRAFTS_AVAILABILITY_KEY);
-      var homeRaw = window.localStorage.getItem(LOCAL_DRAFTS_HOME_KEY);
-      var ingredientsRaw = window.localStorage.getItem(LOCAL_DRAFTS_INGREDIENTS_KEY);
-      var categoriesRaw = window.localStorage.getItem(LOCAL_DRAFTS_CATEGORIES_KEY);
-
-      if (!menuRaw || !availabilityRaw) {
-        clearPersistedDraftsStorage();
-        return false;
-      }
-
-      var restoredMenu = JSON.parse(menuRaw);
-      var restoredAvailability = JSON.parse(availabilityRaw);
-      var restoredHome = homeRaw ? JSON.parse(homeRaw) : deepClone(state.data && state.data.home);
-      var restoredIngredients = ingredientsRaw
-        ? JSON.parse(ingredientsRaw)
-        : deepClone(state.data && state.data.ingredients);
-      var restoredCategories = categoriesRaw
-        ? JSON.parse(categoriesRaw)
-        : deepClone(state.data && state.data.categories);
-
-      if (!restoredMenu || !Array.isArray(restoredMenu.sections)) {
-        clearPersistedDraftsStorage();
-        return false;
-      }
-
-      if (!restoredAvailability || !Array.isArray(restoredAvailability.items)) {
-        clearPersistedDraftsStorage();
-        return false;
-      }
-
-      if (!restoredHome || typeof restoredHome !== "object") {
-        clearPersistedDraftsStorage();
-        return false;
-      }
-
-      if (!restoredIngredients || typeof restoredIngredients !== "object") {
-        clearPersistedDraftsStorage();
-        return false;
-      }
-
-      if (!restoredCategories || typeof restoredCategories !== "object") {
-        clearPersistedDraftsStorage();
-        return false;
-      }
-
-      state.drafts.menu = restoredMenu;
-      state.drafts.availability = restoredAvailability;
-      state.drafts.home = restoredHome;
-      state.drafts.ingredients = restoredIngredients;
-      state.drafts.categories = restoredCategories;
-      ensureMenuDraft();
-      ensureAvailabilityDraft();
-      ensureHomeDraft();
-      ensureIngredientsDraft();
-      ensureCategoriesDraft();
-      return true;
-    } catch (_error) {
-      clearPersistedDraftsStorage();
-      return false;
-    }
+    return D.hydrateDraftsFromLocalStorage(state, {
+      ensureMenuDraft: ensureMenuDraft,
+      ensureAvailabilityDraft: ensureAvailabilityDraft,
+      ensureHomeDraft: ensureHomeDraft,
+      ensureIngredientsDraft: ensureIngredientsDraft,
+      ensureCategoriesDraft: ensureCategoriesDraft
+    });
   }
 
   function downloadJsonFile(filename, payload) { return U.downloadJsonFile(filename, payload); }
