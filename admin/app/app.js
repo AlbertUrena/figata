@@ -747,245 +747,35 @@
     rootStyle.setProperty("--ux-indicator-opacity", UX_TIMING.indicatorOpacityMs + "ms");
   }
 
-  function getNavigationState() {
-    return (state.navigation && state.navigation.currentState) || NAVIGATION_STATES.idle;
-  }
+  // --- Navigation infrastructure (from modules/navigation.js) ---
+  var N = window.FigataAdmin.navigation;
+  var _navScrollSpyCallbacks = { requestCurrentPanelScrollSpySync: function () { requestCurrentPanelScrollSpySync(); } };
+  function getNavigationState() { return N.getNavigationState(state); }
+  function canTransitionNavigationState(fromState, toState) { return N.canTransitionNavigationState(fromState, toState); }
+  function setNavigationState(nextState, options) { return N.setNavigationState(state, nextState, options); }
+  function setNavigationCurrentPanel(panel) { return N.setNavigationCurrentPanel(state, panel); }
+  function setNavigationCurrentSection(sectionKey) { return N.setNavigationCurrentSection(state, sectionKey); }
+  function isNavigationStateIdle() { return N.isNavigationStateIdle(state); }
+  function canRunScrollSpy(forceSync) { return N.canRunScrollSpy(state, forceSync); }
+  function isProgrammaticScrollLocked() { return N.isProgrammaticScrollLocked(state); }
+  function clearProgrammaticScrollLock(options) { return N.clearProgrammaticScrollLock(state, _navScrollSpyCallbacks, options); }
+  function lockProgrammaticScroll(durationMs, sectionKey) { return N.lockProgrammaticScroll(state, _navScrollSpyCallbacks, durationMs, sectionKey); }
+  function runWithProgrammaticScrollLock(callback, durationMs, sectionKey) { return N.runWithProgrammaticScrollLock(state, _navScrollSpyCallbacks, callback, durationMs, sectionKey); }
+  function queuePanelPostNavigationAction(panel, callback) { return N.queuePanelPostNavigationAction(state, panel, callback); }
+  function flushPanelPostNavigationAction(panel) { return N.flushPanelPostNavigationAction(state, panel); }
+  function clearPanelPostNavigationActions() { return N.clearPanelPostNavigationActions(state); }
 
-  function canTransitionNavigationState(fromState, toState) {
-    var from = NAVIGATION_STATE_GRAPH[fromState];
-    if (!Array.isArray(from)) return false;
-    return from.indexOf(toState) !== -1;
-  }
-
-  function setNavigationState(nextState, options) {
-    options = options || {};
-
-    var normalizedNext = String(nextState || "").trim();
-    if (!normalizedNext || !NAVIGATION_STATE_GRAPH[normalizedNext]) {
-      normalizedNext = NAVIGATION_STATES.idle;
-    }
-
-    var current = getNavigationState();
-    if (current === normalizedNext) return true;
-
-    var isAllowed = canTransitionNavigationState(current, normalizedNext);
-    if (!isAllowed && !options.force) {
-      if (DEBUG_NAVIGATION) {
-        console.warn("[Nav] blocked transition " + current + " -> " + normalizedNext);
-      }
-      return false;
-    }
-
-    state.navigation.currentState = normalizedNext;
-    if (DEBUG_NAVIGATION) {
-      console.debug("[Nav] " + current + " -> " + normalizedNext);
-    }
-    return true;
-  }
-
-  function setNavigationCurrentPanel(panel) {
-    state.navigation.currentPanel = panel || "dashboard";
-  }
-
-  function setNavigationCurrentSection(sectionKey) {
-    state.navigation.currentSection = sectionKey || "";
-  }
-
-  function isNavigationStateIdle() {
-    return getNavigationState() === NAVIGATION_STATES.idle;
-  }
-
-  function canRunScrollSpy(forceSync) {
-    if (isProgrammaticScrollLocked()) return false;
-    var currentState = getNavigationState();
-    if (currentState === NAVIGATION_STATES.idle) return true;
-    if (Boolean(forceSync) && currentState === NAVIGATION_STATES.syncingScrollSpy) return true;
-    return false;
-  }
-
-  function isProgrammaticScrollLocked() {
-    return Boolean(state.navigation.isProgrammaticScroll) || Date.now() < state.programmaticScrollLockUntil;
-  }
-
-  function clearProgrammaticScrollLock(options) {
-    if (state.programmaticScrollLockTimer) {
-      window.clearTimeout(state.programmaticScrollLockTimer);
-      state.programmaticScrollLockTimer = 0;
-    }
-    state.programmaticScrollLockUntil = 0;
-    state.navigation.isProgrammaticScroll = false;
-    if (!options || options.syncScrollSpy !== false) {
-      setNavigationState(NAVIGATION_STATES.syncingScrollSpy);
-      requestCurrentPanelScrollSpySync();
-      window.requestAnimationFrame(function () {
-        if (!state.navigation.isProgrammaticScroll && !state.isPanelTransitioning) {
-          setNavigationState(NAVIGATION_STATES.idle);
-        }
-      });
-    } else if (!state.isPanelTransitioning) {
-      setNavigationState(NAVIGATION_STATES.idle);
-    }
-  }
-
-  function lockProgrammaticScroll(durationMs, sectionKey) {
-    var lockMs = Math.max(0, Number(durationMs || UX_TIMING.programmaticScrollLockMs));
-    var now = Date.now();
-    var nextExpiry = now + lockMs;
-    state.navigation.isProgrammaticScroll = true;
-    setNavigationState(NAVIGATION_STATES.scrollingToAnchor);
-    if (sectionKey) {
-      setNavigationCurrentSection(sectionKey);
-    }
-    if (nextExpiry > state.programmaticScrollLockUntil) {
-      state.programmaticScrollLockUntil = nextExpiry;
-    }
-    if (state.programmaticScrollLockTimer) {
-      window.clearTimeout(state.programmaticScrollLockTimer);
-      state.programmaticScrollLockTimer = 0;
-    }
-    var remainingMs = Math.max(0, state.programmaticScrollLockUntil - now);
-    state.programmaticScrollLockTimer = window.setTimeout(function () {
-      clearProgrammaticScrollLock({ syncScrollSpy: true });
-    }, remainingMs + UX_TIMING.programmaticScrollUnlockBufferMs);
-  }
-
-  function runWithProgrammaticScrollLock(callback, durationMs, sectionKey) {
-    lockProgrammaticScroll(durationMs, sectionKey);
-    if (typeof callback === "function") {
-      callback();
-    }
-  }
-
-  function queuePanelPostNavigationAction(panel, callback) {
-    if (!state.panelPostNavigationActions || typeof callback !== "function") return;
-    state.panelPostNavigationActions[panel] = callback;
-  }
-
-  function flushPanelPostNavigationAction(panel) {
-    if (!state.panelPostNavigationActions) return false;
-    var callback = state.panelPostNavigationActions[panel];
-    if (typeof callback !== "function") return false;
-
-    Object.keys(state.panelPostNavigationActions).forEach(function (panelKey) {
-      state.panelPostNavigationActions[panelKey] = null;
-    });
-    window.requestAnimationFrame(function () {
-      callback();
-    });
-    return true;
-  }
-
-  function clearPanelPostNavigationActions() {
-    if (!state.panelPostNavigationActions) return;
-    Object.keys(state.panelPostNavigationActions).forEach(function (panelKey) {
-      state.panelPostNavigationActions[panelKey] = null;
-    });
-  }
-
-  function waitNextFrame() {
-    return new Promise(function (resolve) {
-      window.requestAnimationFrame(function () {
-        window.requestAnimationFrame(resolve);
-      });
-    });
-  }
+  function waitNextFrame() { return N.waitNextFrame(); }
 
   function parseCssTimeToMs(value) { return U.parseCssTimeToMs(value); }
 
-  function hasTransitionDuration(element) {
-    if (!element || !element.isConnected) return false;
-    var style = window.getComputedStyle(element);
-    var durations = String(style.transitionDuration || "").split(",").map(parseCssTimeToMs);
-    var delays = String(style.transitionDelay || "").split(",").map(parseCssTimeToMs);
-    return durations.some(function (durationMs, index) {
-      var delayMs = delays[index] !== undefined ? delays[index] : (delays.length ? delays[delays.length - 1] : 0);
-      return durationMs + delayMs > 0;
-    });
-  }
+  function hasTransitionDuration(element) { return N.hasTransitionDuration(element); }
 
-  function getRunningAnimations(element, subtree) {
-    if (!element || typeof element.getAnimations !== "function") return [];
-    return element.getAnimations({ subtree: Boolean(subtree) }).filter(function (animation) {
-      if (!animation) return false;
-      return animation.playState === "running" || animation.playState === "pending";
-    });
-  }
+  function getRunningAnimations(element, subtree) { return N.getRunningAnimations(element, subtree); }
 
-  function waitForTransition(element, options) {
-    options = options || {};
-    var properties = Array.isArray(options.properties) ? options.properties : [];
-    if (!element || !element.isConnected || !hasTransitionDuration(element)) {
-      return waitNextFrame();
-    }
-    var initialValues = {};
-    if (properties.length) {
-      var initialStyle = window.getComputedStyle(element);
-      properties.forEach(function (propertyName) {
-        initialValues[propertyName] = initialStyle.getPropertyValue(propertyName);
-      });
-    }
+  function waitForTransition(element, options) { return N.waitForTransition(element, options); }
 
-    return new Promise(function (resolve) {
-      var isSettled = false;
-      var cleanup = function () {
-        element.removeEventListener("transitionend", onTransitionDone);
-        element.removeEventListener("transitioncancel", onTransitionDone);
-      };
-      var settle = function () {
-        if (isSettled) return;
-        isSettled = true;
-        cleanup();
-        resolve();
-      };
-      var onTransitionDone = function (event) {
-        if (!event || event.target !== element) return;
-        if (properties.length && properties.indexOf(event.propertyName) === -1) return;
-        settle();
-      };
-
-      element.addEventListener("transitionend", onTransitionDone);
-      element.addEventListener("transitioncancel", onTransitionDone);
-
-      waitNextFrame().then(function () {
-        if (isSettled) return;
-        if (typeof element.getAnimations === "function") {
-          if (!getRunningAnimations(element, false).length) {
-            settle();
-          }
-          return;
-        }
-
-        if (!properties.length) return;
-        var style = window.getComputedStyle(element);
-        var hasPropertyChange = properties.some(function (propertyName) {
-          return style.getPropertyValue(propertyName) !== initialValues[propertyName];
-        });
-        if (!hasPropertyChange) {
-          settle();
-        }
-      });
-    });
-  }
-
-  function waitForAnimation(element, options) {
-    options = options || {};
-    if (!element || !element.isConnected) {
-      return waitNextFrame();
-    }
-    if (typeof element.getAnimations !== "function") {
-      return waitForTransition(element, options);
-    }
-
-    return waitNextFrame().then(function () {
-      var activeAnimations = getRunningAnimations(element, options.subtree === true);
-      if (!activeAnimations.length) return null;
-      return Promise.all(activeAnimations.map(function (animation) {
-        return animation.finished.catch(function () {
-          return null;
-        });
-      }));
-    });
-  }
+  function waitForAnimation(element, options) { return N.waitForAnimation(element, options); }
 
   function getCommandPaletteItems() {
     if (!elements.commandPaletteList) return [];
@@ -1218,90 +1008,10 @@
     }
   }
 
-  function createNavigationTimelineCancelError() {
-    var error = new Error("Navigation timeline cancelled");
-    error.cancelled = true;
-    return error;
-  }
-
-  function isNavigationTimelineCurrent(timelineToken) {
-    return (
-      Number(timelineToken) > 0 &&
-      state.navigationTimelineActiveToken === timelineToken &&
-      state.navigationTimelineToken === timelineToken
-    );
-  }
-
-  function assertNavigationTimelineActive(timelineToken) {
-    if (!isNavigationTimelineCurrent(timelineToken)) {
-      throw createNavigationTimelineCancelError();
-    }
-  }
-
-  async function runNavigationTimeline(steps, options) {
-    options = options || {};
-    var normalizedSteps = Array.isArray(steps) ? steps.slice() : [];
-    var previousToken = state.navigationTimelineActiveToken;
-
-    state.navigationTimelineToken += 1;
-    var timelineToken = state.navigationTimelineToken;
-    state.navigationTimelineActiveToken = timelineToken;
-
-    if (previousToken && previousToken !== timelineToken && DEBUG_NAVIGATION) {
-      console.debug("[TIMELINE] cancel previous #" + previousToken);
-    }
-
-    if (DEBUG_NAVIGATION) {
-      console.debug("[TIMELINE] start #" + timelineToken + (options.label ? " (" + options.label + ")" : ""));
-    }
-
-    try {
-      for (var stepIndex = 0; stepIndex < normalizedSteps.length; stepIndex += 1) {
-        assertNavigationTimelineActive(timelineToken);
-        var stepEntry = normalizedSteps[stepIndex];
-        var stepName = "step-" + (stepIndex + 1);
-        var stepRunner = null;
-
-        if (typeof stepEntry === "function") {
-          stepRunner = stepEntry;
-        } else if (stepEntry && typeof stepEntry.run === "function") {
-          stepRunner = stepEntry.run;
-          if (stepEntry.name) {
-            stepName = stepEntry.name;
-          }
-        }
-
-        if (!stepRunner) continue;
-        if (DEBUG_NAVIGATION) {
-          console.debug("[TIMELINE] step: " + stepName);
-        }
-        await stepRunner({
-          token: timelineToken,
-          assertActive: function () {
-            assertNavigationTimelineActive(timelineToken);
-          }
-        });
-        assertNavigationTimelineActive(timelineToken);
-      }
-
-      if (DEBUG_NAVIGATION) {
-        console.debug("[TIMELINE] done #" + timelineToken);
-      }
-      return { cancelled: false, token: timelineToken };
-    } catch (error) {
-      if (error && error.cancelled) {
-        if (DEBUG_NAVIGATION) {
-          console.debug("[TIMELINE] cancelled #" + timelineToken);
-        }
-        return { cancelled: true, token: timelineToken };
-      }
-      throw error;
-    } finally {
-      if (state.navigationTimelineActiveToken === timelineToken) {
-        state.navigationTimelineActiveToken = 0;
-      }
-    }
-  }
+  function createNavigationTimelineCancelError() { return N.createNavigationTimelineCancelError(); }
+  function isNavigationTimelineCurrent(timelineToken) { return N.isNavigationTimelineCurrent(state, timelineToken); }
+  function assertNavigationTimelineActive(timelineToken) { return N.assertNavigationTimelineActive(state, timelineToken); }
+  function runNavigationTimeline(steps, options) { return N.runNavigationTimeline(state, steps, options); }
 
   /* ===========================
      ACCORDION MOTION
