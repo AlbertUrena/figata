@@ -1,0 +1,248 @@
+# AGENTS.md
+
+> **Read this file first before any work in this repository.**
+
+## Project Overview
+
+**Figata** is a restaurant website for an Italian pizza & wine restaurant in Santo Domingo, Dominican Republic. The project has two main systems:
+
+1. **Public website** — A static HTML/CSS/JS site served by Netlify. Customers see the menu, homepage, and restaurant info.
+2. **Admin panel** — A custom single-page application at `/admin/app/` used by staff to manage menu items, ingredients, categories, homepage content, and publish changes.
+
+Both systems share a **data layer** (JSON files in `data/`) and are connected through a **publish pipeline** (Netlify serverless function that commits data changes via Git).
+
+| Aspect | Details |
+|--------|---------|
+| Language | Vanilla JavaScript (no TypeScript, no framework) |
+| Styling | Vanilla CSS |
+| Build | No build step for production; dev server via `npm run dev` |
+| Hosting | Netlify (static site + serverless functions) |
+| Auth | Netlify Identity (admin panel only) |
+| Tests | Validation scripts only (`npm run validate:*`); no unit test suite |
+
+---
+
+## Repository Map
+
+```
+website-figata/
+├── AGENTS.md                  ← You are here
+├── index.html                 ← Public site (single-page, ~3,500 lines)
+├── styles.css                 ← Public site styles (~2,600 lines)
+├── js/                        ← Public site JavaScript (9 scripts)
+│   ├── home-config.js            Fetches data/home.json, renders homepage sections
+│   ├── mas-pedidas.js            Menu rendering engine (largest: 34KB)
+│   ├── restaurant-config.js      Restaurant info (hours, address, phone)
+│   ├── testimonials.js           Testimonials carousel
+│   ├── events-tabs.js            Events section tabs
+│   ├── feature-tabs.js           Feature highlights tabs
+│   ├── navbar-collapse.js        Mobile navbar behavior
+│   ├── reload-cover.js           Page reload overlay
+│   └── home-lazy-images.js       Lazy image loading
+├── data/                      ← Shared data layer (9 JSON files)
+│   ├── menu.json                 Menu items grouped by section
+│   ├── categories.json           Category ordering and visibility
+│   ├── ingredients.json          Ingredient catalog, icons, tags, allergens
+│   ├── availability.json         Per-item availability status
+│   ├── home.json                 Homepage configuration (hero, featured, events, etc.)
+│   ├── restaurant.json           Restaurant metadata
+│   ├── media.json                Per-item media variants (card, modal, hover)
+│   ├── media-report.json         Media audit report (generated)
+│   └── media-variants.json       Media variant specifications
+├── admin/
+│   ├── app/                   ← Admin panel SPA
+│   │   ├── index.html            Admin HTML shell (~1,100 lines)
+│   │   ├── app.js                Main application logic (~9,765 lines)
+│   │   ├── modules/              13 extracted modules (see admin doc)
+│   │   └── styles/               Admin-specific CSS
+│   └── cms/                   ← Netlify CMS config (rarely used)
+├── shared/                    ← Validation contracts (used by admin + publish)
+│   ├── ingredients-contract.js   Ingredient data validation
+│   └── categories-contract.js    Category data validation
+├── netlify/
+│   └── functions/
+│       └── publish.js         ← Serverless function: commits data via Git
+├── scripts/                   ← Dev tools and validation scripts
+│   ├── dev-server.js             Local dev server with media endpoint
+│   ├── validate-ingredients.js   Validates ingredients.json
+│   ├── validate-categories.js    Validates categories.json
+│   ├── validate_home_json.js     Validates home.json
+│   ├── validate_media_json.js    Validates media.json
+│   ├── validate_restaurant_json.js Validates restaurant.json
+│   ├── check_admin_ui.js         Checks admin UI element IDs
+│   └── dynamic_probe.js          Runtime analysis tool
+├── assets/                    ← Static assets (images, icons, SVGs)
+│   ├── menu/                     Menu item images (WebP) + placeholders
+│   ├── Ingredients/              Ingredient icon images (WebP)
+│   ├── home/                     Homepage assets
+│   ├── reviews/                  Testimonial avatars
+│   └── svg-icons/                UI icon SVGs
+├── src/                       ← Source generators (build-time)
+│   ├── data/                     Data generator scripts (menu, home, media, etc.)
+│   └── ui/                       UI component generators
+├── netlify.toml               ← Deploy config + cache headers
+├── package.json               ← npm scripts (dev, validate:*)
+└── docs/                      ← Documentation
+    └── developers/               Developer/agent documentation
+```
+
+---
+
+## Documentation Index
+
+| Document | Path | Read when... |
+|----------|------|-------------|
+| **This file** | `AGENTS.md` | Always. Start every task here. |
+| **Data Layer** | `docs/developers/data/data-layer.md` | Working with JSON data, schemas, contracts, or validation |
+| **Admin Panel** | `docs/developers/admin/admin-panel.md` | Working on the admin SPA, its modules, state, routing, or editors |
+| **Admin Modules** | `docs/developers/admin/admin-modules.md` | Modifying a specific admin module, understanding module APIs or ctx shapes |
+| **Admin State** | `docs/developers/admin/admin-state.md` | Debugging state issues, understanding element/view refs, or adding state properties |
+| **Admin Routing** | `docs/developers/admin/admin-routing.md` | Modifying routes, adding panels, debugging navigation or transitions |
+| **Admin Editors** | `docs/developers/admin/admin-editors.md` | Working on editor panels (menu browser, item editor, homepage, ingredients, categories) |
+| **Public Site** | `docs/developers/public/public-site.md` | Working on `index.html`, `styles.css`, `js/`, or public-facing layout/content |
+| **Homepage Config** | `docs/developers/public/homepage-config.md` | Modifying how `data/home.json` drives the public homepage sections |
+| **Menu System** | `docs/developers/public/menu-system.md` | Working on featured items display, preview overlay, or menu card rendering |
+| **Assets & Media** | `docs/developers/public/assets-and-media.md` | Adding images/icons, working with `data/media.json`, or debugging broken media |
+| **Publish Pipeline** | `docs/developers/workflows/publish-pipeline.md` | Working on publishing, Netlify function, or deploy flow |
+| **Build & Scripts** | `docs/developers/tooling/build-and-scripts.md` | Dev server, validation scripts, npm commands, or Netlify config |
+
+---
+
+## Task Routing
+
+Use this table to find the right starting point for common tasks:
+
+| Task type | Start with | Key files |
+|-----------|-----------|-----------|
+| Fix public site layout/content | `index.html`, `styles.css` | Relevant `js/` script |
+| Modify homepage sections | `js/home-config.js` | `data/home.json`, `docs/developers/data/data-layer.md` |
+| Change public menu display | `js/mas-pedidas.js` | `data/menu.json`, `data/media.json` |
+| Edit restaurant info | `js/restaurant-config.js` | `data/restaurant.json` |
+| Work on admin panel | `docs/developers/admin/admin-panel.md` | `admin/app/app.js`, `admin/app/modules/` |
+| Fix admin sidebar / navigation | `admin/app/modules/sidebar.js` | `navigation.js`, `accordion.js`, `panels.js` |
+| Change admin command palette | `admin/app/modules/command-palette.js` | — |
+| Modify data schemas | `docs/developers/data/data-layer.md` | `data/*.json`, `shared/*.js` |
+| Change publish behavior | `netlify/functions/publish.js` | `admin/app/modules/publish.js` |
+| Run validation | `package.json` scripts | `scripts/validate-*.js` |
+| Run dev server | `npm run dev` | `scripts/dev-server.js` |
+| Add/modify admin CSS | `admin/app/styles/` | `admin/app/index.html` |
+| Work with ingredient icons | `data/ingredients.json` | `assets/Ingredients/`, `admin/app/modules/render-utils.js` |
+
+---
+
+## Development Workflow
+
+### Local Development
+
+```bash
+npm run dev
+```
+
+This starts a local server (`scripts/dev-server.js`) that:
+- Serves the site at `http://127.0.0.1:5173`
+- Provides a media listing endpoint at `/_api/media-options`
+- Supports the admin panel at `/admin/app/`
+
+### Admin Dev Login
+
+Open the admin panel with the dev auth bypass:
+```
+http://127.0.0.1:5173/admin/app/?devAuthBypass=1
+```
+
+### Validation Scripts
+
+```bash
+npm run validate:home          # validates data/home.json
+npm run validate:media         # validates data/media.json
+npm run validate:ingredients   # validates data/ingredients.json
+npm run validate:categories    # validates data/categories.json
+npm run validate:restaurant    # validates data/restaurant.json
+npm run check:admin-ui         # checks admin UI element IDs
+```
+
+### Deployment
+
+The site deploys automatically via Netlify on push to the main branch. No build step is required for the public site. The admin panel's publish function commits data changes back to the repository via the Netlify serverless function at `netlify/functions/publish.js`.
+
+---
+
+## Conventions and Patterns
+
+### Admin Module Pattern
+
+The admin panel uses a **namespace + IIFE + delegate** pattern:
+
+1. Each module is wrapped in an IIFE and registers itself on `window.FigataAdmin`:
+   ```js
+   (function () {
+     var ns = window.FigataAdmin = window.FigataAdmin || {};
+     // ... functions ...
+     ns.moduleName = { exportedFunction: exportedFunction };
+   })();
+   ```
+
+2. In `app.js`, the original function is replaced with a **delegate** that calls the module:
+   ```js
+   var MOD = window.FigataAdmin.moduleName;
+   function originalFunctionName(args) { return MOD.exportedFunction(ctx, args); }
+   ```
+
+3. Functions that need access to `state`, `elements`, or other functions receive a **ctx object** built by a lazy factory (e.g., `_sbCtx()`, `_acCtx()`, `_pnCtx()`).
+
+### Script Loading Order
+
+Admin modules must load **before** `app.js` in `admin/app/index.html`. Current order:
+`constants` → `utils` → `auth` → `drafts` → `publish` → `navigation` → `command-palette` → `sidebar` → `accordion` → `panels` → `render-utils` → `menu-media` → `dashboard` → `app.js`
+
+### Data Conventions
+
+- Menu images use **WebP** format, stored in `assets/menu/`
+- Placeholder images are **SVG**, stored in `assets/menu/placeholders/`
+- Ingredient icons are **WebP**, stored in `assets/Ingredients/`
+- All data files use `version` and usually `schema` fields for forward compatibility
+- Currency is `DOP` (Dominican Peso)
+
+---
+
+## Documentation Maintenance Rules
+
+> **These rules are mandatory. Every agent and developer must follow them.**
+
+### When to update documentation
+
+Documentation **must** be updated whenever a change affects:
+
+| Change type | Update required |
+|-------------|----------------|
+| New file or directory added | Update `AGENTS.md` repo map + relevant domain doc |
+| File deleted or renamed | Update `AGENTS.md` repo map + all docs referencing it |
+| New admin module extracted | Update `docs/developers/admin/admin-panel.md` module table |
+| Admin state shape changed | Update `docs/developers/admin/admin-panel.md` state section |
+| New route added to admin | Update `docs/developers/admin/admin-panel.md` routing section |
+| Data JSON schema changed | Update `docs/developers/data/data-layer.md` |
+| New validation contract | Update `docs/developers/data/data-layer.md` |
+| New npm script added | Update `AGENTS.md` workflow section |
+| Publish pipeline changed | Update relevant publish doc when it exists |
+| Script loading order changed | Update `AGENTS.md` conventions section |
+
+### How to update
+
+1. **Before completing any task**, check whether your changes require documentation updates.
+2. If a doc is found to be inaccurate during work, **fix it as part of the current task**.
+3. Prefer **stable references** (file paths, function names, module names). Never use line numbers in docs.
+4. Keep docs **concise and structured**. Use tables and bullet points, not long prose.
+
+### If in doubt, update
+
+A small unnecessary update costs far less than stale documentation.
+
+---
+
+## Known Technical Debt
+
+- `admin/app/app.js` is still ~9,765 lines. A multi-phase refactor (Plan 2, Phases 13-22) is planned but not yet started.
+- No automated test suite exists. Validation scripts check data schemas only.
+- Some admin functions have high coupling to DOM elements and cross-cutting state.
+- The public `index.html` is ~3,500 lines of inline HTML with no templating.
+- Existing `docs/admin-ui-standards.md` and `docs/cms-publish.md` are legacy files that will be superseded in Phase B.
