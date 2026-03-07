@@ -887,81 +887,12 @@
   function triggerToggleChange(control, checked, event, fallbackOnChange) { return RU.triggerToggleChange(control, checked, event, fallbackOnChange); }
   function bindToggles(rootEl, options) { return RU.bindToggles(rootEl, options); }
 
-  function resolveMenuMediaPath(rawPath, allowFallback) {
-    var candidates = buildMenuMediaCandidates(rawPath);
-    if (!candidates.length) return "";
-
-    var knownPaths = state.indexes && state.indexes.menuMediaPathSet ? state.indexes.menuMediaPathSet : {};
-    for (var i = 0; i < candidates.length; i += 1) {
-      var candidate = candidates[i];
-      if (knownPaths[candidate]) {
-        return candidate;
-      }
-    }
-
-    if (!allowFallback) return "";
-
-    for (var j = 0; j < candidates.length; j += 1) {
-      var fallbackCandidate = candidates[j];
-      if (isMenuMediaPath(fallbackCandidate) || isSvgPlaceholderPath(fallbackCandidate)) {
-        return fallbackCandidate;
-      }
-    }
-
-    return candidates[0];
-  }
-
-  function setImageElementSourceWithFallback(imageElement, path, fallbackPath) {
-    if (!imageElement) return;
-
-    var fallback = resolveAssetPath(fallbackPath || MENU_PLACEHOLDER_IMAGE);
-    var resolved = resolveAssetPath(path || fallbackPath || MENU_PLACEHOLDER_IMAGE);
-
-    imageElement.dataset.fallbackApplied = "0";
-    imageElement.onerror = function () {
-      if (imageElement.dataset.fallbackApplied === "1") return;
-      imageElement.dataset.fallbackApplied = "1";
-      imageElement.src = fallback;
-    };
-
-    imageElement.src = resolved;
-  }
-
-  async function fetchLocalMenuMediaPaths() {
-    if (!isLocalDevHost()) return [];
-
-    try {
-      var response = await fetch(LOCAL_MEDIA_OPTIONS_ENDPOINT, { cache: "no-store" });
-      if (!response.ok) return [];
-
-      var payload = await response.json();
-      var paths = Array.isArray(payload && payload.paths) ? payload.paths : [];
-      var unique = [];
-      paths.forEach(function (path) {
-        var normalized = toRelativeAssetPath(path);
-        if (!normalized) return;
-        if (!isMenuMediaPath(normalized) && !isSvgPlaceholderPath(normalized)) return;
-        if (unique.includes(normalized)) return;
-        unique.push(normalized);
-      });
-
-      unique.sort(function (a, b) {
-        return normalizeText(a).localeCompare(normalizeText(b));
-      });
-
-      return unique;
-    } catch (_error) {
-      return [];
-    }
-  }
-
-  async function fetchJson(endpoint) {
-    var response = await fetch(endpoint, { cache: "no-store" });
-    if (!response.ok) {
-      throw new Error(endpoint + " devolvio " + response.status);
-    }
-    return response.json();
-  }
+  // --- Menu media helpers (from modules/menu-media.js) ---
+  var MM = window.FigataAdmin.menuMedia;
+  function resolveMenuMediaPath(rawPath, allowFallback) { return MM.resolveMenuMediaPath({ state: state }, rawPath, allowFallback); }
+  function setImageElementSourceWithFallback(imageElement, path, fallbackPath) { return MM.setImageElementSourceWithFallback(imageElement, path, fallbackPath); }
+  function fetchLocalMenuMediaPaths() { return MM.fetchLocalMenuMediaPaths(); }
+  function fetchJson(endpoint) { return MM.fetchJson(endpoint); }
 
   function ensureMenuDraft() {
     if (!state.drafts.menu) {
@@ -4028,93 +3959,38 @@
     setMenuBrowserStatus("Edicion cancelada.");
   }
 
-  function updateDashboardMetrics() {
-    if (!state.hasDataLoaded) {
-      elements.metricMenu.textContent = "-";
-      elements.metricCategories.textContent = "-";
-      elements.metricAvailability.textContent = "-";
-      elements.metricHome.textContent = "-";
-      if (elements.metricIngredients) {
-        elements.metricIngredients.textContent = "-";
-      }
-      elements.metricRestaurant.textContent = "-";
-      elements.metricMedia.textContent = "-";
-      return;
-    }
-
-    var menuItemsCount = getAllMenuItems().length;
-    elements.metricMenu.textContent = menuItemsCount + " items";
-
-    ensureCategoriesDraft();
-    var categoriesDraft = state.drafts.categories || {};
-    var categoriesList = Array.isArray(categoriesDraft.categories) ? categoriesDraft.categories : [];
-    var hiddenCategoriesCount = categoriesList.filter(function (category) {
-      return !resolveCategoryVisibility(category);
-    }).length;
-    var categoriesValidation = validateCategoriesDraftData(categoriesDraft);
-    state.categoriesEditor.validationReport = categoriesValidation;
-    var categoriesAlertsCount = categoriesValidation.errors.length + categoriesValidation.warnings.length;
-    elements.metricCategories.textContent = categoriesList.length + " categorias" +
-      (hiddenCategoriesCount ? (" · " + hiddenCategoriesCount + " hidden") : "") +
-      (categoriesAlertsCount ? (" · " + categoriesAlertsCount + " alertas") : "");
-
-    var menuItemIds = new Set(getAllMenuItems().map(function (entry) {
-      return entry.item.id;
-    }));
-
-    var availabilityItems = (state.drafts.availability && state.drafts.availability.items) || [];
-    var matchingAvailability = availabilityItems.filter(function (availabilityEntry) {
-      return menuItemIds.has(availabilityEntry.itemId);
-    });
-    var availableCount = matchingAvailability.filter(function (availabilityEntry) {
-      return Boolean(availabilityEntry.available);
-    }).length;
-
-    elements.metricAvailability.textContent =
-      availableCount + " / " + matchingAvailability.length + " disponibles";
-
-    ensureHomeDraft();
-    ensureIngredientsDraft();
-    var homeData = state.drafts.home || {};
-    var featuredCount =
-      homeData.popular && Array.isArray(homeData.popular.featuredIds)
-        ? homeData.popular.featuredIds.length
-        : 0;
-    var heroTitle = homeData.hero && homeData.hero.title ? homeData.hero.title : "Sin hero";
-    elements.metricHome.textContent = featuredCount + " featured · " + heroTitle;
-
-    if (elements.metricIngredients) {
-      var ingredientsDraft = state.drafts.ingredients || {};
-      var ingredientsCount = Object.keys((ingredientsDraft.ingredients || {})).length;
-      var ingredientsValidation = validateIngredientsDraftData(ingredientsDraft);
-      state.ingredientsEditor.validationReport = ingredientsValidation;
-      var alertsCount = ingredientsValidation.errors.length + ingredientsValidation.warnings.length;
-      elements.metricIngredients.textContent = ingredientsCount + " ingredientes" +
-        (alertsCount ? (" · " + alertsCount + " alertas") : "");
-    }
-
-    var restaurant = state.data.restaurant || {};
-    var phone = restaurant.phone || "Sin telefono";
-    var city = restaurant.address && restaurant.address.city ? restaurant.address.city : "";
-    elements.metricRestaurant.textContent = city ? phone + " · " + city : phone;
-
-    var mediaItems = (state.data.media && state.data.media.items) || {};
-    elements.metricMedia.textContent = Object.keys(mediaItems).length + " media items";
+  // --- Dashboard (from modules/dashboard.js) ---
+  var DB = window.FigataAdmin.dashboard;
+  function _dbCtx() {
+    return {
+      state: state,
+      elements: {
+        metricMenu: elements.metricMenu,
+        metricCategories: elements.metricCategories,
+        metricAvailability: elements.metricAvailability,
+        metricHome: elements.metricHome,
+        metricIngredients: elements.metricIngredients,
+        metricRestaurant: elements.metricRestaurant,
+        metricMedia: elements.metricMedia
+      },
+      getAllMenuItems: getAllMenuItems,
+      ensureCategoriesDraft: ensureCategoriesDraft,
+      ensureHomeDraft: ensureHomeDraft,
+      ensureIngredientsDraft: ensureIngredientsDraft,
+      validateCategoriesDraftData: validateCategoriesDraftData,
+      validateIngredientsDraftData: validateIngredientsDraftData,
+      resolveCategoryVisibility: resolveCategoryVisibility,
+      navigateToRoute: navigateToRoute,
+      setActivePanel: setActivePanel,
+      setMenuBrowserStatus: setMenuBrowserStatus,
+      setItemEditorStatus: setItemEditorStatus,
+      setHomeEditorStatus: setHomeEditorStatus,
+      setIngredientsEditorStatus: setIngredientsEditorStatus,
+      setCategoriesEditorStatus: setCategoriesEditorStatus
+    };
   }
-
-  function openDashboard(options) {
-    options = options || {};
-    if (!options.skipRoute) {
-      navigateToRoute("/dashboard", { replace: Boolean(options.replaceRoute) });
-      return;
-    }
-    setActivePanel("dashboard");
-    setMenuBrowserStatus("");
-    setItemEditorStatus("");
-    setHomeEditorStatus("");
-    setIngredientsEditorStatus("");
-    setCategoriesEditorStatus("");
-  }
+  function updateDashboardMetrics() { return DB.updateDashboardMetrics(_dbCtx()); }
+  function openDashboard(options) { return DB.openDashboard(_dbCtx(), options); }
 
   function openMenuBrowser(options) {
     options = options || {};
