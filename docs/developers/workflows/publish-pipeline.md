@@ -48,7 +48,7 @@ The pipeline supports two publish targets:
       ↓
 3. POST /.netlify/functions/publish
       Headers: Authorization: Bearer <JWT>
-      Body: { menu, availability, home, ingredients, categories, media, target }
+      Body: { menu, availability, home, ingredients, categories, restaurant, media, target }
       ↓
 4. netlify/functions/publish.js — handler(event, context)
       ├── Auth check: context.clientContext.user must exist
@@ -120,12 +120,13 @@ sequenceDiagram
 | `data/home.json` | `home` | Optional | None |
 | `data/ingredients.json` | `ingredients` | Optional | `shared/ingredients-contract.js` |
 | `data/categories.json` | `categories` | Optional | `shared/categories-contract.js` |
-| `data/media.json` | `media` | Optional | None |
+| `data/restaurant.json` | `restaurant` | Optional | `shared/restaurant-contract.js` |
+| `data/media.json` | `media` | Optional | `shared/media-contract.js` |
 
 ### Key Behaviors
 
 - **Diff-based commits:** Each file is read from GitHub before writing. If the normalized JSON is identical, the file is skipped. Only changed files are committed.
-- **Sequential commits:** Files are committed one at a time in order: menu → availability → home → ingredients → categories → media. Each commit gets its own message (e.g., `"CMS: update menu (production)"`).
+- **Sequential commits:** Files are committed one at a time in order: menu → availability → home → ingredients → categories → restaurant → media. Each commit gets its own message (e.g., `"CMS: update menu (production)"`).
 - **Preview branch auto-creation:** If the preview branch doesn't exist, it's created from the production branch's HEAD.
 - **Rate limiting:** 30-second window per user. Returns HTTP 429 with `retryAfterSeconds` if exceeded.
 - **SHA tracking:** Each file read returns its current SHA. This SHA is passed to the write operation to prevent concurrent overwrite conflicts.
@@ -149,12 +150,12 @@ sequenceDiagram
 The single exported function. Steps:
 
 1. **Guard:** If `state.isPublishing`, exit
-2. **Guard:** All 5 draft types must be non-null
+2. **Guard:** All required draft types must be non-null (menu, availability, home, ingredients, categories, restaurant, media)
 3. **Normalize:** Calls `ctx.normalizeIngredientsAliasesPayload()` to clean up aliases before sending
 4. **Confirm:** For production target, shows `window.confirm()` dialog
 5. **Auth:** Gets Netlify Identity user and extracts JWT via `user.jwt()`
-6. **Validate:** Runs `validateIngredientsDraftData()` and `validateCategoriesDraftData()`
-7. **Lock UI:** Disables all publish buttons across all panels (item editor, home editor, ingredients editor)
+6. **Validate:** Runs ingredient/category validators plus `restaurant-contract.js` and `media-contract.js`
+7. **Lock UI:** Disables all publish buttons across all native panels, including Restaurant and Media when those buttons are mounted
 8. **Fetch:** POST to `/.netlify/functions/publish`
 9. **Handle response:** Success, skip (no changes), or error messages
 10. **Restore UI:** Re-enables buttons after 1.8s timeout
@@ -185,6 +186,8 @@ Both the client (pre-publish) and server (during publish) use the same contract 
 |----------|------|----------|
 | Ingredients | `shared/ingredients-contract.js` | `validateIngredientsContract(payload, options)` |
 | Categories | `shared/categories-contract.js` | `validateCategoriesContract(payload, options)` |
+| Restaurant | `shared/restaurant-contract.js` | `validateRestaurantContract(payload, options)` |
+| Media | `shared/media-contract.js` | `validateMediaContract(payload)` |
 
 Both return `{ errors: [...], warnings: [...] }`. If `errors.length > 0`, publish is blocked.
 

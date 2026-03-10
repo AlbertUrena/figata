@@ -40,6 +40,11 @@ The admin panel uses **hash-based routing**. Routing and navigation involve thre
 | `#/menu/item/new` | `menu-item-new` | — |
 | `#/menu/item/:id` | `menu-item` | `{ itemId }` |
 | `#/menu/:categoryId` | `menu-section` | `{ categoryId }` |
+| `#/restaurant` | `restaurant` | — |
+| `#/media` | `media` | — |
+| `#/media/item/:itemId` | `media-item` | `{ itemId }` |
+| `#/pages` | `pages` | — |
+| `#/pages/:sectionId` | `pages-section` | `{ sectionId }` |
 | `#/home` or `#/homepage` | `homepage` | — |
 | `#/home/:sectionId` or `#/homepage/:sectionId` | `homepage-section` | `{ sectionId }` |
 | `#/ingredients` | `ingredients` | `{ tab: "ingredients" }` |
@@ -66,6 +71,11 @@ The admin panel uses **hash-based routing**. Routing and navigation involve thre
 | `menu-item` | Item editor | `openItemEditor(itemId)` | — |
 | `menu-item-new` | Item editor | `openNewItemEditor()` | — |
 | `menu-section` | Menu browser | `openMenuBrowser()` | Scroll to category anchor |
+| `restaurant` | Restaurant editor | `openRestaurantEditor()` | — |
+| `media` | Media editor | `openMediaEditor()` | — |
+| `media-item` | Media editor | `openMediaEditor({ itemId })` | Opens dedicated item subview |
+| `pages` | Pages editor | `openPagesEditor()` | — |
+| `pages-section` | Pages editor | `openPagesEditor()` | Scroll to section |
 | `homepage` | Home editor | `openHomePageEditor()` | — |
 | `homepage-section` | Home editor | `openHomePageEditor()` | Scroll to section |
 | `ingredients` | Ingredients editor | `openIngredientsEditor()` | Selects tab |
@@ -198,6 +208,9 @@ Each panel with scrollable sections has its own scroll spy:
 | Home editor | `homeActiveSectionId`, `homeAnchorTargets`, `homeScrollSpyFrame` | Home section IDs |
 | Ingredients editor | `ingredientsAnchorTargets`, `ingredientsScrollSpyFrame` | Ingredient category sections |
 | Categories editor | `categoriesAnchorTargets`, `categoriesScrollSpyFrame` | Category card sections |
+| Pages editor | `pagesActiveSectionId`, `pagesAnchorTargets`, `pagesScrollSpyFrame` | Pages scaffold sections (`menu`, `nosotros`, `ubicacion`, `contacto`, `eventos`, `faqs`) |
+| Restaurant editor | `restaurantActiveSectionId`, `restaurantAnchorTargets`, `restaurantScrollSpyFrame` | Native Restaurant section cards |
+| Media editor | `mediaActiveSectionId`, `mediaAnchorTargets`, `mediaScrollSpyFrame` | Main Media sections (`browser`, `homepage`, `brand`, `defaults`, `integrity`) |
 
 Scroll spy works by:
 1. **Syncing anchors:** Building a list of element+offset targets (`syncVisiblePanelAnchors`)
@@ -220,6 +233,8 @@ openMenuBrowser({ skipRoute: true });
 ```
 
 Actions are flushed (executed and cleared) by `flushPanelPostNavigationAction()` during the panel transition's final step. Only one action can be queued per panel at a time.
+
+Pages, Restaurant, and Media use the same queue for sidebar-accordion section clicks: the panel opens first, then the queued action scrolls to the target native section and forces the correct active highlight.
 
 ---
 

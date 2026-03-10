@@ -114,20 +114,28 @@
 
   // --- Functions that need accordion element refs (ctx.elements) ---
 
+  function getAccordionElements(ctx) {
+    return [
+      ctx.elements.sidebarMenuAccordion,
+      ctx.elements.sidebarHomepageAccordion,
+      ctx.elements.sidebarPagesAccordion,
+      ctx.elements.sidebarIngredientsAccordion,
+      ctx.elements.sidebarCategoriesAccordion,
+      ctx.elements.sidebarRestaurantAccordion,
+      ctx.elements.sidebarMediaAccordion
+    ].filter(Boolean);
+  }
+
   function clearAllSidebarAccordionOpeningMotions(ctx) {
-    [ctx.elements.sidebarMenuAccordion, ctx.elements.sidebarHomepageAccordion, ctx.elements.sidebarIngredientsAccordion, ctx.elements.sidebarCategoriesAccordion]
-      .filter(Boolean)
-      .forEach(function (accordionElement) {
-        clearSidebarAccordionOpeningMotion(accordionElement);
-      });
+    getAccordionElements(ctx).forEach(function (accordionElement) {
+      clearSidebarAccordionOpeningMotion(accordionElement);
+    });
   }
 
   function syncAllSidebarAccordionCategoryHeights(ctx) {
-    [ctx.elements.sidebarMenuAccordion, ctx.elements.sidebarHomepageAccordion, ctx.elements.sidebarIngredientsAccordion, ctx.elements.sidebarCategoriesAccordion]
-      .filter(Boolean)
-      .forEach(function (accordionElement) {
-        syncSidebarAccordionCategoryHeights(accordionElement);
-      });
+    getAccordionElements(ctx).forEach(function (accordionElement) {
+      syncSidebarAccordionCategoryHeights(accordionElement);
+    });
   }
 
   function showMenuAccordion(ctx, show) {
@@ -138,6 +146,10 @@
     setSidebarAccordionElementState(ctx.elements.sidebarHomepageAccordion, show);
   }
 
+  function showPagesAccordion(ctx, show) {
+    setSidebarAccordionElementState(ctx.elements.sidebarPagesAccordion, show);
+  }
+
   function showIngredientsAccordion(ctx, show) {
     setSidebarAccordionElementState(ctx.elements.sidebarIngredientsAccordion, show);
   }
@@ -146,13 +158,24 @@
     setSidebarAccordionElementState(ctx.elements.sidebarCategoriesAccordion, show);
   }
 
+  function showRestaurantAccordion(ctx, show) {
+    setSidebarAccordionElementState(ctx.elements.sidebarRestaurantAccordion, show);
+  }
+
+  function showMediaAccordion(ctx, show) {
+    setSidebarAccordionElementState(ctx.elements.sidebarMediaAccordion, show);
+  }
+
   function getSidebarAccordionKeyForPanel(ctx, panel) {
     if (panel === "menu-browser" || panel === "menu-item") return "menu";
     if (panel === "home-editor") return "homepage";
+    if (panel === "pages-editor") return "pages";
     if (panel === "ingredients-editor") {
       return ctx.normalizeIngredientsTab(ctx.state.ingredientsEditor.tab) === "icons" ? "" : "ingredients";
     }
     if (panel === "categories-editor") return "categories";
+    if (panel === "restaurant-editor") return "restaurant";
+    if (panel === "media-editor") return "media";
     return "";
   }
 
@@ -163,11 +186,20 @@
     if (ctx.elements.sidebarHomepageAccordion && ctx.elements.sidebarHomepageAccordion.classList.contains("is-open")) {
       return "homepage";
     }
+    if (ctx.elements.sidebarPagesAccordion && ctx.elements.sidebarPagesAccordion.classList.contains("is-open")) {
+      return "pages";
+    }
     if (ctx.elements.sidebarIngredientsAccordion && ctx.elements.sidebarIngredientsAccordion.classList.contains("is-open")) {
       return "ingredients";
     }
     if (ctx.elements.sidebarCategoriesAccordion && ctx.elements.sidebarCategoriesAccordion.classList.contains("is-open")) {
       return "categories";
+    }
+    if (ctx.elements.sidebarRestaurantAccordion && ctx.elements.sidebarRestaurantAccordion.classList.contains("is-open")) {
+      return "restaurant";
+    }
+    if (ctx.elements.sidebarMediaAccordion && ctx.elements.sidebarMediaAccordion.classList.contains("is-open")) {
+      return "media";
     }
     return "";
   }
@@ -175,8 +207,11 @@
   function getSidebarAccordionElementByKey(ctx, accordionKey) {
     if (accordionKey === "menu") return ctx.elements.sidebarMenuAccordion || null;
     if (accordionKey === "homepage") return ctx.elements.sidebarHomepageAccordion || null;
+    if (accordionKey === "pages") return ctx.elements.sidebarPagesAccordion || null;
     if (accordionKey === "ingredients") return ctx.elements.sidebarIngredientsAccordion || null;
     if (accordionKey === "categories") return ctx.elements.sidebarCategoriesAccordion || null;
+    if (accordionKey === "restaurant") return ctx.elements.sidebarRestaurantAccordion || null;
+    if (accordionKey === "media") return ctx.elements.sidebarMediaAccordion || null;
     return null;
   }
 
@@ -189,8 +224,11 @@
     var normalizedKey = nextAccordionKey || "";
     showMenuAccordion(ctx, normalizedKey === "menu");
     showHomepageAccordion(ctx, normalizedKey === "homepage");
+    showPagesAccordion(ctx, normalizedKey === "pages");
     showIngredientsAccordion(ctx, normalizedKey === "ingredients");
     showCategoriesAccordion(ctx, normalizedKey === "categories");
+    showRestaurantAccordion(ctx, normalizedKey === "restaurant");
+    showMediaAccordion(ctx, normalizedKey === "media");
     ctx.state.sidebarAccordionOpenKey = normalizedKey;
   }
 
@@ -295,8 +333,11 @@
     syncAllSidebarAccordionCategoryHeights: syncAllSidebarAccordionCategoryHeights,
     showMenuAccordion: showMenuAccordion,
     showHomepageAccordion: showHomepageAccordion,
+    showPagesAccordion: showPagesAccordion,
     showIngredientsAccordion: showIngredientsAccordion,
     showCategoriesAccordion: showCategoriesAccordion,
+    showRestaurantAccordion: showRestaurantAccordion,
+    showMediaAccordion: showMediaAccordion,
     getSidebarAccordionKeyForPanel: getSidebarAccordionKeyForPanel,
     getSidebarOpenAccordionKeyFromDom: getSidebarOpenAccordionKeyFromDom,
     getSidebarAccordionElementByKey: getSidebarAccordionElementByKey,

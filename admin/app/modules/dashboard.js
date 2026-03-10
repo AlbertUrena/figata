@@ -73,12 +73,14 @@
         (alertsCount ? (" · " + alertsCount + " alertas") : "");
     }
 
-    var restaurant = ctx.state.data.restaurant || {};
-    var phone = restaurant.phone || "Sin telefono";
-    var city = restaurant.address && restaurant.address.city ? restaurant.address.city : "";
+    var restaurant = ctx.state.drafts.restaurant || ctx.state.data.restaurant || {};
+    var contact = restaurant.contact || {};
+    var location = restaurant.location || {};
+    var phone = contact.phone || "Sin telefono";
+    var city = location.city || "";
     ctx.elements.metricRestaurant.textContent = city ? phone + " · " + city : phone;
 
-    var mediaItems = (ctx.state.data.media && ctx.state.data.media.items) || {};
+    var mediaItems = ((ctx.state.drafts.media || ctx.state.data.media || {}).items) || {};
     ctx.elements.metricMedia.textContent = Object.keys(mediaItems).length + " media items";
   }
 
@@ -94,6 +96,15 @@
     ctx.setHomeEditorStatus("");
     ctx.setIngredientsEditorStatus("");
     ctx.setCategoriesEditorStatus("");
+    if (typeof ctx.setRestaurantEditorStatus === "function") {
+      ctx.setRestaurantEditorStatus("");
+    }
+    if (typeof ctx.setMediaEditorStatus === "function") {
+      ctx.setMediaEditorStatus("");
+    }
+    if (typeof ctx.setPagesEditorStatus === "function") {
+      ctx.setPagesEditorStatus("");
+    }
   }
 
   ns.dashboard = {

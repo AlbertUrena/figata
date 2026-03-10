@@ -29,6 +29,8 @@
     LOCAL_DRAFTS_HOME_KEY: "figata_admin_drafts_home",
     LOCAL_DRAFTS_INGREDIENTS_KEY: "figata_admin_drafts_ingredients",
     LOCAL_DRAFTS_CATEGORIES_KEY: "figata_admin_drafts_categories",
+    LOCAL_DRAFTS_RESTAURANT_KEY: "figata_admin_drafts_restaurant",
+    LOCAL_DRAFTS_MEDIA_KEY: "figata_admin_drafts_media",
     LOCAL_DRAFTS_FLAG_KEY: "figata_admin_has_drafts",
     LOCAL_SAVE_DRAFTS_ENDPOINT: "/__local/save-drafts",
     MENU_MODAL_PLACEHOLDER_IMAGE: "assets/menu/placeholders/modal.svg",

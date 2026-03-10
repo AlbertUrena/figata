@@ -32,6 +32,8 @@ Working copies of data being edited. Lazily initialized from `state.data`.
 | `home` | `object | null` | `ensureHomeDraft()` | Home editor |
 | `ingredients` | `object | null` | `ensureIngredientsDraft()` | Ingredients editor |
 | `categories` | `object | null` | `ensureCategoriesDraft()` | Categories editor |
+| `restaurant` | `object | null` | `ensureRestaurantDraft()` | Restaurant editor |
+| `media` | `object | null` | `ensureMediaDraft()` | Media editor |
 
 Drafts are persisted to `localStorage` for crash recovery via `FigataAdmin.drafts`.
 
@@ -62,7 +64,7 @@ Derived indexes built from loaded data. Rebuild on data load.
 | `isDataLoading` | `boolean` | True while fetching data from endpoints |
 | `hasDataLoaded` | `boolean` | True after initial data fetch completes |
 | `isPublishing` | `boolean` | True during publish operation |
-| `currentPanel` | `string` | Active panel ID (target of the last navigation) |
+| `currentPanel` | `string` | Active panel ID (target of the last navigation, including `pages-editor`, `restaurant-editor`, and `media-editor`) |
 | `visiblePanel` | `string` | Currently visible panel (may differ during transitions) |
 
 ### `state` — Sidebar
@@ -70,7 +72,7 @@ Derived indexes built from loaded data. Rebuild on data load.
 | Property | Type | Purpose |
 |----------|------|---------|
 | `sidebarCollapsed` | `boolean` | Whether sidebar is in collapsed (narrow) mode |
-| `sidebarAccordionOpenKey` | `string` | Key of the currently expanded sidebar accordion (`""`, `"menu"`, `"homepage"`, `"ingredients"`, `"categories"`) |
+| `sidebarAccordionOpenKey` | `string` | Key of the currently expanded sidebar accordion (`""`, `"menu"`, `"homepage"`, `"pages"`, `"ingredients"`, `"categories"`, `"restaurant"`, `"media"`) |
 | `sidebarAccordionTransitionToken` | `number` | Counter for cancelling stale accordion animations |
 | `sidebarIndicatorSyncFrame` | `number` | rAF ID for pending indicator position sync |
 | `sidebarCollapseSyncToken` | `number` | Timer ID for pending sidebar collapse sync |
@@ -102,8 +104,11 @@ Callback queues executed after a panel transition completes.
 {
   "menu-browser": null | function,
   "home-editor": null | function,
+  "pages-editor": null | function,
   "ingredients-editor": null | function,
-  "categories-editor": null | function
+  "categories-editor": null | function,
+  "restaurant-editor": null | function,
+  "media-editor": null | function
 }
 ```
 
@@ -113,8 +118,11 @@ Callback queues executed after a panel transition completes.
 |-----------|-------|
 | `menuActiveAnchor` `{ categoryId, subcategoryId }`, `menuViewGroups`, `menuAnchorTargets`, `menuScrollSpyFrame` | Menu browser |
 | `homeActiveSectionId`, `homeAnchorTargets`, `homeScrollSpyFrame` | Home editor |
+| `pagesActiveSectionId`, `pagesAnchorTargets`, `pagesScrollSpyFrame` | Pages editor |
 | `ingredientsAnchorTargets`, `ingredientsScrollSpyFrame` | Ingredients editor |
 | `categoriesAnchorTargets`, `categoriesScrollSpyFrame` | Categories editor |
+| `restaurantActiveSectionId`, `restaurantAnchorTargets`, `restaurantScrollSpyFrame` | Restaurant editor |
+| `mediaActiveSectionId`, `mediaAnchorTargets`, `mediaScrollSpyFrame` | Media editor |
 
 ### `state.itemEditor`
 Item editor sub-state.
@@ -204,8 +212,11 @@ The `views` object maps panel names to their container DOM elements:
 | `menuBrowserPanel` | `menu-browser-panel` | Menu browser panel |
 | `menuItemPanel` | `menu-item-panel` | Item editor panel |
 | `homeEditorPanel` | `home-editor-panel` | Homepage editor panel |
+| `pagesEditorPanel` | `pages-editor-panel` | Pages editor panel |
 | `ingredientsEditorPanel` | `ingredients-editor-panel` | Ingredients editor panel |
 | `categoriesEditorPanel` | `categories-editor-panel` | Categories editor panel |
+| `restaurantEditorPanel` | `restaurant-editor-panel` | Restaurant editor panel |
+| `mediaEditorPanel` | `media-editor-panel` | Media editor panel |
 
 Panel visibility is controlled by `applyPanelVisibility()` in the panels module.
 
@@ -215,8 +226,8 @@ Panel visibility is controlled by `applyPanelVisibility()` in the panels module.
 
 The `elements` object references ~100 DOM elements by ID. Organized by functional area:
 
-### Sidebar (17 refs)
-`sidebar`, `sidebarNav`, `sidebarNavActiveIndicator`, `sidebarHomeButton`, `sidebarToggleButton`, `sidebarSearchButton`, `sidebarNavDashboard`, `sidebarNavMenu`, `sidebarNavHomepage`, `sidebarNavIngredients`, `sidebarNavCategories`, `sidebarMenuAccordion`, `sidebarHomepageAccordion`, `sidebarIngredientsAccordion`, `sidebarCategoriesAccordion`, `sidebarUserButton`, `sidebarUserMenu`, `sidebarUserMenuName`, `sidebarUserMenuEmail`
+### Sidebar (~23 refs)
+`sidebar`, `sidebarNav`, `sidebarNavActiveIndicator`, `sidebarHomeButton`, `sidebarToggleButton`, `sidebarSearchButton`, `sidebarNavDashboard`, `sidebarNavMenu`, `sidebarNavHomepage`, `sidebarNavPages`, `sidebarNavIngredients`, `sidebarNavCategories`, `sidebarNavRestaurant`, `sidebarNavMedia`, `sidebarMenuAccordion`, `sidebarHomepageAccordion`, `sidebarPagesAccordion`, `sidebarIngredientsAccordion`, `sidebarCategoriesAccordion`, `sidebarRestaurantAccordion`, `sidebarMediaAccordion`, `sidebarUserButton`, `sidebarUserMenu`, `sidebarUserMenuName`, `sidebarUserMenuEmail`
 
 ### Command Palette (6 refs)
 `commandPaletteShell`, `commandPaletteOverlay`, `commandPaletteDialog`, `commandPaletteInput`, `commandPaletteList`, `commandPaletteLive`
@@ -227,8 +238,8 @@ The `elements` object references ~100 DOM elements by ID. Organized by functiona
 ### Dashboard (10 refs)
 `dataStatus`, `draftsBanner`, `draftsBannerText`, `draftsBannerExportButton`, `draftsBannerClearButton`, `refreshDataButton`, `dashboardContent`, `metricMenu`, `metricCategories`, `metricAvailability`, `metricHome`, `metricIngredients`, `metricRestaurant`, `metricMedia`
 
-### Panel Opener Buttons (4 refs)
-`openMenuBrowserButton`, `openHomepageEditorButton`, `openIngredientsEditorButton`, `openCategoriesEditorButton`
+### Panel Opener Buttons (7 refs)
+`openMenuBrowserButton`, `openHomepageEditorButton`, `openPagesEditorButton`, `openIngredientsEditorButton`, `openCategoriesEditorButton`, `openRestaurantEditorButton`, `openMediaEditorButton`
 
 ### Menu Browser (4 refs)
 `menuBrowserStatus`, `menuBrowserGroups`, `menuClearFilterButton`, `menuNewItemButton`

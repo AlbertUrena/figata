@@ -15,26 +15,35 @@
       return;
     }
 
+    ctx.ensureMediaStore();
+    if (typeof ctx.ensureRestaurantDraft === "function") {
+      ctx.ensureRestaurantDraft();
+    }
+    if (typeof ctx.ensureMediaDraft === "function") {
+      ctx.ensureMediaDraft();
+    }
+    ctx.ensureIngredientsDraft();
+    ctx.ensureCategoriesDraft();
+
     if (
       !ctx.state.drafts.menu ||
       !ctx.state.drafts.availability ||
       !ctx.state.drafts.home ||
       !ctx.state.drafts.ingredients ||
-      !ctx.state.drafts.categories
+      !ctx.state.drafts.categories ||
+      !ctx.state.drafts.restaurant ||
+      !ctx.state.drafts.media
     ) {
       ctx.setCurrentEditorStatus("Error: no hay drafts para publicar.");
       return;
     }
-    ctx.ensureMediaStore();
-    ctx.ensureIngredientsDraft();
-    ctx.ensureCategoriesDraft();
     var normalizedIngredientsResult = ctx.normalizeIngredientsAliasesPayload(ctx.state.drafts.ingredients, { mutate: false });
     var ingredientsPayloadForPublish = normalizedIngredientsResult.payload;
     var ingredientsNormalizationReport = normalizedIngredientsResult.report;
 
     if (publishTarget === "production") {
       var confirmed = window.confirm(
-        "Esto dispara deploy de produccion. ¿Seguro?\n\nPresiona OK para Confirmar."
+        "Esto dispara el deploy de produccion. ¿Seguro?\n\nPresiona OK para confirmar."
       );
       if (!confirmed) {
         return;
@@ -47,7 +56,7 @@
       : null;
     if (!user || typeof user.jwt !== "function") {
       ctx.setCurrentEditorStatus("Inicia sesión para publicar.");
-      ctx.setDataStatus("Publish blocked: Inicia sesión para publicar.");
+      ctx.setDataStatus("Publicacion bloqueada: inicia sesion para publicar.");
       return;
     }
 
@@ -61,7 +70,7 @@
       ctx.setCurrentEditorStatus(
         "No se puede publicar: corrige " + ingredientsValidation.errors.length + " errores en Ingredients."
       );
-      ctx.setDataStatus("Publish blocked: Ingredients tiene errores de validacion.");
+      ctx.setDataStatus("Publicacion bloqueada: Ingredients tiene errores de validacion.");
       return;
     }
 
@@ -75,43 +84,69 @@
       ctx.setCurrentEditorStatus(
         "No se puede publicar: corrige " + categoriesValidation.errors.length + " errores en Categories."
       );
-      ctx.setDataStatus("Publish blocked: Categories tiene errores de validacion.");
+      ctx.setDataStatus("Publicacion bloqueada: Categories tiene errores de validacion.");
       return;
     }
 
+    if (window.FigataRestaurantContract) {
+      var restaurantValidation = window.FigataRestaurantContract.validateRestaurantContract(ctx.state.drafts.restaurant);
+      if (restaurantValidation.errors.length) {
+        ctx.setCurrentEditorStatus(
+          "No se puede publicar: corrige " + restaurantValidation.errors.length + " errores en Restaurant."
+        );
+        ctx.setDataStatus("Publicacion bloqueada: Restaurant tiene errores de validacion.");
+        return;
+      }
+    }
+
+    if (window.FigataMediaContract) {
+      var mediaValidation = window.FigataMediaContract.validateMediaContract(ctx.state.drafts.media);
+      if (mediaValidation.errors.length) {
+        ctx.setCurrentEditorStatus(
+          "No se puede publicar: corrige " + mediaValidation.errors.length + " errores en Media."
+        );
+        ctx.setDataStatus("Publicacion bloqueada: Media tiene errores de validacion.");
+        return;
+      }
+    }
+
     ctx.state.isPublishing = true;
-    var publishButtonSets = ctx.publishButtonSets;
+    var publishButtonSets = typeof ctx.getAllPublishButtonSets === "function"
+      ? ctx.getAllPublishButtonSets()
+      : ctx.publishButtonSets;
 
     publishButtonSets.forEach(function (buttonSet) {
       if (!buttonSet.preview && !buttonSet.production) return;
       if (buttonSet.preview && !buttonSet.preview.getAttribute("data-default-label")) {
-        buttonSet.preview.setAttribute("data-default-label", "Publish Preview");
+        buttonSet.preview.setAttribute("data-default-label", "Publicar preview");
       }
       if (buttonSet.production && !buttonSet.production.getAttribute("data-default-label")) {
-        buttonSet.production.setAttribute("data-default-label", "Publish Production");
+        buttonSet.production.setAttribute("data-default-label", "Publicar produccion");
       }
       if (buttonSet.preview) buttonSet.preview.disabled = true;
       if (buttonSet.production) buttonSet.production.disabled = true;
     });
 
-    var currentButtons = publishButtonSets[0];
-    if (ctx.state.currentPanel === "home-editor") {
-      currentButtons = publishButtonSets[1];
-    } else if (ctx.state.currentPanel === "ingredients-editor") {
-      currentButtons = publishButtonSets[2];
+    var currentButtons = typeof ctx.getPublishButtonSet === "function"
+      ? ctx.getPublishButtonSet(ctx.state.currentPanel)
+      : null;
+    if (!currentButtons) {
+      currentButtons = publishButtonSets[0] || null;
     }
-    var activeButton = publishTarget === "production" ? currentButtons.production : currentButtons.preview;
+    var activeButton = currentButtons
+      ? (publishTarget === "production" ? currentButtons.production : currentButtons.preview)
+      : null;
 
     if (activeButton) {
       activeButton.textContent = publishTarget === "production"
-        ? "Publishing production..."
-        : "Publishing preview...";
+        ? "Publicando produccion..."
+        : "Publicando preview...";
     }
 
     ctx.setCurrentEditorStatus(
-      publishTarget === "production" ? "Publishing production..." : "Publishing preview..."
+      publishTarget === "production" ? "Publicando produccion..." : "Publicando preview..."
     );
-    ctx.setDataStatus(publishTarget === "production" ? "Publishing production..." : "Publishing preview...");
+    ctx.setDataStatus(publishTarget === "production" ? "Publicando produccion..." : "Publicando preview...");
 
     try {
       var token = await user.jwt();
@@ -127,7 +162,8 @@
           home: ctx.state.drafts.home,
           ingredients: ingredientsPayloadForPublish,
           categories: ctx.state.drafts.categories,
-          media: ctx.state.data.media,
+          restaurant: ctx.state.drafts.restaurant,
+          media: ctx.state.drafts.media,
           target: publishTarget
         })
       });
@@ -151,8 +187,8 @@
 
       if (payload && payload.skipped) {
         var skippedLabel = publishTarget === "production"
-          ? "No changes (production)"
-          : "No changes (preview)";
+          ? "Sin cambios (produccion)"
+          : "Sin cambios (preview)";
         var skippedAliasSuffix =
           ingredientsNormalizationReport.changedAliases || ingredientsNormalizationReport.droppedAliases
             ? " · aliases normalizados: " +
@@ -162,12 +198,12 @@
               " removidos"
             : "";
         ctx.setCurrentEditorStatus(skippedLabel);
-        ctx.setDataStatus("No changes to publish (" + publishTarget + ")." + skippedAliasSuffix);
+        ctx.setDataStatus("No hay cambios para publicar (" + publishTarget + ")." + skippedAliasSuffix);
         if (activeButton) activeButton.textContent = skippedLabel;
       } else {
         var successLabel = publishTarget === "production"
-          ? "Published ✓ (production)"
-          : "Published ✓ (preview)";
+          ? "Publicado ✓ (produccion)"
+          : "Publicado ✓ (preview)";
         var successAliasSuffix =
           ingredientsNormalizationReport.changedAliases || ingredientsNormalizationReport.droppedAliases
             ? " · aliases normalizados: " +
@@ -186,10 +222,10 @@
       }
     } catch (error) {
       var message = error && error.message ? error.message : "Unknown error";
-      ctx.setCurrentEditorStatus("Publish failed");
-      ctx.setDataStatus("Publish failed: " + message);
+      ctx.setCurrentEditorStatus("Publicacion fallida");
+      ctx.setDataStatus("Publicacion fallida: " + message);
       if (activeButton) {
-        activeButton.textContent = "Publish failed";
+        activeButton.textContent = "Publicacion fallida";
       }
     } finally {
       ctx.state.isPublishing = false;
@@ -200,11 +236,11 @@
       window.setTimeout(function () {
         publishButtonSets.forEach(function (buttonSet) {
           if (buttonSet.preview) {
-            buttonSet.preview.textContent = buttonSet.preview.getAttribute("data-default-label") || "Publish Preview";
+            buttonSet.preview.textContent = buttonSet.preview.getAttribute("data-default-label") || "Publicar preview";
           }
           if (buttonSet.production) {
             buttonSet.production.textContent =
-              buttonSet.production.getAttribute("data-default-label") || "Publish Production";
+              buttonSet.production.getAttribute("data-default-label") || "Publicar produccion";
           }
         });
       }, 1800);

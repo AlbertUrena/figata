@@ -9,7 +9,12 @@ Y mantiene el payload base:
 ```json
 {
   "menu": {},
-  "availability": {}
+  "availability": {},
+  "home": {},
+  "ingredients": {},
+  "categories": {},
+  "restaurant": {},
+  "media": {}
 }
 ```
 
@@ -40,5 +45,5 @@ Si `target` no se envía, la function usa `preview` por defecto para evitar gast
 
 - Auth requerida por Netlify Identity (`context.clientContext.user`).
 - No se permite branch arbitraria desde cliente (solo `preview` o `production`).
-- Guard de no-op: si no hay cambios reales en `menu`/`availability`, responde `skipped` y no crea commit.
+- Guard de no-op: si no hay cambios reales en los payloads, responde `skipped` y no crea commit.
 - Rate limit simple por usuario: max 1 publish cada ~30s.

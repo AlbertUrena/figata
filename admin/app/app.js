@@ -50,7 +50,9 @@
       availability: null,
       home: null,
       ingredients: null,
-      categories: null
+      categories: null,
+      restaurant: null,
+      media: null
     },
     indexes: {
       categoryList: [],
@@ -92,8 +94,11 @@
     panelPostNavigationActions: {
       "menu-browser": null,
       "home-editor": null,
+      "pages-editor": null,
       "ingredients-editor": null,
-      "categories-editor": null
+      "categories-editor": null,
+      "restaurant-editor": null,
+      "media-editor": null
     },
     menuActiveAnchor: {
       categoryId: "",
@@ -105,10 +110,19 @@
     homeActiveSectionId: "",
     homeAnchorTargets: [],
     homeScrollSpyFrame: 0,
+    pagesActiveSectionId: "",
+    pagesAnchorTargets: [],
+    pagesScrollSpyFrame: 0,
     ingredientsAnchorTargets: [],
     ingredientsScrollSpyFrame: 0,
     categoriesAnchorTargets: [],
     categoriesScrollSpyFrame: 0,
+    restaurantActiveSectionId: "",
+    restaurantAnchorTargets: [],
+    restaurantScrollSpyFrame: 0,
+    mediaActiveSectionId: "",
+    mediaAnchorTargets: [],
+    mediaScrollSpyFrame: 0,
     itemEditor: {
       isOpen: false,
       isNew: false,
@@ -164,8 +178,11 @@
     menuBrowserPanel: document.getElementById("menu-browser-panel"),
     menuItemPanel: document.getElementById("menu-item-panel"),
     homeEditorPanel: document.getElementById("home-editor-panel"),
+    pagesEditorPanel: document.getElementById("pages-editor-panel"),
     ingredientsEditorPanel: document.getElementById("ingredients-editor-panel"),
-    categoriesEditorPanel: document.getElementById("categories-editor-panel")
+    categoriesEditorPanel: document.getElementById("categories-editor-panel"),
+    restaurantEditorPanel: document.getElementById("restaurant-editor-panel"),
+    mediaEditorPanel: document.getElementById("media-editor-panel")
   };
 
   var elements = {
@@ -178,12 +195,18 @@
     sidebarNavDashboard: document.getElementById("sidebar-nav-dashboard"),
     sidebarNavMenu: document.getElementById("sidebar-nav-menu"),
     sidebarNavHomepage: document.getElementById("sidebar-nav-homepage"),
+    sidebarNavPages: document.getElementById("sidebar-nav-pages"),
     sidebarNavIngredients: document.getElementById("sidebar-nav-ingredients"),
     sidebarNavCategories: document.getElementById("sidebar-nav-categories"),
+    sidebarNavRestaurant: document.getElementById("sidebar-nav-restaurant"),
+    sidebarNavMedia: document.getElementById("sidebar-nav-media"),
     sidebarMenuAccordion: document.getElementById("sidebar-menu-accordion"),
     sidebarHomepageAccordion: document.getElementById("sidebar-homepage-accordion"),
+    sidebarPagesAccordion: document.getElementById("sidebar-pages-accordion"),
     sidebarIngredientsAccordion: document.getElementById("sidebar-ingredients-accordion"),
     sidebarCategoriesAccordion: document.getElementById("sidebar-categories-accordion"),
+    sidebarRestaurantAccordion: document.getElementById("sidebar-restaurant-accordion"),
+    sidebarMediaAccordion: document.getElementById("sidebar-media-accordion"),
     sidebarUserButton: document.getElementById("sidebar-user-button"),
     sidebarUserMenu: document.getElementById("sidebar-user-menu"),
     sidebarUserMenuName: document.getElementById("sidebar-user-menu-name"),
@@ -201,8 +224,11 @@
     refreshDataButton: document.getElementById("refresh-data-button"),
     openMenuBrowserButton: document.getElementById("open-menu-browser-button"),
     openHomepageEditorButton: document.getElementById("open-homepage-editor-button"),
+    openPagesEditorButton: document.getElementById("open-pages-editor-button"),
     openIngredientsEditorButton: document.getElementById("open-ingredients-editor-button"),
     openCategoriesEditorButton: document.getElementById("open-categories-editor-button"),
+    openRestaurantEditorButton: document.getElementById("open-restaurant-editor-button"),
+    openMediaEditorButton: document.getElementById("open-media-editor-button"),
 
     sessionName: document.getElementById("session-name"),
     sessionEmail: document.getElementById("session-email"),
@@ -423,6 +449,25 @@
     elements.categoriesEditorStatus.textContent = message || "";
   }
 
+  function setRestaurantEditorStatus(message) {
+    var statusElement = document.getElementById("restaurant-editor-status");
+    if (!statusElement) return;
+    statusElement.textContent = message || "";
+    statusElement.style.color = "";
+  }
+
+  function setMediaEditorStatus(message) {
+    var statusElement = document.getElementById("media-editor-status");
+    if (!statusElement) return;
+    statusElement.textContent = message || "";
+  }
+
+  function setPagesEditorStatus(message) {
+    var statusElement = document.getElementById("pages-editor-status");
+    if (!statusElement) return;
+    statusElement.textContent = message || "";
+  }
+
   function setCurrentEditorStatus(message) {
     if (state.currentPanel === "home-editor") {
       setHomeEditorStatus(message);
@@ -434,6 +479,18 @@
     }
     if (state.currentPanel === "categories-editor") {
       setCategoriesEditorStatus(message);
+      return;
+    }
+    if (state.currentPanel === "restaurant-editor") {
+      setRestaurantEditorStatus(message);
+      return;
+    }
+    if (state.currentPanel === "media-editor") {
+      setMediaEditorStatus(message);
+      return;
+    }
+    if (state.currentPanel === "pages-editor") {
+      setPagesEditorStatus(message);
       return;
     }
     setItemEditorStatus(message);
@@ -457,19 +514,30 @@
       ensureAvailabilityDraft: ensureAvailabilityDraft,
       ensureHomeDraft: ensureHomeDraft,
       ensureIngredientsDraft: ensureIngredientsDraft,
-      ensureCategoriesDraft: ensureCategoriesDraft
+      ensureCategoriesDraft: ensureCategoriesDraft,
+      ensureRestaurantDraft: ensureRestaurantDraft,
+      ensureMediaDraft: ensureMediaDraft,
     });
   }
 
   function downloadJsonFile(filename, payload) { return U.downloadJsonFile(filename, payload); }
 
   function exportCurrentDrafts() {
+    ensureMenuDraft();
+    ensureAvailabilityDraft();
+    ensureHomeDraft();
+    ensureIngredientsDraft();
+    ensureCategoriesDraft();
+    ensureRestaurantDraft();
+    ensureMediaDraft();
     if (
       !state.drafts.menu ||
       !state.drafts.availability ||
       !state.drafts.home ||
       !state.drafts.ingredients ||
-      !state.drafts.categories
+      !state.drafts.categories ||
+      !state.drafts.restaurant ||
+      !state.drafts.media
     ) {
       setCurrentEditorStatus("No hay drafts cargados para exportar.");
       return;
@@ -489,7 +557,8 @@
     downloadJsonFile("home.updated.json", state.drafts.home);
     downloadJsonFile("ingredients.updated.json", ingredientsExportPayload);
     downloadJsonFile("categories.updated.json", state.drafts.categories);
-    downloadJsonFile("media.updated.json", state.data.media);
+    downloadJsonFile("restaurant.updated.json", state.drafts.restaurant);
+    downloadJsonFile("media.updated.json", state.drafts.media);
 
     if (elements.dataStatus) {
       var validationSuffix = ingredientsValidation.errors.length
@@ -508,7 +577,7 @@
           " removidos)";
       }
       setDataStatus(
-        "JSON exportados: menu.updated.json + availability.updated.json + home.updated.json + ingredients.updated.json + categories.updated.json + media.updated.json" +
+        "JSON exportados: menu.updated.json + availability.updated.json + home.updated.json + ingredients.updated.json + categories.updated.json + restaurant.updated.json + media.updated.json" +
           validationSuffix +
           categoriesValidationSuffix +
           aliasNormalizationSuffix
@@ -523,7 +592,9 @@
       !state.drafts.availability ||
       !state.drafts.home ||
       !state.drafts.ingredients ||
-      !state.drafts.categories
+      !state.drafts.categories ||
+      !state.drafts.restaurant ||
+      !state.drafts.media
     ) return;
     ensureMediaStore();
 
@@ -539,7 +610,8 @@
           home: state.drafts.home,
           ingredients: state.drafts.ingredients,
           categories: state.drafts.categories,
-          media: state.data.media
+          restaurant: state.drafts.restaurant,
+          media: state.drafts.media
         })
       });
 
@@ -554,27 +626,75 @@
         state.data.home = deepClone(state.drafts.home);
         state.data.ingredients = deepClone(state.drafts.ingredients);
         state.data.categories = deepClone(state.drafts.categories);
+        state.data.restaurant = deepClone(state.drafts.restaurant);
+        state.data.media = deepClone(state.drafts.media);
       }
 
-      setDataStatus("Guardado local en /data (menu, availability, home, ingredients, categories, media).");
+      setDataStatus("Guardado local en /data (menu, availability, home, ingredients, categories, restaurant, media).");
     } catch (error) {
       var message = error && error.message ? error.message : "Unknown error";
       setDataStatus("Error guardando JSON local: " + message + " (usa Exportar JSON).");
     }
   }
 
+  function getPublishButtonSet(panel) {
+    if (panel === "menu-item") {
+      return {
+        preview: elements.itemPublishPreviewButton,
+        production: elements.itemPublishProductionButton
+      };
+    }
+    if (panel === "home-editor") {
+      return {
+        preview: elements.homePublishPreviewButton,
+        production: elements.homePublishProductionButton
+      };
+    }
+    if (panel === "ingredients-editor") {
+      return {
+        preview: elements.ingredientsPublishPreviewButton,
+        production: elements.ingredientsPublishProductionButton
+      };
+    }
+    if (panel === "restaurant-editor") {
+      return {
+        preview: document.getElementById("restaurant-publish-preview-button"),
+        production: document.getElementById("restaurant-publish-production-button")
+      };
+    }
+    if (panel === "media-editor") {
+      return {
+        preview: document.getElementById("media-publish-preview-button"),
+        production: document.getElementById("media-publish-production-button")
+      };
+    }
+    return null;
+  }
+
+  function getAllPublishButtonSets() {
+    return [
+      getPublishButtonSet("menu-item"),
+      getPublishButtonSet("home-editor"),
+      getPublishButtonSet("ingredients-editor"),
+      getPublishButtonSet("restaurant-editor"),
+      getPublishButtonSet("media-editor")
+    ].filter(function (buttonSet) {
+      return buttonSet && (buttonSet.preview || buttonSet.production);
+    });
+  }
+
   // --- Publish (from modules/publish.js) ---
   async function publishChanges(target) {
     return window.FigataAdmin.publish.publishChanges(target, {
       state: state,
-      publishButtonSets: [
-        { preview: elements.itemPublishPreviewButton, production: elements.itemPublishProductionButton },
-        { preview: elements.homePublishPreviewButton, production: elements.homePublishProductionButton },
-        { preview: elements.ingredientsPublishPreviewButton, production: elements.ingredientsPublishProductionButton }
-      ],
+      publishButtonSets: getAllPublishButtonSets(),
+      getPublishButtonSet: getPublishButtonSet,
+      getAllPublishButtonSets: getAllPublishButtonSets,
       setCurrentEditorStatus: setCurrentEditorStatus,
       setDataStatus: setDataStatus,
       ensureMediaStore: ensureMediaStore,
+      ensureMediaDraft: ensureMediaDraft,
+      ensureRestaurantDraft: ensureRestaurantDraft,
       ensureIngredientsDraft: ensureIngredientsDraft,
       ensureCategoriesDraft: ensureCategoriesDraft,
       normalizeIngredientsAliasesPayload: normalizeIngredientsAliasesPayload,
@@ -746,8 +866,11 @@
       elements: {
         sidebarMenuAccordion: elements.sidebarMenuAccordion,
         sidebarHomepageAccordion: elements.sidebarHomepageAccordion,
+        sidebarPagesAccordion: elements.sidebarPagesAccordion,
         sidebarIngredientsAccordion: elements.sidebarIngredientsAccordion,
         sidebarCategoriesAccordion: elements.sidebarCategoriesAccordion,
+        sidebarRestaurantAccordion: elements.sidebarRestaurantAccordion,
+        sidebarMediaAccordion: elements.sidebarMediaAccordion,
         sidebarNav: elements.sidebarNav,
         sidebarNavActiveIndicator: elements.sidebarNavActiveIndicator
       },
@@ -792,8 +915,11 @@
         sidebarNavDashboard: elements.sidebarNavDashboard,
         sidebarNavMenu: elements.sidebarNavMenu,
         sidebarNavHomepage: elements.sidebarNavHomepage,
+        sidebarNavPages: elements.sidebarNavPages,
         sidebarNavIngredients: elements.sidebarNavIngredients,
         sidebarNavCategories: elements.sidebarNavCategories,
+        sidebarNavRestaurant: elements.sidebarNavRestaurant,
+        sidebarNavMedia: elements.sidebarNavMedia,
         sidebarHomeButton: elements.sidebarHomeButton,
         sidebarNavActiveIndicator: elements.sidebarNavActiveIndicator
       },
@@ -824,12 +950,21 @@
       refreshHomeScrollAnchors: function () { refreshHomeScrollAnchors(); },
       updateHomeScrollSpy: function (f) { updateHomeScrollSpy(f); },
       requestHomeScrollSpyUpdate: function () { requestHomeScrollSpyUpdate(); },
+      refreshPagesScrollAnchors: function () { refreshPagesScrollAnchors(); },
+      updatePagesScrollSpy: function (f) { updatePagesScrollSpy(f); },
+      requestPagesScrollSpyUpdate: function () { requestPagesScrollSpyUpdate(); },
       refreshIngredientsScrollAnchors: function () { refreshIngredientsScrollAnchors(); },
       updateIngredientsScrollSpy: function (f) { updateIngredientsScrollSpy(f); },
       requestIngredientsScrollSpyUpdate: function () { requestIngredientsScrollSpyUpdate(); },
       refreshCategoriesScrollAnchors: function () { refreshCategoriesScrollAnchors(); },
       updateCategoriesScrollSpy: function (f) { updateCategoriesScrollSpy(f); },
-      requestCategoriesScrollSpyUpdate: function () { requestCategoriesScrollSpyUpdate(); }
+      requestCategoriesScrollSpyUpdate: function () { requestCategoriesScrollSpyUpdate(); },
+      refreshRestaurantScrollAnchors: function () { refreshRestaurantScrollAnchors(); },
+      updateRestaurantScrollSpy: function (f) { updateRestaurantScrollSpy(f); },
+      requestRestaurantScrollSpyUpdate: function () { requestRestaurantScrollSpyUpdate(); },
+      refreshMediaScrollAnchors: function () { refreshMediaScrollAnchors(); },
+      updateMediaScrollSpy: function (f) { updateMediaScrollSpy(f); },
+      requestMediaScrollSpyUpdate: function () { requestMediaScrollSpyUpdate(); }
     };
   }
   function getPanelScrollSpyAdapter(panel) { return PN.getPanelScrollSpyAdapter(_pnCtx(), panel); }
@@ -842,6 +977,101 @@
   function moveSidebarIndicatorForTimeline(options) { return PN.moveSidebarIndicatorForTimeline(_pnCtx(), options); }
   function runPanelTransition(fromPanel, toPanel) { return PN.runPanelTransition(_pnCtx(), fromPanel, toPanel); }
   function setActivePanel(panel) { return PN.setActivePanel(_pnCtx(), panel); }
+
+  // --- Restaurant Editor (delegated to modules/panels/restaurant-panel.js) ---
+  var REST = window.FigataAdmin.restaurantPanel;
+  function _restCtx() {
+    return {
+      state: state,
+      views: views,
+      ensureRestaurantDraft: ensureRestaurantDraft,
+      ensureDataLoaded: ensureDataLoaded,
+      setActivePanel: setActivePanel,
+      navigateToRoute: navigateToRoute,
+      setDataStatus: setDataStatus,
+      setMenuBrowserStatus: setMenuBrowserStatus,
+      setItemEditorStatus: setItemEditorStatus,
+      setHomeEditorStatus: setHomeEditorStatus,
+      setIngredientsEditorStatus: setIngredientsEditorStatus,
+      setCategoriesEditorStatus: setCategoriesEditorStatus,
+      setPagesEditorStatus: setPagesEditorStatus,
+      refreshRestaurantScrollAnchors: refreshRestaurantScrollAnchors,
+      updateRestaurantScrollSpy: updateRestaurantScrollSpy,
+      persistDraftsToLocalStorage: persistDraftsToLocalStorage,
+      exportCurrentDrafts: exportCurrentDrafts,
+      publishChanges: publishChanges
+    };
+  }
+  function openRestaurantEditor(options) {
+    if (!REST) return;
+    return REST.open(_restCtx(), options);
+  }
+
+  // --- Media Editor (delegated to modules/panels/media-panel.js) ---
+  var MEDIA = window.FigataAdmin.mediaPanel;
+  function _mediaCtx() {
+    return {
+      state: state,
+      views: views,
+      ensureMenuDraft: ensureMenuDraft,
+      ensureMediaStore: ensureMediaStore,
+      ensureMediaDraft: ensureMediaDraft,
+      ensureDataLoaded: ensureDataLoaded,
+      setActivePanel: setActivePanel,
+      navigateToRoute: navigateToRoute,
+      getAllMenuItems: getAllMenuItems,
+      getMediaDraft: getMediaDraft,
+      setMediaDraftUpdatedAt: setMediaDraftUpdatedAt,
+      persistDraftsToLocalStorage: persistDraftsToLocalStorage,
+      exportCurrentDrafts: exportCurrentDrafts,
+      publishChanges: publishChanges,
+      updateDashboardMetrics: updateDashboardMetrics,
+      setDataStatus: setDataStatus,
+      setMediaEditorStatus: setMediaEditorStatus,
+      setRestaurantEditorStatus: setRestaurantEditorStatus,
+      setMenuBrowserStatus: setMenuBrowserStatus,
+      setItemEditorStatus: setItemEditorStatus,
+      setHomeEditorStatus: setHomeEditorStatus,
+      setIngredientsEditorStatus: setIngredientsEditorStatus,
+      setCategoriesEditorStatus: setCategoriesEditorStatus,
+      setPagesEditorStatus: setPagesEditorStatus,
+      setActiveMediaSection: setActiveMediaSection,
+      refreshMediaScrollAnchors: refreshMediaScrollAnchors,
+      updateMediaScrollSpy: updateMediaScrollSpy
+    };
+  }
+  function openMediaEditor(options) {
+    if (!MEDIA) return;
+    return MEDIA.open(_mediaCtx(), options);
+  }
+
+  // --- Pages Editor (delegated to modules/panels/pages-panel.js) ---
+  var PAGES = window.FigataAdmin.pagesPanel;
+  function _pagesCtx() {
+    return {
+      state: state,
+      views: views,
+      ensureDataLoaded: ensureDataLoaded,
+      setActivePanel: setActivePanel,
+      navigateToRoute: navigateToRoute,
+      setMenuBrowserStatus: setMenuBrowserStatus,
+      setItemEditorStatus: setItemEditorStatus,
+      setHomeEditorStatus: setHomeEditorStatus,
+      setIngredientsEditorStatus: setIngredientsEditorStatus,
+      setCategoriesEditorStatus: setCategoriesEditorStatus,
+      setRestaurantEditorStatus: setRestaurantEditorStatus,
+      setMediaEditorStatus: setMediaEditorStatus,
+      setPagesEditorStatus: setPagesEditorStatus,
+      renderSidebarPagesAccordion: renderSidebarPagesAccordion,
+      setActivePagesSection: setActivePagesSection,
+      refreshPagesScrollAnchors: refreshPagesScrollAnchors,
+      updatePagesScrollSpy: updatePagesScrollSpy
+    };
+  }
+  function openPagesEditor(options) {
+    if (!PAGES) return;
+    return PAGES.open(_pagesCtx(), options);
+  }
 
   function hashHasAuthToken() {
     return /(?:^#|[&#])(invite_token|recovery_token|confirmation_token)=/i.test(window.location.hash);
@@ -1007,6 +1237,16 @@
     }
 
     return safeEntry;
+  }
+
+  function ensureRestaurantDraft() {
+    if (!state.drafts.restaurant || typeof state.drafts.restaurant !== "object") {
+      state.drafts.restaurant = deepClone((state.data && state.data.restaurant) || {});
+    }
+
+    if (!state.drafts.restaurant || typeof state.drafts.restaurant !== "object") {
+      state.drafts.restaurant = {};
+    }
   }
 
   function ensureCategoriesDraft() {
@@ -1698,16 +1938,31 @@
 
     if (!state.data.media || typeof state.data.media !== "object") {
       state.data.media = {
-        version: 1,
-        schema: "figata.media.v1",
+        version: 2,
+        schema: "figata.media.v2",
+        updatedAt: new Date().toISOString(),
+        updatedBy: "admin-app",
+        notes: "",
         items: {},
         defaults: {
           card: MENU_PLACEHOLDER_IMAGE,
           modal: MENU_MODAL_PLACEHOLDER_IMAGE,
           hover: MENU_PLACEHOLDER_IMAGE,
           alt: "Imagen del producto Figata"
+        },
+        global: {
+          homepage: {},
+          branding: {},
+          utility: {}
         }
       };
+    }
+
+    if (
+      window.FigataMediaContract &&
+      typeof window.FigataMediaContract.migrateToV2 === "function"
+    ) {
+      state.data.media = window.FigataMediaContract.migrateToV2(state.data.media);
     }
 
     if (!state.data.media.defaults || typeof state.data.media.defaults !== "object") {
@@ -1730,17 +1985,60 @@
     if (!state.data.media.items || typeof state.data.media.items !== "object") {
       state.data.media.items = {};
     }
+
+    if (!state.data.media.global || typeof state.data.media.global !== "object") {
+      state.data.media.global = {
+        homepage: {},
+        branding: {},
+        utility: {}
+      };
+    }
+  }
+
+  function ensureMediaDraft() {
+    ensureMediaStore();
+    if (!state.drafts.media || typeof state.drafts.media !== "object") {
+      state.drafts.media = deepClone(state.data.media);
+    }
+
+    if (
+      window.FigataMediaContract &&
+      typeof window.FigataMediaContract.migrateToV2 === "function"
+    ) {
+      state.drafts.media = window.FigataMediaContract.migrateToV2(state.drafts.media);
+    }
+
+    if (!state.drafts.media.defaults || typeof state.drafts.media.defaults !== "object") {
+      state.drafts.media.defaults = deepClone(state.data.media.defaults);
+    }
+    if (!state.drafts.media.items || typeof state.drafts.media.items !== "object") {
+      state.drafts.media.items = {};
+    }
+    if (!state.drafts.media.global || typeof state.drafts.media.global !== "object") {
+      state.drafts.media.global = deepClone(state.data.media.global);
+    }
+  }
+
+  function getMediaDraft() {
+    ensureMediaDraft();
+    return state.drafts.media;
+  }
+
+  function setMediaDraftUpdatedAt(updatedBy) {
+    ensureMediaDraft();
+    state.drafts.media.updatedAt = new Date().toISOString();
+    state.drafts.media.updatedBy = updatedBy || "admin-app";
   }
 
   function syncMediaEntryForItem(item) {
-    ensureMediaStore();
+    ensureMediaDraft();
     if (!item) return;
 
     var itemId = String(item.id || "").trim();
     if (!itemId) return;
 
     var imagePath = resolveMenuMediaPath(item.image, true) || MENU_PLACEHOLDER_IMAGE;
-    var mediaItems = state.data.media.items;
+    var mediaItems = state.drafts.media.items;
     var existing = mediaItems[itemId];
     var nextEntry = existing && typeof existing === "object" ? deepClone(existing) : {};
 
@@ -1764,18 +2062,18 @@
     }
 
     mediaItems[itemId] = nextEntry;
-    state.data.media.updatedAt = new Date().toISOString();
-    state.data.media.updatedBy = "admin-app";
+    state.drafts.media.updatedAt = new Date().toISOString();
+    state.drafts.media.updatedBy = "admin-app";
   }
 
   function removeMediaEntryForItem(itemId) {
-    ensureMediaStore();
+    ensureMediaDraft();
     var normalizedId = String(itemId || "").trim();
     if (!normalizedId) return;
-    if (state.data.media.items && state.data.media.items[normalizedId]) {
-      delete state.data.media.items[normalizedId];
-      state.data.media.updatedAt = new Date().toISOString();
-      state.data.media.updatedBy = "admin-app";
+    if (state.drafts.media.items && state.drafts.media.items[normalizedId]) {
+      delete state.drafts.media.items[normalizedId];
+      state.drafts.media.updatedAt = new Date().toISOString();
+      state.drafts.media.updatedBy = "admin-app";
     }
   }
 
@@ -2314,11 +2612,35 @@
 
     var mediaPathsSet = new Set([MENU_PLACEHOLDER_IMAGE, MENU_MODAL_PLACEHOLDER_IMAGE]);
     var mediaItems = ((state.data && state.data.media && state.data.media.items) || {});
+    var mediaDefaults = ((state.data && state.data.media && state.data.media.defaults) || {});
     Object.keys(mediaItems).forEach(function (itemId) {
       var mediaEntry = mediaItems[itemId] || {};
-      [mediaEntry.card, mediaEntry.hover, mediaEntry.modal].forEach(function (path) {
+      if (
+        window.FigataMediaContract &&
+        typeof window.FigataMediaContract.resolveMediaPath === "function"
+      ) {
+        addMenuMediaCandidatesToSet(
+          mediaPathsSet,
+          window.FigataMediaContract.resolveMediaPath(mediaEntry, "card", mediaDefaults)
+        );
+        addMenuMediaCandidatesToSet(
+          mediaPathsSet,
+          window.FigataMediaContract.resolveMediaPath(mediaEntry, "hover", mediaDefaults)
+        );
+        addMenuMediaCandidatesToSet(
+          mediaPathsSet,
+          window.FigataMediaContract.resolveMediaPath(mediaEntry, "modal", mediaDefaults)
+        );
+      }
+      [mediaEntry.source, mediaEntry.card, mediaEntry.hover, mediaEntry.modal].forEach(function (path) {
         addMenuMediaCandidatesToSet(mediaPathsSet, path);
       });
+      if (mediaEntry.overrides && typeof mediaEntry.overrides === "object") {
+        [mediaEntry.overrides.card, mediaEntry.overrides.hover, mediaEntry.overrides.modal]
+          .forEach(function (path) {
+            addMenuMediaCandidatesToSet(mediaPathsSet, path);
+          });
+      }
     });
 
     getAllMenuItems().forEach(function (entry) {
@@ -2365,6 +2687,8 @@
       state.drafts.home = deepClone(state.data.home);
       state.drafts.ingredients = deepClone(state.data.ingredients || {});
       state.drafts.categories = deepClone(state.data.categories || {});
+      state.drafts.restaurant = deepClone(state.data.restaurant || {});
+      state.drafts.media = deepClone(state.data.media || {});
       state.indexes.localMenuMediaPaths = await fetchLocalMenuMediaPaths();
       var restoredFromLocalDrafts = hydrateDraftsFromLocalStorage();
       ensureMenuDraft();
@@ -2372,6 +2696,8 @@
       ensureHomeDraft();
       ensureIngredientsDraft();
       ensureCategoriesDraft();
+      ensureRestaurantDraft();
+      ensureMediaDraft();
       buildIndexes();
       state.hasDataLoaded = true;
       updateDashboardMetrics();
@@ -2379,7 +2705,10 @@
       renderMenuBrowser();
       renderSidebarMenuAccordion();
       renderSidebarHomepageAccordion();
+      renderSidebarPagesAccordion();
       renderSidebarCategoriesAccordion();
+      renderSidebarRestaurantAccordion();
+      renderSidebarMediaAccordion();
 
       if (restoredFromLocalDrafts) {
         setDraftsBanner(true, "Drafts restaurados (Clear drafts | Export)");
@@ -2396,6 +2725,9 @@
       setHomeEditorStatus("");
       setIngredientsEditorStatus("");
       setCategoriesEditorStatus("");
+      setRestaurantEditorStatus("");
+      setMediaEditorStatus("");
+      setPagesEditorStatus("");
       showItemEditorErrors([]);
       applyRoute();
     } catch (error) {
@@ -2418,7 +2750,9 @@
       !state.data.availability ||
       !state.data.home ||
       !state.data.ingredients ||
-      !state.data.categories
+      !state.data.categories ||
+      !state.data.restaurant ||
+      !state.data.media
     ) {
       clearPersistedDraftsStorage();
       setDraftsBanner(false);
@@ -2430,17 +2764,24 @@
     state.drafts.home = deepClone(state.data.home);
     state.drafts.ingredients = deepClone(state.data.ingredients || {});
     state.drafts.categories = deepClone(state.data.categories || {});
+    state.drafts.restaurant = deepClone(state.data.restaurant || {});
+    state.drafts.media = deepClone(state.data.media || {});
     ensureMenuDraft();
     ensureAvailabilityDraft();
     ensureHomeDraft();
     ensureIngredientsDraft();
     ensureCategoriesDraft();
+    ensureRestaurantDraft();
+    ensureMediaDraft();
     buildIndexes();
     updateDashboardMetrics();
     renderMenuBrowser();
     renderSidebarMenuAccordion();
     renderSidebarHomepageAccordion();
+    renderSidebarPagesAccordion();
     renderSidebarCategoriesAccordion();
+    renderSidebarRestaurantAccordion();
+    renderSidebarMediaAccordion();
     if (state.currentPanel === "ingredients-editor") {
       renderIngredientsEditor();
     }
@@ -2458,6 +2799,9 @@
     setHomeEditorStatus("");
     setIngredientsEditorStatus("");
     setCategoriesEditorStatus("");
+    setRestaurantEditorStatus("");
+    setMediaEditorStatus("");
+    setPagesEditorStatus("");
     showItemEditorErrors([]);
   }
 
@@ -3986,7 +4330,8 @@
       setItemEditorStatus: setItemEditorStatus,
       setHomeEditorStatus: setHomeEditorStatus,
       setIngredientsEditorStatus: setIngredientsEditorStatus,
-      setCategoriesEditorStatus: setCategoriesEditorStatus
+      setCategoriesEditorStatus: setCategoriesEditorStatus,
+      setPagesEditorStatus: setPagesEditorStatus
     };
   }
   function updateDashboardMetrics() { return DB.updateDashboardMetrics(_dbCtx()); }
@@ -4010,6 +4355,7 @@
     setHomeEditorStatus("");
     setIngredientsEditorStatus("");
     setCategoriesEditorStatus("");
+    setPagesEditorStatus("");
   }
 
   function openCategoriesEditor(options) {
@@ -4041,6 +4387,7 @@
     if (!options.keepStatus) {
       setCategoriesEditorStatus("");
     }
+    setPagesEditorStatus("");
     showItemEditorErrors([]);
   }
 
@@ -5730,6 +6077,7 @@
     setHomeEditorStatus("");
     setIngredientsEditorStatus("");
     setCategoriesEditorStatus("");
+    setPagesEditorStatus("");
   }
 
   function createIngredientsEditorDraft(ingredientId, sourceEntry) {
@@ -6370,6 +6718,489 @@
     state.categoriesScrollSpyFrame = window.requestAnimationFrame(function () {
       state.categoriesScrollSpyFrame = 0;
       updateCategoriesScrollSpy(false);
+    });
+  }
+
+  function getPagesSidebarSections() {
+    return PAGES && Array.isArray(PAGES.sections) ? PAGES.sections : [];
+  }
+
+  function normalizePagesSectionId(sectionId) {
+    var normalizedId = String(sectionId || "").trim();
+    if (!normalizedId) return "";
+    var sections = getPagesSidebarSections();
+    var isKnown = sections.some(function (section) {
+      return section && section.id === normalizedId;
+    });
+    return isKnown ? normalizedId : "";
+  }
+
+  function getPagesSectionAnchorId(sectionId) {
+    if (PAGES && typeof PAGES.getSectionAnchorId === "function") {
+      return PAGES.getSectionAnchorId(sectionId);
+    }
+    return "pages-section-" + normalizePagesSectionId(sectionId);
+  }
+
+  function updateSidebarPagesAccordionActiveClasses() {
+    if (!elements.sidebarPagesAccordion) return;
+    var activeSectionId = normalizePagesSectionId(state.pagesActiveSectionId);
+    var buttons = elements.sidebarPagesAccordion.querySelectorAll("[data-scroll-pages-section]");
+    Array.prototype.forEach.call(buttons, function (button) {
+      var sectionId = button.getAttribute("data-scroll-pages-section") || "";
+      button.classList.toggle("is-active", Boolean(activeSectionId && sectionId === activeSectionId));
+    });
+  }
+
+  function updatePagesSectionActiveClasses() {
+    if (!views.pagesEditorPanel) return;
+    var activeSectionId = normalizePagesSectionId(state.pagesActiveSectionId);
+    var sections = views.pagesEditorPanel.querySelectorAll("[data-pages-anchor='true']");
+    Array.prototype.forEach.call(sections, function (sectionElement) {
+      var sectionId = String(sectionElement.getAttribute("data-pages-section-id") || "").trim();
+      sectionElement.classList.toggle("is-active", Boolean(activeSectionId && sectionId === activeSectionId));
+    });
+  }
+
+  function renderSidebarPagesAccordion() {
+    if (!elements.sidebarPagesAccordion) return;
+    if (!state.hasDataLoaded) {
+      elements.sidebarPagesAccordion.innerHTML = "";
+      return;
+    }
+
+    var sections = getPagesSidebarSections();
+    if (!sections.length) {
+      elements.sidebarPagesAccordion.innerHTML = "";
+      return;
+    }
+
+    var html = sections.map(function (section, index) {
+      var isActive = normalizePagesSectionId(state.pagesActiveSectionId) === section.id;
+      var buttonClass = "sidebar-accordion-category__toggle" + (isActive ? " is-active" : "");
+      return (
+        "<div class=\"sidebar-accordion-category\" style=\"--sidebar-stagger-index:" + index + "\" data-pages-sidebar-id=\"" + escapeHtml(section.id) + "\">" +
+        "<button class=\"" + buttonClass + "\" type=\"button\" data-scroll-pages-section=\"" +
+        escapeHtml(section.id) + "\"><span>" + escapeHtml(section.label) + "</span></button>" +
+        "</div>"
+      );
+    }).join("");
+
+    elements.sidebarPagesAccordion.innerHTML = html;
+    updateSidebarPagesAccordionActiveClasses();
+    syncSidebarAccordionCategoryHeights(elements.sidebarPagesAccordion);
+  }
+
+  function setActivePagesSection(sectionId, options) {
+    options = options || {};
+    var nextSectionId = normalizePagesSectionId(sectionId);
+    if (state.pagesActiveSectionId === nextSectionId && !options.force) {
+      return;
+    }
+
+    state.pagesActiveSectionId = nextSectionId;
+    if (nextSectionId) {
+      setNavigationCurrentSection("pages:" + nextSectionId);
+    } else if (state.currentPanel === "pages-editor") {
+      setNavigationCurrentSection("");
+    }
+
+    if (!options.skipClassUpdate) {
+      updateSidebarPagesAccordionActiveClasses();
+      updatePagesSectionActiveClasses();
+    }
+  }
+
+  function scrollToPagesSection(sectionId, options) {
+    options = options || {};
+    var normalizedId = normalizePagesSectionId(sectionId);
+    if (!normalizedId) return;
+
+    var anchor = document.getElementById(getPagesSectionAnchorId(normalizedId));
+    if (!anchor) return;
+
+    setActivePagesSection(normalizedId, { force: true });
+    var targetTop = window.scrollY + anchor.getBoundingClientRect().top - UX_TIMING.anchorScrollOffsetPx;
+    var scrollBehavior = options.instant ? "auto" : "smooth";
+    var lockDurationMs = getProgrammaticScrollLockDuration(targetTop, scrollBehavior);
+    runWithProgrammaticScrollLock(function () {
+      window.scrollTo({
+        top: Math.max(0, targetTop),
+        behavior: scrollBehavior
+      });
+    }, lockDurationMs, "pages:" + normalizedId);
+    if (typeof anchor.focus === "function") {
+      try {
+        anchor.focus({ preventScroll: true });
+      } catch (_error) {
+        anchor.focus();
+      }
+    }
+  }
+
+  function refreshPagesScrollAnchors() {
+    if (!views.pagesEditorPanel) {
+      state.pagesAnchorTargets = [];
+      return;
+    }
+    state.pagesAnchorTargets = Array.prototype.slice
+      .call(views.pagesEditorPanel.querySelectorAll("[data-pages-anchor='true']"))
+      .map(function (anchorElement) {
+        return {
+          sectionId: anchorElement.getAttribute("data-pages-section-id") || "",
+          element: anchorElement
+        };
+      });
+  }
+
+  function updatePagesScrollSpy(force) {
+    if (state.currentPanel !== "pages-editor") return;
+    if (state.visiblePanel !== "pages-editor") return;
+    if (!canRunScrollSpy(Boolean(force))) return;
+    if (isSidebarAccordionOpening("pages")) return;
+    if (!state.pagesAnchorTargets.length) return;
+
+    var activeAnchor = findActiveAnchorTarget(
+      state.pagesAnchorTargets,
+      UX_TIMING.scrollSpyThresholdPx
+    );
+    if (!activeAnchor) return;
+
+    setActivePagesSection(activeAnchor.sectionId, { force: Boolean(force) });
+  }
+
+  function requestPagesScrollSpyUpdate() {
+    if (state.currentPanel !== "pages-editor") return;
+    if (state.visiblePanel !== "pages-editor") return;
+    if (state.isPanelTransitioning) return;
+    if (!isNavigationStateIdle()) return;
+    if (isSidebarAccordionOpening("pages")) return;
+    if (state.pagesScrollSpyFrame) return;
+    state.pagesScrollSpyFrame = window.requestAnimationFrame(function () {
+      state.pagesScrollSpyFrame = 0;
+      updatePagesScrollSpy(false);
+    });
+  }
+
+  function getRestaurantSidebarSections() {
+    return REST && Array.isArray(REST.sections) ? REST.sections : [];
+  }
+
+  function normalizeRestaurantSectionId(sectionId) {
+    var normalizedId = String(sectionId || "").trim();
+    if (!normalizedId) return "";
+    var sections = getRestaurantSidebarSections();
+    var isKnown = sections.some(function (section) {
+      return section && section.id === normalizedId;
+    });
+    return isKnown ? normalizedId : "";
+  }
+
+  function getRestaurantSectionAnchorId(sectionId) {
+    if (REST && typeof REST.getSectionAnchorId === "function") {
+      return REST.getSectionAnchorId(sectionId);
+    }
+    return "restaurant-section-" + normalizeRestaurantSectionId(sectionId);
+  }
+
+  function updateSidebarRestaurantAccordionActiveClasses() {
+    if (!elements.sidebarRestaurantAccordion) return;
+    var activeSectionId = normalizeRestaurantSectionId(state.restaurantActiveSectionId);
+    var buttons = elements.sidebarRestaurantAccordion.querySelectorAll("[data-scroll-restaurant-section]");
+    Array.prototype.forEach.call(buttons, function (button) {
+      var sectionId = button.getAttribute("data-scroll-restaurant-section") || "";
+      button.classList.toggle("is-active", Boolean(activeSectionId && sectionId === activeSectionId));
+    });
+  }
+
+  function updateRestaurantSectionActiveClasses() {
+    if (!views.restaurantEditorPanel) return;
+    var activeSectionId = normalizeRestaurantSectionId(state.restaurantActiveSectionId);
+    var sections = views.restaurantEditorPanel.querySelectorAll("[data-restaurant-anchor='true']");
+    Array.prototype.forEach.call(sections, function (sectionElement) {
+      var sectionId = String(sectionElement.getAttribute("data-restaurant-section-id") || "").trim();
+      sectionElement.classList.toggle("is-active", Boolean(activeSectionId && sectionId === activeSectionId));
+    });
+  }
+
+  function renderSidebarRestaurantAccordion() {
+    if (!elements.sidebarRestaurantAccordion) return;
+    if (!state.hasDataLoaded) {
+      elements.sidebarRestaurantAccordion.innerHTML = "";
+      return;
+    }
+
+    var sections = getRestaurantSidebarSections();
+    if (!sections.length) {
+      elements.sidebarRestaurantAccordion.innerHTML = "";
+      return;
+    }
+
+    var html = sections.map(function (section, index) {
+      var isActive = normalizeRestaurantSectionId(state.restaurantActiveSectionId) === section.id;
+      var buttonClass = "sidebar-accordion-category__toggle" + (isActive ? " is-active" : "");
+      return (
+        "<div class=\"sidebar-accordion-category\" style=\"--sidebar-stagger-index:" + index + "\" data-restaurant-sidebar-id=\"" + escapeHtml(section.id) + "\">" +
+        "<button class=\"" + buttonClass + "\" type=\"button\" data-scroll-restaurant-section=\"" +
+        escapeHtml(section.id) + "\"><span>" + escapeHtml(section.label) + "</span></button>" +
+        "</div>"
+      );
+    }).join("");
+
+    elements.sidebarRestaurantAccordion.innerHTML = html;
+    updateSidebarRestaurantAccordionActiveClasses();
+    syncSidebarAccordionCategoryHeights(elements.sidebarRestaurantAccordion);
+  }
+
+  function setActiveRestaurantSection(sectionId, options) {
+    options = options || {};
+    var nextSectionId = normalizeRestaurantSectionId(sectionId);
+    if (state.restaurantActiveSectionId === nextSectionId && !options.force) {
+      return;
+    }
+
+    state.restaurantActiveSectionId = nextSectionId;
+    if (nextSectionId) {
+      setNavigationCurrentSection("restaurant:" + nextSectionId);
+    } else if (state.currentPanel === "restaurant-editor") {
+      setNavigationCurrentSection("");
+    }
+
+    if (!options.skipClassUpdate) {
+      updateSidebarRestaurantAccordionActiveClasses();
+      updateRestaurantSectionActiveClasses();
+    }
+  }
+
+  function scrollToRestaurantSection(sectionId, options) {
+    options = options || {};
+    var normalizedId = normalizeRestaurantSectionId(sectionId);
+    if (!normalizedId) return;
+
+    var anchor = document.getElementById(getRestaurantSectionAnchorId(normalizedId));
+    if (!anchor) return;
+
+    setActiveRestaurantSection(normalizedId, { force: true });
+    var targetTop = window.scrollY + anchor.getBoundingClientRect().top - UX_TIMING.anchorScrollOffsetPx;
+    var scrollBehavior = options.instant ? "auto" : "smooth";
+    var lockDurationMs = getProgrammaticScrollLockDuration(targetTop, scrollBehavior);
+    runWithProgrammaticScrollLock(function () {
+      window.scrollTo({
+        top: Math.max(0, targetTop),
+        behavior: scrollBehavior
+      });
+    }, lockDurationMs, "restaurant:" + normalizedId);
+    if (typeof anchor.focus === "function") {
+      try {
+        anchor.focus({ preventScroll: true });
+      } catch (_error) {
+        anchor.focus();
+      }
+    }
+  }
+
+  function refreshRestaurantScrollAnchors() {
+    if (!views.restaurantEditorPanel) {
+      state.restaurantAnchorTargets = [];
+      return;
+    }
+    state.restaurantAnchorTargets = Array.prototype.slice
+      .call(views.restaurantEditorPanel.querySelectorAll("[data-restaurant-anchor='true']"))
+      .map(function (anchorElement) {
+        return {
+          sectionId: anchorElement.getAttribute("data-restaurant-section-id") || "",
+          element: anchorElement
+        };
+      });
+  }
+
+  function updateRestaurantScrollSpy(force) {
+    if (state.currentPanel !== "restaurant-editor") return;
+    if (state.visiblePanel !== "restaurant-editor") return;
+    if (!canRunScrollSpy(Boolean(force))) return;
+    if (isSidebarAccordionOpening("restaurant")) return;
+    if (!state.restaurantAnchorTargets.length) return;
+
+    var activeAnchor = findActiveAnchorTarget(
+      state.restaurantAnchorTargets,
+      UX_TIMING.scrollSpyThresholdPx
+    );
+    if (!activeAnchor) return;
+
+    setActiveRestaurantSection(activeAnchor.sectionId, { force: Boolean(force) });
+  }
+
+  function requestRestaurantScrollSpyUpdate() {
+    if (state.currentPanel !== "restaurant-editor") return;
+    if (state.visiblePanel !== "restaurant-editor") return;
+    if (state.isPanelTransitioning) return;
+    if (!isNavigationStateIdle()) return;
+    if (isSidebarAccordionOpening("restaurant")) return;
+    if (state.restaurantScrollSpyFrame) return;
+    state.restaurantScrollSpyFrame = window.requestAnimationFrame(function () {
+      state.restaurantScrollSpyFrame = 0;
+      updateRestaurantScrollSpy(false);
+    });
+  }
+
+  function getMediaSidebarSections() {
+    return MEDIA && Array.isArray(MEDIA.sections) ? MEDIA.sections : [];
+  }
+
+  function normalizeMediaSectionId(sectionId) {
+    var normalizedId = String(sectionId || "").trim();
+    if (!normalizedId) return "";
+    var sections = getMediaSidebarSections();
+    var isKnown = sections.some(function (section) {
+      return section && section.id === normalizedId;
+    });
+    return isKnown ? normalizedId : "";
+  }
+
+  function getMediaSectionAnchorId(sectionId) {
+    if (MEDIA && typeof MEDIA.getSectionAnchorId === "function") {
+      return MEDIA.getSectionAnchorId(sectionId);
+    }
+    return "media-section-" + normalizeMediaSectionId(sectionId);
+  }
+
+  function updateSidebarMediaAccordionActiveClasses() {
+    if (!elements.sidebarMediaAccordion) return;
+    var activeSectionId = normalizeMediaSectionId(state.mediaActiveSectionId);
+    var buttons = elements.sidebarMediaAccordion.querySelectorAll("[data-scroll-media-section]");
+    Array.prototype.forEach.call(buttons, function (button) {
+      var sectionId = button.getAttribute("data-scroll-media-section") || "";
+      button.classList.toggle("is-active", Boolean(activeSectionId && sectionId === activeSectionId));
+    });
+  }
+
+  function updateMediaSectionActiveClasses() {
+    if (!views.mediaEditorPanel) return;
+    var activeSectionId = normalizeMediaSectionId(state.mediaActiveSectionId);
+    var sections = views.mediaEditorPanel.querySelectorAll("[data-media-anchor='true']");
+    Array.prototype.forEach.call(sections, function (sectionElement) {
+      var sectionId = String(sectionElement.getAttribute("data-media-section-id") || "").trim();
+      sectionElement.classList.toggle("is-active", Boolean(activeSectionId && sectionId === activeSectionId));
+    });
+  }
+
+  function renderSidebarMediaAccordion() {
+    if (!elements.sidebarMediaAccordion) return;
+    if (!state.hasDataLoaded) {
+      elements.sidebarMediaAccordion.innerHTML = "";
+      return;
+    }
+
+    var sections = getMediaSidebarSections();
+    if (!sections.length) {
+      elements.sidebarMediaAccordion.innerHTML = "";
+      return;
+    }
+
+    var html = sections.map(function (section, index) {
+      var isActive = normalizeMediaSectionId(state.mediaActiveSectionId) === section.id;
+      var buttonClass = "sidebar-accordion-category__toggle" + (isActive ? " is-active" : "");
+      return (
+        "<div class=\"sidebar-accordion-category\" style=\"--sidebar-stagger-index:" + index + "\" data-media-sidebar-id=\"" + escapeHtml(section.id) + "\">" +
+        "<button class=\"" + buttonClass + "\" type=\"button\" data-scroll-media-section=\"" +
+        escapeHtml(section.id) + "\"><span>" + escapeHtml(section.label) + "</span></button>" +
+        "</div>"
+      );
+    }).join("");
+
+    elements.sidebarMediaAccordion.innerHTML = html;
+    updateSidebarMediaAccordionActiveClasses();
+    syncSidebarAccordionCategoryHeights(elements.sidebarMediaAccordion);
+  }
+
+  function setActiveMediaSection(sectionId, options) {
+    options = options || {};
+    var nextSectionId = normalizeMediaSectionId(sectionId);
+    if (state.mediaActiveSectionId === nextSectionId && !options.force) {
+      return;
+    }
+
+    state.mediaActiveSectionId = nextSectionId;
+    if (nextSectionId) {
+      setNavigationCurrentSection("media:" + nextSectionId);
+    } else if (state.currentPanel === "media-editor") {
+      setNavigationCurrentSection("");
+    }
+
+    if (!options.skipClassUpdate) {
+      updateSidebarMediaAccordionActiveClasses();
+      updateMediaSectionActiveClasses();
+    }
+  }
+
+  function scrollToMediaSection(sectionId, options) {
+    options = options || {};
+    var normalizedId = normalizeMediaSectionId(sectionId);
+    if (!normalizedId) return;
+
+    var anchor = document.getElementById(getMediaSectionAnchorId(normalizedId));
+    if (!anchor) return;
+
+    setActiveMediaSection(normalizedId, { force: true });
+    var targetTop = window.scrollY + anchor.getBoundingClientRect().top - UX_TIMING.anchorScrollOffsetPx;
+    var scrollBehavior = options.instant ? "auto" : "smooth";
+    var lockDurationMs = getProgrammaticScrollLockDuration(targetTop, scrollBehavior);
+    runWithProgrammaticScrollLock(function () {
+      window.scrollTo({
+        top: Math.max(0, targetTop),
+        behavior: scrollBehavior
+      });
+    }, lockDurationMs, "media:" + normalizedId);
+    if (typeof anchor.focus === "function") {
+      try {
+        anchor.focus({ preventScroll: true });
+      } catch (_error) {
+        anchor.focus();
+      }
+    }
+  }
+
+  function refreshMediaScrollAnchors() {
+    if (!views.mediaEditorPanel) {
+      state.mediaAnchorTargets = [];
+      return;
+    }
+    state.mediaAnchorTargets = Array.prototype.slice
+      .call(views.mediaEditorPanel.querySelectorAll("[data-media-anchor='true']"))
+      .map(function (anchorElement) {
+        return {
+          sectionId: anchorElement.getAttribute("data-media-section-id") || "",
+          element: anchorElement
+        };
+      });
+  }
+
+  function updateMediaScrollSpy(force) {
+    if (state.currentPanel !== "media-editor") return;
+    if (state.visiblePanel !== "media-editor") return;
+    if (!canRunScrollSpy(Boolean(force))) return;
+    if (isSidebarAccordionOpening("media")) return;
+    if (!state.mediaAnchorTargets.length) return;
+
+    var activeAnchor = findActiveAnchorTarget(
+      state.mediaAnchorTargets,
+      UX_TIMING.scrollSpyThresholdPx
+    );
+    if (!activeAnchor) return;
+
+    setActiveMediaSection(activeAnchor.sectionId, { force: Boolean(force) });
+  }
+
+  function requestMediaScrollSpyUpdate() {
+    if (state.currentPanel !== "media-editor") return;
+    if (state.visiblePanel !== "media-editor") return;
+    if (state.isPanelTransitioning) return;
+    if (!isNavigationStateIdle()) return;
+    if (isSidebarAccordionOpening("media")) return;
+    if (state.mediaScrollSpyFrame) return;
+    state.mediaScrollSpyFrame = window.requestAnimationFrame(function () {
+      state.mediaScrollSpyFrame = 0;
+      updateMediaScrollSpy(false);
     });
   }
 
@@ -7344,6 +8175,7 @@
     setHomeEditorStatus("");
     setIngredientsEditorStatus("");
     setCategoriesEditorStatus("");
+    setPagesEditorStatus("");
     showItemEditorErrors([]);
     renderIngredientsEditor();
   }
@@ -7931,6 +8763,32 @@
       };
     }
 
+    if (parts[0] === "restaurant") {
+      return { name: "restaurant" };
+    }
+
+    if (parts[0] === "media" && parts[1] === "item" && parts[2]) {
+      return {
+        name: "media-item",
+        itemId: decodeURIComponent(parts.slice(2).join("/"))
+      };
+    }
+
+    if (parts[0] === "media") {
+      return { name: "media" };
+    }
+
+    if (parts[0] === "pages" && parts[1]) {
+      return {
+        name: "pages-section",
+        sectionId: decodeURIComponent(parts.slice(1).join("/"))
+      };
+    }
+
+    if (parts[0] === "pages") {
+      return { name: "pages" };
+    }
+
     if (parts[0] === "menu") {
       return { name: "menu" };
     }
@@ -8082,6 +8940,63 @@
       return;
     }
 
+    if (route.name === "restaurant") {
+      if (!state.hasDataLoaded) {
+        ensureDataLoaded(false);
+        return;
+      }
+      openRestaurantEditor({ skipRoute: true });
+      return;
+    }
+
+    if (route.name === "media-item") {
+      if (!state.hasDataLoaded) {
+        ensureDataLoaded(false);
+        return;
+      }
+      setActiveMediaSection("", { force: true });
+      openMediaEditor({
+        skipRoute: true,
+        itemId: route.itemId || ""
+      });
+      return;
+    }
+
+    if (route.name === "media") {
+      if (!state.hasDataLoaded) {
+        ensureDataLoaded(false);
+        return;
+      }
+      openMediaEditor({ skipRoute: true });
+      return;
+    }
+
+    if (route.name === "pages") {
+      if (!state.hasDataLoaded) {
+        ensureDataLoaded(false);
+        return;
+      }
+      openPagesEditor({ skipRoute: true });
+      return;
+    }
+
+    if (route.name === "pages-section") {
+      if (!state.hasDataLoaded) {
+        ensureDataLoaded(false);
+        return;
+      }
+      var pagesSectionId = String(route.sectionId || "").trim();
+      if (pagesSectionId) {
+        clearPanelPostNavigationActions();
+        queuePanelPostNavigationAction("pages-editor", function () {
+          scrollToPagesSection(pagesSectionId);
+          setActivePagesSection(pagesSectionId, { force: true });
+        });
+      }
+      openPagesEditor({ skipRoute: true });
+      return;
+    }
+
     if (route.name === "homepage-section") {
       if (!state.hasDataLoaded) {
         ensureDataLoaded(false);
@@ -8204,6 +9119,13 @@
       });
     }
 
+    if (elements.sidebarNavPages) {
+      elements.sidebarNavPages.addEventListener("click", function () {
+        clearPanelPostNavigationActions();
+        navigateToRoute("/pages");
+      });
+    }
+
     if (elements.sidebarNavIngredients) {
       elements.sidebarNavIngredients.addEventListener("click", function () {
         clearPanelPostNavigationActions();
@@ -8215,6 +9137,20 @@
       elements.sidebarNavCategories.addEventListener("click", function () {
         clearPanelPostNavigationActions();
         navigateToRoute("/categories");
+      });
+    }
+
+    if (elements.sidebarNavRestaurant) {
+      elements.sidebarNavRestaurant.addEventListener("click", function () {
+        clearPanelPostNavigationActions();
+        navigateToRoute("/restaurant");
+      });
+    }
+
+    if (elements.sidebarNavMedia) {
+      elements.sidebarNavMedia.addEventListener("click", function () {
+        clearPanelPostNavigationActions();
+        navigateToRoute("/media");
       });
     }
 
@@ -8321,11 +9257,79 @@
       });
     }
 
+    if (elements.sidebarPagesAccordion) {
+      elements.sidebarPagesAccordion.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-scroll-pages-section]");
+        if (!button) return;
+        var sectionId = button.getAttribute("data-scroll-pages-section") || "";
+        if (!sectionId) return;
+
+        if (state.currentPanel !== "pages-editor") {
+          clearPanelPostNavigationActions();
+          queuePanelPostNavigationAction("pages-editor", function () {
+            scrollToPagesSection(sectionId);
+            setActivePagesSection(sectionId, { force: true });
+          });
+          navigateToRoute("/pages/" + encodeURIComponent(sectionId));
+          return;
+        }
+
+        scrollToPagesSection(sectionId);
+        setActivePagesSection(sectionId, { force: true });
+        setHashSilently("/pages/" + encodeURIComponent(sectionId));
+      });
+    }
+
+    if (elements.sidebarRestaurantAccordion) {
+      elements.sidebarRestaurantAccordion.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-scroll-restaurant-section]");
+        if (!button) return;
+        var sectionId = button.getAttribute("data-scroll-restaurant-section") || "";
+        if (!sectionId) return;
+
+        if (state.currentPanel !== "restaurant-editor") {
+          clearPanelPostNavigationActions();
+          queuePanelPostNavigationAction("restaurant-editor", function () {
+            scrollToRestaurantSection(sectionId);
+            setActiveRestaurantSection(sectionId, { force: true });
+          });
+          navigateToRoute("/restaurant");
+          return;
+        }
+
+        scrollToRestaurantSection(sectionId);
+        setActiveRestaurantSection(sectionId, { force: true });
+      });
+    }
+
+    if (elements.sidebarMediaAccordion) {
+      elements.sidebarMediaAccordion.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-scroll-media-section]");
+        if (!button) return;
+        var sectionId = button.getAttribute("data-scroll-media-section") || "";
+        if (!sectionId) return;
+        var isMediaItemRoute = parseHashRoute().name === "media-item";
+
+        if (state.currentPanel !== "media-editor" || isMediaItemRoute) {
+          clearPanelPostNavigationActions();
+          queuePanelPostNavigationAction("media-editor", function () {
+            scrollToMediaSection(sectionId);
+            setActiveMediaSection(sectionId, { force: true });
+          });
+          navigateToRoute("/media");
+          return;
+        }
+
+        scrollToMediaSection(sectionId);
+        setActiveMediaSection(sectionId, { force: true });
+      });
+    }
+
     if (elements.sidebarNav) {
       elements.sidebarNav.addEventListener("scroll", updateSidebarActiveIndicator, { passive: true });
     }
 
-    [elements.sidebarMenuAccordion, elements.sidebarHomepageAccordion, elements.sidebarIngredientsAccordion, elements.sidebarCategoriesAccordion]
+    [elements.sidebarMenuAccordion, elements.sidebarHomepageAccordion, elements.sidebarPagesAccordion, elements.sidebarIngredientsAccordion, elements.sidebarCategoriesAccordion, elements.sidebarRestaurantAccordion, elements.sidebarMediaAccordion]
       .filter(Boolean)
       .forEach(function (accordionElement) {
         accordionElement.addEventListener("transitionend", function (event) {
@@ -8349,6 +9353,12 @@
       });
     }
 
+    if (elements.openPagesEditorButton) {
+      elements.openPagesEditorButton.addEventListener("click", function () {
+        openPagesEditor({ skipRoute: false });
+      });
+    }
+
     if (elements.openIngredientsEditorButton) {
       elements.openIngredientsEditorButton.addEventListener("click", function () {
         openIngredientsEditor({ skipRoute: false });
@@ -8358,6 +9368,18 @@
     if (elements.openCategoriesEditorButton) {
       elements.openCategoriesEditorButton.addEventListener("click", function () {
         openCategoriesEditor({ skipRoute: false });
+      });
+    }
+
+    if (elements.openRestaurantEditorButton) {
+      elements.openRestaurantEditorButton.addEventListener("click", function () {
+        openRestaurantEditor({ skipRoute: false });
+      });
+    }
+
+    if (elements.openMediaEditorButton) {
+      elements.openMediaEditorButton.addEventListener("click", function () {
+        openMediaEditor({ skipRoute: false });
       });
     }
 
@@ -9515,6 +10537,24 @@
     }
   }
 
+  function bindRestaurantEditorEvents() {
+    if (REST) {
+      REST.bindEvents(_restCtx());
+    }
+  }
+
+  function bindMediaEditorEvents() {
+    if (MEDIA && typeof MEDIA.bindEvents === "function") {
+      MEDIA.bindEvents(_mediaCtx());
+    }
+  }
+
+  function bindPagesEditorEvents() {
+    if (PAGES && typeof PAGES.bindEvents === "function") {
+      PAGES.bindEvents(_pagesCtx());
+    }
+  }
+
   function bindEvents() {
     mountItemEditorToggles();
     syncUxTimingCssVars();
@@ -9560,6 +10600,9 @@
     bindHomeEditorEvents();
     bindIngredientsEditorEvents();
     bindCategoriesEditorEvents();
+    bindPagesEditorEvents();
+    bindRestaurantEditorEvents();
+    bindMediaEditorEvents();
 
     window.addEventListener("resize", function () {
       syncSidebarViewportState();
@@ -9645,6 +10688,8 @@
       state.drafts.home = null;
       state.drafts.ingredients = null;
       state.drafts.categories = null;
+      state.drafts.restaurant = null;
+      state.drafts.media = null;
       state.hasDataLoaded = false;
       state.currentPanel = "dashboard";
       state.visiblePanel = "dashboard";
@@ -9654,6 +10699,8 @@
       state.menuAnchorTargets = [];
       state.homeActiveSectionId = "";
       state.homeAnchorTargets = [];
+      state.pagesActiveSectionId = "";
+      state.pagesAnchorTargets = [];
       state.ingredientsAnchorTargets = [];
       state.categoriesAnchorTargets = [];
       if (state.menuScrollSpyFrame) {
@@ -9663,6 +10710,10 @@
       if (state.homeScrollSpyFrame) {
         window.cancelAnimationFrame(state.homeScrollSpyFrame);
         state.homeScrollSpyFrame = 0;
+      }
+      if (state.pagesScrollSpyFrame) {
+        window.cancelAnimationFrame(state.pagesScrollSpyFrame);
+        state.pagesScrollSpyFrame = 0;
       }
       if (state.ingredientsScrollSpyFrame) {
         window.cancelAnimationFrame(state.ingredientsScrollSpyFrame);
@@ -9732,6 +10783,9 @@
       setHomeEditorStatus("");
       setIngredientsEditorStatus("");
       setCategoriesEditorStatus("");
+      setRestaurantEditorStatus("");
+      setMediaEditorStatus("");
+      setPagesEditorStatus("");
       showItemEditorErrors([]);
       setDraftsBanner(false);
       updateDashboardMetrics();

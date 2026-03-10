@@ -22,10 +22,10 @@
       "margherita",
       "pan_ciabatta",
       "tiramisu",
-      "diavola",
       "focaccia_rellena",
       "margherita_sbagliata",
-      "bruschetta_classica"
+      "filetti",
+      "diavola"
     ],
     "limit": 8
   },

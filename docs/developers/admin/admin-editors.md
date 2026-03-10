@@ -1,6 +1,6 @@
 # Admin Editor Panels
 
-> **Read this doc when** working on any of the five admin editor panels: Menu Browser, Item Editor, Homepage Editor, Ingredients Editor, or Categories Editor. Covers function locations, data flow, event bindings, and draft lifecycle.
+> **Read this doc when** working on any native admin editor panel: Menu Browser, Item Editor, Homepage Editor, Pages Editor, Ingredients Editor, Categories Editor, Restaurant Editor, or Media Editor. Covers function locations, data flow, event bindings, and draft lifecycle.
 
 ## Contents
 
@@ -11,6 +11,9 @@
 - [Homepage Editor](#homepage-editor) — functions, sections, drag-and-drop
 - [Ingredients Editor](#ingredients-editor) — functions, two-tab structure, validation
 - [Categories Editor](#categories-editor) — functions, reorder, validation
+- [Pages Editor](#pages-editor) — scaffold for unique site pages
+- [Restaurant Editor](#restaurant-editor) — business metadata form
+- [Media Editor](#media-editor) — per-item media variants and globals
 - [Draft Lifecycle](#draft-lifecycle-all-editors) — persistence keys, ensure/save/publish flow
 - [Event Binding Bootstrap](#event-binding-bootstrap)
 
@@ -18,7 +21,7 @@
 
 ## Overview
 
-The admin panel has **five editor subsystems**, all implemented as functions inside `admin/app/app.js`. Each follows a consistent pattern:
+The admin panel has **eight native editor subsystems**, implemented in `app.js` and delegated panel modules. Each follows a consistent pattern:
 
 1. **Open function** — opens the panel, initializes state, renders content
 2. **Render function** — builds the panel's DOM (called on open and after data changes)
@@ -37,6 +40,9 @@ The admin panel has **five editor subsystems**, all implemented as functions ins
 | Homepage Editor | `openHomePageEditor()` | `renderHomeEditor()` | `bindHomeEditorEvents()` | ~1,700 |
 | Ingredients Editor | `openIngredientsEditor()` | `renderIngredientsEditor()` | `bindIngredientsEditorEvents()` | ~2,300 |
 | Categories Editor | `openCategoriesEditor()` | `renderCategoriesEditor()` | `bindCategoriesEditorEvents()` | ~600 |
+| Pages Editor | `openPagesEditor()` | `window.FigataAdmin.pagesPanel.render()` | `window.FigataAdmin.pagesPanel.bindEvents()` | ~260 |
+| Restaurant Editor | `openRestaurantEditor()` | `window.FigataAdmin.restaurantPanel.render()` | `window.FigataAdmin.restaurantPanel.bindEvents()` | ~320 |
+| Media Editor | `openMediaEditor()` | `window.FigataAdmin.mediaPanel.render()` | `window.FigataAdmin.mediaPanel.bindEvents()` | ~350 |
 
 ---
 
@@ -223,6 +229,66 @@ Uses `shared/ingredients-contract.js`. Validation runs:
 
 ---
 
+## Pages Editor
+
+### Key Functions
+
+| Function | Purpose |
+|----------|---------|
+| `openPagesEditor(options)` | Open the native Pages panel and sync `#/pages` |
+| `pagesPanel.render(ctx)` | Render the scaffold sections for unique site pages |
+| `pagesPanel.bindEvents(ctx)` | Attach lightweight focus/navigation events |
+
+### Notes
+
+- Does **not** edit drafts yet; this panel is scaffold-only in the current phase
+- Exposes section metadata so the shared sidebar accordion can render `menu`, `nosotros`, `ubicacion`, `contacto`, `eventos`, and `faqs`
+- Uses the shared scroll-spy pattern from `app.js`/`panels.js` (same model as Restaurant/Media)
+
+---
+
+## Restaurant Editor
+
+### Key Functions
+
+| Function | Purpose |
+|----------|---------|
+| `openRestaurantEditor(options)` | Open the native Restaurant panel and sync `#/restaurant` |
+| `restaurantPanel.render(ctx)` | Build the full `restaurant.json` editor form |
+| `restaurantPanel.syncToDraft(ctx)` | Copy form values into `state.drafts.restaurant` and validate |
+| `restaurantPanel.bindEvents(ctx)` | Attach delegated input/save/export/publish handlers |
+
+### Notes
+
+- Edits `state.drafts.restaurant`
+- Validates with `shared/restaurant-contract.js`
+- Publishes through the same `publishChanges()` flow as the other native panels
+- Exposes section metadata so the shared sidebar accordion can render `identity`, `contact`, `location`, `hours`, `links`, `branding`, `seo`, and `metadata`
+- Uses the shared scroll-spy pattern from `app.js`/`panels.js` instead of a panel-specific navigation system
+
+---
+
+## Media Editor
+
+### Key Functions
+
+| Function | Purpose |
+|----------|---------|
+| `openMediaEditor(options)` | Open the native Media panel and sync `#/media` |
+| `mediaPanel.render(ctx)` | Build the grouped browser + global sections, or the dedicated item subview (`#/media/item/:id`) |
+| `mediaPanel.bindEvents(ctx)` | Attach search, select, save, export, and publish handlers |
+
+### Notes
+
+- Edits `state.drafts.media`
+- Validates with `shared/media-contract.js`
+- Uses a dedicated item route (`#/media/item/:id`) instead of an inline detail section in the main flow
+- Main panel sections are short and focused: `browser`, `homepage`, `brand`, `defaults`, `integrity`
+- Browser cards are grouped by menu category (same scanning pattern as Menu, adapted for Media)
+- Uses the shared scroll-spy pattern from `app.js`/`panels.js` instead of a panel-specific navigation system
+
+---
+
 ## Draft Lifecycle (all editors)
 
 ```
@@ -243,6 +309,8 @@ Uses `shared/ingredients-contract.js`. Validation runs:
 | Home | `figata_admin_drafts_home` |
 | Ingredients | `figata_admin_drafts_ingredients` |
 | Categories | `figata_admin_drafts_categories` |
+| Restaurant | `figata_admin_drafts_restaurant` |
+| Media | `figata_admin_drafts_media` |
 | Flag | `figata_admin_has_drafts` (set to `"1"` when any draft exists) |
 
 ---
@@ -257,3 +325,6 @@ Event binding order in `app.js`:
 3. `bindHomeEditorEvents()`
 4. `bindIngredientsEditorEvents()`
 5. `bindCategoriesEditorEvents()`
+6. `bindPagesEditorEvents()`
+7. `bindRestaurantEditorEvents()`
+8. `bindMediaEditorEvents()`

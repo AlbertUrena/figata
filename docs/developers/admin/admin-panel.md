@@ -9,7 +9,7 @@
 - [State Object](#state-object) — data, drafts, indexes, navigation, editor sub-states
 - [Views and Elements](#views-and-elements) — panel containers, DOM element registry
 - [Routing](#routing) — hash routes, route table, routing functions
-- [Editor Panels](#editor-panels) — menu browser, item editor, homepage, ingredients, categories
+- [Editor Panels](#editor-panels) — menu browser, item editor, homepage, pages, ingredients, categories, restaurant, media
 - [Remaining Code in app.js](#remaining-code-in-appjs)
 - [Development](#development) — local setup, adding modules, debugging
 
@@ -23,10 +23,10 @@ The admin panel is a **single-page application** at `/admin/app/`. It allows res
 |--------|---------|
 | Entry point | `admin/app/index.html` |
 | Main logic | `admin/app/app.js` (~9,765 lines) |
-| Modules | `admin/app/modules/` (13 extracted modules, ~3,500 lines total) |
+| Modules | `admin/app/modules/` (16 extracted modules, including native Restaurant/Media/Pages panels) |
 | Styles | `admin/app/styles/` |
 | Auth | Netlify Identity; dev bypass via `?devAuthBypass=1` |
-| Routing | Hash-based (`#/dashboard`, `#/menu`, `#/menu/item/:id`, etc.) |
+| Routing | Hash-based (`#/dashboard`, `#/menu`, `#/pages`, `#/restaurant`, `#/media`, `#/media/item/:id`, etc.) |
 | State | Single `state` object in the IIFE closure of `app.js` |
 | No build step | Scripts loaded directly via `<script>` tags |
 
@@ -41,7 +41,7 @@ graph TB
   subgraph Browser
     HTML["admin/app/index.html"]
     CSS["admin/app/styles/"]
-    subgraph Modules ["admin/app/modules/ (13 modules)"]
+    subgraph Modules ["admin/app/modules/ (16 modules)"]
       constants
       utils
       auth
@@ -55,6 +55,9 @@ graph TB
       menuMedia[menu-media]
       commandPalette[command-palette]
       dashboard
+      restaurantPanel[panels/restaurant-panel]
+      mediaPanel[panels/media-panel]
+      pagesPanel[panels/pages-panel]
     end
     APP["admin/app/app.js<br/>(editors, routing, init)"]
     STATE[("state object")]
@@ -107,6 +110,9 @@ Each extracted module lives in `admin/app/modules/`, is wrapped in its own IIFE,
 | `render-utils.js` | `FigataAdmin.renderUtils` | 20 | HTML escaping, slugify, asset paths, toggle component system |
 | `menu-media.js` | `FigataAdmin.menuMedia` | 4 | Menu media path resolution, image fallbacks, fetchJson |
 | `dashboard.js` | `FigataAdmin.dashboard` | 2 | Dashboard metrics display, panel opener |
+| `panels/restaurant-panel.js` | `FigataAdmin.restaurantPanel` | 4 | Native Restaurant panel: open, render, sync, bind |
+| `panels/media-panel.js` | `FigataAdmin.mediaPanel` | 3 | Native Media panel: open, render, bind |
+| `panels/pages-panel.js` | `FigataAdmin.pagesPanel` | 3 | Native Pages panel scaffold: open, render, bind |
 
 ### Script Loading Order
 
@@ -115,7 +121,7 @@ Modules must load **before** `app.js` in `admin/app/index.html`:
 ```
 constants → utils → auth → drafts → publish → navigation →
 command-palette → sidebar → accordion → panels → render-utils →
-menu-media → dashboard → app.js
+menu-media → dashboard → panels/restaurant-panel → panels/media-panel → panels/pages-panel → app.js
 ```
 
 ### Context Injection Pattern
@@ -138,7 +144,7 @@ function setSidebarCollapsed(next, opts) {
 }
 ```
 
-Current ctx factories in `app.js`: `_sbCtx()` (sidebar), `_acCtx()` (accordion), `_pnCtx()` (panels), `_cpCtx()` (command palette), `_dbCtx()` (dashboard), plus inline ctx objects for navigation, drafts, and publish.
+Current ctx factories in `app.js`: `_sbCtx()` (sidebar), `_acCtx()` (accordion), `_pnCtx()` (panels), `_cpCtx()` (command palette), `_dbCtx()` (dashboard), `_restCtx()` (restaurant), `_mediaCtx()` (media), `_pagesCtx()` (pages), plus inline ctx objects for navigation, drafts, and publish.
 
 ---
 
@@ -151,12 +157,12 @@ The `state` object is the centralized store for all admin panel data. Defined at
 | Property | Type | Purpose |
 |----------|------|---------|
 | `data` | `object \| null` | Raw fetched data from all `data/*.json` endpoints |
-| `drafts` | `object` | Working copies of data being edited (menu, availability, home, ingredients, categories) |
+| `drafts` | `object` | Working copies of data being edited (menu, availability, home, ingredients, categories, restaurant, media) |
 | `indexes` | `object` | Derived indexes built from data (category lists, ingredient maps, media paths) |
 | `isDataLoading` | `boolean` | True while fetching data from endpoints |
 | `hasDataLoaded` | `boolean` | True after initial data fetch completes |
 | `isPublishing` | `boolean` | True during publish operation |
-| `currentPanel` | `string` | Active panel ID (`"dashboard"`, `"menu-browser"`, `"menu-item"`, `"home-editor"`, `"ingredients-editor"`, `"categories-editor"`) |
+| `currentPanel` | `string` | Active panel ID (`"dashboard"`, `"menu-browser"`, `"menu-item"`, `"home-editor"`, `"pages-editor"`, `"ingredients-editor"`, `"categories-editor"`, `"restaurant-editor"`, `"media-editor"`) |
 | `visiblePanel` | `string` | Currently visible panel (may differ during transitions) |
 
 ### Navigation Sub-State
@@ -188,6 +194,8 @@ The `state` object is the centralized store for all admin panel data. Defined at
 | `drafts.home` | `data/home.json` | Home editor |
 | `drafts.ingredients` | `data/ingredients.json` | Ingredients editor |
 | `drafts.categories` | `data/categories.json` | Categories editor |
+| `drafts.restaurant` | `data/restaurant.json` | Restaurant editor |
+| `drafts.media` | `data/media.json` | Media editor |
 
 Drafts are lazily initialized (via `ensureMenuDraft()`, `ensureHomeDraft()`, etc.) and persisted to `localStorage` for crash recovery.
 
@@ -207,8 +215,11 @@ Panel container elements, used for panel visibility toggling:
 | `menuBrowserPanel` | `menu-browser-panel` | Menu browser |
 | `menuItemPanel` | `menu-item-panel` | Item editor |
 | `homeEditorPanel` | `home-editor-panel` | Homepage editor |
+| `pagesEditorPanel` | `pages-editor-panel` | Pages scaffold editor |
 | `ingredientsEditorPanel` | `ingredients-editor-panel` | Ingredients editor |
 | `categoriesEditorPanel` | `categories-editor-panel` | Categories editor |
+| `restaurantEditorPanel` | `restaurant-editor-panel` | Restaurant editor |
+| `mediaEditorPanel` | `media-editor-panel` | Media editor |
 
 ### Elements Registry
 
@@ -216,10 +227,10 @@ The `elements` object references ~100 DOM elements by ID. These are organized by
 
 | Area | Prefix | Examples |
 |------|--------|---------|
-| Sidebar | `sidebar*` | `sidebar`, `sidebarNav`, `sidebarNavDashboard`, `sidebarMenuAccordion`, `sidebarUserButton` |
+| Sidebar | `sidebar*` | `sidebar`, `sidebarNav`, `sidebarNavDashboard`, `sidebarNavPages`, `sidebarNavRestaurant`, `sidebarNavMedia`, `sidebarMenuAccordion`, `sidebarPagesAccordion`, `sidebarRestaurantAccordion`, `sidebarMediaAccordion`, `sidebarUserButton` |
 | Command palette | `commandPalette*` | `commandPaletteShell`, `commandPaletteDialog`, `commandPaletteInput` |
 | Session/auth | `session*`, `login*` | `sessionName`, `sessionEmail`, `loginButton`, `logoutButton` |
-| Dashboard metrics | `metric*` | `metricMenu`, `metricCategories`, `metricAvailability` |
+| Dashboard metrics | `metric*` | `metricMenu`, `metricCategories`, `metricAvailability`, `metricRestaurant`, `metricMedia` |
 | Menu browser | `menu*` | `menuBrowserStatus`, `menuBrowserGroups`, `menuNewItemButton` |
 | Item editor | `item*` | `itemEditorTitle`, `itemFieldName`, `itemFieldPrice`, `itemSaveButton` |
 | Home editor | `home*` | `homeEditorStatus`, `homeSectionsContent`, `homeSaveButton` |
@@ -244,11 +255,16 @@ The admin panel uses **hash-based routing**.
 | `#/menu/item/:id` | Item editor (edit) | `openItemEditor()` for item by ID |
 | `#/home` | Homepage editor | `openHomePageEditor()` |
 | `#/home/:sectionId` | Homepage editor (section) | `openHomePageEditor()` then scroll to section |
+| `#/pages` | Pages editor | `openPagesEditor()` |
+| `#/pages/:sectionId` | Pages editor (section) | `openPagesEditor()` then scroll to section |
 | `#/ingredients` | Ingredients editor | `openIngredientsEditor()` |
 | `#/ingredients/:id` | Ingredients editor (item) | `openIngredientsEditor()` then select ingredient |
 | `#/ingredients/icons` | Icons sub-editor | `openIngredientsEditor()` with icons tab |
 | `#/ingredients/icons/:key` | Icons sub-editor (item) | `openIngredientsEditor()` then select icon |
 | `#/categories` | Categories editor | `openCategoriesEditor()` |
+| `#/restaurant` | Restaurant editor | `openRestaurantEditor()` |
+| `#/media` | Media editor | `openMediaEditor()` |
+| `#/media/item/:id` | Media item subview | `openMediaEditor()` with item context |
 
 ### Routing Functions (in `app.js`)
 
@@ -297,6 +313,23 @@ Each editor follows a common pattern:
 - **Key functions:** `renderCategoriesEditor()`, `saveCategoryDraftBySourceIndex()`, `openCategoriesEditor()`
 - **Features:** Drag-and-drop reorder, inline editing, validation display
 
+### Panel: Pages Editor
+- **Purpose:** Native scaffold for unique site pages (`Menu`, `Nosotros`, `Ubicación`, `Contacto`, `Eventos`, `FAQs`) excluding HomePage
+- **Key functions:** `openPagesEditor()`, `pagesPanel.render()`, `renderSidebarPagesAccordion()`
+- **Internal navigation:** Section-based sidebar accordion + scroll spy (`menu`, `nosotros`, `ubicacion`, `contacto`, `eventos`, `faqs`)
+- **Current scope:** Visual placeholders only; no per-page content editor yet
+
+### Panel: Restaurant Editor
+- **Purpose:** Edit restaurant identity, contact info, location, schedule, links, and metadata in `data/restaurant.json`
+- **Key functions:** `openRestaurantEditor()`, `restaurantPanel.render()`, `restaurantPanel.syncToDraft()`
+- **Internal navigation:** Section-based sidebar accordion + scroll spy (`identity`, `contact`, `location`, `hours`, `links`, `branding`, `seo`, `metadata`)
+
+### Panel: Media Editor
+- **Purpose:** Edit `data/media.json` natively, including per-item variants and global site assets
+- **Key functions:** `openMediaEditor()`, `mediaPanel.render()`, `mediaPanel.bindEvents()`
+- **Internal navigation:** Section-based sidebar accordion + scroll spy (`browser`, `homepage`, `brand`, `defaults`, `integrity`)
+- **Item editing flow:** Dedicated subview via `#/media/item/:id` (separate from the main section flow)
+
 ---
 
 ## Remaining Code in `app.js`
@@ -306,7 +339,7 @@ After 12 phases of extraction, `app.js` still contains ~9,765 lines. The remaini
 | Area | Approximate Lines | Description |
 |------|------------------:|-------------|
 | State + elements init | ~380 | `state`, `views`, `elements`, `dragState` definitions |
-| Delegate blocks | ~510 | One-line forwarding stubs to all 13 modules |
+| Delegate blocks | ~510 | One-line forwarding stubs to extracted modules |
 | Status/banner setters | ~50 | `setDataStatus()`, `setDraftsBanner()`, etc. |
 | Auth/login flow | ~40 | `activateLocalAuthBypass()`, `showLoginView()`, `showDashboardShell()` |
 | Token/hash helpers | ~30 | `hashHasAuthToken()`, `clearHash()`, `openIdentityModal()`, `handleTokenFlow()` |

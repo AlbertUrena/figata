@@ -6,14 +6,14 @@
 
 - [Overview](#overview)
 - [Module Dependency Graph](#module-dependency-graph)
-- [Module API Reference](#module-api-reference) — constants, utils, auth, drafts, publish, navigation, command-palette, sidebar, accordion, panels, render-utils, menu-media, dashboard
+- [Module API Reference](#module-api-reference) — constants, utils, auth, drafts, publish, navigation, command-palette, sidebar, accordion, panels, render-utils, menu-media, dashboard, restaurant-panel, media-panel, pages-panel
 - [Adding a New Module](#adding-a-new-module)
 
 ---
 
 ## Overview
 
-The admin panel has **13 extracted modules** in `admin/app/modules/`. Each module follows the same pattern:
+The admin panel has **16 extracted modules** in `admin/app/modules/`, including the native `Restaurant`, `Media`, and `Pages` panels under `admin/app/modules/panels/`. Each module follows the same pattern:
 
 1. **IIFE** wrapping all code in an immediately-invoked function expression
 2. **Namespace registration** on `window.FigataAdmin`
@@ -55,6 +55,9 @@ graph LR
   renderUtils --> APP
   menuMedia --> APP
   dashboard --> APP
+  restaurantPanel[panels/restaurant-panel] --> APP
+  mediaPanel[panels/media-panel] --> APP
+  pagesPanel[panels/pages-panel] --> APP
   constants --> APP
   utils --> APP
   auth --> APP
@@ -125,17 +128,20 @@ Pure configuration values. No functions, only data constants.
 
 | Export | Signature | Purpose |
 |--------|-----------|---------|
-| `clearPersistedDraftsStorage` | `(ctx)` | Remove all draft keys from localStorage |
-| `persistDraftsToLocalStorage` | `(ctx)` | Save current drafts to localStorage |
-| `hydrateDraftsFromLocalStorage` | `(ctx)` | Restore drafts from localStorage on startup |
+| `clearPersistedDraftsStorage` | `()` | Remove all draft keys from localStorage |
+| `persistDraftsToLocalStorage` | `(drafts)` | Save current drafts to localStorage |
+| `hydrateDraftsFromLocalStorage` | `(state, callbacks)` | Restore drafts from localStorage on startup |
 
-**Ctx shape:**
+**Callbacks shape:**
 ```js
 {
-  state: state,                    // state.drafts is read/written
-  constants: { ... },              // localStorage key constants
-  setDraftsBanner: fn,             // show/hide drafts banner
-  updateDashboardMetrics: fn       // refresh dashboard after hydration
+  ensureMenuDraft: fn,
+  ensureAvailabilityDraft: fn,
+  ensureHomeDraft: fn,
+  ensureIngredientsDraft: fn,
+  ensureCategoriesDraft: fn,
+  ensureRestaurantDraft: fn,
+  ensureMediaDraft: fn
 }
 ```
 
@@ -145,28 +151,29 @@ Pure configuration values. No functions, only data constants.
 
 | Export | Signature | Purpose |
 |--------|-----------|---------|
-| `publishChanges` | `(ctx, publishTarget)` | Validate drafts, then POST to Netlify publish function |
+| `publishChanges` | `(target, ctx)` | Validate drafts, then POST to Netlify publish function |
 
 **Ctx shape:**
 ```js
 {
   state: state,
-  elements: { ... },
-  setMenuBrowserStatus: fn,
-  setItemEditorStatus: fn,
-  setHomeEditorStatus: fn,
-  setIngredientsEditorStatus: fn,
-  setCategoriesEditorStatus: fn,
-  updateDashboardMetrics: fn,
-  clearPersistedDraftsStorage: fn,
-  setDraftsBanner: fn,
+  publishButtonSets: [ ... ],
+  getPublishButtonSet: fn,
+  getAllPublishButtonSets: fn,
+  setCurrentEditorStatus: fn,
+  setDataStatus: fn,
+  ensureMediaStore: fn,
+  ensureMediaDraft: fn,
+  ensureRestaurantDraft: fn,
+  ensureIngredientsDraft: fn,
+  ensureCategoriesDraft: fn,
+  normalizeIngredientsAliasesPayload: fn,
   validateIngredientsDraftData: fn,
   validateCategoriesDraftData: fn,
-  getAllMenuItems: fn,
-  ensureMenuDraft: fn, ensureHomeDraft: fn,
-  ensureIngredientsDraft: fn, ensureCategoriesDraft: fn,
-  normalizeHomeDraft: fn,
-  isLocalDevHost: fn, fetchJson: fn
+  renderIngredientsEditorValidationSummary: fn,
+  renderIngredientsGlobalWarnings: fn,
+  renderCategoriesValidationSummary: fn,
+  renderCategoriesGlobalWarnings: fn
 }
 ```
 
@@ -229,7 +236,7 @@ Pure configuration values. No functions, only data constants.
 | Group | Exports |
 |-------|---------|
 | **DOM motion** | `syncSidebarAccordionCategoryHeights`, `clearSidebarAccordionOpeningMotion`, `prepareSidebarAccordionOpeningMotion`, `scheduleSidebarAccordionOpeningMotion`, `finalizeSidebarAccordionOpeningMotion`, `setSidebarAccordionElementState` |
-| **Element-aware** | `clearAllSidebarAccordionOpeningMotions`, `syncAllSidebarAccordionCategoryHeights`, `showMenuAccordion`, `showHomepageAccordion`, `showIngredientsAccordion`, `showCategoriesAccordion`, `getSidebarAccordionKeyForPanel`, `getSidebarOpenAccordionKeyFromDom`, `getSidebarAccordionElementByKey`, `isSidebarAccordionOpening`, `applySidebarAccordionState`, `transitionSidebarAccordions` |
+| **Element-aware** | `clearAllSidebarAccordionOpeningMotions`, `syncAllSidebarAccordionCategoryHeights`, `showMenuAccordion`, `showHomepageAccordion`, `showPagesAccordion`, `showIngredientsAccordion`, `showCategoriesAccordion`, `showRestaurantAccordion`, `showMediaAccordion`, `getSidebarAccordionKeyForPanel`, `getSidebarOpenAccordionKeyFromDom`, `getSidebarAccordionElementByKey`, `isSidebarAccordionOpening`, `applySidebarAccordionState`, `transitionSidebarAccordions` |
 | **Indicator** | `updateSidebarActiveIndicator`, `clearSidebarIndicatorSyncTimers`, `scheduleSidebarActiveIndicatorSync` |
 
 **Ctx factory:** `_acCtx()` in `app.js`.
@@ -288,6 +295,52 @@ Pure configuration values. No functions, only data constants.
 | `openDashboard` | `(ctx, options)` | Open the dashboard panel |
 
 **Ctx factory:** `_dbCtx()` in `app.js`.
+
+---
+
+### `panels/restaurant-panel.js` → `FigataAdmin.restaurantPanel`
+
+| Export | Signature | Purpose |
+|--------|-----------|---------|
+| `open` | `(ctx, options)` | Open the native Restaurant panel and sync the route |
+| `render` | `(ctx)` | Render the full `restaurant.json` editor form |
+| `syncToDraft` | `(ctx)` | Copy current form fields into `state.drafts.restaurant` |
+| `bindEvents` | `(ctx)` | Attach delegated input/click handlers for save/export/publish |
+| `sections` | `array` | Section metadata used by the shared sidebar accordion and scroll spy |
+| `normalizeSectionId` | `(sectionId)` | Normalize a Restaurant section ID |
+| `getSectionAnchorId` | `(sectionId)` | Build the DOM anchor ID for a Restaurant section |
+
+**Ctx factory:** `_restCtx()` in `app.js`.
+
+---
+
+### `panels/media-panel.js` → `FigataAdmin.mediaPanel`
+
+| Export | Signature | Purpose |
+|--------|-----------|---------|
+| `open` | `(ctx, options)` | Open the native Media panel and sync the route |
+| `render` | `(ctx)` | Render grouped browser + global sections, or dedicated item subview (`#/media/item/:id`) |
+| `bindEvents` | `(ctx)` | Attach delegated handlers for search, item selection, save, export, and publish |
+| `sections` | `array` | Section metadata used by the shared sidebar accordion and scroll spy |
+| `normalizeSectionId` | `(sectionId)` | Normalize a Media section ID |
+| `getSectionAnchorId` | `(sectionId)` | Build the DOM anchor ID for a Media section |
+
+**Ctx factory:** `_mediaCtx()` in `app.js`.
+
+---
+
+### `panels/pages-panel.js` → `FigataAdmin.pagesPanel`
+
+| Export | Signature | Purpose |
+|--------|-----------|---------|
+| `open` | `(ctx, options)` | Open the native Pages panel and sync `#/pages` |
+| `render` | `(ctx)` | Render the scaffold sections for unique site pages |
+| `bindEvents` | `(ctx)` | Attach lightweight panel-level events |
+| `sections` | `array` | Sidebar/scroll-spy metadata (`menu`, `nosotros`, `ubicacion`, `contacto`, `eventos`, `faqs`) |
+| `normalizeSectionId` | `(sectionId)` | Normalize a Pages section ID |
+| `getSectionAnchorId` | `(sectionId)` | Build the DOM anchor ID for a Pages section |
+
+**Ctx factory:** `_pagesCtx()` in `app.js`.
 
 ---
 

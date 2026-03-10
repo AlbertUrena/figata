@@ -53,12 +53,15 @@ website-figata/
 │   ├── app/                   ← Admin panel SPA
 │   │   ├── index.html            Admin HTML shell (~1,100 lines)
 │   │   ├── app.js                Main application logic (~9,765 lines)
-│   │   ├── modules/              13 extracted modules (see admin doc)
+│   │   ├── modules/              16 extracted modules + native panel modules
+│   │   │   └── panels/           Native custom panels (`restaurant-panel.js`, `media-panel.js`, `pages-panel.js`)
 │   │   └── styles/               Admin-specific CSS
 │   └── cms/                   ← Netlify CMS config (rarely used)
 ├── shared/                    ← Validation contracts (used by admin + publish)
 │   ├── ingredients-contract.js   Ingredient data validation
-│   └── categories-contract.js    Category data validation
+│   ├── categories-contract.js    Category data validation
+│   ├── restaurant-contract.js    Restaurant data validation
+│   └── media-contract.js         Media data validation + helpers
 ├── netlify/
 │   └── functions/
 │       └── publish.js         ← Serverless function: commits data via Git
@@ -68,7 +71,7 @@ website-figata/
 │   ├── validate-categories.js    Validates categories.json
 │   ├── validate_home_json.js     Validates home.json
 │   ├── validate_media_json.js    Validates media.json
-│   ├── validate_restaurant_json.js Validates restaurant.json
+│   ├── validate-restaurant.js    Validates restaurant.json
 │   ├── check_admin_ui.js         Checks admin UI element IDs
 │   └── dynamic_probe.js          Runtime analysis tool
 ├── assets/                    ← Static assets (images, icons, SVGs)
@@ -119,6 +122,7 @@ Use this table to find the right starting point for common tasks:
 | Change public menu display | `js/mas-pedidas.js` | `data/menu.json`, `data/media.json` |
 | Edit restaurant info | `js/restaurant-config.js` | `data/restaurant.json` |
 | Work on admin panel | `docs/developers/admin/admin-panel.md` | `admin/app/app.js`, `admin/app/modules/` |
+| Work on native Restaurant/Media/Pages panels | `docs/developers/admin/admin-editors.md` | `admin/app/modules/panels/restaurant-panel.js`, `admin/app/modules/panels/media-panel.js`, `admin/app/modules/panels/pages-panel.js` |
 | Fix admin sidebar / navigation | `admin/app/modules/sidebar.js` | `navigation.js`, `accordion.js`, `panels.js` |
 | Change admin command palette | `admin/app/modules/command-palette.js` | — |
 | Modify data schemas | `docs/developers/data/data-layer.md` | `data/*.json`, `shared/*.js` |
@@ -193,7 +197,7 @@ The admin panel uses a **namespace + IIFE + delegate** pattern:
 ### Script Loading Order
 
 Admin modules must load **before** `app.js` in `admin/app/index.html`. Current order:
-`constants` → `utils` → `auth` → `drafts` → `publish` → `navigation` → `command-palette` → `sidebar` → `accordion` → `panels` → `render-utils` → `menu-media` → `dashboard` → `app.js`
+`constants` → `utils` → `auth` → `drafts` → `publish` → `navigation` → `command-palette` → `sidebar` → `accordion` → `panels` → `render-utils` → `menu-media` → `dashboard` → `panels/restaurant-panel` → `panels/media-panel` → `panels/pages-panel` → `app.js`
 
 ### Data Conventions
 

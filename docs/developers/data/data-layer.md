@@ -6,7 +6,7 @@
 
 - [Overview](#overview)
 - [Data Files](#data-files) — menu, categories, ingredients, availability, home, restaurant, media, media-variants, media-report
-- [Validation Contracts](#validation-contracts) — ingredients-contract, categories-contract
+- [Validation Contracts](#validation-contracts) — ingredients, categories, restaurant, media
 - [Data Flow](#data-flow) — from admin drafts to live site
 - [Key Rules](#key-rules)
 
@@ -16,7 +16,7 @@
 
 The data layer consists of **9 JSON files** in `data/` that serve as the shared data store between the public website and the admin panel. These files are committed to Git and deployed statically. The admin panel modifies them through a publish pipeline (Netlify serverless function).
 
-Two **validation contracts** in `shared/` define the structural rules for ingredients and categories data. These contracts are used by both the admin panel (client-side validation before publish) and the publish pipeline (server-side validation before commit).
+Four **validation contracts** in `shared/` define the structural rules for ingredients, categories, restaurant, and media data. These contracts are used by both the admin panel (client-side validation before publish) and the publish pipeline (server-side validation before commit).
 
 ---
 
@@ -236,33 +236,60 @@ Business information: name, phone, address, hours.
 
 **Read by:** `js/restaurant-config.js` (public site)
 
-**Validated by:** `scripts/validate_restaurant_json.js`
+**Validated by:** `shared/restaurant-contract.js`, `scripts/validate-restaurant.js`
 
 ---
 
-### `data/media.json` — Per-Item Media Variants
+### `data/media.json` — Media Assets Mapping
 
-Maps menu item IDs to their image variants.
+Maps visual assets (images) to entities, evolving from a flat schema to a `source + overrides` model. It also holds global site assets.
 
 ```
 {
   "version": 1,
-  "schema": "figata.media.v1",
+  "schema": "figata.media.v2",
+  "updatedAt": "...",
+  "updatedBy": "...",
+  "notes": "...",
+  "global": {
+    "homepage": {
+      "heroBackground": "assets/home/seamless-bg.webp",
+      "featuredBackground": "assets/home/seamless-bg.webp"
+    },
+    "branding": {
+      "logo": "assets/logo.svg",
+      "favicon": "assets/favicon.ico"
+    },
+    "utility": {
+      "placeholder": "assets/menu/placeholders/card.svg",
+      "fallbackImage": "assets/menu/placeholders/modal.svg"
+    }
+  },
+  "defaults": {
+    "card": "assets/menu/placeholders/card.svg",
+    "modal": "assets/menu/placeholders/modal.svg",
+    "hover": "assets/menu/placeholders/card.svg",
+    "alt": "Imagen del producto Figata"
+  },
   "items": {
-    "margherita": {
-      "card": "assets/menu/margherita.webp",       // card/grid view
-      "hover": "menu/hover/margherita-hover.webp",  // optional hover state
-      "modal": "menu/margherita.webp",              // detail/modal view
-      "gallery": [],                                // future: additional images
-      "alt": "Margherita",                          // accessibility text
-      "dominantColor": "",                          // optional, for placeholder
-      "version": 1
+    "berenjenas_parmesana": {
+      "source": "assets/menu/berenjenas.webp",
+      "alt": "Berenjenas a la parmesana gratinadas",
+      "overrides": {
+        "card": "",
+        "hover": "assets/menu/hover/berenjenas-hover.webp",
+        "modal": "",
+        "gallery": []
+      },
+      "dominantColor": "",
+      "version": 2
     }
   }
 }
 ```
 
-**Validated by:** `scripts/validate_media_json.js`
+The system uses `source` by default, but falls back to the `overrides` dictionary to specify distinct visual intents (not merely resolutions) for contexts like card or modal.
+**Validated by:** `shared/media-contract.js`, `scripts/validate_media_json.js`
 
 ---
 

@@ -338,7 +338,7 @@
         },
         {
           "id": "diavola",
-          "name": "Diavola tt",
+          "name": "Diavola",
           "slug": "diavola",
           "category": "pizza",
           "subcategory": "",
@@ -351,10 +351,16 @@
             "salamino_piccante"
           ],
           "tags": [
-            "spicy"
+            "cured_meat",
+            "pork",
+            "spicy",
+            "vegan",
+            "vegetarian"
           ],
-          "allergens": [],
-          "image": "menu/diavola.webp",
+          "allergens": [
+            "milk"
+          ],
+          "image": "assets/menu/diavola.webp",
           "featured": true,
           "spicy_level": 1,
           "vegetarian": false,

@@ -24,6 +24,13 @@
         request: ctx.requestHomeScrollSpyUpdate
       };
     }
+    if (panel === "pages-editor") {
+      return {
+        refresh: ctx.refreshPagesScrollAnchors,
+        update: ctx.updatePagesScrollSpy,
+        request: ctx.requestPagesScrollSpyUpdate
+      };
+    }
     if (
       panel === "ingredients-editor" &&
       ctx.state.ingredientsEditor.tab === "ingredients" &&
@@ -40,6 +47,20 @@
         refresh: ctx.refreshCategoriesScrollAnchors,
         update: ctx.updateCategoriesScrollSpy,
         request: ctx.requestCategoriesScrollSpyUpdate
+      };
+    }
+    if (panel === "restaurant-editor") {
+      return {
+        refresh: ctx.refreshRestaurantScrollAnchors,
+        update: ctx.updateRestaurantScrollSpy,
+        request: ctx.requestRestaurantScrollSpyUpdate
+      };
+    }
+    if (panel === "media-editor") {
+      return {
+        refresh: ctx.refreshMediaScrollAnchors,
+        update: ctx.updateMediaScrollSpy,
+        request: ctx.requestMediaScrollSpyUpdate
       };
     }
     return null;
@@ -83,33 +104,50 @@
   }
 
   function applyPanelVisibility(ctx, panel) {
-    ctx.views.dashboardPanel.classList.add("is-hidden");
-    ctx.views.menuBrowserPanel.classList.add("is-hidden");
-    ctx.views.menuItemPanel.classList.add("is-hidden");
-    ctx.views.homeEditorPanel.classList.add("is-hidden");
-    ctx.views.ingredientsEditorPanel.classList.add("is-hidden");
-    ctx.views.categoriesEditorPanel.classList.add("is-hidden");
+    [
+      ctx.views.dashboardPanel,
+      ctx.views.menuBrowserPanel,
+      ctx.views.menuItemPanel,
+      ctx.views.homeEditorPanel,
+      ctx.views.pagesEditorPanel,
+      ctx.views.ingredientsEditorPanel,
+      ctx.views.categoriesEditorPanel,
+      ctx.views.restaurantEditorPanel,
+      ctx.views.mediaEditorPanel
+    ].forEach(function (panelElement) {
+      if (!panelElement) return;
+      panelElement.classList.add("is-hidden");
+    });
 
     if (panel === "menu-browser") {
-      ctx.views.menuBrowserPanel.classList.remove("is-hidden");
+      if (ctx.views.menuBrowserPanel) ctx.views.menuBrowserPanel.classList.remove("is-hidden");
     } else if (panel === "menu-item") {
-      ctx.views.menuItemPanel.classList.remove("is-hidden");
+      if (ctx.views.menuItemPanel) ctx.views.menuItemPanel.classList.remove("is-hidden");
     } else if (panel === "home-editor") {
-      ctx.views.homeEditorPanel.classList.remove("is-hidden");
+      if (ctx.views.homeEditorPanel) ctx.views.homeEditorPanel.classList.remove("is-hidden");
+    } else if (panel === "pages-editor") {
+      if (ctx.views.pagesEditorPanel) ctx.views.pagesEditorPanel.classList.remove("is-hidden");
     } else if (panel === "ingredients-editor") {
-      ctx.views.ingredientsEditorPanel.classList.remove("is-hidden");
+      if (ctx.views.ingredientsEditorPanel) ctx.views.ingredientsEditorPanel.classList.remove("is-hidden");
     } else if (panel === "categories-editor") {
-      ctx.views.categoriesEditorPanel.classList.remove("is-hidden");
+      if (ctx.views.categoriesEditorPanel) ctx.views.categoriesEditorPanel.classList.remove("is-hidden");
+    } else if (panel === "restaurant-editor") {
+      if (ctx.views.restaurantEditorPanel) ctx.views.restaurantEditorPanel.classList.remove("is-hidden");
+    } else if (panel === "media-editor") {
+      if (ctx.views.mediaEditorPanel) ctx.views.mediaEditorPanel.classList.remove("is-hidden");
     } else {
-      ctx.views.dashboardPanel.classList.remove("is-hidden");
+      if (ctx.views.dashboardPanel) ctx.views.dashboardPanel.classList.remove("is-hidden");
     }
 
     var isMenuPanel = panel === "menu-browser" || panel === "menu-item";
     var isHomePanel = panel === "home-editor";
+    var isPagesPanel = panel === "pages-editor";
     var isIngredientsPanel = panel === "ingredients-editor";
     var isCategoriesPanel = panel === "categories-editor";
+    var isRestaurantPanel = panel === "restaurant-editor";
+    var isMediaPanel = panel === "media-editor";
     if (ctx.elements.topbar) {
-      ctx.elements.topbar.classList.toggle("is-hidden", isMenuPanel || isHomePanel || isIngredientsPanel || isCategoriesPanel);
+      ctx.elements.topbar.classList.toggle("is-hidden", isMenuPanel || isHomePanel || isPagesPanel || isIngredientsPanel || isCategoriesPanel || isRestaurantPanel || isMediaPanel);
     }
 
     ctx.state.visiblePanel = panel;
@@ -124,18 +162,30 @@
     options = options || {};
     var isMenuPanel = panel === "menu-browser" || panel === "menu-item";
     var isHomePanel = panel === "home-editor";
+    var isPagesPanel = panel === "pages-editor";
     var isIngredientsPanel = panel === "ingredients-editor";
     var isCategoriesPanel = panel === "categories-editor";
+    var isRestaurantPanel = panel === "restaurant-editor";
+    var isMediaPanel = panel === "media-editor";
     ctx.elements.sidebarNavDashboard.classList.toggle("is-active", panel === "dashboard");
     ctx.elements.sidebarNavMenu.classList.toggle("is-active", isMenuPanel);
     if (ctx.elements.sidebarNavHomepage) {
       ctx.elements.sidebarNavHomepage.classList.toggle("is-active", isHomePanel);
+    }
+    if (ctx.elements.sidebarNavPages) {
+      ctx.elements.sidebarNavPages.classList.toggle("is-active", isPagesPanel);
     }
     if (ctx.elements.sidebarNavIngredients) {
       ctx.elements.sidebarNavIngredients.classList.toggle("is-active", isIngredientsPanel);
     }
     if (ctx.elements.sidebarNavCategories) {
       ctx.elements.sidebarNavCategories.classList.toggle("is-active", isCategoriesPanel);
+    }
+    if (ctx.elements.sidebarNavRestaurant) {
+      ctx.elements.sidebarNavRestaurant.classList.toggle("is-active", isRestaurantPanel);
+    }
+    if (ctx.elements.sidebarNavMedia) {
+      ctx.elements.sidebarNavMedia.classList.toggle("is-active", isMediaPanel);
     }
     ctx.elements.sidebarHomeButton.classList.toggle("is-active", panel === "dashboard");
 

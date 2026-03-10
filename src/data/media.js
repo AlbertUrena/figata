@@ -67,6 +67,7 @@
         hover: normalizeAssetPath(defaults.hover) || STATIC_DEFAULTS.hover,
         alt: normalizeText(defaults.alt) || STATIC_DEFAULTS.alt,
       },
+      global: source.global && typeof source.global === 'object' ? source.global : { homepage: {}, branding: {}, utility: {} },
       items: new Map(),
       warnedKeys: new Set(),
       missingMediaIds: new Set(),
@@ -80,14 +81,41 @@
         return;
       }
 
+      const version = Number.isFinite(Number(rawEntry.version)) ? Number(rawEntry.version) : 1;
+      
+      let card = '';
+      let hover = '';
+      let modal = '';
+      let gallery = [];
+      let alt = '';
+      let dominantColor = '';
+
+      if (version >= 2 || rawEntry.source) {
+        const sourcePath = normalizeAssetPath(rawEntry.source);
+        const overrides = rawEntry.overrides || {};
+        card = normalizeAssetPath(overrides.card) || sourcePath;
+        hover = normalizeAssetPath(overrides.hover) || sourcePath;
+        modal = normalizeAssetPath(overrides.modal) || sourcePath;
+        gallery = normalizeStringArray(overrides.gallery).map(normalizeAssetPath).filter(Boolean);
+        alt = normalizeText(rawEntry.alt);
+        dominantColor = normalizeText(rawEntry.dominantColor);
+      } else {
+        card = normalizeAssetPath(rawEntry.card);
+        hover = normalizeAssetPath(rawEntry.hover);
+        modal = normalizeAssetPath(rawEntry.modal);
+        gallery = normalizeStringArray(rawEntry.gallery).map(normalizeAssetPath).filter(Boolean);
+        alt = normalizeText(rawEntry.alt);
+        dominantColor = normalizeText(rawEntry.dominantColor);
+      }
+
       store.items.set(itemId, {
-        card: normalizeAssetPath(rawEntry.card),
-        hover: normalizeAssetPath(rawEntry.hover),
-        modal: normalizeAssetPath(rawEntry.modal),
-        gallery: normalizeStringArray(rawEntry.gallery).map(normalizeAssetPath).filter(Boolean),
-        alt: normalizeText(rawEntry.alt),
-        dominantColor: normalizeText(rawEntry.dominantColor),
-        version: Number.isFinite(Number(rawEntry.version)) ? Number(rawEntry.version) : 1,
+        card,
+        hover,
+        modal,
+        gallery,
+        alt,
+        dominantColor,
+        version,
       });
     });
 
@@ -262,6 +290,11 @@
     return Array.from(store.missingMediaIds).sort((a, b) => a.localeCompare(b));
   };
 
+  const resolveGlobal = (section, key) => {
+    const store = ensureStore();
+    return store.global && store.global[section] && store.global[section][key] ? store.global[section][key] : '';
+  };
+
   const getConfigSnapshot = () => {
     const store = ensureStore();
     const items = {};
@@ -298,5 +331,6 @@
     getMissingMediaIds,
     getConfigSnapshot,
     prefetch,
+    resolveGlobal,
   };
 })();

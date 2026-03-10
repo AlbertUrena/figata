@@ -125,6 +125,21 @@
                   </button>
                   <div id="sidebar-homepage-accordion" class="sidebar-menu-accordion" aria-hidden="true"></div>
 
+                  <button id="sidebar-nav-pages" class="sidebar-nav__item" type="button">
+                    <span class="sidebar-nav__icon" aria-hidden="true">
+                      <svg viewBox="0 0 16 16">
+                        <path
+                          fill-rule="evenodd"
+                          d="M2.25 1h7.616L13.75 4.884V14.5l-.5.5h-11l-.5-.5v-13l.5-.5Zm1 1v12h9.5V5.25H9.5V2ZM10 2.707V4.75h2.043Z"
+                          clip-rule="evenodd"
+                        ></path>
+                        <path d="M4.5 7h7v1h-7zm0 2.5h7v1h-7zm0 2.5h4.5v1H4.5z"></path>
+                      </svg>
+                    </span>
+                    <span class="sidebar-nav__label">Pages</span>
+                  </button>
+                  <div id="sidebar-pages-accordion" class="sidebar-menu-accordion" aria-hidden="true"></div>
+
                   <button id="sidebar-nav-ingredients" class="sidebar-nav__item" type="button">
                     <span class="sidebar-nav__icon" aria-hidden="true">
                       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3">
@@ -160,16 +175,17 @@
                   </button>
                   <div id="sidebar-categories-accordion" class="sidebar-menu-accordion" aria-hidden="true"></div>
 
-                  <a class="sidebar-nav__item" href="/admin/cms/#/collections/restaurant">
+                  <button id="sidebar-nav-restaurant" class="sidebar-nav__item" type="button">
                     <span class="sidebar-nav__icon" aria-hidden="true">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
                         <path d="M120-120v-122q-18-5-30-19t-14-34L40-680h25q23 0 40.5 16t19.5 39l24 265h171q33 0 56.5 23.5T400-280v40h-40v120h-60v-120H180v120h-60Zm320 0v-320H200q0-33 23.5-56.5T280-520h400q33 0 56.5 23.5T760-440H520v320h-80ZM280-600v-40q0-66 47-113t113-47v-120h80v120q66 0 113 47t47 113v40H280Zm91-80h218q-11-19-29-29.5T520-720h-80q-22 0-40 10.5T371-680Zm229 560v-120h-40v-40q0-33 23.5-56.5T640-360h172l24-265q2-23 19-39t40-16h25l-35 385q-2 20-14.5 34T840-242v122h-60v-120H660v120h-60ZM480-680Z"></path>
                       </svg>
                     </span>
-                    <span class="sidebar-nav__label">Restaurant</span>
-                  </a>
+                    <span class="sidebar-nav__label">Restaurante</span>
+                  </button>
+                  <div id="sidebar-restaurant-accordion" class="sidebar-menu-accordion" aria-hidden="true"></div>
 
-                  <a class="sidebar-nav__item" href="/admin/cms/#/collections/media">
+                  <button id="sidebar-nav-media" class="sidebar-nav__item" type="button">
                     <span class="sidebar-nav__icon" aria-hidden="true">
                       <svg viewBox="0 0 16 16">
                         <path
@@ -185,7 +201,8 @@
                       </svg>
                     </span>
                     <span class="sidebar-nav__label">Media</span>
-                  </a>
+                  </button>
+                  <div id="sidebar-media-accordion" class="sidebar-menu-accordion" aria-hidden="true"></div>
                 </nav>
               </div>
 
@@ -276,6 +293,13 @@
                   <p>Hero, featured y links.</p>
                 </button>
 
+                <button id="open-pages-editor-button" class="dash-card dash-card--button" type="button">
+                  <p class="dash-card__eyebrow">Single Pages</p>
+                  <h2>Pages</h2>
+                  <p class="dash-card__metric">6 secciones base</p>
+                  <p>Base visual para Menu, Nosotros, Ubicacion, Contacto, Eventos y FAQs.</p>
+                </button>
+
                 <button id="open-ingredients-editor-button" class="dash-card dash-card--button" type="button">
                   <p class="dash-card__eyebrow">Catalogo</p>
                   <h2>Ingredients</h2>
@@ -297,19 +321,19 @@
                   <p>Categorias y orden de secciones.</p>
                 </button>
 
-                <a class="dash-card" href="/admin/cms/#/collections/restaurant">
+                <button id="open-restaurant-editor-button" class="dash-card dash-card--button" type="button">
                   <p class="dash-card__eyebrow">Negocio</p>
-                  <h2>Restaurant</h2>
+                  <h2>Restaurante</h2>
                   <p id="metric-restaurant" class="dash-card__metric">-</p>
                   <p>Telefono, horarios y datos generales.</p>
-                </a>
+                </button>
 
-                <a class="dash-card" href="/admin/cms/#/collections/media">
+                <button id="open-media-editor-button" class="dash-card dash-card--button" type="button">
                   <p class="dash-card__eyebrow">Activos</p>
                   <h2>Media</h2>
                   <p id="metric-media" class="dash-card__metric">-</p>
                   <p>Mapa completo de imagenes por item.</p>
-                </a>
+                </button>
               </section>
             </section>
 
@@ -849,6 +873,12 @@
                 <ul id="categories-order-list" class="home-featured-list categories-order-list"></ul>
               </section>
             </section>
+
+            <section id="restaurant-editor-panel" class="restaurant-editor is-hidden" aria-label="Editor de restaurante"></section>
+
+            <section id="media-editor-panel" class="media-editor is-hidden" aria-label="Editor de media"></section>
+
+            <section id="pages-editor-panel" class="pages-editor is-hidden" aria-label="Editor de paginas"></section>
           </div>
         </div>
 
@@ -1079,6 +1109,8 @@
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
     <script src="/shared/ingredients-contract.js"></script>
     <script src="/shared/categories-contract.js"></script>
+    <script src="/shared/restaurant-contract.js"></script>
+    <script src="/shared/media-contract.js"></script>
     <script src="/admin/app/modules/constants.js"></script>
     <script src="/admin/app/modules/utils.js"></script>
     <script src="/admin/app/modules/auth.js"></script>
@@ -1092,6 +1124,9 @@
     <script src="/admin/app/modules/render-utils.js"></script>
     <script src="/admin/app/modules/menu-media.js"></script>
     <script src="/admin/app/modules/dashboard.js"></script>
+    <script src="/admin/app/modules/panels/restaurant-panel.js"></script>
+    <script src="/admin/app/modules/panels/media-panel.js"></script>
+    <script src="/admin/app/modules/panels/pages-panel.js"></script>
     <script src="/admin/app/app.js"></script>
   </body>
 </html>

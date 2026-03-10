@@ -16,6 +16,8 @@
     home: C.LOCAL_DRAFTS_HOME_KEY,
     ingredients: C.LOCAL_DRAFTS_INGREDIENTS_KEY,
     categories: C.LOCAL_DRAFTS_CATEGORIES_KEY,
+    restaurant: C.LOCAL_DRAFTS_RESTAURANT_KEY,
+    media: C.LOCAL_DRAFTS_MEDIA_KEY,
     flag: C.LOCAL_DRAFTS_FLAG_KEY
   };
 
@@ -26,6 +28,8 @@
       window.localStorage.removeItem(KEYS.home);
       window.localStorage.removeItem(KEYS.ingredients);
       window.localStorage.removeItem(KEYS.categories);
+      window.localStorage.removeItem(KEYS.restaurant);
+      window.localStorage.removeItem(KEYS.media);
       window.localStorage.removeItem(KEYS.flag);
     } catch (_error) {
       // ignore storage errors
@@ -38,7 +42,9 @@
       !drafts.availability ||
       !drafts.home ||
       !drafts.ingredients ||
-      !drafts.categories
+      !drafts.categories ||
+      !drafts.restaurant ||
+      !drafts.media
     ) return;
     try {
       window.localStorage.setItem(KEYS.menu, JSON.stringify(drafts.menu));
@@ -46,6 +52,8 @@
       window.localStorage.setItem(KEYS.home, JSON.stringify(drafts.home));
       window.localStorage.setItem(KEYS.ingredients, JSON.stringify(drafts.ingredients));
       window.localStorage.setItem(KEYS.categories, JSON.stringify(drafts.categories));
+      window.localStorage.setItem(KEYS.restaurant, JSON.stringify(drafts.restaurant));
+      window.localStorage.setItem(KEYS.media, JSON.stringify(drafts.media));
       window.localStorage.setItem(KEYS.flag, "1");
     } catch (_error) {
       // ignore storage errors
@@ -63,6 +71,8 @@
       var homeRaw = window.localStorage.getItem(KEYS.home);
       var ingredientsRaw = window.localStorage.getItem(KEYS.ingredients);
       var categoriesRaw = window.localStorage.getItem(KEYS.categories);
+      var restaurantRaw = window.localStorage.getItem(KEYS.restaurant);
+      var mediaRaw = window.localStorage.getItem(KEYS.media);
 
       if (!menuRaw || !availabilityRaw) {
         clearPersistedDraftsStorage();
@@ -78,6 +88,12 @@
       var restoredCategories = categoriesRaw
         ? JSON.parse(categoriesRaw)
         : deepClone(state.data && state.data.categories);
+      var restoredRestaurant = restaurantRaw
+        ? JSON.parse(restaurantRaw)
+        : deepClone(state.data && state.data.restaurant);
+      var restoredMedia = mediaRaw
+        ? JSON.parse(mediaRaw)
+        : deepClone(state.data && state.data.media);
 
       if (!restoredMenu || !Array.isArray(restoredMenu.sections)) {
         clearPersistedDraftsStorage();
@@ -104,16 +120,30 @@
         return false;
       }
 
+      if (!restoredRestaurant || typeof restoredRestaurant !== "object") {
+        clearPersistedDraftsStorage();
+        return false;
+      }
+
+      if (!restoredMedia || typeof restoredMedia !== "object") {
+        clearPersistedDraftsStorage();
+        return false;
+      }
+
       state.drafts.menu = restoredMenu;
       state.drafts.availability = restoredAvailability;
       state.drafts.home = restoredHome;
       state.drafts.ingredients = restoredIngredients;
       state.drafts.categories = restoredCategories;
+      state.drafts.restaurant = restoredRestaurant;
+      state.drafts.media = restoredMedia; // Added media assignment
       callbacks.ensureMenuDraft();
       callbacks.ensureAvailabilityDraft();
       callbacks.ensureHomeDraft();
       callbacks.ensureIngredientsDraft();
       callbacks.ensureCategoriesDraft();
+      callbacks.ensureRestaurantDraft();
+      callbacks.ensureMediaDraft();
       return true;
     } catch (_error) {
       clearPersistedDraftsStorage();

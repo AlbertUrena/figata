@@ -6,6 +6,8 @@
 // Preview branch: CMS_PREVIEW_BRANCH (defaults to cms-preview)
 var ingredientsContract = require("../../shared/ingredients-contract.js");
 var categoriesContract = require("../../shared/categories-contract.js");
+var restaurantContract = require("../../shared/restaurant-contract.js");
+var mediaContract = require("../../shared/media-contract.js");
 var RATE_LIMIT_WINDOW_MS = 30 * 1000;
 var publishRateLimitByUser = Object.create(null);
 
@@ -58,6 +60,14 @@ function validateCategoriesPayload(payload, menuPayload) {
   return categoriesContract.validateCategoriesContract(payload, {
     menuPayload: menuPayload
   });
+}
+
+function validateRestaurantPayload(payload) {
+  return restaurantContract.validateRestaurantContract(payload);
+}
+
+function validateMediaPayload(payload) {
+  return mediaContract.validateMediaContract(payload);
 }
 
 function getUserKey(user) {
@@ -293,6 +303,8 @@ exports.handler = async function (event, context) {
   var normalizedIngredients = hasIngredientsPayload ? normalizeJsonValue(body.ingredients) : null;
   var hasCategoriesPayload = typeof body.categories !== "undefined";
   var normalizedCategories = hasCategoriesPayload ? normalizeJsonValue(body.categories) : null;
+  var hasRestaurantPayload = typeof body.restaurant !== "undefined";
+  var normalizedRestaurant = hasRestaurantPayload ? normalizeJsonValue(body.restaurant) : null;
   var hasMediaPayload = typeof body.media !== "undefined";
   var normalizedMedia = hasMediaPayload ? normalizeJsonValue(body.media) : null;
   if (
@@ -301,6 +313,7 @@ exports.handler = async function (event, context) {
     (hasHomePayload && !normalizedHome) ||
     (hasIngredientsPayload && !normalizedIngredients) ||
     (hasCategoriesPayload && !normalizedCategories) ||
+    (hasRestaurantPayload && !normalizedRestaurant) ||
     (hasMediaPayload && !normalizedMedia)
   ) {
     return jsonResponse(400, { error: "Invalid payload" });
@@ -340,12 +353,64 @@ exports.handler = async function (event, context) {
     }
   }
 
+  var restaurantValidation = hasRestaurantPayload
+    ? validateRestaurantPayload(body.restaurant)
+    : { errors: [], warnings: [] };
+  if (restaurantValidation.errors.length) {
+    return jsonResponse(400, {
+      error: "Invalid restaurant payload",
+      details: restaurantValidation.errors.slice(0, 30),
+      warnings: restaurantValidation.warnings.slice(0, 20)
+    });
+  }
+  if (hasRestaurantPayload) {
+    normalizedRestaurant = normalizeJsonValue(body.restaurant);
+    if (!normalizedRestaurant) {
+      return jsonResponse(400, { error: "Invalid payload" });
+    }
+  }
+
+  var mediaValidation = hasMediaPayload
+    ? validateMediaPayload(body.media)
+    : { errors: [], warnings: [] };
+  if (mediaValidation.errors.length) {
+    return jsonResponse(400, {
+      error: "Invalid media payload",
+      details: mediaValidation.errors.slice(0, 30),
+      warnings: mediaValidation.warnings.slice(0, 20)
+    });
+  }
+  if (hasMediaPayload) {
+    normalizedMedia = normalizeJsonValue(body.media);
+    if (!normalizedMedia) {
+      return jsonResponse(400, { error: "Invalid payload" });
+    }
+  }
+
+  var restaurantValidation = hasRestaurantPayload
+    ? validateRestaurantPayload(body.restaurant)
+    : { errors: [], warnings: [] };
+  if (restaurantValidation.errors.length) {
+    return jsonResponse(400, {
+      error: "Invalid restaurant payload",
+      details: restaurantValidation.errors.slice(0, 30),
+      warnings: restaurantValidation.warnings.slice(0, 20)
+    });
+  }
+  if (hasRestaurantPayload) {
+    normalizedRestaurant = normalizeJsonValue(body.restaurant);
+    if (!normalizedRestaurant) {
+      return jsonResponse(400, { error: "Invalid payload" });
+    }
+  }
+
   try {
     var menuPath = "data/menu.json";
     var availabilityPath = "data/availability.json";
     var homePath = "data/home.json";
     var ingredientsPath = "data/ingredients.json";
     var categoriesPath = "data/categories.json";
+    var restaurantPath = "data/restaurant.json";
     var mediaPath = "data/media.json";
 
     if (target === "preview" && targetBranch !== productionBranch) {
@@ -407,6 +472,17 @@ exports.handler = async function (event, context) {
       );
     }
 
+    var restaurantRemote = null;
+    if (hasRestaurantPayload) {
+      restaurantRemote = await readGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        restaurantPath,
+        githubToken
+      );
+    }
+
     var mediaRemote = null;
     if (hasMediaPayload) {
       mediaRemote = await readGithubFile(
@@ -427,12 +503,16 @@ exports.handler = async function (event, context) {
     var categoriesChanged = hasCategoriesPayload
       ? categoriesRemote.normalized !== normalizedCategories
       : false;
+    var restaurantChanged = hasRestaurantPayload
+      ? restaurantRemote.normalized !== normalizedRestaurant
+      : false;
     var mediaChanged = hasMediaPayload ? mediaRemote.normalized !== normalizedMedia : false;
     var validationWarnings = ingredientsValidation.warnings
       .concat(categoriesValidation.warnings)
+      .concat(restaurantValidation.warnings)
       .slice(0, 20);
 
-    if (!menuChanged && !availabilityChanged && !homeChanged && !ingredientsChanged && !categoriesChanged && !mediaChanged) {
+    if (!menuChanged && !availabilityChanged && !homeChanged && !ingredientsChanged && !categoriesChanged && !restaurantChanged && !mediaChanged) {
       return jsonResponse(200, {
         success: true,
         skipped: true,
@@ -510,6 +590,19 @@ exports.handler = async function (event, context) {
       ) || latestCommitSha;
     }
 
+    if (restaurantChanged) {
+      latestCommitSha = await writeGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        restaurantPath,
+        githubToken,
+        "CMS: update restaurant (" + target + ")",
+        body.restaurant,
+        restaurantRemote.sha
+      ) || latestCommitSha;
+    }
+
     if (mediaChanged) {
       latestCommitSha = await writeGithubFile(
         githubOwner,
@@ -534,6 +627,7 @@ exports.handler = async function (event, context) {
         home: homeChanged,
         ingredients: ingredientsChanged,
         categories: categoriesChanged,
+        restaurant: restaurantChanged,
         media: mediaChanged
       },
       validationWarnings: validationWarnings,
