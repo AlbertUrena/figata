@@ -1,16 +1,22 @@
 # Menu System
 
-> **Read this doc when** modifying how menu items are displayed on the public site, changing the item preview/modal, adjusting the featured items section, or debugging menu rendering.
+> **Read this doc when** modifying how menu items are displayed on the public site, changing item detail behavior, adjusting the featured items section, or debugging menu rendering.
 
 ---
 
 ## Overview
 
-The menu system displays **featured menu items** on the public homepage. It uses a card grid with an animated full-screen preview overlay.
+The menu system has two public surfaces:
+- Homepage featured section (`#mas-pedidas`) with preview overlay
+- Full menu page route (`/menu/`) with category navigation and full catalog browsing
 
 | Component | File | Lines | Purpose |
 |-----------|------|------:|---------|
 | **Menu renderer** | `js/mas-pedidas.js` | 1,022 | Card grid, preview overlay, cover transition animations |
+| **Shared public navbar loader** | `shared/public-navbar.js` | ~250 | Mounts canonical homepage navbar on `/menu/` |
+| **Full menu page shell** | `menu/index.html` | ~170 | Intro, top tabs shell, card template, detail subview shell |
+| **Full menu page runtime** | `js/menu-page.js` | ~650 | Events-style tabs, grouped section rendering, URL-driven detail subview |
+| **Full menu page styles** | `menu/menu-page.css` | ~560 | Centered intro, top tab sizing, responsive grid, detail subview styling |
 | **Card template** | `index.html` (`#mas-pedidas-card-template`) | ~20 | HTML template cloned for each card |
 | **Menu data generator** | `src/data/menu.js` | 660 | In-browser generator exposing `getFeaturedMenuItems()` |
 | **Ingredients component** | `src/ui/ingredient-icon-row.js` | 52 | Renders ingredient icon chips |
@@ -27,6 +33,7 @@ src/data/menu.js      → window.FigataData.menu.getFeaturedMenuItems()
 src/data/home.js      → window.FigataData.home.getHomeConfig()
 src/data/media.js     → window.FigataData.media.get(itemId, variant)
 src/data/ingredients.js → window.FigataData.ingredients (for icon row)
+shared/menu-traits.js → derives dietary/content/experience badges from ingredients metadata
     ↓
 js/mas-pedidas.js
     ├── resolvePopularSelection()   ← reads home.json popular.featuredIds + limit
@@ -36,6 +43,44 @@ js/mas-pedidas.js
     ├── toCardViewModel(item, media) ← maps to display model
     └── renderFeaturedCards()       ← clones template, populates, appends to grid
 ```
+
+```
+Menu page route loads (/menu/)
+    ↓
+shared/public-navbar.js → mounts canonical navbar from homepage source
+    ↓
+src/data/menu.js      → getMenuItemsByCategory()
+src/data/media.js     → media variants + prefetch helpers
+    ↓
+js/menu-page.js
+    ├── renderMenu()                 ← renders 5 grouped tabs + items
+    ├── updateActiveCategoryByScroll() ← scroll-synced active category state
+    ├── scrollToCategory()           ← offset-aware scroll navigation
+    └── renderRouteFromLocation()    ← list/detail subview switch from URL
+```
+
+## Full Menu Page (`/menu/`)
+
+The route is item-driven but uses a fixed top-level navigation grouping:
+- Visible tabs are always `Entradas`, `Pizzas`, `Postres`, `Bebidas`, `Productos`
+- `Pizzas` merges items from `pizza` + `pizza_autor`
+- `Bebidas` exists in the data layer and must remain renderable even with zero items
+- Items still come from `getMenuItemsByCategory(categoryId)` preserving source order per source category
+
+### Layout and Navigation
+
+- Desktop: centered intro + centered Events-style top tabs above the content
+- Tabs are static on scroll for now (non-sticky)
+- Mobile: same top tabs visual system, allowed to overflow horizontally instead of using a drawer
+- Active category can update from scroll position
+- Each category section renders its own title and item grid
+- Item detail uses a dynamic route (`/menu/?item=<id>`) inside the same page shell (no modal, no per-item HTML files)
+
+### Card Parity with “Más pedidas”
+
+- Reuses `.mas-pedidas-card` structure and CTA hierarchy
+- Maintains premium dark visual language with route-local spacing rules
+- Uses full-page grid targets: 4 columns desktop, 2 columns mobile
 
 ---
 

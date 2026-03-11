@@ -294,7 +294,7 @@ Each editor follows a common pattern:
 
 ### Panel: Item Editor
 - **Purpose:** Create/edit a single menu item with tabbed form
-- **Tabs:** Basic info, descriptions, ingredients/tags/allergens, media, availability, advanced
+- **Tabs:** Basic info, descriptions, ingredients, derived traits + `trait_overrides`, allergens, media, availability
 - **Key functions:** `openItemEditor()`, `saveItemEditorDraft()`, `deleteItem()`
 
 ### Panel: Homepage Editor
@@ -307,6 +307,7 @@ Each editor follows a common pattern:
 - **Sub-views:** Ingredients catalog → ingredient detail; Icons catalog → icon detail
 - **Key functions:** `renderIngredientsEditor()`, `saveIngredientsEditorDraft()`, `selectIngredientForEditing()`
 - **Tabs:** Ingredients tab (catalog + detail), Icons tab (catalog + detail)
+- **Ingredient metadata model:** edits `metadata.dietary_profile`, `metadata.content_flags`, `metadata.experience_signals`, `metadata.internal_traits` plus allergens/aliases
 
 ### Panel: Categories Editor
 - **Purpose:** CRUD for menu categories with ordering and visibility

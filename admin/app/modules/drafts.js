@@ -10,6 +10,116 @@
   var C = ns.constants;
   var deepClone = ns.utils.deepClone;
 
+  function normalizeText(value) {
+    return typeof value === "string" ? value.trim() : "";
+  }
+
+  function normalizePath(value) {
+    return normalizeText(value).replace(/^\/+/, "");
+  }
+
+  function isPlaceholderPath(value) {
+    var normalized = normalizePath(value);
+    if (!normalized) return false;
+    var placeholder = normalizePath(C.MENU_PLACEHOLDER_IMAGE);
+    return normalized === placeholder || normalized.indexOf("assets/menu/placeholders/") === 0;
+  }
+
+  function isLegacyRootMenuAssetPath(value) {
+    var normalized = normalizePath(value);
+    if (!normalized) return false;
+    return /^assets\/menu\/[^/]+\.(webp|png|jpe?g|avif|gif)$/i.test(normalized);
+  }
+
+  function shouldAdoptSourceImage(draftPath, sourcePath) {
+    var sourceNormalized = normalizePath(sourcePath);
+    if (!sourceNormalized) return false;
+
+    var draftNormalized = normalizePath(draftPath);
+    if (!draftNormalized) return true;
+    if (draftNormalized === sourceNormalized) return false;
+    if (isPlaceholderPath(draftNormalized) && !isPlaceholderPath(sourceNormalized)) return true;
+    if (isLegacyRootMenuAssetPath(draftNormalized) && draftNormalized !== sourceNormalized) return true;
+    return false;
+  }
+
+  function mergeMenuDraftWithSourceDescriptions(draftMenu, sourceMenu) {
+    if (
+      !draftMenu ||
+      !Array.isArray(draftMenu.sections) ||
+      !sourceMenu ||
+      !Array.isArray(sourceMenu.sections)
+    ) {
+      return;
+    }
+
+    var sourceById = {};
+    sourceMenu.sections.forEach(function (section) {
+      var items = Array.isArray(section && section.items) ? section.items : [];
+      items.forEach(function (item) {
+        var itemId = normalizeText(item && item.id);
+        if (itemId) {
+          sourceById[itemId] = item;
+        }
+      });
+    });
+
+    draftMenu.sections.forEach(function (section) {
+      var items = Array.isArray(section && section.items) ? section.items : [];
+      items.forEach(function (item) {
+        if (!item || typeof item !== "object") return;
+
+        var itemId = normalizeText(item.id);
+        if (!itemId || !sourceById[itemId]) return;
+
+        var sourceItem = sourceById[itemId];
+
+        if (!normalizeText(item.descriptionShort) && normalizeText(sourceItem.descriptionShort)) {
+          item.descriptionShort = sourceItem.descriptionShort;
+        }
+
+        if (!normalizeText(item.descriptionLong) && normalizeText(sourceItem.descriptionLong)) {
+          item.descriptionLong = sourceItem.descriptionLong;
+        }
+
+        if (shouldAdoptSourceImage(item.image, sourceItem.image)) {
+          item.image = sourceItem.image;
+        }
+      });
+    });
+  }
+
+  function mergeMediaDraftWithSourceMedia(draftMedia, sourceMedia) {
+    if (
+      !draftMedia ||
+      typeof draftMedia !== "object" ||
+      !sourceMedia ||
+      typeof sourceMedia !== "object"
+    ) {
+      return;
+    }
+
+    if (!draftMedia.items || typeof draftMedia.items !== "object") {
+      draftMedia.items = {};
+    }
+
+    var sourceItems = sourceMedia.items || {};
+    Object.keys(sourceItems).forEach(function (itemId) {
+      var sourceEntry = sourceItems[itemId];
+      if (!sourceEntry || typeof sourceEntry !== "object") return;
+
+      var draftEntry = draftMedia.items[itemId];
+      if (!draftEntry || typeof draftEntry !== "object") {
+        draftMedia.items[itemId] = deepClone(sourceEntry);
+        return;
+      }
+
+      if (shouldAdoptSourceImage(draftEntry.source, sourceEntry.source)) {
+        draftEntry.source = sourceEntry.source;
+      }
+    });
+  }
+
   var KEYS = {
     menu: C.LOCAL_DRAFTS_MENU_KEY,
     availability: C.LOCAL_DRAFTS_AVAILABILITY_KEY,
@@ -129,6 +239,9 @@
         clearPersistedDraftsStorage();
         return false;
       }
+
+      mergeMenuDraftWithSourceDescriptions(restoredMenu, state.data && state.data.menu);
+      mergeMediaDraftWithSourceMedia(restoredMedia, state.data && state.data.media);
 
       state.drafts.menu = restoredMenu;
       state.drafts.availability = restoredAvailability;

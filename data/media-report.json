@@ -1,24 +1,105 @@
 {
-  "generatedAt": "2026-03-07T17:23:57.851Z",
+  "generatedAt": "2026-03-11T02:59:31.877Z",
   "schemaVersion": 2,
   "summary": {
     "errors": 0,
-    "warnings": 0,
+    "warnings": 1,
     "menuItems": 43,
     "mediaItems": 43,
     "missingMediaItems": 0,
     "unknownMediaItems": 0,
     "missingSource": 0,
     "brokenPaths": 0,
-    "duplicatedPaths": 0
+    "duplicatedPaths": 6
   },
   "details": {
     "errors": [],
-    "warnings": [],
+    "warnings": [
+      "Rutas duplicadas potencialmente innecesarias: 6"
+    ],
     "missingMediaItems": [],
     "unknownMediaItems": [],
     "missingSource": [],
     "brokenPaths": [],
-    "duplicatedPaths": []
+    "duplicatedPaths": [
+      {
+        "path": "assets/menu/entradas/bruschetta.webp",
+        "uses": [
+          {
+            "itemId": "bruschetta_classica",
+            "variant": "source"
+          },
+          {
+            "itemId": "bruschetta_classica",
+            "variant": "overrides.modal"
+          }
+        ]
+      },
+      {
+        "path": "assets/menu/pizzas/clasica/margherita.webp",
+        "uses": [
+          {
+            "itemId": "margherita",
+            "variant": "source"
+          },
+          {
+            "itemId": "margherita",
+            "variant": "overrides.modal"
+          }
+        ]
+      },
+      {
+        "path": "assets/menu/pizzas/clasica/margherita-sbagliata.webp",
+        "uses": [
+          {
+            "itemId": "margherita_sbagliata",
+            "variant": "source"
+          },
+          {
+            "itemId": "margherita_sbagliata",
+            "variant": "overrides.modal"
+          }
+        ]
+      },
+      {
+        "path": "assets/menu/pizzas/autor/quattroformaggi.webp",
+        "uses": [
+          {
+            "itemId": "quattro_formaggi_truffle",
+            "variant": "source"
+          },
+          {
+            "itemId": "quattro_formaggi_truffle",
+            "variant": "overrides.modal"
+          }
+        ]
+      },
+      {
+        "path": "assets/menu/postres/tiramisu.webp",
+        "uses": [
+          {
+            "itemId": "tiramisu",
+            "variant": "source"
+          },
+          {
+            "itemId": "tiramisu",
+            "variant": "overrides.modal"
+          }
+        ]
+      },
+      {
+        "path": "assets/menu/productos/sourdough-ciabatta.webp",
+        "uses": [
+          {
+            "itemId": "pan_ciabatta",
+            "variant": "source"
+          },
+          {
+            "itemId": "pan_ciabatta",
+            "variant": "overrides.modal"
+          }
+        ]
+      }
+    ]
   }
 }

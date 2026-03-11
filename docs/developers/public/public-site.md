@@ -6,13 +6,17 @@
 
 ## Overview
 
-The public site is a **single-page static website** served by Netlify. There is no build step — the HTML, CSS, and JavaScript are deployed directly.
+The public site is a static multi-route surface served by Netlify. It currently has:
+- Homepage: `index.html`
+- Full menu page: `menu/index.html` (`/menu/`)
+
+There is no build step — the HTML, CSS, and JavaScript are deployed directly.
 
 | Aspect | Details |
 |--------|---------|
-| Entry point | `index.html` (~3,500 lines, 117KB) |
+| Entry points | `index.html` (homepage), `menu/index.html` (full menu page) |
 | Styles | `styles.css` (~2,600 lines, 75KB) |
-| Scripts | 9 files in `js/` + 6 files in `src/data/` and `src/ui/` |
+| Scripts | 11 files in `js/` + shared runtime modules in `shared/` + data loaders in `src/data/` |
 | Data | Fetches from `data/*.json` at runtime |
 | Hosting | Netlify with aggressive cache headers for static assets |
 
@@ -24,7 +28,7 @@ The page is structured as a single scrollable document. Major sections in `index
 
 | Section | HTML Element | ID/Class | Lines (approx) | Rendered by |
 |---------|-------------|----------|---------------:|-------------|
-| **Navbar** | `<nav>` | `.navbar` | 78–102 | `js/navbar-collapse.js` |
+| **Navbar** | `<nav>` | `.navbar` | 78–102 | Canonical markup in `index.html` + `shared/public-navbar.js` for cross-route reuse |
 | **Hero** | `<section>` | `#inicio`, `.hero` | 107–129 | `js/home-config.js` |
 | **Announcement** | `<section>` | `#home-announcement` | 131–138 | `js/home-config.js` (hidden by default) |
 | **Featured Items** | `<section>` | `#mas-pedidas` | 140–172 | `js/mas-pedidas.js` (uses card template) |
@@ -40,32 +44,59 @@ The page is structured as a single scrollable document. Major sections in `index
 | Menu item card | `mas-pedidas-card-template` | `js/mas-pedidas.js` | Renders each menu item as a card |
 | Testimonial card | `testimonial-card-template` | `js/testimonials.js` | Renders each testimonial entry |
 
+## Menu Route Map (`/menu/`)
+
+| Area | File | Purpose |
+|------|------|---------|
+| Shared navbar runtime | `shared/public-navbar.js` | Mounts canonical homepage navbar on `/menu/` and normalizes route URLs |
+| Route HTML | `menu/index.html` | Full menu page shell + templates |
+| Route styles | `menu/menu-page.css` | Centered intro, Events-style top tabs, responsive grid, detail subview |
+| Route script | `js/menu-page.js` | Runtime tab navigation + grouped category rendering |
+
 ---
 
 ## JavaScript Architecture
 
 ### Script Loading Order
 
-All scripts are loaded with `defer` and execute in order after HTML parsing:
+Homepage (`index.html`) scripts are loaded with `defer` and execute in order after HTML parsing:
 
 ```
-1.  js/reload-cover.js          — Page reload overlay
-2.  js/navbar-collapse.js       — Mobile navbar behavior
-3.  src/data/media.js           — Media data generator
-4.  src/data/menu.js            — Menu data generator
-5.  src/data/home.js            — Home data generator
-6.  src/data/restaurant.js      — Restaurant data generator
-7.  src/data/ingredients.js     — Ingredients data generator
-8.  src/ui/ingredient-icon-row.js — Ingredient icon row component
-9.  js/home-lazy-images.js      — Lazy image loading (IntersectionObserver)
-10. js/home-config.js           — Homepage section rendering (hero, delivery, footer, etc.)
-11. js/mas-pedidas.js           — Menu rendering engine
-12. js/testimonials.js          — Testimonials carousel
-13. js/events-tabs.js           — Events tabbed section
+1.  shared/figata-cover-transition.js — Shared transition engine
+2.  js/menu-route-transition.js — Navbar `/menu/` transition handoff (home only)
+3.  js/reload-cover.js          — Entry/reload cover transition
+4.  shared/public-navbar.js     — Captures canonical navbar markup for cross-route reuse
+5.  js/navbar-collapse.js       — Navbar collapse/expand animation controller
+6.  shared/menu-traits.js       — Trait/badge runtime helpers
+7.  src/data/media.js           — Media data loader
+8.  src/data/menu.js            — Menu data loader
+9.  src/data/home.js            — Home data loader
+10. src/data/restaurant.js      — Restaurant data loader
+11. src/data/ingredients.js     — Ingredients data loader
+12. src/ui/ingredient-icon-row.js — Ingredient icon row component
+13. js/home-lazy-images.js      — Lazy image loading (IntersectionObserver)
+14. js/home-config.js           — Homepage section rendering (hero, delivery, footer, etc.)
+15. js/mas-pedidas.js           — Featured menu renderer + preview transition consumer
+16. js/testimonials.js          — Testimonials carousel
+17. js/events-tabs.js           — Events tabbed section
 ```
 
 Additionally loaded (non-deferred):
 - `netlify-identity-widget.js` from CDN — for admin redirect handling
+
+Menu page (`menu/index.html`) loads:
+
+```
+1. shared/public-navbar.js
+2. shared/figata-cover-transition.js
+3. js/reload-cover.js
+4. js/navbar-collapse.js
+5. shared/menu-traits.js
+6. src/data/media.js
+7. src/data/menu.js
+8. src/data/ingredients.js
+9. js/menu-page.js
+```
 
 ### Script Responsibilities
 
@@ -92,6 +123,15 @@ The menu rendering engine. This is the largest JS file. Handles:
 - Price formatting (DOP currency)
 
 **Data sources:** `data/menu.json`, `data/categories.json`, `data/availability.json`, `data/media.json`, `data/ingredients.json`
+
+#### `js/menu-page.js`
+Full menu page runtime controller for `/menu/`. Handles:
+- Fetching per-category items from `window.FigataData.menu.getMenuItemsByCategory()`
+- Grouping the route into 5 fixed visible tabs: Entradas, Pizzas, Postres, Bebidas, Productos
+- Reusing the homepage Events tab UI/animation pattern for top-level menu navigation
+- Rendering category sections with menu cards (including empty-state sections such as Bebidas)
+- Scroll-synced active category state
+- Dynamic item detail subview via URL (`/menu/?item=<id>`) with browser back/forward
 
 #### `js/restaurant-config.js` (11KB, ~390 lines)
 Restaurant information display. Fetches `data/restaurant.json` and renders:
@@ -121,17 +161,38 @@ Events section with tabbed display. Fetches `data/home.json` (events section) an
 #### `js/feature-tabs.js` (4KB, ~130 lines)
 Feature highlights section with tabbed display. Renders feature cards showcasing restaurant attributes.
 
+#### `shared/public-navbar.js`
+Shared public navbar runtime module. Handles:
+- Capturing canonical navbar markup from homepage (`index.html`)
+- Caching canonical markup for reuse on multi-route pages
+- Mounting canonical navbar into route hosts (`data-public-navbar-host`)
+- Route-aware URL normalization for non-home pages (`/#...` anchors and asset paths)
+
 #### `js/navbar-collapse.js` (9KB, ~270 lines)
-Mobile navbar behavior:
-- Hamburger menu toggle
-- Smooth scroll to anchor sections
-- Active section highlighting on scroll
-- Transparent-to-solid navbar on scroll
+Navbar collapse animation controller:
+- Computes responsive collapsed/expanded navbar width variables
+- Uses hero sentinel to toggle `html.nav--collapsed` on homepage scroll
+- Animates collapse progress with spring motion (`--nav-collapse` CSS variables)
+- On non-hero routes, initializes width vars only (no scroll sentinel animation)
 
 #### `js/reload-cover.js` (6KB, ~170 lines)
 Reload overlay animation:
-- Shows a branded cover during page reload
-- Crossfade transition on load
+- Uses `shared/figata-cover-transition.js` as the single transition engine
+- Plays exit phase on page entry/reload
+- Supports route handoff via `sessionStorage` (`figata:route-transition`)
+
+#### `js/menu-route-transition.js`
+Menu route transition binder:
+- Intercepts only the navbar link to `/menu/` on home
+- Plays transition enter phase in origin
+- Sets handoff flag for destination exit phase
+- Ignores modified clicks (`cmd/ctrl`, `_blank`, etc.)
+
+#### `shared/figata-cover-transition.js`
+Reusable cover transition engine:
+- Public API: `window.FigataTransitions.createFigataTransition(config)`
+- Methods: `playEnter`, `playExit`, `playEnterThenExit`, `cancel`, `isRunning`
+- Shared by modal preview flow and route/reload transitions
 
 #### `js/home-lazy-images.js` (1KB, ~40 lines)
 Lazy image loading using IntersectionObserver for homepage images.
@@ -186,7 +247,7 @@ Found on `:root` and used throughout:
 ## Data Flow
 
 ```
-Public site loads in browser
+Homepage loads in browser
     ↓
 index.html parsed, <script defer> tags queue execution
     ↓
@@ -208,6 +269,17 @@ js/restaurant-config.js fetches data/restaurant.json
     → renders hours, contact, address
 ```
 
+```
+Menu page loads in browser
+    ↓
+menu/index.html parsed, route scripts execute
+    ↓
+src/data/menu.js + src/data/media.js expose runtime APIs
+    ↓
+js/menu-page.js fetches grouped category items for the 5 visible menu tabs
+    → renders top tabs, category sections, cards, and dynamic detail subview
+```
+
 ---
 
 ## Common Modification Tasks
@@ -217,7 +289,8 @@ js/restaurant-config.js fetches data/restaurant.json
 | Change hero text/image | `data/home.json` (hero section) | Or via admin homepage editor |
 | Add menu item | `data/menu.json` (add to section) | Also update `data/media.json`, `data/availability.json` |
 | Change menu card design | `js/mas-pedidas.js`, `styles.css` | Template in `index.html` at `#mas-pedidas-card-template` |
-| Modify navbar links | `data/home.json` (navbar.links) | Rendered by `js/home-config.js` |
+| Change full menu page layout/navigation | `menu/index.html`, `menu/menu-page.css`, `js/menu-page.js` | Keep category/item order driven by `src/data/menu.js` APIs |
+| Modify navbar links | `data/home.json` (navbar.links) + `shared/public-navbar.js` | `home-config` sets labels/URLs; shared module mounts canonical navbar on secondary routes |
 | Change testimonials | `data/home.json` (testimonials.items) | Carousel in `js/testimonials.js` |
 | Add new section | `index.html` (add HTML), `styles.css` (add styles) | May need new JS file in `js/` |
 | Change opening hours | `data/restaurant.json` | Rendered by `js/restaurant-config.js` |

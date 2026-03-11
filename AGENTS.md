@@ -18,7 +18,7 @@ Both systems share a **data layer** (JSON files in `data/`) and are connected th
 | Build | No build step for production; dev server via `npm run dev` |
 | Hosting | Netlify (static site + serverless functions) |
 | Auth | Netlify Identity (admin panel only) |
-| Tests | Validation scripts only (`npm run validate:*`); no unit test suite |
+| Tests | Validation scripts + menu traits smoke tests (`npm run validate:*`, `npm test`) |
 
 ---
 
@@ -27,11 +27,16 @@ Both systems share a **data layer** (JSON files in `data/`) and are connected th
 ```
 website-figata/
 ├── AGENTS.md                  ← You are here
-├── index.html                 ← Public site (single-page, ~3,500 lines)
+├── index.html                 ← Public homepage (single-page, ~3,500 lines)
+├── menu/
+│   ├── index.html             ← Public full menu page (`/menu/`)
+│   └── menu-page.css          ← Public full menu page styles
 ├── styles.css                 ← Public site styles (~2,600 lines)
-├── js/                        ← Public site JavaScript (9 scripts)
+├── js/                        ← Public site JavaScript (11 scripts)
 │   ├── home-config.js            Fetches data/home.json, renders homepage sections
 │   ├── mas-pedidas.js            Menu rendering engine (largest: 34KB)
+│   ├── menu-route-transition.js  Home navbar `/menu/` transition handoff
+│   ├── menu-page.js              Full menu page renderer (Events-style top tabs + category grids)
 │   ├── restaurant-config.js      Restaurant info (hours, address, phone)
 │   ├── testimonials.js           Testimonials carousel
 │   ├── events-tabs.js            Events section tabs
@@ -42,7 +47,7 @@ website-figata/
 ├── data/                      ← Shared data layer (9 JSON files)
 │   ├── menu.json                 Menu items grouped by section
 │   ├── categories.json           Category ordering and visibility
-│   ├── ingredients.json          Ingredient catalog, icons, tags, allergens
+│   ├── ingredients.json          Ingredient catalog, icons, metadata V2, allergens
 │   ├── availability.json         Per-item availability status
 │   ├── home.json                 Homepage configuration (hero, featured, events, etc.)
 │   ├── restaurant.json           Restaurant metadata
@@ -55,9 +60,12 @@ website-figata/
 │   │   ├── app.js                Main application logic (~9,765 lines)
 │   │   ├── modules/              16 extracted modules + native panel modules
 │   │   │   └── panels/           Native custom panels (`restaurant-panel.js`, `media-panel.js`, `pages-panel.js`)
-│   │   └── styles/               Admin-specific CSS
+│   │   └── styles.css            Admin-specific CSS
 │   └── cms/                   ← Netlify CMS config (rarely used)
-├── shared/                    ← Validation contracts (used by admin + publish)
+├── shared/                    ← Shared validators + public runtime modules
+│   ├── figata-cover-transition.js Shared cover transition engine (route + modal)
+│   ├── menu-traits.js            Menu Traits V2 derivation + validation engine
+│   ├── public-navbar.js          Canonical public navbar loader/cache bridge for multi-route pages
 │   ├── ingredients-contract.js   Ingredient data validation
 │   ├── categories-contract.js    Category data validation
 │   ├── restaurant-contract.js    Restaurant data validation
@@ -67,15 +75,17 @@ website-figata/
 │       └── publish.js         ← Serverless function: commits data via Git
 ├── scripts/                   ← Dev tools and validation scripts
 │   ├── dev-server.js             Local dev server with media endpoint
+│   ├── validate-menu.js          Validates menu.json against Menu Traits V2
 │   ├── validate-ingredients.js   Validates ingredients.json
 │   ├── validate-categories.js    Validates categories.json
 │   ├── validate_home_json.js     Validates home.json
 │   ├── validate_media_json.js    Validates media.json
 │   ├── validate-restaurant.js    Validates restaurant.json
 │   ├── check_admin_ui.js         Checks admin UI element IDs
+│   ├── test-menu-traits.js       Smoke tests for derived dietary/content/experience traits
 │   └── dynamic_probe.js          Runtime analysis tool
 ├── assets/                    ← Static assets (images, icons, SVGs)
-│   ├── menu/                     Menu item images (WebP) + placeholders
+│   ├── menu/                     Menu item images (WebP) by category + placeholders
 │   ├── Ingredients/              Ingredient icon images (WebP)
 │   ├── home/                     Homepage assets
 │   ├── reviews/                  Testimonial avatars
@@ -120,6 +130,8 @@ Use this table to find the right starting point for common tasks:
 | Fix public site layout/content | `index.html`, `styles.css` | Relevant `js/` script |
 | Modify homepage sections | `js/home-config.js` | `data/home.json`, `docs/developers/data/data-layer.md` |
 | Change public menu display | `js/mas-pedidas.js` | `data/menu.json`, `data/media.json` |
+| Build/fix public full menu page | `menu/index.html`, `menu/menu-page.css`, `js/menu-page.js` | `src/data/menu.js`, `src/data/media.js`, `data/categories.json` |
+| Reuse/fix public navbar across routes | `shared/public-navbar.js` | `index.html`, `menu/index.html`, `js/navbar-collapse.js` |
 | Edit restaurant info | `js/restaurant-config.js` | `data/restaurant.json` |
 | Work on admin panel | `docs/developers/admin/admin-panel.md` | `admin/app/app.js`, `admin/app/modules/` |
 | Work on native Restaurant/Media/Pages panels | `docs/developers/admin/admin-editors.md` | `admin/app/modules/panels/restaurant-panel.js`, `admin/app/modules/panels/media-panel.js`, `admin/app/modules/panels/pages-panel.js` |
@@ -129,7 +141,7 @@ Use this table to find the right starting point for common tasks:
 | Change publish behavior | `netlify/functions/publish.js` | `admin/app/modules/publish.js` |
 | Run validation | `package.json` scripts | `scripts/validate-*.js` |
 | Run dev server | `npm run dev` | `scripts/dev-server.js` |
-| Add/modify admin CSS | `admin/app/styles/` | `admin/app/index.html` |
+| Add/modify admin CSS | `admin/app/styles.css` | `admin/app/index.html` |
 | Work with ingredient icons | `data/ingredients.json` | `assets/Ingredients/`, `admin/app/modules/render-utils.js` |
 
 ---
@@ -159,10 +171,12 @@ http://127.0.0.1:5173/admin/app/?devAuthBypass=1
 ```bash
 npm run validate:home          # validates data/home.json
 npm run validate:media         # validates data/media.json
+npm run validate:menu          # validates data/menu.json
 npm run validate:ingredients   # validates data/ingredients.json
 npm run validate:categories    # validates data/categories.json
 npm run validate:restaurant    # validates data/restaurant.json
 npm run check:admin-ui         # checks admin UI element IDs
+npm test                       # smoke tests for Menu Traits V2
 ```
 
 ### Deployment
@@ -199,9 +213,13 @@ The admin panel uses a **namespace + IIFE + delegate** pattern:
 Admin modules must load **before** `app.js` in `admin/app/index.html`. Current order:
 `constants` → `utils` → `auth` → `drafts` → `publish` → `navigation` → `command-palette` → `sidebar` → `accordion` → `panels` → `render-utils` → `menu-media` → `dashboard` → `panels/restaurant-panel` → `panels/media-panel` → `panels/pages-panel` → `app.js`
 
+Shared runtime helpers used by traits/validation must load before their consumers:
+`shared/menu-traits.js` → contracts/data loaders → feature scripts.
+
 ### Data Conventions
 
-- Menu images use **WebP** format, stored in `assets/menu/`
+- Menu images use **WebP** format, stored in `assets/menu/` with category subfolders:
+  `entradas/`, `pizzas/clasica/`, `pizzas/autor/`, `postres/`, `productos/`
 - Placeholder images are **SVG**, stored in `assets/menu/placeholders/`
 - Ingredient icons are **WebP**, stored in `assets/Ingredients/`
 - All data files use `version` and usually `schema` fields for forward compatibility

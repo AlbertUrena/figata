@@ -10,7 +10,7 @@
   const links = document.querySelector(".navbar__links");
   const actions = document.querySelector(".navbar__actions");
 
-  if (!hero || !header || !navbar || !navInner) {
+  if (!header || !navbar || !navInner) {
     return;
   }
 
@@ -124,6 +124,26 @@
       `${Math.max(0, Math.round(collapsedWidth))}px`
     );
   };
+
+  // On routes without a hero (e.g. /menu), only initialize responsive width vars.
+  // This avoids browser-specific calc resolution issues with the CSS default vars.
+  if (!hero) {
+    const syncStaticWidths = () => {
+      syncNavWidthVars();
+    };
+
+    syncStaticWidths();
+    window.addEventListener("resize", syncStaticWidths, { passive: true });
+    window.addEventListener("orientationchange", syncStaticWidths);
+
+    if (document.fonts && typeof document.fonts.ready?.then === "function") {
+      document.fonts.ready.then(() => {
+        syncStaticWidths();
+      });
+    }
+
+    return;
+  }
 
   const getNavbarHeight = () => {
     const cssValue = Number.parseFloat(

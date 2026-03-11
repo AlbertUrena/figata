@@ -1,5 +1,6 @@
 (() => {
-  const RESTAURANT_URL = new URL('data/restaurant.json', window.location.href);
+  const ROOT_URL = new URL('/', window.location.origin);
+  const RESTAURANT_URL = new URL('data/restaurant.json', ROOT_URL);
 
   const DAY_ORDER = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
   const DAY_LABELS = {

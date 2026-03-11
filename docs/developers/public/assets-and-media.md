@@ -23,7 +23,7 @@ The Figata project uses static image assets organized by type. There is no CDN o
 
 | Asset type | Directory | Format | Count |
 |-----------|-----------|--------|------:|
-| Menu item images | `assets/menu/` | WebP | ~28 |
+| Menu item images | `assets/menu/` (category subfolders) | WebP | ~28 |
 | Menu placeholders | `assets/menu/placeholders/` | SVG | 2 |
 | Ingredient icons | `assets/Ingredients/` | WebP | ~31 |
 | Homepage images | `assets/home/` | WebP | 3 |
@@ -38,17 +38,21 @@ The Figata project uses static image assets organized by type. There is no CDN o
 
 ### Naming Convention
 
-Menu images use the **item slug** as the filename:
+Menu images use the **item slug** as the filename and live under category subfolders:
 
 ```
-assets/menu/<item-slug>.webp          ← card image
-assets/menu/<item-slug>-hover.webp    ← hover variant (optional)
+assets/menu/entradas/<item-slug>.webp           ← entradas
+assets/menu/pizzas/clasica/<item-slug>.webp     ← pizzas clásicas
+assets/menu/pizzas/autor/<item-slug>.webp       ← pizzas de autor
+assets/menu/postres/<item-slug>.webp            ← postres
+assets/menu/productos/<item-slug>.webp          ← productos
+assets/menu/<item-slug>-hover.webp              ← hover variant (optional, legacy)
 ```
 
 Example for "Margherita":
 ```
-assets/menu/margherita.webp           ← card/modal image
-assets/menu/margherita-hover.webp     ← hover variant
+assets/menu/pizzas/clasica/margherita.webp      ← card/modal image
+assets/menu/margherita-hover.webp               ← hover variant (legacy)
 ```
 
 ### Image Variants
@@ -80,7 +84,7 @@ When no image is available or an image fails to load:
 Uses `window.FigataData.media` API:
 
 ```js
-mediaApi.get(itemId, "card")     // → "assets/menu/margherita.webp"
+mediaApi.get(itemId, "card")     // → "assets/menu/pizzas/clasica/margherita.webp"
 mediaApi.get(itemId, "hover")    // → "assets/menu/margherita-hover.webp"
 mediaApi.get(itemId, "modal")    // → "assets/menu/margherita.webp"
 mediaApi.getAlt(itemId)          // → "Margherita"
@@ -233,7 +237,7 @@ Returns a sorted list of all `.webp` and `.svg` files under `assets/menu/`. Used
 
 1. Create a WebP image (recommended: 800×600px for card, 1200×800px for modal)
 2. Name it `<item-slug>.webp` and optionally `<item-slug>-hover.webp`
-3. Place in `assets/menu/`
+3. Place in the correct category subfolder under `assets/menu/`
 4. Add an entry in `data/media.json` under `items.<item-id>`:
    ```json
    {

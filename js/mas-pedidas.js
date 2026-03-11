@@ -21,7 +21,6 @@
 
   let isPreviewOpen = false;
   let isCoverTransitionRunning = false;
-  let coverRafId = 0;
   let previewBaseImageSrc = "";
   let previewHoverImageSrc = "";
   let hasPreviewHoverImage = false;
@@ -48,15 +47,6 @@
 
   const SVG_WIDTH = 1366;
   const SVG_HEIGHT = 768;
-  const ENTER_PATH_START_Y = 82.1;
-  const ENTER_PATH_CP1_X = 353;
-  const ENTER_PATH_CP1_Y = -21.8;
-  const ENTER_PATH_CP2_X = 1015;
-  const ENTER_PATH_CP2_Y = -32.7;
-  const LEAVE_PATH_CP1_X = 1040.2;
-  const LEAVE_PATH_CP1_Y = 660.1;
-  const LEAVE_PATH_CP2_X = 348.6;
-  const LEAVE_PATH_CP2_Y = 657.8;
 
   const previewOverlay = document.createElement("div");
   previewOverlay.className = "preview-overlay";
@@ -213,113 +203,7 @@
   const pagePushTarget = document.querySelector("main");
   let previewInfoAnimations = [];
 
-  const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
-  const lerp = (from, to, progress) => from + (to - from) * progress;
   const formatNumber = (value) => Number(value.toFixed(2));
-
-  const createCubicBezier = (p1x, p1y, p2x, p2y) => {
-    const cx = 3 * p1x;
-    const bx = 3 * (p2x - p1x) - cx;
-    const ax = 1 - cx - bx;
-    const cy = 3 * p1y;
-    const by = 3 * (p2y - p1y) - cy;
-    const ay = 1 - cy - by;
-    const epsilon = 1e-6;
-
-    const sampleCurveX = (t) => ((ax * t + bx) * t + cx) * t;
-    const sampleCurveY = (t) => ((ay * t + by) * t + cy) * t;
-    const sampleCurveDerivativeX = (t) => (3 * ax * t + 2 * bx) * t + cx;
-
-    const solveCurveX = (x) => {
-      let t2 = x;
-
-      for (let i = 0; i < 8; i += 1) {
-        const x2 = sampleCurveX(t2) - x;
-
-        if (Math.abs(x2) < epsilon) {
-          return t2;
-        }
-
-        const d2 = sampleCurveDerivativeX(t2);
-
-        if (Math.abs(d2) < epsilon) {
-          break;
-        }
-
-        t2 -= x2 / d2;
-      }
-
-      let t0 = 0;
-      let t1 = 1;
-      t2 = x;
-
-      for (let i = 0; i < 16; i += 1) {
-        const x2 = sampleCurveX(t2);
-
-        if (Math.abs(x2 - x) < epsilon) {
-          return t2;
-        }
-
-        if (x > x2) {
-          t0 = t2;
-        } else {
-          t1 = t2;
-        }
-
-        t2 = (t1 - t0) * 0.5 + t0;
-      }
-
-      return t2;
-    };
-
-    return (x) => sampleCurveY(solveCurveX(clamp(x)));
-  };
-
-  const easeCoverEnter = createCubicBezier(1, 0, 0.75, 1);
-  const easeCoverLeave = createCubicBezier(0.65, 0, 0.25, 1);
-  const easePreviewRise = (value) => 1 - Math.pow(1 - clamp(value), 3);
-
-  const buildTopBlobPath = (amount) => {
-    const progress = clamp(amount);
-    const startY = lerp(0, ENTER_PATH_START_Y, progress);
-    const cp1Y = lerp(0, ENTER_PATH_CP1_Y, progress);
-    const cp2Y = lerp(0, ENTER_PATH_CP2_Y, progress);
-
-    return [
-      `M0 ${formatNumber(startY)}`,
-      `C${ENTER_PATH_CP1_X} ${formatNumber(cp1Y)} ${ENTER_PATH_CP2_X} ${formatNumber(cp2Y)} ${SVG_WIDTH} ${formatNumber(startY)}`,
-      `V${SVG_HEIGHT}`,
-      "H0",
-      "Z",
-    ].join(" ");
-  };
-
-  const buildBottomBlobPath = (amount) => {
-    const progress = clamp(amount);
-    const cp1Y = lerp(SVG_HEIGHT, LEAVE_PATH_CP1_Y, progress);
-    const cp2Y = lerp(SVG_HEIGHT, LEAVE_PATH_CP2_Y, progress);
-
-    return [
-      "M0 0",
-      `H${SVG_WIDTH}`,
-      `V${SVG_HEIGHT}`,
-      `C${LEAVE_PATH_CP1_X} ${formatNumber(cp1Y)} ${LEAVE_PATH_CP2_X} ${formatNumber(cp2Y)} 0 ${SVG_HEIGHT}`,
-      "Z",
-    ].join(" ");
-  };
-
-  const setCoverTransform = (translateYPercent) => {
-    previewTransitionCover.style.transform = `translate3d(0, ${translateYPercent}%, 0)`;
-  };
-
-  const setCoverPath = (d) => {
-    if (!previewTransitionPath) {
-      return;
-    }
-
-    previewTransitionPath.setAttribute("d", d);
-    previewTransitionPath.setAttribute("fill", COVER_COLOR);
-  };
 
   const setPagePush = (offsetY) => {
     if (!pagePushTarget) {
@@ -328,6 +212,19 @@
 
     pagePushTarget.style.transform = `translate3d(0, ${formatNumber(offsetY)}px, 0)`;
   };
+
+  const transitionFactory = window.FigataTransitions?.createFigataTransition;
+  const previewTransition =
+    typeof transitionFactory === "function" && previewTransitionPath instanceof SVGPathElement
+      ? transitionFactory({
+          coverElement: previewTransitionCover,
+          pathElement: previewTransitionPath,
+          pagePushTarget,
+          color: COVER_COLOR,
+          precision: 2,
+          activeClass: "is-active",
+        })
+      : null;
 
   const stopPreviewInfoAnimations = () => {
     if (!previewInfoAnimations.length) {
@@ -550,194 +447,135 @@
     setPreviewImage(card);
   };
 
-  const playCoverTransition = () =>
-    new Promise((resolve) => {
-      if (coverRafId) {
-        window.cancelAnimationFrame(coverRafId);
-      }
+  const playCoverTransition = async () => {
+    if (!previewTransition) {
+      setPreviewOpen(true);
+      previewCard.style.transform = "translate3d(0, 0, 0)";
+      previewCard.style.opacity = "1";
+      setPagePush(PAGE_PUSH_Y_PX);
+      resetPreviewInfoAnimation();
+      return;
+    }
 
-      isCoverTransitionRunning = true;
-      previewTransitionCover.hidden = false;
-      previewTransitionCover.classList.add("is-active");
-      setCoverTransform(100);
-      setCoverPath(buildTopBlobPath(0));
-      resetPreviewCardAnimation();
+    isCoverTransitionRunning = true;
+    resetPreviewCardAnimation();
+    let previewActivated = false;
 
-      const transitionStart = window.performance.now();
-      const totalDuration = COVER_IN_DURATION_MS + COVER_HOLD_DURATION_MS + COVER_OUT_DURATION_MS;
-      const coverOutStart = COVER_IN_DURATION_MS + COVER_HOLD_DURATION_MS;
-      const coverOutMorphEnd = coverOutStart + COVER_OUT_MORPH_DURATION_MS;
-      let previewActivated = false;
+    try {
+      await previewTransition.playEnterThenExit({
+        inDurationMs: COVER_IN_DURATION_MS,
+        holdDurationMs: COVER_HOLD_DURATION_MS,
+        outDurationMs: COVER_OUT_DURATION_MS,
+        morphInDurationMs: COVER_IN_MORPH_DURATION_MS,
+        morphOutDurationMs: COVER_OUT_MORPH_DURATION_MS,
+        coverEnterFrom: 100,
+        coverEnterTo: 0,
+        coverExitTo: COVER_EXIT_Y_PERCENT,
+        finalPagePush: PAGE_PUSH_Y_PX,
+        pagePush: ({ elapsedMs, helpers, easings, setPagePush: setTransitionPagePush }) => {
+          const pushProgress = easings.enter(helpers.clamp(elapsedMs / PAGE_PUSH_DURATION_MS));
+          setTransitionPagePush(helpers.lerp(0, PAGE_PUSH_Y_PX, pushProgress));
+        },
+        onMidpoint: () => {
+          if (previewActivated) {
+            return;
+          }
 
-      const finish = () => {
-        coverRafId = 0;
-        previewTransitionCover.classList.remove("is-active");
-        previewTransitionCover.hidden = true;
-        setCoverTransform(COVER_EXIT_Y_PERCENT);
-        setCoverPath(buildTopBlobPath(0));
-        setPagePush(PAGE_PUSH_Y_PX);
-        previewCard.style.transform = "translate3d(0, 0, 0)";
-        previewCard.style.opacity = "1";
-        isCoverTransitionRunning = false;
-        resolve();
-      };
-
-      const tick = (now) => {
-        const elapsed = now - transitionStart;
-        let coverTranslateY = COVER_EXIT_Y_PERCENT;
-
-        if (elapsed <= COVER_IN_DURATION_MS) {
-          const progress = easeCoverEnter(elapsed / COVER_IN_DURATION_MS);
-          coverTranslateY = lerp(100, 0, progress);
-        } else if (elapsed <= coverOutStart) {
-          coverTranslateY = 0;
-        } else if (elapsed <= totalDuration) {
-          const progress = easeCoverLeave((elapsed - coverOutStart) / COVER_OUT_DURATION_MS);
-          coverTranslateY = lerp(0, COVER_EXIT_Y_PERCENT, progress);
-        }
-
-        setCoverTransform(coverTranslateY);
-
-        if (elapsed <= PAGE_PUSH_DURATION_MS) {
-          const pagePushProgress = easeCoverEnter(elapsed / PAGE_PUSH_DURATION_MS);
-          setPagePush(lerp(0, PAGE_PUSH_Y_PX, pagePushProgress));
-        } else {
-          setPagePush(PAGE_PUSH_Y_PX);
-        }
-
-        if (elapsed <= COVER_IN_MORPH_DURATION_MS) {
-          const localProgress = clamp(elapsed / COVER_IN_MORPH_DURATION_MS);
-          const yoyoProgress = localProgress <= 0.5 ? localProgress * 2 : (1 - localProgress) * 2;
-          setCoverPath(buildTopBlobPath(easeCoverEnter(yoyoProgress)));
-        } else if (elapsed >= coverOutStart && elapsed <= coverOutMorphEnd) {
-          const localProgress = clamp((elapsed - coverOutStart) / COVER_OUT_MORPH_DURATION_MS);
-          const yoyoProgress = localProgress <= 0.5 ? localProgress * 2 : (1 - localProgress) * 2;
-          setCoverPath(buildBottomBlobPath(easeCoverLeave(yoyoProgress)));
-        } else {
-          setCoverPath(buildTopBlobPath(0));
-        }
-
-        if (!previewActivated && elapsed >= COVER_IN_DURATION_MS) {
           previewActivated = true;
           setPreviewOpen(true);
           previewCard.style.transform = "translate3d(0, 400px, 0)";
           previewCard.style.opacity = "0";
           playPreviewInfoMorph();
-        }
+        },
+        onTick: ({ elapsedMs, helpers, easings }) => {
+          if (!previewActivated) {
+            return;
+          }
 
-        if (previewActivated) {
-          const riseProgress = clamp((elapsed - COVER_IN_DURATION_MS) / PREVIEW_RISE_DURATION_MS);
-          const easedRise = easePreviewRise(riseProgress);
-          previewCard.style.transform = `translate3d(0, ${formatNumber(lerp(400, 0, easedRise))}px, 0)`;
-          previewCard.style.opacity = String(formatNumber(easedRise));
-        }
-
-        if (elapsed < totalDuration) {
-          coverRafId = window.requestAnimationFrame(tick);
-          return;
-        }
-
-        finish();
-      };
-
-      coverRafId = window.requestAnimationFrame(tick);
-    });
-
-  const playCoverCloseTransition = () =>
-    new Promise((resolve) => {
-      if (coverRafId) {
-        window.cancelAnimationFrame(coverRafId);
-      }
-
-      isCoverTransitionRunning = true;
-      previewTransitionCover.hidden = false;
-      previewTransitionCover.classList.add("is-active");
-      setCoverTransform(100);
-      setCoverPath(buildTopBlobPath(0));
-
-      const transitionStart = window.performance.now();
-      const totalDuration = COVER_IN_DURATION_MS + COVER_HOLD_DURATION_MS + COVER_OUT_DURATION_MS;
-      const coverOutStart = COVER_IN_DURATION_MS + COVER_HOLD_DURATION_MS;
-      const coverOutMorphEnd = coverOutStart + COVER_OUT_MORPH_DURATION_MS;
-      const pageRevealStartY = Math.abs(PAGE_PUSH_Y_PX);
-      let previewDeactivated = false;
-
-      const finish = () => {
-        coverRafId = 0;
-        previewTransitionCover.classList.remove("is-active");
-        previewTransitionCover.hidden = true;
-        setCoverTransform(COVER_EXIT_Y_PERCENT);
-        setCoverPath(buildTopBlobPath(0));
-        setPagePush(0);
-        setPreviewOpen(false);
-        resetPreviewCardAnimation();
-        isCoverTransitionRunning = false;
-        resolve();
-      };
-
-      const tick = (now) => {
-        const elapsed = now - transitionStart;
-        let coverTranslateY = COVER_EXIT_Y_PERCENT;
-
-        if (elapsed <= COVER_IN_DURATION_MS) {
-          const progress = easeCoverEnter(elapsed / COVER_IN_DURATION_MS);
-          coverTranslateY = lerp(100, 0, progress);
-        } else if (elapsed <= coverOutStart) {
-          coverTranslateY = 0;
-        } else if (elapsed <= totalDuration) {
-          const progress = easeCoverLeave((elapsed - coverOutStart) / COVER_OUT_DURATION_MS);
-          coverTranslateY = lerp(0, COVER_EXIT_Y_PERCENT, progress);
-        }
-
-        setCoverTransform(coverTranslateY);
-
-        if (!previewDeactivated) {
+          const riseProgress = helpers.clamp(
+            (elapsedMs - COVER_IN_DURATION_MS) / PREVIEW_RISE_DURATION_MS
+          );
+          const easedRise = easings.rise(riseProgress);
+          previewCard.style.transform = `translate3d(0, ${helpers.format(
+            helpers.lerp(400, 0, easedRise)
+          )}px, 0)`;
+          previewCard.style.opacity = String(helpers.format(easedRise));
+        },
+        onComplete: () => {
           setPagePush(PAGE_PUSH_Y_PX);
-        } else if (elapsed <= totalDuration) {
-          const revealProgress = clamp((elapsed - coverOutStart) / COVER_OUT_DURATION_MS);
-          const easedReveal = easePreviewRise(revealProgress);
-          setPagePush(lerp(pageRevealStartY, 0, easedReveal));
-        } else {
-          setPagePush(0);
-        }
+          previewCard.style.transform = "translate3d(0, 0, 0)";
+          previewCard.style.opacity = "1";
+        },
+      });
+    } finally {
+      isCoverTransitionRunning = false;
+    }
+  };
 
-        if (elapsed <= COVER_IN_MORPH_DURATION_MS) {
-          const localProgress = clamp(elapsed / COVER_IN_MORPH_DURATION_MS);
-          const yoyoProgress = localProgress <= 0.5 ? localProgress * 2 : (1 - localProgress) * 2;
-          setCoverPath(buildTopBlobPath(easeCoverEnter(yoyoProgress)));
-        } else if (elapsed >= coverOutStart && elapsed <= coverOutMorphEnd) {
-          const localProgress = clamp((elapsed - coverOutStart) / COVER_OUT_MORPH_DURATION_MS);
-          const yoyoProgress = localProgress <= 0.5 ? localProgress * 2 : (1 - localProgress) * 2;
-          setCoverPath(buildBottomBlobPath(easeCoverLeave(yoyoProgress)));
-        } else {
-          setCoverPath(buildTopBlobPath(0));
-        }
+  const playCoverCloseTransition = async () => {
+    if (!previewTransition) {
+      setPagePush(0);
+      setPreviewOpen(false);
+      resetPreviewCardAnimation();
+      return;
+    }
 
-        if (!previewDeactivated) {
-          const pushUpProgress = easeCoverEnter(clamp(elapsed / PAGE_PUSH_DURATION_MS));
+    isCoverTransitionRunning = true;
+    const pageRevealStartY = Math.abs(PAGE_PUSH_Y_PX);
+    let previewDeactivated = false;
+
+    try {
+      await previewTransition.playEnterThenExit({
+        inDurationMs: COVER_IN_DURATION_MS,
+        holdDurationMs: COVER_HOLD_DURATION_MS,
+        outDurationMs: COVER_OUT_DURATION_MS,
+        morphInDurationMs: COVER_IN_MORPH_DURATION_MS,
+        morphOutDurationMs: COVER_OUT_MORPH_DURATION_MS,
+        coverEnterFrom: 100,
+        coverEnterTo: 0,
+        coverExitTo: COVER_EXIT_Y_PERCENT,
+        finalPagePush: 0,
+        pagePush: ({ elapsedMs, coverOutStartMs, helpers, easings, setPagePush: setTransitionPagePush }) => {
+          if (!previewDeactivated) {
+            setTransitionPagePush(PAGE_PUSH_Y_PX);
+            return;
+          }
+
+          const revealProgress = helpers.clamp((elapsedMs - coverOutStartMs) / COVER_OUT_DURATION_MS);
+          const easedReveal = easings.rise(revealProgress);
+          setTransitionPagePush(helpers.lerp(pageRevealStartY, 0, easedReveal));
+        },
+        onTick: ({ elapsedMs, helpers, easings }) => {
+          if (previewDeactivated) {
+            return;
+          }
+
+          const pushUpProgress = easings.enter(helpers.clamp(elapsedMs / PAGE_PUSH_DURATION_MS));
           previewCard.style.transform = `translate3d(0, ${formatNumber(
-            lerp(0, PAGE_PUSH_Y_PX, pushUpProgress)
+            helpers.lerp(0, PAGE_PUSH_Y_PX, pushUpProgress)
           )}px, 0)`;
           previewCard.style.opacity = "1";
-        }
+        },
+        onMidpoint: ({ setPagePush: setTransitionPagePush }) => {
+          if (previewDeactivated) {
+            return;
+          }
 
-        if (!previewDeactivated && elapsed >= COVER_IN_DURATION_MS) {
           previewDeactivated = true;
           setPreviewOpen(false);
           resetPreviewCardAnimation();
-          setPagePush(pageRevealStartY);
-        }
-
-        if (elapsed < totalDuration) {
-          coverRafId = window.requestAnimationFrame(tick);
-          return;
-        }
-
-        finish();
-      };
-
-      coverRafId = window.requestAnimationFrame(tick);
-    });
+          setTransitionPagePush(pageRevealStartY);
+        },
+        onComplete: () => {
+          setPagePush(0);
+          setPreviewOpen(false);
+          resetPreviewCardAnimation();
+        },
+      });
+    } finally {
+      isCoverTransitionRunning = false;
+    }
+  };
 
   const openPreview = async (card) => {
     if (isPreviewOpen || isCoverTransitionRunning) {
@@ -820,8 +658,15 @@
     closePreview();
   });
 
-  setCoverTransform(COVER_EXIT_Y_PERCENT);
-  setCoverPath(buildTopBlobPath(0));
+  if (previewTransitionPath instanceof SVGPathElement) {
+    previewTransitionPath.setAttribute("fill", COVER_COLOR);
+  }
+  previewTransitionCover.style.transform = `translate3d(0, ${COVER_EXIT_Y_PERCENT}%, 0)`;
+  previewTransitionCover.style.visibility = "hidden";
+  previewTransitionCover.style.opacity = "0";
+  previewTransitionCover.classList.remove("is-active");
+  previewTransitionCover.hidden = true;
+  previewTransitionCover.setAttribute("aria-hidden", "true");
   setPagePush(0);
 
   const DEFAULT_SOLD_OUT_REASON = "Temporalmente no disponible.";

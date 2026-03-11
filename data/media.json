@@ -6,7 +6,7 @@
   "notes": "Mapa oficial de media por item. Si una variante falta, el frontend aplica fallback controlado.",
   "items": {
     "berenjenas_parmesana": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/entradas/berenjenas-a-la-parmesana.webp",
       "alt": "Berenjenas a la Parmesana",
       "overrides": {
         "card": "",
@@ -18,7 +18,7 @@
       "version": 2
     },
     "focaccia_parmigiano": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/entradas/focaccia.webp",
       "alt": "Focaccia al horno con Parmigiano",
       "overrides": {
         "card": "",
@@ -30,19 +30,19 @@
       "version": 2
     },
     "bruschetta_classica": {
-      "source": "assets/menu/bruschetta.webp",
+      "source": "assets/menu/entradas/bruschetta.webp",
       "alt": "Bruschetta Classica",
       "overrides": {
         "card": "",
-        "hover": "menu/hover/bruschetta-hover.webp",
-        "modal": "menu/bruschetta.webp",
+        "hover": "assets/menu/entradas/bruschetta-hover.webp",
+        "modal": "assets/menu/entradas/bruschetta.webp",
         "gallery": []
       },
       "dominantColor": "",
       "version": 2
     },
     "insalata_caprese": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/entradas/insalata-caprese.webp",
       "alt": "Insalata Caprese",
       "overrides": {
         "card": "",
@@ -54,7 +54,7 @@
       "version": 2
     },
     "carpaccio_bresaola": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/entradas/carpaccio-di-bresaola.webp",
       "alt": "Carpaccio di Bresaola",
       "overrides": {
         "card": "",
@@ -66,7 +66,7 @@
       "version": 2
     },
     "salsiccia_vino_miele": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/entradas/salsiccia-vino-e-miele.webp",
       "alt": "Salsiccia vino e miele",
       "overrides": {
         "card": "",
@@ -78,7 +78,7 @@
       "version": 2
     },
     "burrata_prosciutto": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/entradas/burrata-con-prosciutto.webp",
       "alt": "Burrata con Prosciutto",
       "overrides": {
         "card": "",
@@ -90,7 +90,7 @@
       "version": 2
     },
     "tagliere_misto": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/entradas/tagliere-misto.webp",
       "alt": "Tagliere Misto",
       "overrides": {
         "card": "",
@@ -102,31 +102,31 @@
       "version": 2
     },
     "focaccia_rellena": {
-      "source": "menu/schiacciata-sandwich.webp",
+      "source": "assets/menu/entradas/focaccia-rellena.webp",
       "alt": "Focaccia rellena",
       "overrides": {
         "card": "",
-        "hover": "menu/hover/schiacciata-sandwich-hover.webp",
-        "modal": "",
+        "hover": "assets/menu/entradas/schiacciata-sandwich-hover.webp",
+        "modal": "assets/menu/entradas/schiacciata-sandwich.webp",
         "gallery": []
       },
       "dominantColor": "",
       "version": 2
     },
     "margherita": {
-      "source": "assets/menu/margherita.webp",
+      "source": "assets/menu/pizzas/clasica/margherita.webp",
       "alt": "Margherita",
       "overrides": {
         "card": "",
-        "hover": "menu/hover/margherita-hover.webp",
-        "modal": "menu/margherita.webp",
+        "hover": "assets/menu/pizzas/clasica/margherita-hover.webp",
+        "modal": "assets/menu/pizzas/clasica/margherita.webp",
         "gallery": []
       },
       "dominantColor": "",
       "version": 2
     },
     "marinara": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/pizzas/clasica/marinara.webp",
       "alt": "Marinara",
       "overrides": {
         "card": "",
@@ -138,7 +138,7 @@
       "version": 2
     },
     "cacio_pepe": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/pizzas/clasica/cacio-e-pepe.webp",
       "alt": "Cacio e Pepe",
       "overrides": {
         "card": "",
@@ -150,7 +150,7 @@
       "version": 2
     },
     "margherita_fume": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/pizzas/clasica/margherita-fume.webp",
       "alt": "Margherita Fumé",
       "overrides": {
         "card": "",
@@ -162,23 +162,19 @@
       "version": 2
     },
     "diavola": {
-      "source": "menu/diavola.webp",
+      "source": "assets/menu/pizzas/clasica/diavola.webp",
       "alt": "Diavola",
       "overrides": {
         "card": "",
-        "hover": "menu/hover/diavola-hover.webp",
+        "hover": "assets/menu/pizzas/clasica/diavola-hover.webp",
         "modal": "",
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2,
-      "card": "assets/menu/diavola.webp",
-      "modal": "assets/menu/diavola.webp",
-      "hover": "",
-      "gallery": []
+      "version": 2
     },
     "filetti": {
-      "source": "assets/menu/filetti.webp",
+      "source": "assets/menu/pizzas/clasica/filetti.webp",
       "alt": "Filetti",
       "overrides": {
         "card": "",
@@ -190,7 +186,7 @@
       "version": 2
     },
     "sweet_goat": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/pizzas/clasica/sweet-goat.webp",
       "alt": "Sweet Goat",
       "overrides": {
         "card": "",
@@ -202,7 +198,7 @@
       "version": 2
     },
     "mamma": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/pizzas/clasica/mamma.webp",
       "alt": "Mamma",
       "overrides": {
         "card": "",
@@ -214,7 +210,7 @@
       "version": 2
     },
     "tonno": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/pizzas/clasica/tonno.webp",
       "alt": "Tonno",
       "overrides": {
         "card": "",
@@ -226,7 +222,7 @@
       "version": 2
     },
     "puta": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/pizzas/clasica/puta.webp",
       "alt": "Puta",
       "overrides": {
         "card": "",
@@ -238,7 +234,7 @@
       "version": 2
     },
     "figata": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/pizzas/clasica/pizza-figata.webp",
       "alt": "Figata",
       "overrides": {
         "card": "",
@@ -250,19 +246,19 @@
       "version": 2
     },
     "margherita_sbagliata": {
-      "source": "menu/margherita-sbagliata.webp",
+      "source": "assets/menu/pizzas/clasica/margherita-sbagliata.webp",
       "alt": "Margherita Sbagliata",
       "overrides": {
         "card": "",
-        "hover": "menu/hover/margherita-sbagliata-hover.webp",
-        "modal": "",
+        "hover": "assets/menu/pizzas/clasica/margherita-sbagliata-hover.webp",
+        "modal": "assets/menu/pizzas/clasica/margherita-sbagliata.webp",
         "gallery": []
       },
       "dominantColor": "",
       "version": 2
     },
     "macellaio": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/pizzas/autor/macellaio.webp",
       "alt": "Macellaio",
       "overrides": {
         "card": "",
@@ -274,19 +270,19 @@
       "version": 2
     },
     "quattro_formaggi_truffle": {
-      "source": "menu/quattroformaggi.webp",
+      "source": "assets/menu/pizzas/autor/quattroformaggi.webp",
       "alt": "Quattro Formaggi y Black Truffle",
       "overrides": {
         "card": "",
-        "hover": "menu/hover/quattroformaggi-hover.webp",
-        "modal": "",
+        "hover": "assets/menu/pizzas/autor/quattroformaggi-hover.webp",
+        "modal": "assets/menu/pizzas/autor/quattroformaggi.webp",
         "gallery": []
       },
       "dominantColor": "",
       "version": 2
     },
     "boscaiola": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/pizzas/autor/boscaiola.webp",
       "alt": "Boscaiola",
       "overrides": {
         "card": "",
@@ -298,7 +294,7 @@
       "version": 2
     },
     "calzone": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/pizzas/autor/calzone.webp",
       "alt": "Calzone",
       "overrides": {
         "card": "",
@@ -310,7 +306,7 @@
       "version": 2
     },
     "corazon_burrata": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/pizzas/autor/corazon-de-burrata.webp",
       "alt": "Corazón de Burrata",
       "overrides": {
         "card": "",
@@ -322,7 +318,7 @@
       "version": 2
     },
     "fantasia_pistachos": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/pizzas/autor/fantasia-de-pistachos.webp",
       "alt": "Fantasia de Pistachos",
       "overrides": {
         "card": "",
@@ -334,7 +330,7 @@
       "version": 2
     },
     "vulcano": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/pizzas/autor/vulcano.webp",
       "alt": "Vulcano",
       "overrides": {
         "card": "",
@@ -346,7 +342,7 @@
       "version": 2
     },
     "bellezza": {
-      "source": "assets/menu/bellezza.webp",
+      "source": "assets/menu/pizzas/autor/bellezza.webp",
       "alt": "Bellezza",
       "overrides": {
         "card": "",
@@ -358,7 +354,7 @@
       "version": 2
     },
     "passione_del_sud": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/pizzas/autor/passione-del-sud.webp",
       "alt": "Passione del Sud",
       "overrides": {
         "card": "",
@@ -370,7 +366,7 @@
       "version": 2
     },
     "soppressata": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/pizzas/autor/soppressata.webp",
       "alt": "Soppressata",
       "overrides": {
         "card": "",
@@ -382,7 +378,7 @@
       "version": 2
     },
     "parmesana": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/pizzas/autor/pizza-parmesana.webp",
       "alt": "Parmesana",
       "overrides": {
         "card": "",
@@ -394,7 +390,7 @@
       "version": 2
     },
     "prosciutto_rucula": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/pizzas/autor/prosciutto-y-rucula.webp",
       "alt": "Prosciutto y Rúcula",
       "overrides": {
         "card": "",
@@ -406,7 +402,7 @@
       "version": 2
     },
     "pizza_nutella": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/postres/pizza-nutella.webp",
       "alt": "Pizza de Nutella",
       "overrides": {
         "card": "",
@@ -418,19 +414,19 @@
       "version": 2
     },
     "tiramisu": {
-      "source": "menu/tiramisu.webp",
+      "source": "assets/menu/postres/tiramisu.webp",
       "alt": "Tiramisú artesanal",
       "overrides": {
         "card": "",
-        "hover": "menu/hover/tiramisu-hover.webp",
-        "modal": "",
+        "hover": "assets/menu/postres/tiramisu-hover.webp",
+        "modal": "assets/menu/postres/tiramisu.webp",
         "gallery": []
       },
       "dominantColor": "",
       "version": 2
     },
     "helado_artesanal": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/postres/helado-artesanal.webp",
       "alt": "Helado artesanal",
       "overrides": {
         "card": "",
@@ -442,7 +438,7 @@
       "version": 2
     },
     "delicia_coco": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/postres/delicia-de-coco.webp",
       "alt": "Delicia de coco",
       "overrides": {
         "card": "",
@@ -454,7 +450,7 @@
       "version": 2
     },
     "tartufo_affogato": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/postres/tartufo-affogato.webp",
       "alt": "Tartufo affogato",
       "overrides": {
         "card": "",
@@ -466,7 +462,7 @@
       "version": 2
     },
     "mermelada_della_mamma": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/productos/producto-meremelada-della-mamma.webp",
       "alt": "Mermelada della Mamma",
       "overrides": {
         "card": "",
@@ -478,7 +474,7 @@
       "version": 2
     },
     "burrata_fresca_producto": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/productos/producto-burrata.webp",
       "alt": "Burrata fresca",
       "overrides": {
         "card": "",
@@ -490,7 +486,7 @@
       "version": 2
     },
     "aceite_evoo_aromatizado": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/productos/aceite-evoo.webp",
       "alt": "Aceite EVOO aromatizado",
       "overrides": {
         "card": "",
@@ -502,7 +498,7 @@
       "version": 2
     },
     "pesto_artesanal": {
-      "source": "assets/menu/placeholders/card.svg",
+      "source": "assets/menu/productos/pesto.webp",
       "alt": "Pesto de rúcula o albahaca",
       "overrides": {
         "card": "",
@@ -514,12 +510,12 @@
       "version": 2
     },
     "pan_ciabatta": {
-      "source": "menu/sourdough-ciabatta.webp",
+      "source": "assets/menu/productos/sourdough-ciabatta.webp",
       "alt": "Pan ciabatta de masa madre",
       "overrides": {
         "card": "",
-        "hover": "menu/hover/sourdough-ciabatta-hover.webp",
-        "modal": "",
+        "hover": "assets/menu/productos/sourdough-ciabatta-hover.webp",
+        "modal": "assets/menu/productos/sourdough-ciabatta.webp",
         "gallery": []
       },
       "dominantColor": "",

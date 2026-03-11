@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "node scripts/dev-server.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node scripts/test-menu-traits.js",
     "check:admin-ui": "node scripts/check_admin_ui.js",
+    "validate:menu": "node scripts/validate-menu.js",
     "validate:ingredients": "node scripts/validate-ingredients.js",
     "validate:categories": "node scripts/validate-categories.js",
     "validate:home": "node scripts/validate_home_json.js",

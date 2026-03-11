@@ -131,7 +131,6 @@
       sourceItemIndex: -1,
       draft: null,
       ingredients: [],
-      tags: [],
       allergens: [],
       availability: {
         available: true,
@@ -304,7 +303,11 @@
     ingredientsAliasInput: document.getElementById("ingredients-alias-input"),
     ingredientsAliasAddButton: document.getElementById("ingredients-alias-add-button"),
     ingredientsAliasList: document.getElementById("ingredients-alias-list"),
-    ingredientsTagsList: document.getElementById("ingredients-tags-list"),
+    ingredientsFieldVegetarianSafe: document.getElementById("ingredients-field-vegetarian-safe"),
+    ingredientsFieldVeganSafe: document.getElementById("ingredients-field-vegan-safe"),
+    ingredientsContentFlagsList: document.getElementById("ingredients-content-flags-list"),
+    ingredientsExperienceSignals: document.getElementById("ingredients-experience-signals"),
+    ingredientsInternalTraitsList: document.getElementById("ingredients-internal-traits-list"),
     ingredientsAllergensList: document.getElementById("ingredients-allergens-list"),
     ingredientsImpactCount: document.getElementById("ingredients-impact-count"),
     ingredientsImpactList: document.getElementById("ingredients-impact-list"),
@@ -314,8 +317,6 @@
     ingredientsIconPreview: document.getElementById("ingredients-icon-preview"),
     ingredientsIconUsedByCount: document.getElementById("ingredients-icon-used-by-count"),
     ingredientsIconUsedByList: document.getElementById("ingredients-icon-used-by-list"),
-    ingredientsTagsCatalog: document.getElementById("ingredients-tags-catalog"),
-    ingredientsAllergensCatalog: document.getElementById("ingredients-allergens-catalog"),
 
     categoriesEditorStatus: document.getElementById("categories-editor-status"),
     categoriesEditorWarning: document.getElementById("categories-editor-warning"),
@@ -359,14 +360,9 @@
     ingredientSearchResults: document.getElementById("ingredient-search-results"),
     ingredientChipList: document.getElementById("ingredient-chip-list"),
 
-    tagSearchInput: document.getElementById("tag-search-input"),
-    tagSearchResults: document.getElementById("tag-search-results"),
-    tagChipList: document.getElementById("tag-chip-list"),
-
     allergenSearchInput: document.getElementById("allergen-search-input"),
     allergenSearchResults: document.getElementById("allergen-search-results"),
     allergenChipList: document.getElementById("allergen-chip-list"),
-    itemAutodetectMetaButton: document.getElementById("item-autodetect-meta-button"),
 
     itemFieldImage: document.getElementById("item-field-image"),
     itemMediaStatus: document.getElementById("item-media-status"),
@@ -376,11 +372,18 @@
     itemAvailabilityToggle: document.getElementById("item-availability-toggle"),
     itemAvailabilityReason: document.getElementById("item-availability-reason"),
 
-    itemFieldSpicyLevel: document.getElementById("item-field-spicy-level"),
-    itemSpicyLevelValue: document.getElementById("item-spicy-level-value"),
-    itemFieldVegetarian: document.getElementById("item-field-vegetarian"),
-    itemFieldVegan: document.getElementById("item-field-vegan"),
-    itemFieldSpicyLegacy: document.getElementById("item-field-spicy-legacy"),
+    itemDerivedDietary: document.getElementById("item-derived-dietary"),
+    itemDerivedContentFlags: document.getElementById("item-derived-content-flags"),
+    itemDerivedExperienceTags: document.getElementById("item-derived-experience-tags"),
+    itemDerivedScoreList: document.getElementById("item-derived-score-list"),
+    itemLegacySummary: document.getElementById("item-legacy-summary"),
+    itemFieldOverrideVegetarian: document.getElementById("item-field-override-vegetarian"),
+    itemFieldOverrideVegan: document.getElementById("item-field-override-vegan"),
+    itemFieldOverridePork: document.getElementById("item-field-override-pork"),
+    itemFieldOverrideFish: document.getElementById("item-field-override-fish"),
+    itemFieldOverrideNuts: document.getElementById("item-field-override-nuts"),
+    itemFieldExperienceTagsMode: document.getElementById("item-field-experience-tags-mode"),
+    itemExperienceTagsEditor: document.getElementById("item-experience-tags-editor"),
     itemFieldReviews: document.getElementById("item-field-reviews"),
 
     topbar: document.querySelector(".topbar"),
@@ -544,6 +547,7 @@
     }
     ensureMediaStore();
 
+    var menuValidation = validateMenuDraftData(state.drafts.menu, state.drafts.ingredients);
     var ingredientsValidation = validateIngredientsDraftData(state.drafts.ingredients);
     state.ingredientsEditor.validationReport = ingredientsValidation;
     var categoriesValidation = validateCategoriesDraftData(state.drafts.categories);
@@ -561,6 +565,9 @@
     downloadJsonFile("media.updated.json", state.drafts.media);
 
     if (elements.dataStatus) {
+      var menuValidationSuffix = menuValidation.errors.length
+        ? " (menu con errores de validacion; revisa traits/ingredientes)"
+        : "";
       var validationSuffix = ingredientsValidation.errors.length
         ? " (ingredients con errores de validacion; revisa panel Ingredients)"
         : "";
@@ -578,6 +585,7 @@
       }
       setDataStatus(
         "JSON exportados: menu.updated.json + availability.updated.json + home.updated.json + ingredients.updated.json + categories.updated.json + restaurant.updated.json + media.updated.json" +
+          menuValidationSuffix +
           validationSuffix +
           categoriesValidationSuffix +
           aliasNormalizationSuffix
@@ -698,6 +706,7 @@
       ensureIngredientsDraft: ensureIngredientsDraft,
       ensureCategoriesDraft: ensureCategoriesDraft,
       normalizeIngredientsAliasesPayload: normalizeIngredientsAliasesPayload,
+      validateMenuDraftData: validateMenuDraftData,
       validateIngredientsDraftData: validateIngredientsDraftData,
       validateCategoriesDraftData: validateCategoriesDraftData,
       renderIngredientsEditorValidationSummary: renderIngredientsEditorValidationSummary,
@@ -1127,7 +1136,7 @@
   function ensureMenuDraft() {
     if (!state.drafts.menu) {
       state.drafts.menu = {
-        version: 1,
+        version: 2,
         currency: "DOP",
         taxIncluded: false,
         sections: []
@@ -1162,7 +1171,7 @@
     }
 
     if (!Number.isFinite(Number(state.drafts.ingredients.version))) {
-      state.drafts.ingredients.version = 1;
+      state.drafts.ingredients.version = 3;
     } else {
       state.drafts.ingredients.version = Number(state.drafts.ingredients.version);
     }
@@ -1171,9 +1180,6 @@
       state.drafts.ingredients.basePath = "/assets/Ingredients/";
     }
 
-    if (!state.drafts.ingredients.tags || typeof state.drafts.ingredients.tags !== "object") {
-      state.drafts.ingredients.tags = {};
-    }
     if (!state.drafts.ingredients.allergens || typeof state.drafts.ingredients.allergens !== "object") {
       state.drafts.ingredients.allergens = {};
     }
@@ -1191,21 +1197,23 @@
           label: "",
           icon: "",
           aliases: [],
-          tags: [],
+          metadata: window.FigataMenuTraits
+            ? window.FigataMenuTraits.createEmptyIngredientMetadata()
+            : {},
           allergens: []
         };
         return;
       }
-
-      if (!Array.isArray(ingredient.aliases)) {
-        ingredient.aliases = [];
+      if (
+        window.FigataMenuTraits &&
+        typeof window.FigataMenuTraits.normalizeIngredientRecord === "function"
+      ) {
+        state.drafts.ingredients.ingredients[ingredientId] =
+          window.FigataMenuTraits.normalizeIngredientRecord(ingredientId, ingredient);
+        ingredient = state.drafts.ingredients.ingredients[ingredientId];
       }
-      if (!Array.isArray(ingredient.tags)) {
-        ingredient.tags = [];
-      }
-      if (!Array.isArray(ingredient.allergens)) {
-        ingredient.allergens = [];
-      }
+      if (!Array.isArray(ingredient.aliases)) ingredient.aliases = [];
+      if (!Array.isArray(ingredient.allergens)) ingredient.allergens = [];
     });
   }
 
@@ -1777,6 +1785,21 @@
     }
 
     return report;
+  }
+
+  function validateMenuDraftData(menuDraft, ingredientsDraft) {
+    if (
+      window.FigataMenuTraits &&
+      typeof window.FigataMenuTraits.validateMenuPayload === "function"
+    ) {
+      return window.FigataMenuTraits.validateMenuPayload(menuDraft, ingredientsDraft);
+    }
+
+    return {
+      errors: [],
+      warnings: [],
+      itemIssuesById: {}
+    };
   }
 
   function getMenuCategoryReferenceReport(categoriesById) {
@@ -2604,8 +2627,8 @@
       return normalizeText(a.label).localeCompare(normalizeText(b.label));
     });
 
-    state.indexes.tagsById = ingredientsSource.tags || {};
-    state.indexes.tagList = Object.keys(state.indexes.tagsById).sort();
+    state.indexes.tagsById = {};
+    state.indexes.tagList = [];
 
     state.indexes.allergensById = ingredientsSource.allergens || {};
     state.indexes.allergenList = Object.keys(state.indexes.allergensById).sort();
@@ -3355,8 +3378,34 @@
     syncSidebarAccordionCategoryHeights(elements.sidebarMenuAccordion);
   }
 
+  function getItemTraitReport(item) {
+    if (
+      !window.FigataMenuTraits ||
+      typeof window.FigataMenuTraits.deriveItemTraitReport !== "function"
+    ) {
+      return null;
+    }
+
+    var ingredientsById =
+      (state.drafts.ingredients && state.drafts.ingredients.ingredients) ||
+      (state.data && state.data.ingredients && state.data.ingredients.ingredients) ||
+      {};
+
+    return window.FigataMenuTraits.deriveItemTraitReport(item, ingredientsById, {
+      useLegacyFields: true
+    });
+  }
+
+  function getBadgeModifierClass(group) {
+    if (group === "dietary") return "menu-badge--dietary";
+    if (group === "content") return "menu-badge--content";
+    if (group === "experience") return "menu-badge--experience";
+    return "";
+  }
+
   function getItemBadges(item) {
     var badges = [];
+    var report = getItemTraitReport(item);
 
     if (item.featured) {
       badges.push({
@@ -3366,17 +3415,134 @@
       });
     }
 
-    if (item.vegan) {
-      badges.push({ key: "vegan", label: "Vegan", className: "menu-badge" });
-    } else if (item.vegetarian) {
-      badges.push({ key: "vegetarian", label: "Vegetarian", className: "menu-badge" });
+    if (!report || !report.public_badges || !Array.isArray(report.public_badges.flat)) {
+      return badges;
     }
 
-    if (Number(item.spicy_level) > 0 || item.spicy === true || (item.tags || []).includes("spicy")) {
-      badges.push({ key: "spicy", label: "Spicy", className: "menu-badge" });
-    }
+    report.public_badges.flat.forEach(function (badge) {
+      badges.push({
+        key: badge.key,
+        label: badge.label,
+        className: "menu-badge " + getBadgeModifierClass(badge.group)
+      });
+    });
 
     return badges;
+  }
+
+  function renderBadgePills(targetElement, badges, emptyLabel) {
+    if (!targetElement) return;
+    var source = Array.isArray(badges) ? badges : [];
+    if (!source.length) {
+      targetElement.innerHTML = "<span class=\"traits-empty\">" + escapeHtml(emptyLabel || "Sin datos") + "</span>";
+      return;
+    }
+
+    targetElement.innerHTML = source.map(function (badge) {
+      return (
+        "<span class=\"traits-pill " + escapeHtml(getBadgeModifierClass(badge.group)) + "\">" +
+        escapeHtml(badge.label) +
+        "</span>"
+      );
+    }).join("");
+  }
+
+  function renderItemDerivedScores(report) {
+    if (!elements.itemDerivedScoreList) return;
+    var sourceReport = report && report.resolved ? report : null;
+    var experienceList =
+      window.FigataMenuTraits && Array.isArray(window.FigataMenuTraits.experienceList)
+        ? window.FigataMenuTraits.experienceList
+        : [];
+
+    if (!sourceReport || !experienceList.length) {
+      elements.itemDerivedScoreList.innerHTML = "<p class=\"traits-empty\">Sin scores disponibles.</p>";
+      return;
+    }
+
+    elements.itemDerivedScoreList.innerHTML = experienceList.map(function (entry) {
+      var score = Number(sourceReport.resolved.experience_scores[entry.id] || 0);
+      return (
+        "<div class=\"traits-score-row\">" +
+        "<span>" + escapeHtml(entry.label || entry.id) + "</span>" +
+        "<strong>" + escapeHtml(String(score)) + "</strong>" +
+        "</div>"
+      );
+    }).join("");
+  }
+
+  function getExperienceOverrideTagsFromDraft() {
+    var overrides = state.itemEditor.draft && state.itemEditor.draft.trait_overrides;
+    if (!overrides || !Array.isArray(overrides.experience_tags)) {
+      return [];
+    }
+    return overrides.experience_tags.slice();
+  }
+
+  function renderExperienceOverrideSelector() {
+    if (!elements.itemExperienceTagsEditor) return;
+    var experienceList =
+      window.FigataMenuTraits && Array.isArray(window.FigataMenuTraits.experienceList)
+        ? window.FigataMenuTraits.experienceList
+        : [];
+    var manualMode = elements.itemFieldExperienceTagsMode
+      ? elements.itemFieldExperienceTagsMode.value === "manual"
+      : false;
+    var selected = getExperienceOverrideTagsFromDraft();
+
+    if (!experienceList.length) {
+      elements.itemExperienceTagsEditor.innerHTML = "<p class=\"traits-empty\">Motor V2 no disponible.</p>";
+      return;
+    }
+
+    elements.itemExperienceTagsEditor.innerHTML = experienceList.map(function (entry) {
+      var selectedClass = selected.includes(entry.id) ? " is-selected" : "";
+      var disabledClass = manualMode ? "" : " is-disabled";
+      return (
+        "<button class=\"token-search-result ingredients-meta-chip" + selectedClass + disabledClass +
+        "\" type=\"button\" data-toggle-item-experience-tag=\"" + escapeHtml(entry.id) + "\"" +
+        (manualMode ? "" : " disabled") + ">" +
+        "<span class=\"ingredients-meta-chip__label\">" + escapeHtml(entry.label || entry.id) + "</span>" +
+        "</button>"
+      );
+    }).join("");
+  }
+
+  function renderItemTraitDetails() {
+    var draft = state.itemEditor.draft;
+    if (!draft) return;
+    var report = getItemTraitReport(draft);
+
+    if (!report) {
+      renderBadgePills(elements.itemDerivedDietary, [], "Motor V2 no disponible.");
+      renderBadgePills(elements.itemDerivedContentFlags, [], "Motor V2 no disponible.");
+      renderBadgePills(elements.itemDerivedExperienceTags, [], "Motor V2 no disponible.");
+      renderItemDerivedScores(null);
+      return;
+    }
+
+    renderBadgePills(elements.itemDerivedDietary, report.public_badges.dietary, "Sin badge dietario.");
+    renderBadgePills(elements.itemDerivedContentFlags, report.public_badges.content, "Sin content flags.");
+    renderBadgePills(elements.itemDerivedExperienceTags, report.public_badges.experience, "Sin traits visibles.");
+    renderItemDerivedScores(report);
+    renderExperienceOverrideSelector();
+
+    if (elements.itemLegacySummary) {
+      if (report.legacy && report.legacy.has_legacy_fields) {
+        var legacyParts = [];
+        Object.keys(report.legacy.fields || {}).forEach(function (key) {
+          var value = report.legacy.fields[key];
+          if (value === null) return;
+          if (Array.isArray(value) && !value.length) return;
+          legacyParts.push(key + ": " + (Array.isArray(value) ? value.join(", ") : String(value)));
+        });
+        elements.itemLegacySummary.textContent = legacyParts.length
+          ? "Campos legacy detectados: " + legacyParts.join(" · ")
+          : "Campos legacy detectados pero vacíos.";
+      } else {
+        elements.itemLegacySummary.textContent = "Este item no tiene campos legacy detectados.";
+      }
+    }
   }
 
   function getItemCardDescription(item) {
@@ -3570,13 +3736,9 @@
       descriptionLong: "",
       price: 0,
       ingredients: [],
-      tags: [],
       allergens: [],
       image: MENU_PLACEHOLDER_IMAGE,
-      featured: false,
-      spicy_level: 0,
-      vegetarian: false,
-      vegan: false
+      featured: false
     };
   }
 
@@ -3672,20 +3834,6 @@
     elements.ingredientChipList.innerHTML = html;
   }
 
-  function renderTagChips() {
-    var html = state.itemEditor.tags.map(function (tagId) {
-      var label = (state.indexes.tagsById[tagId] && state.indexes.tagsById[tagId].label) || tagId;
-      return (
-        "<li class=\"chip\">" +
-        "<span>" + escapeHtml(label) + "</span>" +
-        "<button type=\"button\" data-remove-tag=\"" + escapeHtml(tagId) + "\">x</button>" +
-        "</li>"
-      );
-    }).join("");
-
-    elements.tagChipList.innerHTML = html;
-  }
-
   function renderAllergenChips() {
     var html = state.itemEditor.allergens.map(function (allergenId) {
       var label = (state.indexes.allergensById[allergenId] && state.indexes.allergensById[allergenId].label) || allergenId;
@@ -3706,7 +3854,6 @@
 
     if (!normalizedQuery) {
       if (type === "ingredients") elements.ingredientSearchResults.innerHTML = "";
-      if (type === "tags") elements.tagSearchResults.innerHTML = "";
       if (type === "allergens") elements.allergenSearchResults.innerHTML = "";
       return;
     }
@@ -3731,26 +3878,6 @@
       }).join("");
 
       elements.ingredientSearchResults.innerHTML = html;
-      return;
-    }
-
-    if (type === "tags") {
-      var tagResults = state.indexes.tagList.filter(function (tagId) {
-        if (state.itemEditor.tags.includes(tagId)) return false;
-        var label = (state.indexes.tagsById[tagId] && state.indexes.tagsById[tagId].label) || tagId;
-        return normalizeText(tagId + " " + label).includes(normalizedQuery);
-      }).slice(0, 8);
-
-      html = tagResults.map(function (tagId) {
-        var label = (state.indexes.tagsById[tagId] && state.indexes.tagsById[tagId].label) || tagId;
-        return (
-          "<button class=\"token-search-result\" type=\"button\" data-add-tag=\"" + escapeHtml(tagId) + "\">" +
-          escapeHtml(label) +
-          "</button>"
-        );
-      }).join("");
-
-      elements.tagSearchResults.innerHTML = html;
       return;
     }
 
@@ -3789,6 +3916,7 @@
     elements.previewCardBadges.innerHTML = badges.map(function (badge) {
       return "<span class=\"" + badge.className + "\">" + escapeHtml(badge.label) + "</span>";
     }).join("");
+    renderItemTraitDetails();
 
     setImageElementSourceWithFallback(elements.previewModalImage, normalizedImagePath, MENU_PLACEHOLDER_IMAGE);
     elements.previewModalImage.alt = draft.name || draft.id;
@@ -3801,7 +3929,6 @@
     elements.previewModalPrice.textContent = currency + " " + price.toFixed(0);
 
     elements.itemPricePreview.textContent = currency + " " + price.toFixed(0);
-    elements.itemSpicyLevelValue.textContent = String(Number(draft.spicy_level) || 0);
 
     setImageElementSourceWithFallback(elements.itemMediaPreview, normalizedImagePath, MENU_PLACEHOLDER_IMAGE);
 
@@ -3822,6 +3949,83 @@
     }
   }
 
+  function readTriStateSelectValue(selectElement) {
+    if (!selectElement) return null;
+    var rawValue = String(selectElement.value || "").trim();
+    if (!rawValue || rawValue === "auto") return null;
+    if (rawValue === "true") return true;
+    if (rawValue === "false") return false;
+    return null;
+  }
+
+  function writeTriStateSelectValue(selectElement, value) {
+    if (!selectElement) return;
+    if (typeof value === "boolean") {
+      selectElement.value = value ? "true" : "false";
+      return;
+    }
+    selectElement.value = "auto";
+  }
+
+  function buildItemTraitOverridesFromForm() {
+    if (!window.FigataMenuTraits || typeof window.FigataMenuTraits.sanitizeTraitOverrides !== "function") {
+      return null;
+    }
+
+    var rawOverrides = {
+      dietary: {
+        vegetarian: readTriStateSelectValue(elements.itemFieldOverrideVegetarian),
+        vegan: readTriStateSelectValue(elements.itemFieldOverrideVegan)
+      },
+      content_flags: {
+        pork: readTriStateSelectValue(elements.itemFieldOverridePork),
+        fish: readTriStateSelectValue(elements.itemFieldOverrideFish),
+        nuts: readTriStateSelectValue(elements.itemFieldOverrideNuts)
+      }
+    };
+
+    if (
+      elements.itemFieldExperienceTagsMode &&
+      elements.itemFieldExperienceTagsMode.value === "manual"
+    ) {
+      rawOverrides.experience_tags = getExperienceOverrideTagsFromDraft();
+    }
+
+    return window.FigataMenuTraits.sanitizeTraitOverrides(rawOverrides);
+  }
+
+  function applyItemTraitOverrideControls(draft) {
+    var overrides = draft && draft.trait_overrides && window.FigataMenuTraits
+      ? window.FigataMenuTraits.sanitizeTraitOverrides(draft.trait_overrides, { keepEmpty: true })
+      : { dietary: {}, content_flags: {}, experience_tags: null };
+
+    writeTriStateSelectValue(
+      elements.itemFieldOverrideVegetarian,
+      overrides.dietary ? overrides.dietary.vegetarian : null
+    );
+    writeTriStateSelectValue(
+      elements.itemFieldOverrideVegan,
+      overrides.dietary ? overrides.dietary.vegan : null
+    );
+    writeTriStateSelectValue(
+      elements.itemFieldOverridePork,
+      overrides.content_flags ? overrides.content_flags.pork : null
+    );
+    writeTriStateSelectValue(
+      elements.itemFieldOverrideFish,
+      overrides.content_flags ? overrides.content_flags.fish : null
+    );
+    writeTriStateSelectValue(
+      elements.itemFieldOverrideNuts,
+      overrides.content_flags ? overrides.content_flags.nuts : null
+    );
+
+    if (elements.itemFieldExperienceTagsMode) {
+      elements.itemFieldExperienceTagsMode.value =
+        Array.isArray(overrides.experience_tags) ? "manual" : "auto";
+    }
+  }
+
   function syncDraftFromForm() {
     var draft = state.itemEditor.draft;
     if (!draft) return;
@@ -3835,22 +4039,23 @@
     draft.descriptionShort = elements.itemFieldDescriptionShort.value.trim();
     draft.descriptionLong = elements.itemFieldDescriptionLong.value.trim();
     draft.ingredients = state.itemEditor.ingredients.slice();
-    draft.tags = state.itemEditor.tags.slice();
     draft.allergens = state.itemEditor.allergens.slice();
     var normalizedImagePath = resolveMenuMediaPath(elements.itemFieldImage.value, true) || MENU_PLACEHOLDER_IMAGE;
     draft.image = normalizedImagePath;
     if (document.activeElement !== elements.itemFieldImage) {
       elements.itemFieldImage.value = normalizedImagePath;
     }
-    draft.spicy_level = Number(elements.itemFieldSpicyLevel.value || 0);
-    draft.vegetarian = getToggleChecked(elements.itemFieldVegetarian);
-    draft.vegan = getToggleChecked(elements.itemFieldVegan);
+    delete draft.tags;
+    delete draft.vegetarian;
+    delete draft.vegan;
+    delete draft.spicy_level;
+    delete draft.spicy;
 
-    var spicyLegacy = elements.itemFieldSpicyLegacy.value;
-    if (!spicyLegacy) {
-      delete draft.spicy;
+    var traitOverrides = buildItemTraitOverridesFromForm();
+    if (traitOverrides) {
+      draft.trait_overrides = traitOverrides;
     } else {
-      draft.spicy = spicyLegacy === "true";
+      delete draft.trait_overrides;
     }
 
     var reviewsValue = elements.itemFieldReviews.value.trim();
@@ -3900,7 +4105,6 @@
     state.itemEditor.sourceItemIndex = itemPosition.itemIndex;
     state.itemEditor.draft = draft;
     state.itemEditor.ingredients = Array.isArray(draft.ingredients) ? draft.ingredients.slice() : [];
-    state.itemEditor.tags = Array.isArray(draft.tags) ? draft.tags.slice() : [];
     state.itemEditor.allergens = Array.isArray(draft.allergens) ? draft.allergens.slice() : [];
     state.itemEditor.availability = {
       available: availabilityEntry ? Boolean(availabilityEntry.available) : fallbackAvailable,
@@ -3927,22 +4131,15 @@
 
     setToggleChecked(elements.itemAvailabilityToggle, state.itemEditor.availability.available);
     elements.itemAvailabilityReason.value = state.itemEditor.availability.soldOutReason;
-
-    elements.itemFieldSpicyLevel.value = Number(draft.spicy_level || 0);
-    setToggleChecked(elements.itemFieldVegetarian, Boolean(draft.vegetarian));
-    setToggleChecked(elements.itemFieldVegan, Boolean(draft.vegan));
-    elements.itemFieldSpicyLegacy.value = typeof draft.spicy === "boolean" ? String(draft.spicy) : "";
+    applyItemTraitOverrideControls(draft);
     elements.itemFieldReviews.value = draft.reviews || "";
 
     setActiveItemTab("basic");
     renderIngredientChips();
-    renderTagChips();
     renderAllergenChips();
 
     elements.ingredientSearchInput.value = "";
     elements.ingredientSearchResults.innerHTML = "";
-    elements.tagSearchInput.value = "";
-    elements.tagSearchResults.innerHTML = "";
     elements.allergenSearchInput.value = "";
     elements.allergenSearchResults.innerHTML = "";
 
@@ -3974,7 +4171,6 @@
     state.itemEditor.sourceItemIndex = -1;
     state.itemEditor.draft = draft;
     state.itemEditor.ingredients = [];
-    state.itemEditor.tags = [];
     state.itemEditor.allergens = [];
     state.itemEditor.availability = {
       available: true,
@@ -3999,22 +4195,15 @@
 
     setToggleChecked(elements.itemAvailabilityToggle, true);
     elements.itemAvailabilityReason.value = "";
-
-    elements.itemFieldSpicyLevel.value = "0";
-    setToggleChecked(elements.itemFieldVegetarian, false);
-    setToggleChecked(elements.itemFieldVegan, false);
-    elements.itemFieldSpicyLegacy.value = "";
+    applyItemTraitOverrideControls(draft);
     elements.itemFieldReviews.value = "";
 
     setActiveItemTab("basic");
     renderIngredientChips();
-    renderTagChips();
     renderAllergenChips();
 
     elements.ingredientSearchInput.value = "";
     elements.ingredientSearchResults.innerHTML = "";
-    elements.tagSearchInput.value = "";
-    elements.tagSearchResults.innerHTML = "";
     elements.allergenSearchInput.value = "";
     elements.allergenSearchResults.innerHTML = "";
 
@@ -4043,22 +4232,6 @@
     syncDraftFromForm();
   }
 
-  function addTag(tagId) {
-    if (!tagId || state.itemEditor.tags.includes(tagId)) return;
-    state.itemEditor.tags.push(tagId);
-    renderTagChips();
-    renderTokenSearchResults("tags", elements.tagSearchInput.value);
-    syncDraftFromForm();
-  }
-
-  function removeTag(tagId) {
-    state.itemEditor.tags = state.itemEditor.tags.filter(function (id) {
-      return id !== tagId;
-    });
-    renderTagChips();
-    syncDraftFromForm();
-  }
-
   function addAllergen(allergenId) {
     if (!allergenId || state.itemEditor.allergens.includes(allergenId)) return;
     state.itemEditor.allergens.push(allergenId);
@@ -4075,30 +4248,31 @@
     syncDraftFromForm();
   }
 
-  function autoDetectTagsAndAllergensFromIngredients() {
-    var detectedTags = new Set(state.itemEditor.tags);
-    var detectedAllergens = new Set(state.itemEditor.allergens);
+  function toggleItemExperienceOverrideTag(tagId) {
+    if (!state.itemEditor.draft || !window.FigataMenuTraits) return;
+    var normalizedId = String(tagId || "").trim();
+    if (!normalizedId) return;
 
-    state.itemEditor.ingredients.forEach(function (ingredientId) {
-      var ingredient = state.indexes.ingredientsById[ingredientId];
-      if (!ingredient) return;
-
-      (ingredient.tags || []).forEach(function (tagId) {
-        if (state.indexes.tagsById[tagId]) detectedTags.add(tagId);
+    var nextSelected = getExperienceOverrideTagsFromDraft();
+    if (nextSelected.includes(normalizedId)) {
+      nextSelected = nextSelected.filter(function (entryId) {
+        return entryId !== normalizedId;
       });
+    } else {
+      if (nextSelected.length >= window.FigataMenuTraits.publicBadgeLimits.experience) {
+        setItemEditorStatus("Máximo " + window.FigataMenuTraits.publicBadgeLimits.experience + " badges de experiencia manuales.");
+        return;
+      }
+      nextSelected.push(normalizedId);
+    }
 
-      (ingredient.allergens || []).forEach(function (allergenId) {
-        if (state.indexes.allergensById[allergenId]) detectedAllergens.add(allergenId);
-      });
+    var draft = state.itemEditor.draft;
+    var rawOverrides = draft.trait_overrides || {};
+    rawOverrides.experience_tags = nextSelected;
+    draft.trait_overrides = window.FigataMenuTraits.sanitizeTraitOverrides(rawOverrides, {
+      keepEmpty: true
     });
-
-    state.itemEditor.tags = Array.from(detectedTags).sort();
-    state.itemEditor.allergens = Array.from(detectedAllergens).sort();
-
-    renderTagChips();
-    renderAllergenChips();
     syncDraftFromForm();
-    setItemEditorStatus("Tags y alergenos sugeridos aplicados.");
   }
 
   function validateCurrentItemDraft() {
@@ -4141,17 +4315,20 @@
       }
     });
 
-    state.itemEditor.tags.forEach(function (tagId) {
-      if (!state.indexes.tagsById[tagId]) {
-        errors.push("Tag invalido: " + tagId);
-      }
-    });
-
     state.itemEditor.allergens.forEach(function (allergenId) {
       if (!state.indexes.allergensById[allergenId]) {
         errors.push("Alergeno invalido: " + allergenId);
       }
     });
+
+    if (
+      draft.trait_overrides &&
+      draft.trait_overrides.dietary &&
+      draft.trait_overrides.dietary.vegan === true &&
+      draft.trait_overrides.dietary.vegetarian === false
+    ) {
+      errors.push("Override inválido: Vegan=true requiere Vegetarian=true.");
+    }
 
     return errors;
   }
@@ -6083,8 +6260,15 @@
   function createIngredientsEditorDraft(ingredientId, sourceEntry) {
     var source = sourceEntry && typeof sourceEntry === "object" ? sourceEntry : {};
     var aliasesRaw = Array.isArray(source.aliases) ? source.aliases : [];
-    var tagsRaw = Array.isArray(source.tags) ? source.tags : [];
     var allergensRaw = Array.isArray(source.allergens) ? source.allergens : [];
+    var metadata = window.FigataMenuTraits
+      ? window.FigataMenuTraits.normalizeIngredientMetadata(source, ingredientId)
+      : {
+        dietary_profile: { vegetarian_safe: false, vegan_safe: false },
+        content_flags: [],
+        experience_signals: {},
+        internal_traits: []
+      };
 
     var aliases = [];
     aliasesRaw.forEach(function (alias) {
@@ -6092,15 +6276,6 @@
       if (!normalizedAlias) return;
       if (!aliases.includes(normalizedAlias)) {
         aliases.push(normalizedAlias);
-      }
-    });
-
-    var tags = [];
-    tagsRaw.forEach(function (tagId) {
-      var normalizedTagId = String(tagId || "").trim();
-      if (!normalizedTagId) return;
-      if (!tags.includes(normalizedTagId)) {
-        tags.push(normalizedTagId);
       }
     });
 
@@ -6118,7 +6293,7 @@
       label: String(source.label || "").trim(),
       icon: String(source.icon || "").trim(),
       aliases: aliases,
-      tags: tags,
+      metadata: metadata,
       allergens: allergens
     };
   }
@@ -7738,74 +7913,80 @@
     elements.ingredientsAliasList.innerHTML = html;
   }
 
-  function renderIngredientsMetaSelector(kind) {
-    var targetElement = kind === "tags" ? elements.ingredientsTagsList : elements.ingredientsAllergensList;
-    if (!targetElement) return;
-    var sourceList = kind === "tags" ? state.indexes.tagList : state.indexes.allergenList;
-    var sourceById = kind === "tags" ? state.indexes.tagsById : state.indexes.allergensById;
-    var selected = state.ingredientsEditor.draft
-      ? (kind === "tags" ? state.ingredientsEditor.draft.tags : state.ingredientsEditor.draft.allergens)
-      : [];
-    if (!Array.isArray(selected)) selected = [];
+  function getMenuTraitDefinitionList(key) {
+    if (!window.FigataMenuTraits) return [];
+    if (key === "content") return window.FigataMenuTraits.contentFlagList || [];
+    if (key === "experience") return window.FigataMenuTraits.experienceList || [];
+    if (key === "internal") return window.FigataMenuTraits.internalTraitList || [];
+    return [];
+  }
 
-    if (!sourceList.length) {
-      targetElement.innerHTML = "<p class=\"ingredients-list__empty\">Sin " + escapeHtml(kind) + " en catalogo.</p>";
+  function renderIngredientDefinitionSelector(targetElement, entries, selectedValues, attributeName) {
+    if (!targetElement) return;
+    var definitions = Array.isArray(entries) ? entries : [];
+    var selected = Array.isArray(selectedValues) ? selectedValues : [];
+
+    if (!definitions.length) {
+      targetElement.innerHTML = "<p class=\"ingredients-list__empty\">Sin opciones configuradas.</p>";
       return;
     }
 
-    var html = sourceList.map(function (id) {
-      var entry = sourceById[id] || {};
-      var label = entry.label || id;
-      var selectedClass = selected.includes(id) ? " is-selected" : "";
-      var attribute = kind === "tags" ? "data-toggle-ingredient-tag" : "data-toggle-ingredient-allergen";
+    targetElement.innerHTML = definitions.map(function (entry) {
+      var selectedClass = selected.includes(entry.id) ? " is-selected" : "";
       return (
         "<button class=\"token-search-result ingredients-meta-chip" + selectedClass + "\" type=\"button\" " +
-        attribute + "=\"" + escapeHtml(id) + "\" title=\"" + escapeHtml(id) + "\">" +
-        "<span class=\"ingredients-meta-chip__label\">" + escapeHtml(label) + "</span>" +
+        attributeName + "=\"" + escapeHtml(entry.id) + "\" title=\"" + escapeHtml(entry.id) + "\">" +
+        "<span class=\"ingredients-meta-chip__label\">" + escapeHtml(entry.label || entry.id) + "</span>" +
         "</button>"
       );
     }).join("");
-    targetElement.innerHTML = html;
   }
 
-  function renderIngredientsCatalogEditor(kind) {
-    var target = kind === "tags" ? elements.ingredientsTagsCatalog : elements.ingredientsAllergensCatalog;
-    if (!target) return;
-    ensureIngredientsDraft();
-
-    var sourceById = kind === "tags" ? state.drafts.ingredients.tags : state.drafts.ingredients.allergens;
-    var ids = Object.keys(sourceById || {}).sort(function (a, b) {
-      return normalizeText(a).localeCompare(normalizeText(b));
-    });
-
-    if (!ids.length) {
-      target.innerHTML = "<p class=\"ingredients-list__empty\">Catalogo vacio.</p>";
+  function renderIngredientAllergenSelector() {
+    if (!elements.ingredientsAllergensList) return;
+    if (!state.indexes.allergenList.length) {
+      elements.ingredientsAllergensList.innerHTML = "<p class=\"ingredients-list__empty\">Sin alérgenos en catálogo.</p>";
       return;
     }
 
-    target.innerHTML = ids.map(function (id) {
-      var entry = sourceById[id] || {};
+    var selected = state.ingredientsEditor.draft && Array.isArray(state.ingredientsEditor.draft.allergens)
+      ? state.ingredientsEditor.draft.allergens
+      : [];
+
+    elements.ingredientsAllergensList.innerHTML = state.indexes.allergenList.map(function (id) {
+      var entry = state.indexes.allergensById[id] || {};
+      var selectedClass = selected.includes(id) ? " is-selected" : "";
       return (
-        "<label class=\"ingredients-catalog-row\" title=\"ID: " + escapeHtml(id) + "\">" +
-        "<input type=\"text\" data-ingredients-catalog-kind=\"" + escapeHtml(kind) + "\" " +
-        "data-ingredients-catalog-id=\"" + escapeHtml(id) + "\" name=\"ingredients-" + escapeHtml(kind) + "-" +
-        escapeHtml(id) + "\" value=\"" + escapeHtml(entry.label || "") +
-        "\" placeholder=\"Label visible\" aria-label=\"Label para " + escapeHtml(id) + "\" />" +
-        "</label>"
+        "<button class=\"token-search-result ingredients-meta-chip" + selectedClass + "\" type=\"button\" " +
+        "data-toggle-ingredient-allergen=\"" + escapeHtml(id) + "\" title=\"" + escapeHtml(id) + "\">" +
+        "<span class=\"ingredients-meta-chip__label\">" + escapeHtml(entry.label || id) + "</span>" +
+        "</button>"
       );
     }).join("");
   }
 
-  function removeLegacyIngredientsCatalogCards() {
-    ["ingredientsTagsCatalog", "ingredientsAllergensCatalog"].forEach(function (elementKey) {
-      var target = elements[elementKey];
-      if (!target) return;
-      var section = target.closest(".ingredients-detail-section");
-      if (section && section.parentNode) {
-        section.parentNode.removeChild(section);
-      }
-      elements[elementKey] = null;
-    });
+  function renderIngredientExperienceSignalsEditor() {
+    if (!elements.ingredientsExperienceSignals) return;
+    var metadata = state.ingredientsEditor.draft && state.ingredientsEditor.draft.metadata
+      ? state.ingredientsEditor.draft.metadata
+      : null;
+    var experienceList = getMenuTraitDefinitionList("experience");
+
+    if (!metadata || !experienceList.length) {
+      elements.ingredientsExperienceSignals.innerHTML = "<p class=\"ingredients-list__empty\">Sin experiencia configurable.</p>";
+      return;
+    }
+
+    elements.ingredientsExperienceSignals.innerHTML = experienceList.map(function (entry) {
+      var currentValue = Number(metadata.experience_signals[entry.id] || 0);
+      return (
+        "<label class=\"field ingredients-signal-field\">" +
+        "<span>" + escapeHtml(entry.label || entry.id) + "</span>" +
+        "<input type=\"number\" min=\"0\" step=\"1\" data-ingredient-experience-signal=\"" +
+        escapeHtml(entry.id) + "\" value=\"" + escapeHtml(String(currentValue)) + "\" />" +
+        "</label>"
+      );
+    }).join("");
   }
 
   function renderIngredientImpact(ingredientId) {
@@ -7912,8 +8093,12 @@
       renderIngredientsIconSelect("");
       renderIngredientFieldIconPreview("");
       renderIngredientsAliasList();
-      renderIngredientsMetaSelector("tags");
-      renderIngredientsMetaSelector("allergens");
+      if (elements.ingredientsFieldVegetarianSafe) elements.ingredientsFieldVegetarianSafe.value = "false";
+      if (elements.ingredientsFieldVeganSafe) elements.ingredientsFieldVeganSafe.value = "false";
+      renderIngredientDefinitionSelector(elements.ingredientsContentFlagsList, [], [], "data-toggle-ingredient-content-flag");
+      renderIngredientExperienceSignalsEditor();
+      renderIngredientDefinitionSelector(elements.ingredientsInternalTraitsList, [], [], "data-toggle-ingredient-internal-trait");
+      renderIngredientAllergenSelector();
       renderIngredientImpact("");
       if (elements.ingredientsDeleteButton) elements.ingredientsDeleteButton.disabled = true;
       return;
@@ -7935,8 +8120,32 @@
     renderIngredientsIconSelect(draft.icon || "");
     renderIngredientFieldIconPreview(draft.icon || "");
     renderIngredientsAliasList();
-    renderIngredientsMetaSelector("tags");
-    renderIngredientsMetaSelector("allergens");
+    if (elements.ingredientsFieldVegetarianSafe) {
+      elements.ingredientsFieldVegetarianSafe.value =
+        draft.metadata && draft.metadata.dietary_profile && draft.metadata.dietary_profile.vegetarian_safe
+          ? "true"
+          : "false";
+    }
+    if (elements.ingredientsFieldVeganSafe) {
+      elements.ingredientsFieldVeganSafe.value =
+        draft.metadata && draft.metadata.dietary_profile && draft.metadata.dietary_profile.vegan_safe
+          ? "true"
+          : "false";
+    }
+    renderIngredientDefinitionSelector(
+      elements.ingredientsContentFlagsList,
+      getMenuTraitDefinitionList("content"),
+      draft.metadata ? draft.metadata.content_flags : [],
+      "data-toggle-ingredient-content-flag"
+    );
+    renderIngredientExperienceSignalsEditor();
+    renderIngredientDefinitionSelector(
+      elements.ingredientsInternalTraitsList,
+      getMenuTraitDefinitionList("internal"),
+      draft.metadata ? draft.metadata.internal_traits : [],
+      "data-toggle-ingredient-internal-trait"
+    );
+    renderIngredientAllergenSelector();
     renderIngredientImpact(state.ingredientsEditor.selectedIsNew ? "" : state.ingredientsEditor.selectedIngredientId);
     if (elements.ingredientsDeleteButton) {
       elements.ingredientsDeleteButton.disabled = state.ingredientsEditor.selectedIsNew || !state.ingredientsEditor.selectedIngredientId;
@@ -8332,6 +8541,29 @@
     draft.id = String(elements.ingredientsFieldId.value || "").trim();
     draft.label = String(elements.ingredientsFieldLabel.value || "").trim();
     draft.icon = String(elements.ingredientsFieldIcon.value || "").trim();
+    if (!draft.metadata || !window.FigataMenuTraits) {
+      draft.metadata = window.FigataMenuTraits
+        ? window.FigataMenuTraits.createEmptyIngredientMetadata()
+        : {
+          dietary_profile: { vegetarian_safe: false, vegan_safe: false },
+          content_flags: [],
+          experience_signals: {},
+          internal_traits: []
+        };
+    }
+    if (!draft.metadata.dietary_profile) {
+      draft.metadata.dietary_profile = { vegetarian_safe: false, vegan_safe: false };
+    }
+    draft.metadata.dietary_profile.vegetarian_safe =
+      String(elements.ingredientsFieldVegetarianSafe && elements.ingredientsFieldVegetarianSafe.value || "false") === "true";
+    draft.metadata.dietary_profile.vegan_safe =
+      String(elements.ingredientsFieldVeganSafe && elements.ingredientsFieldVeganSafe.value || "false") === "true";
+    if (draft.metadata.dietary_profile.vegan_safe) {
+      draft.metadata.dietary_profile.vegetarian_safe = true;
+      if (elements.ingredientsFieldVegetarianSafe) {
+        elements.ingredientsFieldVegetarianSafe.value = "true";
+      }
+    }
     renderIngredientFieldIconPreview(draft.icon);
   }
 
@@ -8379,55 +8611,58 @@
     setIngredientsEditorStatus("Alias removido. Guarda para persistir.");
   }
 
-  function toggleIngredientMeta(kind, id) {
+  function toggleIngredientMetadataArray(fieldName, id) {
     var draft = state.ingredientsEditor.draft;
-    if (!draft) return;
+    if (!draft || !draft.metadata) return;
     var normalizedId = String(id || "").trim();
     if (!normalizedId) return;
 
-    var fieldName = kind === "allergens" ? "allergens" : "tags";
-    if (!Array.isArray(draft[fieldName])) {
-      draft[fieldName] = [];
+    if (!Array.isArray(draft.metadata[fieldName])) {
+      draft.metadata[fieldName] = [];
     }
-    if (draft[fieldName].includes(normalizedId)) {
-      draft[fieldName] = draft[fieldName].filter(function (value) {
+    if (draft.metadata[fieldName].includes(normalizedId)) {
+      draft.metadata[fieldName] = draft.metadata[fieldName].filter(function (value) {
         return value !== normalizedId;
       });
     } else {
-      draft[fieldName].push(normalizedId);
-      draft[fieldName] = Array.from(new Set(draft[fieldName]));
+      draft.metadata[fieldName].push(normalizedId);
+      draft.metadata[fieldName] = Array.from(new Set(draft.metadata[fieldName]));
     }
-    renderIngredientsMetaSelector(fieldName);
-    setIngredientsEditorStatus("Cambios pendientes en " + fieldName + ". Guarda para persistir.");
+    renderIngredientsForm();
+    setIngredientsEditorStatus("Metadata actualizada. Guarda para persistir.");
   }
 
-  function updateIngredientsCatalogLabel(kind, id, label) {
-    ensureIngredientsDraft();
-    var normalizedKind = kind === "allergens" ? "allergens" : "tags";
-    var normalizedId = String(id || "").trim();
+  function toggleIngredientAllergen(allergenId) {
+    var draft = state.ingredientsEditor.draft;
+    if (!draft) return;
+    var normalizedId = String(allergenId || "").trim();
     if (!normalizedId) return;
+    if (!Array.isArray(draft.allergens)) draft.allergens = [];
 
-    var bucket = state.drafts.ingredients[normalizedKind];
-    if (!bucket || typeof bucket !== "object") {
-      bucket = {};
-      state.drafts.ingredients[normalizedKind] = bucket;
+    if (draft.allergens.includes(normalizedId)) {
+      draft.allergens = draft.allergens.filter(function (value) {
+        return value !== normalizedId;
+      });
+    } else {
+      draft.allergens.push(normalizedId);
+      draft.allergens = Array.from(new Set(draft.allergens));
     }
-    if (!bucket[normalizedId] || typeof bucket[normalizedId] !== "object") {
-      bucket[normalizedId] = { id: normalizedId, label: "" };
+    renderIngredientsForm();
+    setIngredientsEditorStatus("Alergenos actualizados. Guarda para persistir.");
+  }
+
+  function updateIngredientExperienceSignal(signalId, rawValue) {
+    var draft = state.ingredientsEditor.draft;
+    if (!draft || !draft.metadata) return;
+    var normalizedId = String(signalId || "").trim();
+    if (!normalizedId) return;
+    if (!draft.metadata.experience_signals || typeof draft.metadata.experience_signals !== "object") {
+      draft.metadata.experience_signals = {};
     }
 
-    bucket[normalizedId].id = normalizedId;
-    bucket[normalizedId].label = String(label || "").trim();
-
-    buildIndexes();
-    state.ingredientsEditor.validationReport = validateIngredientsDraftData(state.drafts.ingredients);
-    renderIngredientsEditorValidationSummary(state.ingredientsEditor.validationReport);
-    renderIngredientsGlobalWarnings(state.ingredientsEditor.validationReport);
-    renderIngredientsList();
-    renderIngredientsMetaSelector("tags");
-    renderIngredientsMetaSelector("allergens");
-    updateDashboardMetrics();
-    setIngredientsEditorStatus("Catalogo actualizado. Guarda para persistir.");
+    var nextValue = Math.max(0, Math.round(Number(rawValue || 0)));
+    draft.metadata.experience_signals[normalizedId] = nextValue;
+    setIngredientsEditorStatus("Experience signal actualizado. Guarda para persistir.");
   }
 
   function normalizeAliasesInIngredientsDraft() {
@@ -8507,13 +8742,6 @@
         if (!aliases.includes(normalizedAlias)) aliases.push(normalizedAlias);
       });
 
-      var tags = [];
-      (Array.isArray(draft.tags) ? draft.tags : []).forEach(function (tagId) {
-        var normalizedTag = String(tagId || "").trim();
-        if (!normalizedTag) return;
-        if (!tags.includes(normalizedTag)) tags.push(normalizedTag);
-      });
-
       var allergens = [];
       (Array.isArray(draft.allergens) ? draft.allergens : []).forEach(function (allergenId) {
         var normalizedAllergen = String(allergenId || "").trim();
@@ -8521,11 +8749,15 @@
         if (!allergens.includes(normalizedAllergen)) allergens.push(normalizedAllergen);
       });
 
+      var metadata = window.FigataMenuTraits
+        ? window.FigataMenuTraits.normalizeIngredientMetadata({ metadata: draft.metadata }, nextId)
+        : deepClone(draft.metadata || {});
+
       ingredientsById[nextId] = {
         label: String(draft.label || "").trim(),
         icon: String(draft.icon || "").trim(),
         aliases: aliases,
-        tags: tags,
+        metadata: metadata,
         allergens: allergens
       };
 
@@ -9419,16 +9651,6 @@
         mountId: "item-availability-toggle-mount",
         toggleId: "item-availability-toggle",
         label: "Disponible"
-      },
-      {
-        mountId: "item-field-vegetarian-toggle-mount",
-        toggleId: "item-field-vegetarian",
-        label: "Vegetariano"
-      },
-      {
-        mountId: "item-field-vegan-toggle-mount",
-        toggleId: "item-field-vegan",
-        label: "Vegano"
       }
     ];
 
@@ -9444,8 +9666,6 @@
 
     elements.itemFieldFeatured = document.getElementById("item-field-featured");
     elements.itemAvailabilityToggle = document.getElementById("item-availability-toggle");
-    elements.itemFieldVegetarian = document.getElementById("item-field-vegetarian");
-    elements.itemFieldVegan = document.getElementById("item-field-vegan");
   }
 
   function bindItemEditorEvents() {
@@ -9477,8 +9697,6 @@
       elements.itemFieldDescriptionLong,
       elements.itemFieldImage,
       elements.itemAvailabilityReason,
-      elements.itemFieldSpicyLevel,
-      elements.itemFieldSpicyLegacy,
       elements.itemFieldReviews
     ].forEach(function (inputElement) {
       if (!inputElement) return;
@@ -9491,9 +9709,7 @@
         if (!control || !control.id) return;
         if (
           control.id === "item-field-featured" ||
-          control.id === "item-availability-toggle" ||
-          control.id === "item-field-vegetarian" ||
-          control.id === "item-field-vegan"
+          control.id === "item-availability-toggle"
         ) {
           syncDraftFromForm();
         }
@@ -9534,14 +9750,8 @@
     elements.itemCancelButton.addEventListener("click", cancelItemEditor);
     elements.itemDeleteButton.addEventListener("click", deleteCurrentItem);
 
-    elements.itemAutodetectMetaButton.addEventListener("click", autoDetectTagsAndAllergensFromIngredients);
-
     elements.ingredientSearchInput.addEventListener("input", function () {
       renderTokenSearchResults("ingredients", elements.ingredientSearchInput.value);
-    });
-
-    elements.tagSearchInput.addEventListener("input", function () {
-      renderTokenSearchResults("tags", elements.tagSearchInput.value);
     });
 
     elements.allergenSearchInput.addEventListener("input", function () {
@@ -9554,12 +9764,6 @@
       addIngredient(button.getAttribute("data-add-ingredient"));
     });
 
-    elements.tagSearchResults.addEventListener("click", function (event) {
-      var button = event.target.closest("[data-add-tag]");
-      if (!button) return;
-      addTag(button.getAttribute("data-add-tag"));
-    });
-
     elements.allergenSearchResults.addEventListener("click", function (event) {
       var button = event.target.closest("[data-add-allergen]");
       if (!button) return;
@@ -9570,12 +9774,6 @@
       var removeButton = event.target.closest("[data-remove-ingredient]");
       if (!removeButton) return;
       removeIngredient(removeButton.getAttribute("data-remove-ingredient"));
-    });
-
-    elements.tagChipList.addEventListener("click", function (event) {
-      var removeButton = event.target.closest("[data-remove-tag]");
-      if (!removeButton) return;
-      removeTag(removeButton.getAttribute("data-remove-tag"));
     });
 
     elements.allergenChipList.addEventListener("click", function (event) {
@@ -9619,6 +9817,26 @@
       renderIngredientChips();
       syncDraftFromForm();
     });
+
+    [
+      elements.itemFieldOverrideVegetarian,
+      elements.itemFieldOverrideVegan,
+      elements.itemFieldOverridePork,
+      elements.itemFieldOverrideFish,
+      elements.itemFieldOverrideNuts,
+      elements.itemFieldExperienceTagsMode
+    ].forEach(function (selectElement) {
+      if (!selectElement) return;
+      selectElement.addEventListener("change", syncDraftFromForm);
+    });
+
+    if (elements.itemExperienceTagsEditor) {
+      elements.itemExperienceTagsEditor.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-toggle-item-experience-tag]");
+        if (!button || button.disabled) return;
+        toggleItemExperienceOverrideTag(button.getAttribute("data-toggle-item-experience-tag"));
+      });
+    }
   }
 
   function bindHomeEditorEvents() {
@@ -10273,11 +10491,38 @@
       });
     }
 
-    if (elements.ingredientsTagsList) {
-      elements.ingredientsTagsList.addEventListener("click", function (event) {
-        var button = event.target.closest("[data-toggle-ingredient-tag]");
+    [
+      elements.ingredientsFieldVegetarianSafe,
+      elements.ingredientsFieldVeganSafe
+    ].forEach(function (selectElement) {
+      if (!selectElement) return;
+      selectElement.addEventListener("change", syncIngredientsEditorDraftFromForm);
+    });
+
+    if (elements.ingredientsContentFlagsList) {
+      elements.ingredientsContentFlagsList.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-toggle-ingredient-content-flag]");
         if (!button) return;
-        toggleIngredientMeta("tags", button.getAttribute("data-toggle-ingredient-tag"));
+        toggleIngredientMetadataArray("content_flags", button.getAttribute("data-toggle-ingredient-content-flag"));
+      });
+    }
+
+    if (elements.ingredientsInternalTraitsList) {
+      elements.ingredientsInternalTraitsList.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-toggle-ingredient-internal-trait]");
+        if (!button) return;
+        toggleIngredientMetadataArray("internal_traits", button.getAttribute("data-toggle-ingredient-internal-trait"));
+      });
+    }
+
+    if (elements.ingredientsExperienceSignals) {
+      elements.ingredientsExperienceSignals.addEventListener("input", function (event) {
+        var input = event.target.closest("[data-ingredient-experience-signal]");
+        if (!input) return;
+        updateIngredientExperienceSignal(
+          input.getAttribute("data-ingredient-experience-signal"),
+          input.value
+        );
       });
     }
 
@@ -10285,7 +10530,7 @@
       elements.ingredientsAllergensList.addEventListener("click", function (event) {
         var button = event.target.closest("[data-toggle-ingredient-allergen]");
         if (!button) return;
-        toggleIngredientMeta("allergens", button.getAttribute("data-toggle-ingredient-allergen"));
+        toggleIngredientAllergen(button.getAttribute("data-toggle-ingredient-allergen"));
       });
     }
 
@@ -10306,30 +10551,6 @@
         var ingredientId = button.getAttribute("data-jump-icon-ingredient") || "";
         if (!ingredientId) return;
         selectIngredientForEditing(ingredientId, { skipRoute: false });
-      });
-    }
-
-    if (elements.ingredientsTagsCatalog) {
-      elements.ingredientsTagsCatalog.addEventListener("input", function (event) {
-        var input = event.target.closest("[data-ingredients-catalog-kind='tags']");
-        if (!input) return;
-        updateIngredientsCatalogLabel(
-          "tags",
-          input.getAttribute("data-ingredients-catalog-id"),
-          input.value
-        );
-      });
-    }
-
-    if (elements.ingredientsAllergensCatalog) {
-      elements.ingredientsAllergensCatalog.addEventListener("input", function (event) {
-        var input = event.target.closest("[data-ingredients-catalog-kind='allergens']");
-        if (!input) return;
-        updateIngredientsCatalogLabel(
-          "allergens",
-          input.getAttribute("data-ingredients-catalog-id"),
-          input.value
-        );
       });
     }
 
@@ -10558,7 +10779,6 @@
   function bindEvents() {
     mountItemEditorToggles();
     syncUxTimingCssVars();
-    removeLegacyIngredientsCatalogCards();
 
     elements.loginButton.addEventListener("click", function () {
       openIdentityModal();

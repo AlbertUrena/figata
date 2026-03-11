@@ -5,6 +5,7 @@
 // Production branch: GH_BRANCH or GITHUB_BRANCH (defaults to master)
 // Preview branch: CMS_PREVIEW_BRANCH (defaults to cms-preview)
 var ingredientsContract = require("../../shared/ingredients-contract.js");
+var menuTraits = require("../../shared/menu-traits.js");
 var categoriesContract = require("../../shared/categories-contract.js");
 var restaurantContract = require("../../shared/restaurant-contract.js");
 var mediaContract = require("../../shared/media-contract.js");
@@ -54,6 +55,10 @@ function validateIngredientsPayload(payload, menuPayload) {
     menuPayload: menuPayload,
     normalizeAliases: true
   });
+}
+
+function validateMenuPayload(payload, ingredientsPayload) {
+  return menuTraits.validateMenuPayload(payload, ingredientsPayload);
 }
 
 function validateCategoriesPayload(payload, menuPayload) {
@@ -336,6 +341,18 @@ exports.handler = async function (event, context) {
     }
   }
 
+  var menuValidation = validateMenuPayload(
+    body.menu,
+    hasIngredientsPayload ? body.ingredients : null
+  );
+  if (menuValidation.errors.length) {
+    return jsonResponse(400, {
+      error: "Invalid menu payload",
+      details: menuValidation.errors.slice(0, 30),
+      warnings: menuValidation.warnings.slice(0, 20)
+    });
+  }
+
   var categoriesValidation = hasCategoriesPayload
     ? validateCategoriesPayload(body.categories, body.menu)
     : { errors: [], warnings: [] };
@@ -383,23 +400,6 @@ exports.handler = async function (event, context) {
   if (hasMediaPayload) {
     normalizedMedia = normalizeJsonValue(body.media);
     if (!normalizedMedia) {
-      return jsonResponse(400, { error: "Invalid payload" });
-    }
-  }
-
-  var restaurantValidation = hasRestaurantPayload
-    ? validateRestaurantPayload(body.restaurant)
-    : { errors: [], warnings: [] };
-  if (restaurantValidation.errors.length) {
-    return jsonResponse(400, {
-      error: "Invalid restaurant payload",
-      details: restaurantValidation.errors.slice(0, 30),
-      warnings: restaurantValidation.warnings.slice(0, 20)
-    });
-  }
-  if (hasRestaurantPayload) {
-    normalizedRestaurant = normalizeJsonValue(body.restaurant);
-    if (!normalizedRestaurant) {
       return jsonResponse(400, { error: "Invalid payload" });
     }
   }
@@ -507,9 +507,11 @@ exports.handler = async function (event, context) {
       ? restaurantRemote.normalized !== normalizedRestaurant
       : false;
     var mediaChanged = hasMediaPayload ? mediaRemote.normalized !== normalizedMedia : false;
-    var validationWarnings = ingredientsValidation.warnings
+    var validationWarnings = menuValidation.warnings
+      .concat(ingredientsValidation.warnings)
       .concat(categoriesValidation.warnings)
       .concat(restaurantValidation.warnings)
+      .concat(mediaValidation.warnings)
       .slice(0, 20);
 
     if (!menuChanged && !availabilityChanged && !homeChanged && !ingredientsChanged && !categoriesChanged && !restaurantChanged && !mediaChanged) {

@@ -1,6 +1,7 @@
 (() => {
-  const HOME_URL = new URL('data/home.json', window.location.href);
-  const MENU_URL = new URL('data/menu.json', window.location.href);
+  const ROOT_URL = new URL('/', window.location.origin);
+  const HOME_URL = new URL('data/home.json', ROOT_URL);
+  const MENU_URL = new URL('data/menu.json', ROOT_URL);
 
   const DEFAULT_HERO_BACKGROUND = 'assets/home/seamless-bg.webp';
   const DEFAULT_POPULAR_LIMIT = 8;
@@ -39,7 +40,7 @@
   };
   const DEFAULT_NAVBAR_ICON = 'assets/svg-icons/whatsapp.svg';
   const DEFAULT_NAVBAR_LINKS = [
-    { label: 'Menú', url: '#menu' },
+    { label: 'Menú', url: '/menu/' },
     { label: 'Nosotros', url: '#nosotros' },
     { label: 'Ubicación', url: '#ubicacion' },
     { label: 'Contacto', url: '#contacto' },
@@ -48,7 +49,7 @@
     {
       title: 'Empresa',
       links: [
-        { label: 'Menu', url: '#menu' },
+        { label: 'Menu', url: '/menu/' },
         { label: 'Nosotros', url: '#nosotros' },
         { label: 'FAQs', url: '#faqs' },
         { label: 'Eventos', url: '#eventos' },
@@ -179,7 +180,7 @@
       backgroundImage: DEFAULT_HERO_BACKGROUND,
       ctaPrimary: {
         label: 'Ver menu',
-        url: '#menu',
+        url: '/menu/',
       },
       ctaSecondary: {
         label: 'Reservar',
@@ -772,8 +773,8 @@
     }
 
     if (!isValidLink(normalized.hero.ctaPrimary.url)) {
-      warnings.push('hero.ctaPrimary.url invalida. Se uso fallback #menu.');
-      normalized.hero.ctaPrimary.url = '#menu';
+      warnings.push('hero.ctaPrimary.url invalida. Se uso fallback /menu/.');
+      normalized.hero.ctaPrimary.url = '/menu/';
     }
 
     if (!isValidLink(normalized.hero.ctaSecondary.url)) {

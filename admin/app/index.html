@@ -398,11 +398,10 @@
                     <button class="item-tab is-active" data-tab="basic" type="button">Basico</button>
                     <button class="item-tab" data-tab="descriptions" type="button">Descripciones</button>
                     <button class="item-tab" data-tab="ingredients" type="button">Ingredientes</button>
-                    <button class="item-tab" data-tab="tags" type="button">Tags</button>
+                    <button class="item-tab" data-tab="traits" type="button">Traits</button>
                     <button class="item-tab" data-tab="allergens" type="button">Alergenos</button>
                     <button class="item-tab" data-tab="media" type="button">Media</button>
                     <button class="item-tab" data-tab="availability" type="button">Disponibilidad</button>
-                    <button class="item-tab" data-tab="special" type="button">Especiales</button>
                   </nav>
 
                   <div class="item-tab-panels">
@@ -469,13 +468,122 @@
                       <p class="inline-help">Arrastra para cambiar el orden de ingredientes.</p>
                     </section>
 
-                    <section class="item-tab-panel" data-tab-panel="tags">
-                      <label class="field">
-                        <span>Buscar tag</span>
-                        <input id="tag-search-input" type="search" placeholder="Ej: spicy" />
-                      </label>
-                      <div id="tag-search-results" class="token-search-results"></div>
-                      <ul id="tag-chip-list" class="chip-list"></ul>
+                    <section class="item-tab-panel" data-tab-panel="traits">
+                      <section class="traits-panel-section">
+                        <header class="traits-panel-section__header">
+                          <h4>Calculado automáticamente</h4>
+                          <p>
+                            El motor V2 deriva dieta, contenido y experiencia desde
+                            <code>ingredients.metadata</code>.
+                          </p>
+                        </header>
+
+                        <div class="traits-panel-grid">
+                          <div class="traits-panel-card">
+                            <span class="traits-panel-card__label">Dieta</span>
+                            <div id="item-derived-dietary" class="traits-pill-list"></div>
+                          </div>
+
+                          <div class="traits-panel-card">
+                            <span class="traits-panel-card__label">Contenido</span>
+                            <div id="item-derived-content-flags" class="traits-pill-list"></div>
+                          </div>
+
+                          <div class="traits-panel-card">
+                            <span class="traits-panel-card__label">Experiencia visible</span>
+                            <div id="item-derived-experience-tags" class="traits-pill-list"></div>
+                          </div>
+                        </div>
+
+                        <div class="field">
+                          <span>Scores de experiencia</span>
+                          <div id="item-derived-score-list" class="traits-score-list"></div>
+                        </div>
+                      </section>
+
+                      <section class="traits-panel-section">
+                        <header class="traits-panel-section__header">
+                          <h4>Overrides editoriales</h4>
+                          <p>
+                            Si dejas un campo en <strong>Auto</strong>, el runtime usa el cálculo automático.
+                          </p>
+                        </header>
+
+                        <div class="traits-override-grid">
+                          <label class="field">
+                            <span>Dieta: Vegetariana</span>
+                            <select id="item-field-override-vegetarian">
+                              <option value="auto">Auto</option>
+                              <option value="true">Forzar sí</option>
+                              <option value="false">Forzar no</option>
+                            </select>
+                          </label>
+
+                          <label class="field">
+                            <span>Dieta: Vegana</span>
+                            <select id="item-field-override-vegan">
+                              <option value="auto">Auto</option>
+                              <option value="true">Forzar sí</option>
+                              <option value="false">Forzar no</option>
+                            </select>
+                          </label>
+
+                          <label class="field">
+                            <span>Contenido: Cerdo</span>
+                            <select id="item-field-override-pork">
+                              <option value="auto">Auto</option>
+                              <option value="true">Forzar sí</option>
+                              <option value="false">Forzar no</option>
+                            </select>
+                          </label>
+
+                          <label class="field">
+                            <span>Contenido: Pescado</span>
+                            <select id="item-field-override-fish">
+                              <option value="auto">Auto</option>
+                              <option value="true">Forzar sí</option>
+                              <option value="false">Forzar no</option>
+                            </select>
+                          </label>
+
+                          <label class="field">
+                            <span>Contenido: Frutos secos</span>
+                            <select id="item-field-override-nuts">
+                              <option value="auto">Auto</option>
+                              <option value="true">Forzar sí</option>
+                              <option value="false">Forzar no</option>
+                            </select>
+                          </label>
+
+                          <label class="field">
+                            <span>Badges de experiencia</span>
+                            <select id="item-field-experience-tags-mode">
+                              <option value="auto">Automático</option>
+                              <option value="manual">Manual</option>
+                            </select>
+                          </label>
+                        </div>
+
+                        <div class="field">
+                          <span>Experience tags editoriales</span>
+                          <small class="ingredients-field__hint">
+                            Máximo 2 visibles cuando el modo es manual.
+                          </small>
+                          <div id="item-experience-tags-editor" class="token-search-results ingredients-meta-list"></div>
+                        </div>
+
+                        <details class="advanced-box">
+                          <summary>Compatibilidad legacy</summary>
+                          <p id="item-legacy-summary" class="inline-help">
+                            Este item no tiene campos legacy detectados.
+                          </p>
+
+                          <label class="field">
+                            <span>item.reviews</span>
+                            <input id="item-field-reviews" type="text" />
+                          </label>
+                        </details>
+                      </section>
                     </section>
 
                     <section class="item-tab-panel" data-tab-panel="allergens">
@@ -485,9 +593,9 @@
                       </label>
                       <div id="allergen-search-results" class="token-search-results"></div>
                       <ul id="allergen-chip-list" class="chip-list"></ul>
-                      <button id="item-autodetect-meta-button" class="btn btn-ghost" type="button">
-                        Autodetectar tags y alergenos
-                      </button>
+                      <p class="inline-help">
+                        Dieta, contenido y experiencia ya no se editan aquí; se derivan desde Ingredients V2.
+                      </p>
                     </section>
 
                     <section class="item-tab-panel" data-tab-panel="media">
@@ -516,33 +624,6 @@
                       </label>
                     </section>
 
-                    <section class="item-tab-panel" data-tab-panel="special">
-                      <label class="field">
-                        <span>Spicy level: <strong id="item-spicy-level-value">0</strong></span>
-                        <input id="item-field-spicy-level" type="range" min="0" max="3" step="1" />
-                      </label>
-
-                      <div id="item-field-vegetarian-toggle-mount"></div>
-
-                      <div id="item-field-vegan-toggle-mount"></div>
-
-                      <details class="advanced-box">
-                        <summary>Advanced (legacy)</summary>
-                        <label class="field">
-                          <span>item.spicy</span>
-                          <select id="item-field-spicy-legacy">
-                            <option value="">(sin valor)</option>
-                            <option value="true">true</option>
-                            <option value="false">false</option>
-                          </select>
-                        </label>
-
-                        <label class="field">
-                          <span>item.reviews</span>
-                          <input id="item-field-reviews" type="text" />
-                        </label>
-                      </details>
-                    </section>
                   </div>
                 </section>
 
@@ -721,8 +802,8 @@
 
                   <section class="ingredients-detail-section">
                     <header class="ingredients-detail-section__header">
-                      <h4>Busqueda y clasificacion</h4>
-                      <p>Define aliases para matching y asigna tags/alergenos del catalogo.</p>
+                      <h4>Metadata V2</h4>
+                      <p>Define aliases, perfil dietario, content flags, experience signals e internal traits.</p>
                     </header>
                     <div class="ingredients-editor__grid">
                       <div class="field ingredients-field" data-span="full">
@@ -734,10 +815,38 @@
                         <ul id="ingredients-alias-list" class="chip-list ingredients-alias-list"></ul>
                       </div>
 
+                      <label class="field ingredients-field">
+                        <span>Vegetarian safe</span>
+                        <select id="ingredients-field-vegetarian-safe">
+                          <option value="true">Sí</option>
+                          <option value="false">No</option>
+                        </select>
+                      </label>
+
+                      <label class="field ingredients-field">
+                        <span>Vegan safe</span>
+                        <select id="ingredients-field-vegan-safe">
+                          <option value="true">Sí</option>
+                          <option value="false">No</option>
+                        </select>
+                      </label>
+
                       <div class="field ingredients-field" data-span="full">
-                        <span>Tags</span>
-                        <small class="ingredients-field__hint">Puedes seleccionar multiples tags para filtros y badges.</small>
-                        <div id="ingredients-tags-list" class="token-search-results ingredients-meta-list"></div>
+                        <span>Content flags</span>
+                        <small class="ingredients-field__hint">Flags visibles a nivel item cuando el ingrediente está presente.</small>
+                        <div id="ingredients-content-flags-list" class="token-search-results ingredients-meta-list"></div>
+                      </div>
+
+                      <div class="field ingredients-field" data-span="full">
+                        <span>Experience signals</span>
+                        <small class="ingredients-field__hint">Intensidad base que el motor suma por ingrediente.</small>
+                        <div id="ingredients-experience-signals" class="ingredients-signals-grid"></div>
+                      </div>
+
+                      <div class="field ingredients-field" data-span="full">
+                        <span>Internal traits</span>
+                        <small class="ingredients-field__hint">Rasgos internos para bonuses y reglas de combinación.</small>
+                        <div id="ingredients-internal-traits-list" class="token-search-results ingredients-meta-list"></div>
                       </div>
 
                       <div class="field ingredients-field" data-span="full">
@@ -1107,6 +1216,7 @@
     </main>
 
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <script src="/shared/menu-traits.js"></script>
     <script src="/shared/ingredients-contract.js"></script>
     <script src="/shared/categories-contract.js"></script>
     <script src="/shared/restaurant-contract.js"></script>

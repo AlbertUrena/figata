@@ -12,7 +12,7 @@
     {
       title: 'Empresa',
       links: [
-        { label: 'Menu', url: '#menu' },
+        { label: 'Menu', url: '/menu/' },
         { label: 'Nosotros', url: '#nosotros' },
         { label: 'FAQs', url: '#faqs' },
         { label: 'Eventos', url: '#eventos' },
@@ -195,13 +195,13 @@
     if (eyebrowButton) {
       const eyebrowLabel = eyebrowButton.querySelector('span');
       setText(eyebrowLabel, hero?.ctaSecondary?.label || '');
-      setLinkState(eyebrowButton, hero?.ctaSecondary?.url || '#menu');
+      setLinkState(eyebrowButton, hero?.ctaSecondary?.url || '/menu/');
     }
 
     if (primaryButton) {
       const primaryLabel = primaryButton.querySelector('span');
       setText(primaryLabel, hero?.ctaPrimary?.label || '');
-      setLinkState(primaryButton, hero?.ctaPrimary?.url || '#menu');
+      setLinkState(primaryButton, hero?.ctaPrimary?.url || '/menu/');
     }
   };
 
@@ -340,7 +340,7 @@
 
     if (navLinksRoot) {
       const fallbackLinks = [
-        { label: 'Menú', url: '#menu' },
+        { label: 'Menú', url: '/menu/' },
         { label: 'Nosotros', url: '#nosotros' },
         { label: 'Ubicación', url: '#ubicacion' },
         { label: 'Contacto', url: '#contacto' },
@@ -640,6 +640,10 @@
 
       applyHero(home.hero, fallbackBackground);
       applyNavbar(home.navbar);
+      const publicNavbarApi = window.FigataPublicNavbar;
+      if (publicNavbarApi && typeof publicNavbarApi.refreshFromDom === 'function') {
+        publicNavbarApi.refreshFromDom();
+      }
       applyPopular(home.popular);
       applyDelivery(home.delivery);
       applyTestimonials(home.testimonials);

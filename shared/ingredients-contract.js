@@ -1,5 +1,11 @@
 (function (root, factory) {
-  var contract = factory();
+  var menuTraits = null;
+  if (typeof module === 'object' && module.exports) {
+    menuTraits = require('./menu-traits.js');
+  } else if (root && root.FigataMenuTraits) {
+    menuTraits = root.FigataMenuTraits;
+  }
+  var contract = factory(menuTraits);
   if (typeof module === 'object' && module.exports) {
     module.exports = contract;
   }
@@ -10,7 +16,7 @@
   typeof globalThis !== 'undefined'
     ? globalThis
     : (typeof window !== 'undefined' ? window : this),
-  function () {
+  function (menuTraits) {
     function isObject(value) {
       return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
     }
@@ -38,6 +44,19 @@
       if (path.indexOf('assets/') === 0) return true;
       return /\.(svg|webp|png|jpe?g|gif)$/i.test(path);
     }
+
+    function indexById(list) {
+      var map = {};
+      (Array.isArray(list) ? list : []).forEach(function (entry) {
+        if (!entry || !entry.id) return;
+        map[entry.id] = entry;
+      });
+      return map;
+    }
+
+    var contentFlagMap = indexById(menuTraits && menuTraits.contentFlagList);
+    var experienceMap = indexById(menuTraits && menuTraits.experienceList);
+    var internalTraitMap = indexById(menuTraits && menuTraits.internalTraitList);
 
     function buildMenuReferenceReport(menuPayload, ingredientsById) {
       var report = {
@@ -166,7 +185,7 @@
       }
 
       var ingredientsById = isObject(payload.ingredients) ? payload.ingredients : {};
-      var tagsById = isObject(payload.tags) ? payload.tags : {};
+      var legacyTagsById = isObject(payload.tags) ? payload.tags : {};
       var allergensById = isObject(payload.allergens) ? payload.allergens : {};
       var iconsById = isObject(payload.icons) ? payload.icons : {};
 
@@ -174,12 +193,12 @@
         report.iconUsageByKey[iconKey] = [];
       });
 
-      Object.keys(tagsById).forEach(function (tagId) {
-        var tagEntry = tagsById[tagId] || {};
-        if (!String(tagEntry.label || '').trim()) {
-          pushGlobalIssue('warning', 'Tag sin label: ' + tagId);
-        }
-      });
+      if (Object.keys(legacyTagsById).length) {
+        pushGlobalIssue(
+          'warning',
+          'ingredients.tags es legacy y ya no es el source of truth de metadata.'
+        );
+      }
 
       Object.keys(allergensById).forEach(function (allergenId) {
         var allergenEntry = allergensById[allergenId] || {};
@@ -273,28 +292,112 @@
           }
         }
 
-        if (!Array.isArray(ingredient.tags)) {
-          pushIngredientIssue(ingredientId, 'error', 'tags debe ser array en ingrediente: ' + ingredientId);
-        } else {
-          var seenTags = {};
-          ingredient.tags.forEach(function (tagId) {
-            var normalizedTagId = String(tagId || '').trim();
-            if (!tagsById[normalizedTagId]) {
-              pushIngredientIssue(
-                ingredientId,
-                'error',
-                "Tag desconocido en ingrediente '" + ingredientId + "': " + normalizedTagId
-              );
-            }
-            if (seenTags[normalizedTagId]) {
-              pushIngredientIssue(
-                ingredientId,
-                'error',
-                "Tag duplicado en ingrediente '" + ingredientId + "': " + normalizedTagId
-              );
-            }
-            seenTags[normalizedTagId] = true;
-          });
+        if (typeof ingredient.tags !== 'undefined') {
+          if (!Array.isArray(ingredient.tags)) {
+            pushIngredientIssue(
+              ingredientId,
+              'warning',
+              'ingredient.tags es legacy y debe eliminarse del ingrediente: ' + ingredientId
+            );
+          } else if (ingredient.tags.length) {
+            pushIngredientIssue(
+              ingredientId,
+              'warning',
+              'ingredient.tags es legacy y debe migrarse a ingredient.metadata: ' + ingredientId
+            );
+          }
+        }
+
+        if (menuTraits && typeof menuTraits.normalizeIngredientMetadata === 'function') {
+          var normalizedMetadata = menuTraits.normalizeIngredientMetadata(ingredient, ingredientId);
+
+          if (!isObject(ingredient.metadata)) {
+            pushIngredientIssue(
+              ingredientId,
+              'warning',
+              'Ingrediente sin metadata V2; se infiere desde legacy hints/tags: ' + ingredientId
+            );
+          }
+
+          if (!isObject(ingredient.metadata) || !isObject(ingredient.metadata.dietary_profile)) {
+            pushIngredientIssue(
+              ingredientId,
+              'warning',
+              'metadata.dietary_profile faltante o invalido en ingrediente: ' + ingredientId
+            );
+          }
+
+          if (!Array.isArray(normalizedMetadata.content_flags)) {
+            pushIngredientIssue(
+              ingredientId,
+              'error',
+              'metadata.content_flags invalido en ingrediente: ' + ingredientId
+            );
+          } else {
+            var seenContentFlags = {};
+            normalizedMetadata.content_flags.forEach(function (flagId) {
+              if (!contentFlagMap[flagId]) {
+                pushIngredientIssue(
+                  ingredientId,
+                  'error',
+                  "Content flag desconocido en ingrediente '" + ingredientId + "': " + flagId
+                );
+              }
+              if (seenContentFlags[flagId]) {
+                pushIngredientIssue(
+                  ingredientId,
+                  'error',
+                  "Content flag duplicado en ingrediente '" + ingredientId + "': " + flagId
+                );
+              }
+              seenContentFlags[flagId] = true;
+            });
+          }
+
+          if (!isObject(normalizedMetadata.experience_signals)) {
+            pushIngredientIssue(
+              ingredientId,
+              'error',
+              'metadata.experience_signals invalido en ingrediente: ' + ingredientId
+            );
+          } else {
+            Object.keys(normalizedMetadata.experience_signals).forEach(function (signalId) {
+              if (!experienceMap[signalId]) {
+                pushIngredientIssue(
+                  ingredientId,
+                  'error',
+                  "Experience signal desconocido en ingrediente '" + ingredientId + "': " + signalId
+                );
+              }
+            });
+          }
+
+          if (!Array.isArray(normalizedMetadata.internal_traits)) {
+            pushIngredientIssue(
+              ingredientId,
+              'error',
+              'metadata.internal_traits invalido en ingrediente: ' + ingredientId
+            );
+          } else {
+            var seenInternalTraits = {};
+            normalizedMetadata.internal_traits.forEach(function (traitId) {
+              if (!internalTraitMap[traitId]) {
+                pushIngredientIssue(
+                  ingredientId,
+                  'error',
+                  "Internal trait desconocido en ingrediente '" + ingredientId + "': " + traitId
+                );
+              }
+              if (seenInternalTraits[traitId]) {
+                pushIngredientIssue(
+                  ingredientId,
+                  'error',
+                  "Internal trait duplicado en ingrediente '" + ingredientId + "': " + traitId
+                );
+              }
+              seenInternalTraits[traitId] = true;
+            });
+          }
         }
 
         if (!Array.isArray(ingredient.allergens)) {

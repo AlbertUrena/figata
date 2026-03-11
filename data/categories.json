@@ -27,9 +27,15 @@
       "visible": true
     },
     {
+      "id": "bebidas",
+      "label": "Bebidas",
+      "order": 5,
+      "visible": true
+    },
+    {
       "id": "productos",
       "label": "Productos",
-      "order": 5,
+      "order": 6,
       "visible": true
     }
   ]

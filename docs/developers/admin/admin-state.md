@@ -49,8 +49,6 @@ Derived indexes built from loaded data. Rebuild on data load.
 | `iconsById` | `object` | Icon lookup by key |
 | `iconList` | `array` | Ordered list of icon objects |
 | `iconUsageByKey` | `object` | Map of icon key → array of ingredient IDs using it |
-| `tagsById` | `object` | Tag lookup by ID |
-| `tagList` | `array` | Ordered list of tag objects |
 | `allergensById` | `object` | Allergen lookup by ID |
 | `allergenList` | `array` | Ordered list of allergen objects |
 | `mediaPaths` | `array` | All known media filenames |
@@ -131,12 +129,11 @@ Item editor sub-state.
 |----------|------|---------|
 | `isOpen` | `boolean` | Whether the item editor panel is showing |
 | `isNew` | `boolean` | True if creating a new item (vs editing existing) |
-| `activeTab` | `string` | Active tab ID (`"basic"`, `"description"`, `"meta"`, `"media"`, `"availability"`, `"advanced"`) |
+| `activeTab` | `string` | Active tab ID (`"basic"`, `"descriptions"`, `"ingredients"`, `"traits"`, `"allergens"`, `"media"`, `"availability"`) |
 | `sourceSectionId` | `string` | Section ID of the item being edited |
 | `sourceItemIndex` | `number` | Index within the section's items array (-1 for new) |
 | `draft` | `object | null` | Working copy of the item being edited |
 | `ingredients` | `array` | Selected ingredient IDs for the item |
-| `tags` | `array` | Selected tag IDs |
 | `allergens` | `array` | Selected allergen IDs |
 | `availability` | `object` | `{ available: boolean, soldOutReason: string }` |
 
@@ -244,14 +241,14 @@ The `elements` object references ~100 DOM elements by ID. Organized by functiona
 ### Menu Browser (4 refs)
 `menuBrowserStatus`, `menuBrowserGroups`, `menuClearFilterButton`, `menuNewItemButton`
 
-### Item Editor (~28 refs)
-`itemEditorTitle`, `itemEditorStatus`, `itemEditorErrors`, `itemEditorActions`, `itemSaveButton`, `itemSaveCloseButton`, `itemExportJsonButton`, `itemPublishPreviewButton`, `itemPublishProductionButton`, `itemCancelButton`, `itemDeleteButton`, `itemTabs` (array), `itemTabPanels` (array), `itemFieldId`, `itemFieldName`, `itemFieldSlug`, `itemGenerateSlugButton`, `itemFieldCategory`, `itemFieldSubcategory`, `itemFieldPrice`, `itemPricePreview`, `itemFieldFeatured`, `itemFieldDescriptionShort`, `itemFieldDescriptionLong`, ingredient/tag/allergen search inputs and chip lists, media picker/preview, availability toggle, spicy/dietary fields
+### Item Editor (~35 refs)
+`itemEditorTitle`, `itemEditorStatus`, `itemEditorErrors`, `itemEditorActions`, `itemSaveButton`, `itemSaveCloseButton`, `itemExportJsonButton`, `itemPublishPreviewButton`, `itemPublishProductionButton`, `itemCancelButton`, `itemDeleteButton`, `itemTabs` (array), `itemTabPanels` (array), `itemFieldId`, `itemFieldName`, `itemFieldSlug`, `itemGenerateSlugButton`, `itemFieldCategory`, `itemFieldSubcategory`, `itemFieldPrice`, `itemPricePreview`, `itemFieldFeatured`, `itemFieldDescriptionShort`, `itemFieldDescriptionLong`, ingredient/allergen search inputs and chip lists, media picker/preview, availability toggle, derived trait containers, trait override controls, legacy summary, reviews field
 
 ### Home Editor (7 refs)
 `homeEditorStatus`, `homeSectionsContent`, `homeSaveButton`, `homeExportJsonButton`, `homePublishPreviewButton`, `homePublishProductionButton`
 
 ### Ingredients Editor (~40 refs)
-Tab navigation, catalog/detail views for both ingredients and icons, search inputs, field inputs, save/delete buttons, validation summaries, icon preview, alias management, tags/allergens catalogs
+Tab navigation, catalog/detail views for both ingredients and icons, search inputs, field inputs, save/delete buttons, validation summaries, icon preview, alias management, V2 metadata controls (`dietary_profile`, `content_flags`, `experience_signals`, `internal_traits`) and allergen selectors
 
 ### Categories Editor (7 refs)
 `categoriesEditorStatus`, `categoriesEditorWarning`, `categoriesCardsSummary`, `categoriesCardsContent`, `categoriesOrderList`, `categoriesNewButton`, `categoriesExportJsonButton`, `categoriesClearDraftsButton`, `categoriesValidationSummary`

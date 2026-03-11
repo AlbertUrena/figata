@@ -1,9 +1,12 @@
 (() => {
-  const MENU_URL = new URL('data/menu.json', window.location.href);
-  const CATEGORIES_URL = new URL('data/categories.json', window.location.href);
-  const AVAILABILITY_URL = new URL('data/availability.json', window.location.href);
+  const ROOT_URL = new URL('/', window.location.origin);
+  const MENU_URL = new URL('data/menu.json', ROOT_URL);
+  const CATEGORIES_URL = new URL('data/categories.json', ROOT_URL);
+  const AVAILABILITY_URL = new URL('data/availability.json', ROOT_URL);
+  const INGREDIENTS_URL = new URL('data/ingredients.json', ROOT_URL);
 
   let cachedMenuStorePromise;
+  const menuTraitsApi = window.FigataMenuTraits || null;
 
   const normalizeId = (value) => String(value || '').trim();
 
@@ -20,10 +23,71 @@
   const normalizeStringArray = (value) =>
     Array.isArray(value) ? value.map(normalizeText).filter(Boolean) : [];
 
+  const createEmptyTraitReport = () => ({
+    automatic: {
+      dietary: {
+        vegetarian: false,
+        vegan: false,
+      },
+      content_flags: {
+        pork: false,
+        fish: false,
+        nuts: false,
+      },
+      experience_scores: {
+        spicy: 0,
+        fresh: 0,
+        aromatic: 0,
+        classic: 0,
+        truffled: 0,
+        smoked: 0,
+        sweet_savory: 0,
+        intense: 0,
+      },
+      experience_tags: [],
+      internal_traits: [],
+      ingredient_ids: [],
+    },
+    overrides: null,
+    resolved: {
+      dietary: {
+        vegetarian: false,
+        vegan: false,
+      },
+      content_flags: {
+        pork: false,
+        fish: false,
+        nuts: false,
+      },
+      experience_scores: {
+        spicy: 0,
+        fresh: 0,
+        aromatic: 0,
+        classic: 0,
+        truffled: 0,
+        smoked: 0,
+        sweet_savory: 0,
+        intense: 0,
+      },
+      experience_tags: [],
+      internal_traits: [],
+      ingredient_ids: [],
+    },
+    public_badges: {
+      dietary: [],
+      content: [],
+      experience: [],
+      flat: [],
+    },
+  });
+
   const normalizeAssetPath = (value) => {
     const trimmed = normalizeText(value);
     return trimmed.startsWith('/') ? trimmed.slice(1) : trimmed;
   };
+
+  const isMenuPlaceholderPath = (value) =>
+    normalizeAssetPath(value).includes('menu/placeholders/');
 
   const fetchJson = async (url, label, { optional = false, defaultValue = null } = {}) => {
     try {
@@ -245,16 +309,24 @@
 
   const resolveItemImage = (item, mediaApi = null) => {
     const itemId = normalizeId(item?.id);
+    const fallbackPath = normalizeAssetPath(item?.image);
 
     if (mediaApi?.get && itemId) {
       const mediaPath = normalizeAssetPath(mediaApi.get(itemId, 'card'));
 
       if (mediaPath) {
+        if (
+          isMenuPlaceholderPath(mediaPath) &&
+          fallbackPath &&
+          !isMenuPlaceholderPath(fallbackPath)
+        ) {
+          return fallbackPath;
+        }
         return mediaPath;
       }
     }
 
-    return normalizeAssetPath(item?.image);
+    return fallbackPath;
   };
 
   const resolveItemImageAlt = (item, mediaApi = null) => {
@@ -346,16 +418,12 @@
     currency,
     categoriesStore,
     availabilityStore,
-    mediaApi
+    mediaApi,
+    ingredientsById
   ) => {
     const id = normalizeId(item?.id);
     const slug = inferItemSlug(item);
     const normalizedPrice = normalizeNumber(item?.price, 0);
-    const spicyLevel = Number.isFinite(item?.spicy_level)
-      ? Number(item.spicy_level)
-      : normalizeBoolean(item?.spicy, false)
-        ? 1
-        : 0;
     const categoryId = resolveCategoryId(item?.category, section?.id, categoriesStore);
     const categoryMeta = categoriesStore.byId.get(categoryId) || null;
     const subcategoryId = resolveSubcategoryId(
@@ -377,6 +445,12 @@
     const soldOutReason = availabilityEntry
       ? availabilityEntry.soldOutReason || itemLevelSoldOutReason
       : itemLevelSoldOutReason;
+    const traitReport =
+      menuTraitsApi && typeof menuTraitsApi.deriveItemTraitReport === 'function'
+        ? menuTraitsApi.deriveItemTraitReport(item, ingredientsById, {
+            useLegacyFields: true,
+          })
+        : createEmptyTraitReport();
 
     return {
       ...item,
@@ -396,12 +470,15 @@
       price: normalizedPrice,
       priceFormatted: formatMenuPrice(normalizedPrice, currency),
       ingredients: normalizeStringArray(item?.ingredients),
-      tags: normalizeStringArray(item?.tags),
       allergens: normalizeStringArray(item?.allergens),
       featured: normalizeBoolean(item?.featured, false),
-      spicy_level: spicyLevel,
-      vegetarian: normalizeBoolean(item?.vegetarian, false),
-      vegan: normalizeBoolean(item?.vegan, false),
+      dietary: traitReport.resolved.dietary,
+      content_flags: traitReport.resolved.content_flags,
+      experience_scores: traitReport.resolved.experience_scores,
+      experience_tags: traitReport.resolved.experience_tags,
+      public_badges: traitReport.public_badges,
+      trait_overrides: traitReport.overrides,
+      automatic_traits: traitReport.automatic,
       available,
       soldOutReason,
     };
@@ -418,7 +495,7 @@
       }
     }
 
-    const [menu, categoriesJson, availabilityJson] = await Promise.all([
+    const [menu, categoriesJson, availabilityJson, ingredientsJson] = await Promise.all([
       fetchJson(MENU_URL, 'menu.json'),
       fetchJson(CATEGORIES_URL, 'categories.json', {
         optional: true,
@@ -428,10 +505,18 @@
         optional: true,
         defaultValue: null,
       }),
+      fetchJson(INGREDIENTS_URL, 'ingredients.json', {
+        optional: true,
+        defaultValue: null,
+      }),
     ]);
     const sections = Array.isArray(menu?.sections) ? menu.sections : [];
     const categories = buildCategoriesStore(categoriesJson, sections);
     const availability = buildAvailabilityStore(availabilityJson);
+    const ingredientsById =
+      ingredientsJson?.ingredients && typeof ingredientsJson.ingredients === 'object'
+        ? ingredientsJson.ingredients
+        : {};
     const items = [];
     const byId = new Map();
     const itemsByCategory = new Map();
@@ -447,7 +532,8 @@
           menu.currency || 'DOP',
           categories,
           availability,
-          mediaApi
+          mediaApi,
+          ingredientsById
         );
 
         if (!runtimeItem.id || (shouldHideUnavailable && runtimeItem.available === false)) {
@@ -469,6 +555,7 @@
       menu,
       categories,
       availability,
+      ingredientsById,
       items,
       byId,
       itemsByCategory,

@@ -40,6 +40,9 @@
     var normalizedIngredientsResult = ctx.normalizeIngredientsAliasesPayload(ctx.state.drafts.ingredients, { mutate: false });
     var ingredientsPayloadForPublish = normalizedIngredientsResult.payload;
     var ingredientsNormalizationReport = normalizedIngredientsResult.report;
+    var menuValidation = typeof ctx.validateMenuDraftData === "function"
+      ? ctx.validateMenuDraftData(ctx.state.drafts.menu, ingredientsPayloadForPublish)
+      : { errors: [], warnings: [] };
 
     if (publishTarget === "production") {
       var confirmed = window.confirm(
@@ -71,6 +74,14 @@
         "No se puede publicar: corrige " + ingredientsValidation.errors.length + " errores en Ingredients."
       );
       ctx.setDataStatus("Publicacion bloqueada: Ingredients tiene errores de validacion.");
+      return;
+    }
+
+    if (menuValidation.errors.length) {
+      ctx.setCurrentEditorStatus(
+        "No se puede publicar: corrige " + menuValidation.errors.length + " errores en Menu."
+      );
+      ctx.setDataStatus("Publicacion bloqueada: Menu tiene errores de validacion.");
       return;
     }
 

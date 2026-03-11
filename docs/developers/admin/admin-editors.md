@@ -100,18 +100,19 @@ The item editor has 6 tabs:
 | Tab ID | Name | Fields |
 |--------|------|--------|
 | `basic` | Basic Info | ID, name, slug, category, subcategory, price, featured flag |
-| `description` | Description | Short description, long description |
-| `meta` | Meta | Dietary flags (spicy, vegetarian, etc.) |
+| `descriptions` | Description | Short description, long description |
+| `ingredients` | Ingredients | Ingredient search + reorderable ingredient chip list |
+| `traits` | Traits | Derived dietary/content/experience state + editorial `trait_overrides` |
 | `media` | Media | Image picker (card, hover, modal variants) |
 | `availability` | Availability | Available toggle, sold-out reason |
-| `advanced` | Advanced | Ingredients, tags, allergens chip lists |
+| `allergens` | Allergens | Allergen search + chip list |
 
 ### State
 
 The item editor state is stored in `state.itemEditor`:
 - `isOpen`, `isNew`, `activeTab`, `sourceSectionId`, `sourceItemIndex`
 - `draft` — working copy of the item being edited
-- `ingredients`, `tags`, `allergens` — selected IDs
+- `ingredients`, `allergens` — selected IDs
 - `availability` — `{ available, soldOutReason }`
 
 ### Save Flow
@@ -190,7 +191,7 @@ The home editor supports drag-and-drop reordering for **featured items** (popula
 
 | Tab | View modes | Content |
 |-----|-----------|---------|
-| **Ingredients** | Catalog → Detail | Browse/search ingredients, edit individual ingredient (name, aliases, icon, category, tags, allergens) |
+| **Ingredients** | Catalog → Detail | Browse/search ingredients, edit identity, aliases, metadata V2 (`dietary_profile`, `content_flags`, `experience_signals`, `internal_traits`) and allergens |
 | **Icons** | Catalog → Detail | Browse/search icons, edit individual icon (key, path, preview) |
 
 ### State

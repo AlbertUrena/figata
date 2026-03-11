@@ -1,5 +1,6 @@
 (() => {
-  const MEDIA_URL = new URL('data/media.json', window.location.href);
+  const ROOT_URL = new URL('/', window.location.origin);
+  const MEDIA_URL = new URL('data/media.json', ROOT_URL);
 
   const VARIANTS = new Set(['card', 'hover', 'modal']);
 
@@ -29,6 +30,20 @@
     }
 
     return normalized.startsWith('/') ? normalized.slice(1) : normalized;
+  };
+
+  const toAbsoluteAssetPath = (value) => {
+    const normalized = normalizeAssetPath(value);
+
+    if (!normalized) {
+      return '';
+    }
+
+    if (/^(https?:|data:|blob:)/i.test(normalized)) {
+      return normalized;
+    }
+
+    return `/${normalized}`;
   };
 
   const fetchJson = async (url, label, { optional = false, defaultValue = null } = {}) => {
@@ -271,18 +286,19 @@
   const prefetch = (itemId, variant = 'modal') => {
     const store = ensureStore();
     const path = resolvePath(store, itemId, variant);
+    const absolutePath = toAbsoluteAssetPath(path);
 
-    if (!path || store.prefetchedPaths.has(path)) {
-      return path;
+    if (!absolutePath || store.prefetchedPaths.has(absolutePath)) {
+      return absolutePath;
     }
 
     const image = new Image();
     image.decoding = 'async';
     image.loading = 'eager';
-    image.src = path;
-    store.prefetchedPaths.add(path);
+    image.src = absolutePath;
+    store.prefetchedPaths.add(absolutePath);
 
-    return path;
+    return absolutePath;
   };
 
   const getMissingMediaIds = () => {

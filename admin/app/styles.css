@@ -2193,6 +2193,92 @@ code {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.traits-panel-section {
+  display: grid;
+  gap: 14px;
+}
+
+.traits-panel-section + .traits-panel-section {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.traits-panel-section__header h4 {
+  margin: 0 0 6px;
+}
+
+.traits-panel-section__header p {
+  margin: 0;
+  color: rgba(214, 225, 236, 0.8);
+  line-height: 1.45;
+}
+
+.traits-panel-grid,
+.traits-override-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.traits-panel-card {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.traits-panel-card__label {
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(184, 199, 214, 0.82);
+}
+
+.traits-pill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.traits-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(242, 248, 252, 0.92);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.traits-empty {
+  color: rgba(184, 199, 214, 0.78);
+  font-size: 0.9rem;
+}
+
+.traits-score-list {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+}
+
+.traits-score-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.025);
+}
+
 .ingredients-meta-list {
   grid-template-columns: 1fr;
   gap: 10px;
@@ -2220,6 +2306,22 @@ code {
 .ingredients-meta-chip.is-selected {
   border-color: rgba(20, 216, 212, 0.72);
   background: rgba(20, 216, 212, 0.15);
+}
+
+.ingredients-meta-chip.is-disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.ingredients-signals-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(144px, 1fr));
+}
+
+.ingredients-signal-field {
+  display: grid;
+  gap: 8px;
 }
 
 .ingredients-catalog-list {
@@ -2755,6 +2857,24 @@ code {
   color: #0f1721;
   background: rgba(212, 149, 73, 0.96);
   border-color: transparent;
+}
+
+.menu-badge--dietary {
+  color: rgba(220, 255, 233, 0.96);
+  background: rgba(40, 135, 76, 0.22);
+  border-color: rgba(92, 214, 140, 0.28);
+}
+
+.menu-badge--content {
+  color: rgba(255, 232, 220, 0.96);
+  background: rgba(162, 73, 34, 0.22);
+  border-color: rgba(227, 138, 96, 0.28);
+}
+
+.menu-badge--experience {
+  color: rgba(224, 242, 255, 0.96);
+  background: rgba(29, 98, 146, 0.22);
+  border-color: rgba(86, 176, 233, 0.28);
 }
 
 .menu-empty {
