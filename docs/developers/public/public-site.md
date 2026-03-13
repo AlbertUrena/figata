@@ -16,7 +16,7 @@ There is no build step — the HTML, CSS, and JavaScript are deployed directly.
 |--------|---------|
 | Entry points | `index.html` (homepage), `menu/index.html` (full menu page) |
 | Styles | `styles.css` (~2,600 lines, 75KB) |
-| Scripts | 11 files in `js/` + shared runtime modules in `shared/` + data loaders in `src/data/` |
+| Scripts | 12 files in `js/` + shared runtime modules in `shared/` + data loaders in `src/data/` |
 | Data | Fetches from `data/*.json` at runtime |
 | Hosting | Netlify with aggressive cache headers for static assets |
 
@@ -50,8 +50,9 @@ The page is structured as a single scrollable document. Major sections in `index
 |------|------|---------|
 | Shared navbar runtime | `shared/public-navbar.js` | Mounts canonical homepage navbar on `/menu/` and normalizes route URLs |
 | Route HTML | `menu/index.html` | Full menu page shell + templates |
-| Route styles | `menu/menu-page.css` | Centered intro, Events-style top tabs, responsive grid, detail subview |
-| Route script | `js/menu-page.js` | Runtime tab navigation + grouped category rendering |
+| Route styles | `menu/menu-page.css` | Centered intro, Events-style top tabs, integrated search bar, responsive grid, detail subview |
+| Route script | `js/menu-page.js` | Runtime tab navigation, grouped category rendering, in-page search filter, bridge state for navbar sync |
+| Route navbar enhancer | `js/menu-page-navbar.js` | Two-stage sticky-menu transformation layered on top of the shared navbar |
 
 ---
 
@@ -96,6 +97,7 @@ Menu page (`menu/index.html`) loads:
 7. src/data/menu.js
 8. src/data/ingredients.js
 9. js/menu-page.js
+10. js/menu-page-navbar.js
 ```
 
 ### Script Responsibilities
@@ -129,9 +131,20 @@ Full menu page runtime controller for `/menu/`. Handles:
 - Fetching per-category items from `window.FigataData.menu.getMenuItemsByCategory()`
 - Grouping the route into 5 fixed visible tabs: Entradas, Pizzas, Postres, Bebidas, Productos
 - Reusing the homepage Events tab UI/animation pattern for top-level menu navigation
+- Filtering visible cards from an inline search bar without changing routing or detail behavior
+- Switching search mode into a single unified results grid, with a short fade transition and a single global empty state when no items match
 - Rendering category sections with menu cards (including empty-state sections such as Bebidas)
 - Scroll-synced active category state
 - Dynamic item detail subview via URL (`/menu/?item=<id>`) with browser back/forward
+- Exposing `window.FigataMenuPage` so route-local enhancers can sync category state and search without duplicating logic
+
+#### `js/menu-page-navbar.js`
+`/menu/`-only navbar enhancer. Handles:
+- Waiting for the shared navbar mount plus `window.FigataMenuPage.whenReady()`
+- Preserving the existing navbar collapse threshold as stage 1
+- Activating a second sticky-menu transformation only after `.menu-page-controls` fully clears the fixed header
+- Swapping navbar links/CTA for compact menu tabs plus search/filter tools inside the same navbar shell
+- Supporting a reversible chevron override that returns to the collapsed normal navbar state
 
 #### `js/restaurant-config.js` (11KB, ~390 lines)
 Restaurant information display. Fetches `data/restaurant.json` and renders:
@@ -173,7 +186,7 @@ Navbar collapse animation controller:
 - Computes responsive collapsed/expanded navbar width variables
 - Uses hero sentinel to toggle `html.nav--collapsed` on homepage scroll
 - Animates collapse progress with spring motion (`--nav-collapse` CSS variables)
-- On non-hero routes, initializes width vars only (no scroll sentinel animation)
+- Supports non-hero routes via `data-nav-collapse-threshold="<px>"` on the page root/body
 
 #### `js/reload-cover.js` (6KB, ~170 lines)
 Reload overlay animation:

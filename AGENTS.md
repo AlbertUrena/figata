@@ -32,11 +32,12 @@ website-figata/
 │   ├── index.html             ← Public full menu page (`/menu/`)
 │   └── menu-page.css          ← Public full menu page styles
 ├── styles.css                 ← Public site styles (~2,600 lines)
-├── js/                        ← Public site JavaScript (11 scripts)
+├── js/                        ← Public site JavaScript (12 scripts)
 │   ├── home-config.js            Fetches data/home.json, renders homepage sections
 │   ├── mas-pedidas.js            Menu rendering engine (largest: 34KB)
 │   ├── menu-route-transition.js  Home navbar `/menu/` transition handoff
 │   ├── menu-page.js              Full menu page renderer (Events-style top tabs + category grids)
+│   ├── menu-page-navbar.js       `/menu/` sticky-menu enhancer for the shared navbar
 │   ├── restaurant-config.js      Restaurant info (hours, address, phone)
 │   ├── testimonials.js           Testimonials carousel
 │   ├── events-tabs.js            Events section tabs
@@ -130,7 +131,7 @@ Use this table to find the right starting point for common tasks:
 | Fix public site layout/content | `index.html`, `styles.css` | Relevant `js/` script |
 | Modify homepage sections | `js/home-config.js` | `data/home.json`, `docs/developers/data/data-layer.md` |
 | Change public menu display | `js/mas-pedidas.js` | `data/menu.json`, `data/media.json` |
-| Build/fix public full menu page | `menu/index.html`, `menu/menu-page.css`, `js/menu-page.js` | `src/data/menu.js`, `src/data/media.js`, `data/categories.json` |
+| Build/fix public full menu page | `menu/index.html`, `menu/menu-page.css`, `js/menu-page.js` | `js/menu-page-navbar.js`, `src/data/menu.js`, `src/data/media.js`, `data/categories.json` |
 | Reuse/fix public navbar across routes | `shared/public-navbar.js` | `index.html`, `menu/index.html`, `js/navbar-collapse.js` |
 | Edit restaurant info | `js/restaurant-config.js` | `data/restaurant.json` |
 | Work on admin panel | `docs/developers/admin/admin-panel.md` | `admin/app/app.js`, `admin/app/modules/` |
@@ -215,6 +216,9 @@ Admin modules must load **before** `app.js` in `admin/app/index.html`. Current o
 
 Shared runtime helpers used by traits/validation must load before their consumers:
 `shared/menu-traits.js` → contracts/data loaders → feature scripts.
+
+On `/menu/`, route scripts must load in this order:
+`shared/public-navbar.js` → `js/navbar-collapse.js` → `js/menu-page.js` → `js/menu-page-navbar.js`
 
 ### Data Conventions
 

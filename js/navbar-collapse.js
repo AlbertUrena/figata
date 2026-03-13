@@ -16,6 +16,11 @@
 
   const COLLAPSED_CLASS = "nav--collapsed";
   const THRESHOLD_OFFSET = 462;
+  const fallbackThresholdRaw =
+    root.getAttribute("data-nav-collapse-threshold") ||
+    document.body.getAttribute("data-nav-collapse-threshold");
+  const fallbackScrollThreshold = Number.parseFloat(fallbackThresholdRaw);
+  const hasFallbackScrollThreshold = Number.isFinite(fallbackScrollThreshold);
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   let sentinel = null;
   let observer = null;
@@ -125,9 +130,9 @@
     );
   };
 
-  // On routes without a hero (e.g. /menu), only initialize responsive width vars.
-  // This avoids browser-specific calc resolution issues with the CSS default vars.
-  if (!hero) {
+  // Routes without a hero can still reuse the same navbar transition by declaring
+  // a scroll threshold in markup. If none is declared, keep width vars in sync only.
+  if (!hero && !hasFallbackScrollThreshold) {
     const syncStaticWidths = () => {
       syncNavWidthVars();
     };
@@ -247,12 +252,20 @@
   }
 
   const shouldCollapse = () => {
-    if (!sentinel) {
-      return false;
+    if (hero) {
+      if (!sentinel) {
+        return false;
+      }
+
+      const { top } = sentinel.getBoundingClientRect();
+      return top <= 0;
     }
 
-    const { top } = sentinel.getBoundingClientRect();
-    return top <= 0;
+    if (hasFallbackScrollThreshold) {
+      return window.scrollY >= fallbackScrollThreshold;
+    }
+
+    return false;
   };
 
   const evaluate = () => {
@@ -272,7 +285,9 @@
 
   const refresh = () => {
     syncNavWidthVars();
-    placeSentinel();
+    if (hero) {
+      placeSentinel();
+    }
     scheduleEvaluate();
   };
 
@@ -285,6 +300,10 @@
   };
 
   const startIntersectionObserver = () => {
+    if (!hero) {
+      return false;
+    }
+
     if (!("IntersectionObserver" in window)) {
       return false;
     }
@@ -338,7 +357,9 @@
       refresh();
     });
 
-    resizeObserver.observe(hero);
+    if (hero) {
+      resizeObserver.observe(hero);
+    }
   }
 
   if (document.fonts && typeof document.fonts.ready?.then === "function") {

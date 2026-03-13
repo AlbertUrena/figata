@@ -15,8 +15,9 @@ The menu system has two public surfaces:
 | **Menu renderer** | `js/mas-pedidas.js` | 1,022 | Card grid, preview overlay, cover transition animations |
 | **Shared public navbar loader** | `shared/public-navbar.js` | ~250 | Mounts canonical homepage navbar on `/menu/` |
 | **Full menu page shell** | `menu/index.html` | ~170 | Intro, top tabs shell, card template, detail subview shell |
-| **Full menu page runtime** | `js/menu-page.js` | ~650 | Events-style tabs, grouped section rendering, URL-driven detail subview |
-| **Full menu page styles** | `menu/menu-page.css` | ~560 | Centered intro, top tab sizing, responsive grid, detail subview styling |
+| **Full menu page runtime** | `js/menu-page.js` | ~650 | Events-style tabs, grouped section rendering, inline search filter, URL-driven detail subview, bridge state |
+| **Menu navbar enhancer** | `js/menu-page-navbar.js` | ~500 | Two-stage sticky-menu transformation inside the shared navbar |
+| **Full menu page styles** | `menu/menu-page.css` | ~560 | Centered intro, top tab sizing, integrated search bar, responsive grid, detail subview styling |
 | **Card template** | `index.html` (`#mas-pedidas-card-template`) | ~20 | HTML template cloned for each card |
 | **Menu data generator** | `src/data/menu.js` | 660 | In-browser generator exposing `getFeaturedMenuItems()` |
 | **Ingredients component** | `src/ui/ingredient-icon-row.js` | 52 | Renders ingredient icon chips |
@@ -57,6 +58,11 @@ js/menu-page.js
     ├── updateActiveCategoryByScroll() ← scroll-synced active category state
     ├── scrollToCategory()           ← offset-aware scroll navigation
     └── renderRouteFromLocation()    ← list/detail subview switch from URL
+    ↓
+js/menu-page-navbar.js
+    ├── waits for shared navbar + menu bridge
+    ├── preserves stage-1 collapse from js/navbar-collapse.js
+    └── swaps collapsed navbar content into sticky-menu mode after controls leave viewport
 ```
 
 ## Full Menu Page (`/menu/`)
@@ -70,11 +76,23 @@ The route is item-driven but uses a fixed top-level navigation grouping:
 ### Layout and Navigation
 
 - Desktop: centered intro + centered Events-style top tabs above the content
-- Tabs are static on scroll for now (non-sticky)
+- A route-local search bar sits directly below the tabs and filters cards in place
+- While searching, category grouping is replaced by a single unified results grid; if nothing matches, the page shows a single global empty state
+- The shared navbar keeps its existing manual collapse threshold as stage 1
+- After the full `.menu-page-controls` block clears the fixed header, stage 2 transforms that same navbar into a sticky compact menu navigator
 - Mobile: same top tabs visual system, allowed to overflow horizontally instead of using a drawer
 - Active category can update from scroll position
 - Each category section renders its own title and item grid
 - Item detail uses a dynamic route (`/menu/?item=<id>`) inside the same page shell (no modal, no per-item HTML files)
+
+### Sticky Navbar Layer
+
+- The sticky layer lives inside the shared navbar mounted by `shared/public-navbar.js`; there is no second route-local navbar.
+- `js/menu-page.js` exposes `window.FigataMenuPage` so the sticky layer can reuse the active category state, scroll navigation, and search query.
+- The sticky chevron toggles between:
+  - compact sticky-menu mode
+  - collapsed normal navbar mode
+- The manual override resets once `.menu-page-controls` re-enters the viewport below the fixed header.
 
 ### Card Parity with “Más pedidas”
 
