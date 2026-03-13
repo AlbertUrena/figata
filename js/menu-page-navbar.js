@@ -47,6 +47,9 @@
     lastCompactPillWidth: -1,
     wasStickyActive: false,
     stickyGeometryLockUntil: 0,
+    tabsViewportRafId: 0,
+    tabsViewportRevealActive: false,
+    tabsViewportImmediate: false,
   };
 
   const refs = {
@@ -192,6 +195,124 @@
     updateCompactSearchControls();
   };
 
+  const setTabsOverflowState = () => {
+    if (!(refs.tabsScroll instanceof HTMLElement)) {
+      return { overflowing: false, maxScrollLeft: 0 };
+    }
+
+    const maxScrollLeft = Math.max(
+      0,
+      refs.tabsScroll.scrollWidth - refs.tabsScroll.clientWidth
+    );
+    const overflowing = maxScrollLeft > 1;
+    const hasLeftOverflow = overflowing && refs.tabsScroll.scrollLeft > 1;
+    const hasRightOverflow =
+      overflowing && refs.tabsScroll.scrollLeft < maxScrollLeft - 1;
+
+    refs.tabsScroll.dataset.overflowing = overflowing ? 'true' : 'false';
+    refs.tabsScroll.dataset.overflowLeft = hasLeftOverflow ? 'true' : 'false';
+    refs.tabsScroll.dataset.overflowRight = hasRightOverflow ? 'true' : 'false';
+
+    return { overflowing, maxScrollLeft };
+  };
+
+  const ensureActiveCompactTabVisibility = ({ immediate = false } = {}) => {
+    if (!(refs.tabsScroll instanceof HTMLElement) || !refs.tabsButtons.length) {
+      return;
+    }
+
+    const { overflowing, maxScrollLeft } = setTabsOverflowState();
+
+    if (!overflowing) {
+      if (refs.tabsScroll.scrollLeft !== 0) {
+        refs.tabsScroll.scrollLeft = 0;
+      }
+      return;
+    }
+
+    const activeCategoryId =
+      normalizeText(state.menuState?.activeCategoryId) ||
+      normalizeText(refs.tabsButtons[0]?.dataset.menuGroupId);
+    const activeButton =
+      refs.tabsButtons.find(
+        (button) => normalizeText(button.dataset.menuGroupId) === activeCategoryId
+      ) || refs.tabsButtons[0];
+
+    if (!(activeButton instanceof HTMLButtonElement)) {
+      return;
+    }
+
+    const edgePadding = 20;
+    const safetyInset = 2;
+    const visibleLeft = refs.tabsScroll.scrollLeft + edgePadding + safetyInset;
+    const visibleRight =
+      refs.tabsScroll.scrollLeft +
+      refs.tabsScroll.clientWidth -
+      edgePadding -
+      safetyInset;
+    const activeLeft = activeButton.offsetLeft;
+    const activeRight = activeLeft + activeButton.offsetWidth;
+    let targetScrollLeft = refs.tabsScroll.scrollLeft;
+
+    if (activeLeft < visibleLeft) {
+      targetScrollLeft = Math.max(0, activeLeft - edgePadding);
+    } else if (activeRight > visibleRight) {
+      targetScrollLeft = Math.min(
+        maxScrollLeft,
+        activeRight - refs.tabsScroll.clientWidth + edgePadding + safetyInset
+      );
+    }
+
+    targetScrollLeft = Math.round(targetScrollLeft);
+    if (maxScrollLeft - targetScrollLeft < 1) {
+      targetScrollLeft = maxScrollLeft;
+    }
+
+    if (Math.abs(targetScrollLeft - refs.tabsScroll.scrollLeft) > 1) {
+      if (immediate) {
+        refs.tabsScroll.scrollLeft = targetScrollLeft;
+      } else if (typeof refs.tabsScroll.scrollTo === 'function') {
+        refs.tabsScroll.scrollTo({
+          left: targetScrollLeft,
+          behavior: 'smooth',
+        });
+      } else {
+        refs.tabsScroll.scrollLeft = targetScrollLeft;
+      }
+    }
+  };
+
+  const syncTabsViewportState = ({ revealActive = false, immediate = false } = {}) => {
+    setTabsOverflowState();
+
+    if (revealActive) {
+      ensureActiveCompactTabVisibility({ immediate });
+      setTabsOverflowState();
+    }
+  };
+
+  const scheduleTabsViewportSync = ({ revealActive = false, immediate = false } = {}) => {
+    state.tabsViewportRevealActive = state.tabsViewportRevealActive || revealActive;
+    state.tabsViewportImmediate = state.tabsViewportImmediate || immediate;
+
+    if (state.tabsViewportRafId) {
+      return;
+    }
+
+    state.tabsViewportRafId = window.requestAnimationFrame(() => {
+      const nextRevealActive = state.tabsViewportRevealActive;
+      const nextImmediate = state.tabsViewportImmediate;
+      state.tabsViewportRafId = 0;
+      state.tabsViewportRevealActive = false;
+      state.tabsViewportImmediate = false;
+
+      syncTabsViewportState({
+        revealActive: nextRevealActive,
+        immediate: nextImmediate,
+      });
+    });
+  };
+
   const applyCompactPillFrame = (left, width, { immediate = false } = {}) => {
     if (!(refs.tabsPill instanceof HTMLElement)) {
       return;
@@ -226,6 +347,8 @@
       return;
     }
 
+    setTabsOverflowState();
+
     const activeCategoryId =
       normalizeText(state.menuState?.activeCategoryId) ||
       normalizeText(refs.tabsButtons[0]?.dataset.menuGroupId);
@@ -252,6 +375,7 @@
         !sameGeometry &&
         state.stickyGeometryLockUntil > window.performance.now()
       );
+    const shouldRevealImmediately = immediate || (sameCategory && !sameGeometry);
 
     refs.tabsButtons.forEach((button) => {
       const isActive = button === activeButton;
@@ -266,6 +390,10 @@
     state.lastCompactPillCategoryId = nextCategoryId;
     state.lastCompactPillLeft = activeButtonLeft;
     state.lastCompactPillWidth = activeButtonWidth;
+    scheduleTabsViewportSync({
+      revealActive: true,
+      immediate: shouldRevealImmediately,
+    });
 
     if (scrollIntoView && typeof activeButton.scrollIntoView === 'function') {
       activeButton.scrollIntoView({
@@ -494,11 +622,19 @@
       observeThreshold();
       scheduleSync();
       positionCompactPill();
+      scheduleTabsViewportSync({
+        revealActive: true,
+        immediate: true,
+      });
     }, { passive: true });
     window.addEventListener('orientationchange', () => {
       observeThreshold();
       scheduleSync();
       positionCompactPill();
+      scheduleTabsViewportSync({
+        revealActive: true,
+        immediate: true,
+      });
     });
 
     state.classObserver = new MutationObserver(() => {
@@ -515,6 +651,10 @@
         observeThreshold();
         scheduleSync();
         positionCompactPill();
+        scheduleTabsViewportSync({
+          revealActive: true,
+          immediate: true,
+        });
       });
       state.resizeObserver.observe(header);
       state.resizeObserver.observe(controlsRoot);
@@ -631,6 +771,9 @@
     refs.compactSearchShell = searchShell;
     refs.compactSearchInput = searchShell.querySelector('.navbar__menu-search-input');
     refs.compactSearchClear = searchShell.querySelector('.navbar__menu-search-clear');
+    refs.tabsScroll.addEventListener('scroll', () => {
+      scheduleTabsViewportSync();
+    }, { passive: true });
 
     chevronButton.addEventListener('click', () => {
       if (!isStickyEligible()) {
