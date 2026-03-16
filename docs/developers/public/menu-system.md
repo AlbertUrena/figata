@@ -14,8 +14,8 @@ The menu system has two public surfaces:
 |-----------|------|------:|---------|
 | **Menu renderer** | `js/mas-pedidas.js` | 1,022 | Card grid, preview overlay, cover transition animations |
 | **Shared public navbar loader** | `shared/public-navbar.js` | ~250 | Mounts canonical homepage navbar on `/menu/` |
-| **Full menu page shell** | `menu/index.html` | ~170 | Intro, top tabs shell, card template, detail subview shell |
-| **Full menu page runtime** | `js/menu-page.js` | ~650 | Events-style tabs, grouped section rendering, inline search filter, URL-driven detail subview, bridge state |
+| **Full menu page shell** | `menu/index.html` | ~170 | Intro, top tabs shell, search/filter controls, filter modal shell, card template, detail subview shell |
+| **Full menu page runtime** | `js/menu-page.js` | ~650 | Events-style tabs, grouped section rendering, inline search filter, draft/apply filter modal wiring, URL-driven detail subview, bridge state |
 | **Menu navbar enhancer** | `js/menu-page-navbar.js` | ~500 | Two-stage sticky-menu transformation inside the shared navbar |
 | **Full menu page styles** | `menu/menu-page.css` | ~560 | Centered intro, top tab sizing, integrated search bar, responsive grid, detail subview styling |
 | **Card template** | `index.html` (`#mas-pedidas-card-template`) | ~20 | HTML template cloned for each card |
@@ -35,6 +35,7 @@ src/data/home.js      → window.FigataData.home.getHomeConfig()
 src/data/media.js     → window.FigataData.media.get(itemId, variant)
 src/data/ingredients.js → window.FigataData.ingredients (for icon row)
 shared/menu-traits.js → derives dietary/content/experience badges from ingredients metadata
+shared/menu-allergens.js → derives final item allergens from ingredient refs + optional overrides
     ↓
 js/mas-pedidas.js
     ├── resolvePopularSelection()   ← reads home.json popular.featuredIds + limit
@@ -52,9 +53,11 @@ shared/public-navbar.js → mounts canonical navbar from homepage source
     ↓
 src/data/menu.js      → getMenuItemsByCategory()
 src/data/media.js     → media variants + prefetch helpers
+shared/menu-allergens.js → derived `item.allergens` for detail view + allergen filter exclusion
     ↓
 js/menu-page.js
     ├── renderMenu()                 ← renders 5 grouped tabs + items
+    ├── renderFilterModalShell()     ← hydrates the `/menu/` filter modal placeholders from runtime counts
     ├── updateActiveCategoryByScroll() ← scroll-synced active category state
     ├── scrollToCategory()           ← offset-aware scroll navigation
     └── renderRouteFromLocation()    ← list/detail subview switch from URL
@@ -77,13 +80,21 @@ The route is item-driven but uses a fixed top-level navigation grouping:
 
 - Desktop: centered intro + centered Events-style top tabs above the content
 - A route-local search bar sits directly below the tabs and filters cards in place
+- While the route-local search input is empty and blurred, a helper overlay rotates short prompts such as ingredients and drinks; the helper hides on focus, typed input, and reduced-motion preference
+- The `Filtrar` control opens a centered overlay modal with a fixed header, internally scrolling body, and fixed footer actions
+- The modal keeps a `draftFilters` state separate from the page's `appliedFilters`; the visible menu only re-renders after the user taps `Mostrar X platos`
+- The pizza subtype tabs use that same draft/apply flow: `Todas` leaves the catalog untouched, while `Clásicas` and `De autor` collapse the visible catalog to only that pizza source
+- The `Dieta` cards also write into drafts only and evaluate against the derived runtime `item.dietary` traits; selecting both `Vegetariana` and `Vegana` uses OR semantics
+- The organoleptic chips also stay in drafts until apply and filter against runtime `item.experience_tags`; selecting multiple chips uses OR semantics
+- The allergen chips in that modal use canonical allergen IDs (`gluten`, `milk`, `nuts`, `fish`) and filter against the derived runtime `item.allergens`
+- The price range slider and the `Mostrar X platos` counter update against the current drafts in real time, while `Limpiar` resets drafts only
 - While searching, category grouping is replaced by a single unified results grid; if nothing matches, the page shows a single global empty state
 - The shared navbar keeps its existing manual collapse threshold as stage 1
 - After the full `.menu-page-controls` block clears the fixed header, stage 2 transforms that same navbar into a sticky compact menu navigator
 - Mobile: same top tabs visual system, allowed to overflow horizontally instead of using a drawer
 - Active category can update from scroll position
 - Each category section renders its own title and item grid
-- Item detail uses a dynamic route (`/menu/?item=<id>`) inside the same page shell (no modal, no per-item HTML files)
+- Item detail uses a dynamic route (`/menu/<id>`) inside the same page shell (no modal, no per-item HTML files)
 
 ### Sticky Navbar Layer
 

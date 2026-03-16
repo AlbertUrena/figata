@@ -16,7 +16,7 @@ There is no build step — the HTML, CSS, and JavaScript are deployed directly.
 |--------|---------|
 | Entry points | `index.html` (homepage), `menu/index.html` (full menu page) |
 | Styles | `styles.css` (~2,600 lines, 75KB) |
-| Scripts | 12 files in `js/` + shared runtime modules in `shared/` + data loaders in `src/data/` |
+| Scripts | 12 files in `js/` + shared runtime modules/assets in `shared/` + data loaders in `src/data/` |
 | Data | Fetches from `data/*.json` at runtime |
 | Hosting | Netlify with aggressive cache headers for static assets |
 
@@ -49,6 +49,7 @@ The page is structured as a single scrollable document. Major sections in `index
 | Area | File | Purpose |
 |------|------|---------|
 | Shared navbar runtime | `shared/public-navbar.js` | Mounts canonical homepage navbar on `/menu/` and normalizes route URLs |
+| Shared scroll meter | `shared/public-scroll-indicator.css`, `shared/public-scroll-indicator.js` | Hides the root scrollbar and renders a fixed overlay progress indicator while preserving native document scroll |
 | Route HTML | `menu/index.html` | Full menu page shell + templates |
 | Route styles | `menu/menu-page.css` | Centered intro, Events-style top tabs, integrated search bar, responsive grid, detail subview |
 | Route script | `js/menu-page.js` | Runtime tab navigation, grouped category rendering, in-page search filter, bridge state for navbar sync |
@@ -80,6 +81,7 @@ Homepage (`index.html`) scripts are loaded with `defer` and execute in order aft
 15. js/mas-pedidas.js           — Featured menu renderer + preview transition consumer
 16. js/testimonials.js          — Testimonials carousel
 17. js/events-tabs.js           — Events tabbed section
+18. shared/public-scroll-indicator.js — Native root-scroll progress meter
 ```
 
 Additionally loaded (non-deferred):
@@ -98,6 +100,7 @@ Menu page (`menu/index.html`) loads:
 8. src/data/ingredients.js
 9. js/menu-page.js
 10. js/menu-page-navbar.js
+11. shared/public-scroll-indicator.js
 ```
 
 ### Script Responsibilities
@@ -135,7 +138,7 @@ Full menu page runtime controller for `/menu/`. Handles:
 - Switching search mode into a single unified results grid, with a short fade transition and a single global empty state when no items match
 - Rendering category sections with menu cards (including empty-state sections such as Bebidas)
 - Scroll-synced active category state
-- Dynamic item detail subview via URL (`/menu/?item=<id>`) with browser back/forward
+- Dynamic item detail subview via URL (`/menu/<id>`) with browser back/forward
 - Exposing `window.FigataMenuPage` so route-local enhancers can sync category state and search without duplicating logic
 
 #### `js/menu-page-navbar.js`
@@ -180,6 +183,16 @@ Shared public navbar runtime module. Handles:
 - Caching canonical markup for reuse on multi-route pages
 - Mounting canonical navbar into route hosts (`data-public-navbar-host`)
 - Route-aware URL normalization for non-home pages (`/#...` anchors and asset paths)
+
+#### `shared/public-scroll-indicator.js` + `shared/public-scroll-indicator.css`
+Shared public scroll meter enhancement. Handles:
+- Preserving the real document scroller (`document.scrollingElement`)
+- Hiding only the root scrollbar chrome, not nested scroll areas
+- Injecting a fixed, pointer-safe overlay meter that tracks real document scroll progress
+- Supporting marked internal scrollers such as the `/menu/` filter modal body via `data-scroll-indicator-container`
+- Revealing the meter while the user scrolls and fading it out after a short idle delay
+- Recomputing thumb size/position on resize and document height changes via `ResizeObserver`
+- Staying out of the way of existing locked-scroll overlay states such as homepage previews and `/menu/` filters
 
 #### `js/navbar-collapse.js` (9KB, ~270 lines)
 Navbar collapse animation controller:

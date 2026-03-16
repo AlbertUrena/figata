@@ -461,6 +461,90 @@
       "dominantColor": "",
       "version": 2
     },
+    "negroni": {
+      "source": "assets/menu/bebidas/negroni.webp",
+      "alt": "Negroni",
+      "overrides": {
+        "card": "",
+        "hover": "",
+        "modal": "",
+        "gallery": []
+      },
+      "dominantColor": "",
+      "version": 2
+    },
+    "passion_spritz": {
+      "source": "assets/menu/bebidas/passion-spritz.webp",
+      "alt": "Passion Spritz",
+      "overrides": {
+        "card": "",
+        "hover": "",
+        "modal": "",
+        "gallery": []
+      },
+      "dominantColor": "",
+      "version": 2
+    },
+    "gin_tonic": {
+      "source": "assets/menu/bebidas/gin-tonic.webp",
+      "alt": "Gin Tonic",
+      "overrides": {
+        "card": "",
+        "hover": "",
+        "modal": "",
+        "gallery": []
+      },
+      "dominantColor": "",
+      "version": 2
+    },
+    "sangria": {
+      "source": "assets/menu/bebidas/sangria.webp",
+      "alt": "Sangría",
+      "overrides": {
+        "card": "",
+        "hover": "",
+        "modal": "",
+        "gallery": []
+      },
+      "dominantColor": "",
+      "version": 2
+    },
+    "aperol_spritz": {
+      "source": "assets/menu/bebidas/aperol-spritz.webp",
+      "alt": "Aperol Spritz",
+      "overrides": {
+        "card": "",
+        "hover": "",
+        "modal": "",
+        "gallery": []
+      },
+      "dominantColor": "",
+      "version": 2
+    },
+    "tequila_sour": {
+      "source": "assets/menu/bebidas/tequila-sour.webp",
+      "alt": "Tequila Sour",
+      "overrides": {
+        "card": "",
+        "hover": "",
+        "modal": "",
+        "gallery": []
+      },
+      "dominantColor": "",
+      "version": 2
+    },
+    "cuba_libre": {
+      "source": "assets/menu/bebidas/cuba-libre.webp",
+      "alt": "Cuba Libre",
+      "overrides": {
+        "card": "",
+        "hover": "",
+        "modal": "",
+        "gallery": []
+      },
+      "dominantColor": "",
+      "version": 2
+    },
     "mermelada_della_mamma": {
       "source": "assets/menu/productos/producto-meremelada-della-mamma.webp",
       "alt": "Mermelada della Mamma",

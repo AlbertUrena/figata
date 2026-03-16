@@ -13,6 +13,10 @@
     "fish": {
       "id": "fish",
       "label": "Pescado"
+    },
+    "gluten": {
+      "id": "gluten",
+      "label": "Gluten"
     }
   },
   "icons": {
@@ -925,7 +929,9 @@
         "pesto de albahaca",
         "pesto basil"
       ],
-      "allergens": [],
+      "allergens": [
+        "milk"
+      ],
       "metadata": {
         "dietary_profile": {
           "vegetarian_safe": true,
@@ -956,7 +962,9 @@
         "pesto de rucula",
         "pesto arugula"
       ],
-      "allergens": [],
+      "allergens": [
+        "milk"
+      ],
       "metadata": {
         "dietary_profile": {
           "vegetarian_safe": true,
@@ -987,7 +995,8 @@
         "pesto pistachio"
       ],
       "allergens": [
-        "nuts"
+        "nuts",
+        "milk"
       ],
       "metadata": {
         "dietary_profile": {
@@ -1683,7 +1692,9 @@
         "black truffle",
         "tartufo"
       ],
-      "allergens": [],
+      "allergens": [
+        "milk"
+      ],
       "metadata": {
         "dietary_profile": {
           "vegetarian_safe": true,

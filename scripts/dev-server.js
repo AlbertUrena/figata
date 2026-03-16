@@ -9,6 +9,7 @@ const rootDir = process.cwd();
 const LOCAL_SAVE_DRAFTS_ENDPOINT = "/__local/save-drafts";
 const LOCAL_MENU_MEDIA_OPTIONS_ENDPOINT = "/__local/menu-media-paths";
 const MENU_MEDIA_ROOT_DIR = path.join(rootDir, "assets", "menu");
+const MENU_ROUTE_SHELL_PATH = path.join(rootDir, "menu", "index.html");
 const MAX_BODY_SIZE_BYTES = 5 * 1024 * 1024;
 
 const MIME_TYPES = {
@@ -58,6 +59,24 @@ function isPathInsideRoot(filePath) {
     relative === "" ||
     (!relative.startsWith("..") && !path.isAbsolute(relative))
   );
+}
+
+function isMenuDetailPathname(pathname) {
+  if (typeof pathname !== "string" || !pathname.startsWith("/menu/")) {
+    return false;
+  }
+
+  const segments = pathname
+    .slice("/menu/".length)
+    .split("/")
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+
+  if (segments.length !== 1) {
+    return false;
+  }
+
+  return path.extname(segments[0]) === "";
 }
 
 function readRequestBody(req, maxBytes) {
@@ -259,9 +278,20 @@ const server = http.createServer(async (req, res) => {
   try {
     stats = fs.statSync(filePath);
   } catch {
-    return send(res, 404, "Not Found", {
-      "Content-Type": "text/plain; charset=utf-8"
-    });
+    if (isMenuDetailPathname(requestPathname)) {
+      filePath = MENU_ROUTE_SHELL_PATH;
+      try {
+        stats = fs.statSync(filePath);
+      } catch {
+        return send(res, 404, "Not Found", {
+          "Content-Type": "text/plain; charset=utf-8"
+        });
+      }
+    } else {
+      return send(res, 404, "Not Found", {
+        "Content-Type": "text/plain; charset=utf-8"
+      });
+    }
   }
 
   if (stats.isDirectory()) {

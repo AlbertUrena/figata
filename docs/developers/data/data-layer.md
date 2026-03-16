@@ -6,7 +6,7 @@
 
 - [Overview](#overview)
 - [Data Files](#data-files) — menu, categories, ingredients, availability, home, restaurant, media, media-variants, media-report
-- [Validation Contracts](#validation-contracts) — menu traits, ingredients, categories, restaurant, media
+- [Validation Contracts](#validation-contracts) — menu traits, menu allergens, ingredients, categories, restaurant, media
 - [Data Flow](#data-flow) — from admin drafts to live site
 - [Key Rules](#key-rules)
 
@@ -16,7 +16,7 @@
 
 The data layer consists of **9 JSON files** in `data/` that serve as the shared data store between the public website and the admin panel. These files are committed to Git and deployed statically. The admin panel modifies them through a publish pipeline (Netlify serverless function).
 
-The shared layer now includes a central **Menu Traits V2** engine plus validation contracts for ingredients, categories, restaurant, and media. These modules are used by both the admin panel (client-side validation before publish) and the publish pipeline (server-side validation before commit).
+The shared layer now includes a central **Menu Traits V2** engine, a separate **Menu Allergens** derivation engine, plus validation contracts for ingredients, categories, restaurant, and media. These modules are used by both the admin panel (client-side validation before publish) and the publish pipeline (server-side validation before commit).
 
 ---
 
@@ -28,7 +28,7 @@ The primary menu data file. Contains all items grouped by section (category).
 
 ```
 {
-  "version": 2,
+  "version": 3,
   "currency": "DOP",
   "taxIncluded": false,
   "sections": [
@@ -46,9 +46,11 @@ The primary menu data file. Contains all items grouped by section (category).
           "descriptionLong": "",         // modal/detail description
           "price": 550,                  // integer, in DOP
           "ingredients": ["berenjena", "salsa_de_tomate", ...],  // refs to ingredients.json
-          "allergens": [],               // refs to ingredients.json allergens
           "image": "assets/berenjenas-parmesana.png",  // primary image path
           "featured": false,             // appears in homepage featured section
+          "allergen_overrides": {        // optional editorial exceptions over derived allergens
+            "add": ["gluten"]
+          },
           "trait_overrides": {           // optional editorial overrides (V2)
             "dietary": { "vegetarian": true },
             "content_flags": { "pork": false },
@@ -66,9 +68,10 @@ The primary menu data file. Contains all items grouped by section (category).
 **Key relationships:**
 - `sections[].id` corresponds to entries in `categories.json`
 - `items[].ingredients` references keys in `ingredients.json → ingredients`
-- `items[].allergens` references keys in `ingredients.json → allergens`
 - `items[].id` is used as key in `media.json → items` and `availability.json → items`
 - Dietary/content/experience traits are **derived at runtime** via `shared/menu-traits.js`; they are not persisted in `menu.json`
+- Item allergens are **derived at runtime** via `shared/menu-allergens.js` from `ingredients[*].allergens`
+- `items[].allergen_overrides` is the persisted exception surface for derived allergens
 - `items[].trait_overrides` is the only persisted editorial override surface for derived item traits
 
 ---
@@ -146,6 +149,8 @@ The complete ingredient catalog including icons, V2 metadata, and allergens.
 **Validated by:** `shared/ingredients-contract.js`, `scripts/validate-ingredients.js`
 
 **Trait runtime:** `shared/menu-traits.js` reads `ingredients[*].metadata` to derive item dietary flags, content flags, experience scores, visible experience tags, and public badges.
+
+**Allergen runtime:** `shared/menu-allergens.js` reads `ingredients[*].allergens` to derive final item allergens. `item.allergen_overrides` applies only as an exception over that automatic union. `gluten` added by override for pizzas/panes with implicit dough is a transitory/control-layer exception, not the ideal end-state model.
 
 ---
 
@@ -339,6 +344,14 @@ Exports the Menu Traits V2 engine used by both the public site and the admin pan
 - Public badge generation with per-group visibility limits
 - `validateMenuPayload()` for `data/menu.json`
 
+### `shared/menu-allergens.js`
+
+Exports the allergen derivation/validation engine used by both the public site and the admin panel. It provides:
+- Automatic allergen derivation from `ingredients[*].allergens`
+- Editorial override normalization (`allergen_overrides.add/remove`)
+- Source tracing (`sources_by_allergen`) for the admin panel
+- `validateMenuAllergens()` for `data/menu.json`
+
 ### `shared/ingredients-contract.js`
 
 Exports a validation function used by both the admin panel and the publish pipeline. Checks:
@@ -390,4 +403,5 @@ flowchart TD
 5. **All prices are integers** in DOP (Dominican Peso). No decimals. No currency symbol in the data.
 6. **Image paths** are relative to the repo root. Menu images go in `assets/menu/`. Ingredient icons go in `assets/Ingredients/`.
 7. **Derived menu traits are not persisted** as free-form `item.tags`; they come from `ingredients[*].metadata` plus optional `item.trait_overrides`.
-8. **Public data loaders must fetch from site root** (`/data/*.json`) so nested routes (for example `/menu/`) resolve JSON correctly.
+8. **Derived menu allergens are not persisted** as `item.allergens`; they come from `ingredients[*].allergens` plus optional `item.allergen_overrides`.
+9. **Public data loaders must fetch from site root** (`/data/*.json`) so nested routes (for example `/menu/`) resolve JSON correctly.

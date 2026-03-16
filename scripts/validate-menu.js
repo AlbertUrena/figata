@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const menuTraits = require('../shared/menu-traits.js');
+const menuAllergens = require('../shared/menu-allergens.js');
 
 const projectRoot = process.cwd();
 const ingredientsPath = path.join(projectRoot, 'data', 'ingredients.json');
@@ -42,7 +43,36 @@ if (!ingredients || !menu) {
   process.exit(1);
 }
 
-const validation = menuTraits.validateMenuPayload(menu, ingredients);
+const mergeValidationReports = (...reports) => {
+  const errors = [];
+  const warnings = [];
+  const errorSeen = new Set();
+  const warningSeen = new Set();
+
+  reports.forEach((report) => {
+    (report?.errors || []).forEach((message) => {
+      if (errorSeen.has(message)) {
+        return;
+      }
+      errorSeen.add(message);
+      errors.push(message);
+    });
+    (report?.warnings || []).forEach((message) => {
+      if (warningSeen.has(message)) {
+        return;
+      }
+      warningSeen.add(message);
+      warnings.push(message);
+    });
+  });
+
+  return { errors, warnings };
+};
+
+const validation = mergeValidationReports(
+  menuTraits.validateMenuPayload(menu, ingredients),
+  menuAllergens.validateMenuAllergens(menu, ingredients)
+);
 const errors = readErrors.concat(validation.errors || []);
 const warnings = validation.warnings || [];
 

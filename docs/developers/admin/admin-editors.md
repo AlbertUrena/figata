@@ -105,15 +105,25 @@ The item editor has 6 tabs:
 | `traits` | Traits | Derived dietary/content/experience state + editorial `trait_overrides` |
 | `media` | Media | Image picker (card, hover, modal variants) |
 | `availability` | Availability | Available toggle, sold-out reason |
-| `allergens` | Allergens | Allergen search + chip list |
+| `allergens` | Allergens | Derived allergen view (`automatic`, `sources`, `resolved`) + editorial `allergen_overrides` |
 
 ### State
 
 The item editor state is stored in `state.itemEditor`:
 - `isOpen`, `isNew`, `activeTab`, `sourceSectionId`, `sourceItemIndex`
 - `draft` — working copy of the item being edited
-- `ingredients`, `allergens` — selected IDs
+- `ingredients` — selected ingredient IDs
 - `availability` — `{ available, soldOutReason }`
+
+### Allergens tab
+
+- `ingredient.allergens` is the source of truth
+- The item editor shows:
+  - automatic allergen union from `item.ingredients`
+  - source ingredients per allergen
+  - final resolved allergens after `item.allergen_overrides`
+- `item.allergen_overrides.add/remove` is exceptional only
+- `gluten` added by override for pizzas/panes with implicit dough is documented in the UI as a transitory/control exception
 
 ### Save Flow
 

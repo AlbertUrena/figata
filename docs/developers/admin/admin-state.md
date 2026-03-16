@@ -134,7 +134,6 @@ Item editor sub-state.
 | `sourceItemIndex` | `number` | Index within the section's items array (-1 for new) |
 | `draft` | `object | null` | Working copy of the item being edited |
 | `ingredients` | `array` | Selected ingredient IDs for the item |
-| `allergens` | `array` | Selected allergen IDs |
 | `availability` | `object` | `{ available: boolean, soldOutReason: string }` |
 
 ### `state.ingredientsEditor`
@@ -242,7 +241,7 @@ The `elements` object references ~100 DOM elements by ID. Organized by functiona
 `menuBrowserStatus`, `menuBrowserGroups`, `menuClearFilterButton`, `menuNewItemButton`
 
 ### Item Editor (~35 refs)
-`itemEditorTitle`, `itemEditorStatus`, `itemEditorErrors`, `itemEditorActions`, `itemSaveButton`, `itemSaveCloseButton`, `itemExportJsonButton`, `itemPublishPreviewButton`, `itemPublishProductionButton`, `itemCancelButton`, `itemDeleteButton`, `itemTabs` (array), `itemTabPanels` (array), `itemFieldId`, `itemFieldName`, `itemFieldSlug`, `itemGenerateSlugButton`, `itemFieldCategory`, `itemFieldSubcategory`, `itemFieldPrice`, `itemPricePreview`, `itemFieldFeatured`, `itemFieldDescriptionShort`, `itemFieldDescriptionLong`, ingredient/allergen search inputs and chip lists, media picker/preview, availability toggle, derived trait containers, trait override controls, legacy summary, reviews field
+`itemEditorTitle`, `itemEditorStatus`, `itemEditorErrors`, `itemEditorActions`, `itemSaveButton`, `itemSaveCloseButton`, `itemExportJsonButton`, `itemPublishPreviewButton`, `itemPublishProductionButton`, `itemCancelButton`, `itemDeleteButton`, `itemTabs` (array), `itemTabPanels` (array), `itemFieldId`, `itemFieldName`, `itemFieldSlug`, `itemGenerateSlugButton`, `itemFieldCategory`, `itemFieldSubcategory`, `itemFieldPrice`, `itemPricePreview`, `itemFieldFeatured`, `itemFieldDescriptionShort`, `itemFieldDescriptionLong`, ingredient search inputs/chip lists, derived trait containers, allergen derived/source containers, allergen override search inputs/chip lists, media picker/preview, availability toggle, trait override controls, legacy summary, reviews field
 
 ### Home Editor (7 refs)
 `homeEditorStatus`, `homeSectionsContent`, `homeSaveButton`, `homeExportJsonButton`, `homePublishPreviewButton`, `homePublishProductionButton`

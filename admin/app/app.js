@@ -131,7 +131,6 @@
       sourceItemIndex: -1,
       draft: null,
       ingredients: [],
-      allergens: [],
       availability: {
         available: true,
         soldOutReason: ""
@@ -360,9 +359,16 @@
     ingredientSearchResults: document.getElementById("ingredient-search-results"),
     ingredientChipList: document.getElementById("ingredient-chip-list"),
 
-    allergenSearchInput: document.getElementById("allergen-search-input"),
-    allergenSearchResults: document.getElementById("allergen-search-results"),
-    allergenChipList: document.getElementById("allergen-chip-list"),
+    itemDerivedAllergens: document.getElementById("item-derived-allergens"),
+    itemResolvedAllergens: document.getElementById("item-resolved-allergens"),
+    itemUnattributedAllergens: document.getElementById("item-unattributed-allergens"),
+    itemAllergenSources: document.getElementById("item-allergen-sources"),
+    itemAllergenOverrideAddSearchInput: document.getElementById("allergen-override-add-search-input"),
+    itemAllergenOverrideAddSearchResults: document.getElementById("allergen-override-add-search-results"),
+    itemAllergenOverrideAddChipList: document.getElementById("allergen-override-add-chip-list"),
+    itemAllergenOverrideRemoveSearchInput: document.getElementById("allergen-override-remove-search-input"),
+    itemAllergenOverrideRemoveSearchResults: document.getElementById("allergen-override-remove-search-results"),
+    itemAllergenOverrideRemoveChipList: document.getElementById("allergen-override-remove-chip-list"),
 
     itemFieldImage: document.getElementById("item-field-image"),
     itemMediaStatus: document.getElementById("item-media-status"),
@@ -1788,18 +1794,66 @@
   }
 
   function validateMenuDraftData(menuDraft, ingredientsDraft) {
-    if (
-      window.FigataMenuTraits &&
-      typeof window.FigataMenuTraits.validateMenuPayload === "function"
-    ) {
-      return window.FigataMenuTraits.validateMenuPayload(menuDraft, ingredientsDraft);
-    }
-
-    return {
+    var reports = [];
+    var merged = {
       errors: [],
       warnings: [],
       itemIssuesById: {}
     };
+    var seenErrors = {};
+    var seenWarnings = {};
+
+    if (
+      window.FigataMenuTraits &&
+      typeof window.FigataMenuTraits.validateMenuPayload === "function"
+    ) {
+      reports.push(window.FigataMenuTraits.validateMenuPayload(menuDraft, ingredientsDraft));
+    }
+
+    if (
+      window.FigataMenuAllergens &&
+      typeof window.FigataMenuAllergens.validateMenuAllergens === "function"
+    ) {
+      reports.push(window.FigataMenuAllergens.validateMenuAllergens(menuDraft, ingredientsDraft));
+    }
+
+    if (!reports.length) {
+      return merged;
+    }
+
+    reports.forEach(function (report) {
+      (report && report.errors ? report.errors : []).forEach(function (message) {
+        if (seenErrors[message]) return;
+        seenErrors[message] = true;
+        merged.errors.push(message);
+      });
+      (report && report.warnings ? report.warnings : []).forEach(function (message) {
+        if (seenWarnings[message]) return;
+        seenWarnings[message] = true;
+        merged.warnings.push(message);
+      });
+
+      Object.keys(report && report.itemIssuesById ? report.itemIssuesById : {}).forEach(function (itemId) {
+        var bucket = report.itemIssuesById[itemId] || {};
+        if (!merged.itemIssuesById[itemId]) {
+          merged.itemIssuesById[itemId] = {
+            errors: [],
+            warnings: []
+          };
+        }
+
+        (bucket.errors || []).forEach(function (message) {
+          if (merged.itemIssuesById[itemId].errors.includes(message)) return;
+          merged.itemIssuesById[itemId].errors.push(message);
+        });
+        (bucket.warnings || []).forEach(function (message) {
+          if (merged.itemIssuesById[itemId].warnings.includes(message)) return;
+          merged.itemIssuesById[itemId].warnings.push(message);
+        });
+      });
+    });
+
+    return merged;
   }
 
   function getMenuCategoryReferenceReport(categoriesById) {
@@ -3396,6 +3450,87 @@
     });
   }
 
+  function getItemAllergenReport(item) {
+    if (
+      !window.FigataMenuAllergens ||
+      typeof window.FigataMenuAllergens.deriveItemAllergenReport !== "function"
+    ) {
+      return null;
+    }
+
+    var ingredientsPayload =
+      state.drafts.ingredients ||
+      (state.data && state.data.ingredients) ||
+      { ingredients: {}, allergens: {} };
+
+    return window.FigataMenuAllergens.deriveItemAllergenReport(item, ingredientsPayload);
+  }
+
+  function getAllergenLabel(allergenId) {
+    return (state.indexes.allergensById[allergenId] && state.indexes.allergensById[allergenId].label) || allergenId;
+  }
+
+  function getIngredientDisplayLabel(ingredientId) {
+    return (state.indexes.ingredientsById[ingredientId] && state.indexes.ingredientsById[ingredientId].label) || ingredientId;
+  }
+
+  function renderAllergenPills(targetElement, allergenIds, emptyLabel) {
+    if (!targetElement) return;
+    var source = Array.isArray(allergenIds) ? allergenIds : [];
+
+    if (!source.length) {
+      targetElement.innerHTML = "<span class=\"traits-empty\">" + escapeHtml(emptyLabel || "Sin datos") + "</span>";
+      return;
+    }
+
+    targetElement.innerHTML = source.map(function (allergenId) {
+      return (
+        "<span class=\"traits-pill\">" +
+        escapeHtml(getAllergenLabel(allergenId)) +
+        "</span>"
+      );
+    }).join("");
+  }
+
+  function getItemAllergenOverrideState(draft) {
+    if (
+      !window.FigataMenuAllergens ||
+      typeof window.FigataMenuAllergens.sanitizeAllergenOverrides !== "function"
+    ) {
+      return { add: [], remove: [] };
+    }
+
+    return window.FigataMenuAllergens.sanitizeAllergenOverrides(
+      draft && draft.allergen_overrides,
+      {
+        allowedIds: state.indexes.allergensById,
+        keepEmpty: true
+      }
+    );
+  }
+
+  function persistDraftAllergenOverrides(nextOverrides) {
+    if (!state.itemEditor.draft) return;
+    if (
+      !window.FigataMenuAllergens ||
+      typeof window.FigataMenuAllergens.sanitizeAllergenOverrides !== "function"
+    ) {
+      state.itemEditor.draft.allergen_overrides = nextOverrides || null;
+      return;
+    }
+
+    var sanitized = window.FigataMenuAllergens.sanitizeAllergenOverrides(nextOverrides, {
+      allowedIds: state.indexes.allergensById,
+      keepEmpty: false
+    });
+
+    if (sanitized) {
+      state.itemEditor.draft.allergen_overrides = sanitized;
+    } else {
+      delete state.itemEditor.draft.allergen_overrides;
+    }
+  }
+
   function getBadgeModifierClass(group) {
     if (group === "dietary") return "menu-badge--dietary";
     if (group === "content") return "menu-badge--content";
@@ -3505,7 +3640,134 @@
         "<span class=\"ingredients-meta-chip__label\">" + escapeHtml(entry.label || entry.id) + "</span>" +
         "</button>"
       );
+      }).join("");
+  }
+
+  function getAllergenOverrideListFromDraft(mode) {
+    var key = mode === "remove" ? "remove" : "add";
+    var overrides = getItemAllergenOverrideState(state.itemEditor.draft);
+    return Array.isArray(overrides[key]) ? overrides[key].slice() : [];
+  }
+
+  function renderAllergenOverrideChips(mode) {
+    var targetElement = mode === "remove"
+      ? elements.itemAllergenOverrideRemoveChipList
+      : elements.itemAllergenOverrideAddChipList;
+    if (!targetElement) return;
+
+    var ids = getAllergenOverrideListFromDraft(mode);
+    if (!ids.length) {
+      targetElement.innerHTML = "";
+      return;
+    }
+
+    targetElement.innerHTML = ids.map(function (allergenId) {
+      return (
+        "<li class=\"chip\">" +
+        "<span>" + escapeHtml(getAllergenLabel(allergenId)) + "</span>" +
+        "<button type=\"button\" data-remove-allergen-override=\"" + escapeHtml(mode) + ":" + escapeHtml(allergenId) + "\">x</button>" +
+        "</li>"
+      );
     }).join("");
+  }
+
+  function renderAllergenOverrideSearchResults(mode, query) {
+    var targetElement = mode === "remove"
+      ? elements.itemAllergenOverrideRemoveSearchResults
+      : elements.itemAllergenOverrideAddSearchResults;
+    if (!targetElement) return;
+
+    var normalizedQuery = normalizeText(query);
+    if (!normalizedQuery) {
+      targetElement.innerHTML = "";
+      return;
+    }
+
+    var selected = getAllergenOverrideListFromDraft(mode);
+    var resultIds = state.indexes.allergenList.filter(function (allergenId) {
+      if (selected.includes(allergenId)) return false;
+      return normalizeText(allergenId + " " + getAllergenLabel(allergenId)).includes(normalizedQuery);
+    }).slice(0, 8);
+
+    targetElement.innerHTML = resultIds.map(function (allergenId) {
+      return (
+        "<button class=\"token-search-result\" type=\"button\" data-add-allergen-override=\"" +
+        escapeHtml(mode) + ":" + escapeHtml(allergenId) + "\">" +
+        escapeHtml(getAllergenLabel(allergenId)) +
+        "</button>"
+      );
+    }).join("");
+  }
+
+  function addItemAllergenOverride(mode, allergenId) {
+    if (!state.itemEditor.draft || !allergenId) return;
+    var key = mode === "remove" ? "remove" : "add";
+    var overrides = getItemAllergenOverrideState(state.itemEditor.draft);
+    if (!Array.isArray(overrides[key])) overrides[key] = [];
+    if (overrides[key].includes(allergenId)) return;
+    overrides[key].push(allergenId);
+    persistDraftAllergenOverrides(overrides);
+    syncDraftFromForm();
+    renderAllergenOverrideSearchResults(
+      key,
+      key === "remove"
+        ? (elements.itemAllergenOverrideRemoveSearchInput && elements.itemAllergenOverrideRemoveSearchInput.value)
+        : (elements.itemAllergenOverrideAddSearchInput && elements.itemAllergenOverrideAddSearchInput.value)
+    );
+  }
+
+  function removeItemAllergenOverride(mode, allergenId) {
+    if (!state.itemEditor.draft || !allergenId) return;
+    var key = mode === "remove" ? "remove" : "add";
+    var overrides = getItemAllergenOverrideState(state.itemEditor.draft);
+    overrides[key] = (overrides[key] || []).filter(function (entryId) {
+      return entryId !== allergenId;
+    });
+    persistDraftAllergenOverrides(overrides);
+    syncDraftFromForm();
+  }
+
+  function renderItemAllergenDetails() {
+    var draft = state.itemEditor.draft;
+    var report = draft ? getItemAllergenReport(draft) : null;
+
+    renderAllergenPills(
+      elements.itemDerivedAllergens,
+      report && report.automatic ? report.automatic.ids : [],
+      "Sin alérgenos automáticos."
+    );
+    renderAllergenPills(
+      elements.itemResolvedAllergens,
+      report && report.resolved ? report.resolved.ids : [],
+      "Sin alérgenos finales."
+    );
+
+    if (elements.itemUnattributedAllergens) {
+      var unattributed = report && report.resolved ? report.resolved.unattributed_ids : [];
+      elements.itemUnattributedAllergens.textContent = unattributed && unattributed.length
+        ? "Excepción sin fuente directa en ingredientes: " + unattributed.map(getAllergenLabel).join(", ") + "."
+        : "";
+    }
+
+    if (elements.itemAllergenSources) {
+      if (!report || !report.automatic || !report.automatic.ids.length) {
+        elements.itemAllergenSources.innerHTML = "<p class=\"traits-empty\">Sin fuentes automáticas detectadas.</p>";
+      } else {
+        elements.itemAllergenSources.innerHTML = report.automatic.ids.map(function (allergenId) {
+          var sourceIds = report.automatic.sources_by_allergen[allergenId] || [];
+          var sourceLabels = sourceIds.map(getIngredientDisplayLabel);
+          return (
+            "<div class=\"allergen-source-row\">" +
+            "<strong>" + escapeHtml(getAllergenLabel(allergenId)) + "</strong>" +
+            "<span>" + escapeHtml(sourceLabels.join(", ") || "Sin fuente registrada") + "</span>" +
+            "</div>"
+          );
+        }).join("");
+      }
+    }
+
+    renderAllergenOverrideChips("add");
+    renderAllergenOverrideChips("remove");
   }
 
   function renderItemTraitDetails() {
@@ -3736,7 +3998,6 @@
       descriptionLong: "",
       price: 0,
       ingredients: [],
-      allergens: [],
       image: MENU_PLACEHOLDER_IMAGE,
       featured: false
     };
@@ -3834,27 +4095,12 @@
     elements.ingredientChipList.innerHTML = html;
   }
 
-  function renderAllergenChips() {
-    var html = state.itemEditor.allergens.map(function (allergenId) {
-      var label = (state.indexes.allergensById[allergenId] && state.indexes.allergensById[allergenId].label) || allergenId;
-      return (
-        "<li class=\"chip\">" +
-        "<span>" + escapeHtml(label) + "</span>" +
-        "<button type=\"button\" data-remove-allergen=\"" + escapeHtml(allergenId) + "\">x</button>" +
-        "</li>"
-      );
-    }).join("");
-
-    elements.allergenChipList.innerHTML = html;
-  }
-
   function renderTokenSearchResults(type, query) {
     var normalizedQuery = normalizeText(query);
     var html = "";
 
     if (!normalizedQuery) {
       if (type === "ingredients") elements.ingredientSearchResults.innerHTML = "";
-      if (type === "allergens") elements.allergenSearchResults.innerHTML = "";
       return;
     }
 
@@ -3878,26 +4124,6 @@
       }).join("");
 
       elements.ingredientSearchResults.innerHTML = html;
-      return;
-    }
-
-    if (type === "allergens") {
-      var allergenResults = state.indexes.allergenList.filter(function (allergenId) {
-        if (state.itemEditor.allergens.includes(allergenId)) return false;
-        var label = (state.indexes.allergensById[allergenId] && state.indexes.allergensById[allergenId].label) || allergenId;
-        return normalizeText(allergenId + " " + label).includes(normalizedQuery);
-      }).slice(0, 8);
-
-      html = allergenResults.map(function (allergenId) {
-        var label = (state.indexes.allergensById[allergenId] && state.indexes.allergensById[allergenId].label) || allergenId;
-        return (
-          "<button class=\"token-search-result\" type=\"button\" data-add-allergen=\"" + escapeHtml(allergenId) + "\">" +
-          escapeHtml(label) +
-          "</button>"
-        );
-      }).join("");
-
-      elements.allergenSearchResults.innerHTML = html;
     }
   }
 
@@ -3917,6 +4143,7 @@
       return "<span class=\"" + badge.className + "\">" + escapeHtml(badge.label) + "</span>";
     }).join("");
     renderItemTraitDetails();
+    renderItemAllergenDetails();
 
     setImageElementSourceWithFallback(elements.previewModalImage, normalizedImagePath, MENU_PLACEHOLDER_IMAGE);
     elements.previewModalImage.alt = draft.name || draft.id;
@@ -4039,13 +4266,13 @@
     draft.descriptionShort = elements.itemFieldDescriptionShort.value.trim();
     draft.descriptionLong = elements.itemFieldDescriptionLong.value.trim();
     draft.ingredients = state.itemEditor.ingredients.slice();
-    draft.allergens = state.itemEditor.allergens.slice();
     var normalizedImagePath = resolveMenuMediaPath(elements.itemFieldImage.value, true) || MENU_PLACEHOLDER_IMAGE;
     draft.image = normalizedImagePath;
     if (document.activeElement !== elements.itemFieldImage) {
       elements.itemFieldImage.value = normalizedImagePath;
     }
     delete draft.tags;
+    delete draft.allergens;
     delete draft.vegetarian;
     delete draft.vegan;
     delete draft.spicy_level;
@@ -4056,6 +4283,24 @@
       draft.trait_overrides = traitOverrides;
     } else {
       delete draft.trait_overrides;
+    }
+
+    if (
+      window.FigataMenuAllergens &&
+      typeof window.FigataMenuAllergens.sanitizeAllergenOverrides === "function"
+    ) {
+      var allergenOverrides = window.FigataMenuAllergens.sanitizeAllergenOverrides(
+        draft.allergen_overrides,
+        {
+          allowedIds: state.indexes.allergensById,
+          keepEmpty: false
+        }
+      );
+      if (allergenOverrides) {
+        draft.allergen_overrides = allergenOverrides;
+      } else {
+        delete draft.allergen_overrides;
+      }
     }
 
     var reviewsValue = elements.itemFieldReviews.value.trim();
@@ -4092,6 +4337,7 @@
     }
 
     var draft = deepClone(itemPosition.item);
+    delete draft.allergens;
     draft.image = resolveMenuMediaPath(draft.image, true) || MENU_PLACEHOLDER_IMAGE;
     var availabilityEntry = getAvailabilityEntry(draft.id, false);
     var fallbackAvailable =
@@ -4105,7 +4351,6 @@
     state.itemEditor.sourceItemIndex = itemPosition.itemIndex;
     state.itemEditor.draft = draft;
     state.itemEditor.ingredients = Array.isArray(draft.ingredients) ? draft.ingredients.slice() : [];
-    state.itemEditor.allergens = Array.isArray(draft.allergens) ? draft.allergens.slice() : [];
     state.itemEditor.availability = {
       available: availabilityEntry ? Boolean(availabilityEntry.available) : fallbackAvailable,
       soldOutReason: availabilityEntry ? (availabilityEntry.soldOutReason || "") : ""
@@ -4136,12 +4381,13 @@
 
     setActiveItemTab("basic");
     renderIngredientChips();
-    renderAllergenChips();
 
     elements.ingredientSearchInput.value = "";
     elements.ingredientSearchResults.innerHTML = "";
-    elements.allergenSearchInput.value = "";
-    elements.allergenSearchResults.innerHTML = "";
+    if (elements.itemAllergenOverrideAddSearchInput) elements.itemAllergenOverrideAddSearchInput.value = "";
+    if (elements.itemAllergenOverrideAddSearchResults) elements.itemAllergenOverrideAddSearchResults.innerHTML = "";
+    if (elements.itemAllergenOverrideRemoveSearchInput) elements.itemAllergenOverrideRemoveSearchInput.value = "";
+    if (elements.itemAllergenOverrideRemoveSearchResults) elements.itemAllergenOverrideRemoveSearchResults.innerHTML = "";
 
     setItemEditorStatus("");
     showItemEditorErrors([]);
@@ -4171,7 +4417,6 @@
     state.itemEditor.sourceItemIndex = -1;
     state.itemEditor.draft = draft;
     state.itemEditor.ingredients = [];
-    state.itemEditor.allergens = [];
     state.itemEditor.availability = {
       available: true,
       soldOutReason: ""
@@ -4200,12 +4445,13 @@
 
     setActiveItemTab("basic");
     renderIngredientChips();
-    renderAllergenChips();
 
     elements.ingredientSearchInput.value = "";
     elements.ingredientSearchResults.innerHTML = "";
-    elements.allergenSearchInput.value = "";
-    elements.allergenSearchResults.innerHTML = "";
+    if (elements.itemAllergenOverrideAddSearchInput) elements.itemAllergenOverrideAddSearchInput.value = "";
+    if (elements.itemAllergenOverrideAddSearchResults) elements.itemAllergenOverrideAddSearchResults.innerHTML = "";
+    if (elements.itemAllergenOverrideRemoveSearchInput) elements.itemAllergenOverrideRemoveSearchInput.value = "";
+    if (elements.itemAllergenOverrideRemoveSearchResults) elements.itemAllergenOverrideRemoveSearchResults.innerHTML = "";
 
     setItemEditorStatus("Completa los campos y guarda para crear el item.");
     showItemEditorErrors([]);
@@ -4229,22 +4475,6 @@
       return id !== ingredientId;
     });
     renderIngredientChips();
-    syncDraftFromForm();
-  }
-
-  function addAllergen(allergenId) {
-    if (!allergenId || state.itemEditor.allergens.includes(allergenId)) return;
-    state.itemEditor.allergens.push(allergenId);
-    renderAllergenChips();
-    renderTokenSearchResults("allergens", elements.allergenSearchInput.value);
-    syncDraftFromForm();
-  }
-
-  function removeAllergen(allergenId) {
-    state.itemEditor.allergens = state.itemEditor.allergens.filter(function (id) {
-      return id !== allergenId;
-    });
-    renderAllergenChips();
     syncDraftFromForm();
   }
 
@@ -4315,9 +4545,38 @@
       }
     });
 
-    state.itemEditor.allergens.forEach(function (allergenId) {
-      if (!state.indexes.allergensById[allergenId]) {
-        errors.push("Alergeno invalido: " + allergenId);
+    if (
+      typeof draft.allergen_overrides !== "undefined" &&
+      draft.allergen_overrides !== null &&
+      (!draft.allergen_overrides || typeof draft.allergen_overrides !== "object" || Array.isArray(draft.allergen_overrides))
+    ) {
+      errors.push("allergen_overrides debe ser objeto cuando existe.");
+    }
+
+    if (
+      draft.allergen_overrides &&
+      typeof draft.allergen_overrides === "object" &&
+      !Array.isArray(draft.allergen_overrides)
+    ) {
+      ["add", "remove"].forEach(function (key) {
+        if (typeof draft.allergen_overrides[key] === "undefined") return;
+        if (!Array.isArray(draft.allergen_overrides[key])) {
+          errors.push("allergen_overrides." + key + " debe ser array.");
+        }
+      });
+    }
+
+    var allergenOverrides = getItemAllergenOverrideState(draft);
+    ["add", "remove"].forEach(function (key) {
+      (allergenOverrides[key] || []).forEach(function (allergenId) {
+        if (!state.indexes.allergensById[allergenId]) {
+          errors.push("Alergeno invalido en override '" + key + "': " + allergenId);
+        }
+      });
+    });
+    (allergenOverrides.add || []).forEach(function (allergenId) {
+      if ((allergenOverrides.remove || []).includes(allergenId)) {
+        errors.push("El mismo alérgeno no puede estar en add/remove: " + allergenId);
       }
     });
 
@@ -9754,9 +10013,17 @@
       renderTokenSearchResults("ingredients", elements.ingredientSearchInput.value);
     });
 
-    elements.allergenSearchInput.addEventListener("input", function () {
-      renderTokenSearchResults("allergens", elements.allergenSearchInput.value);
-    });
+    if (elements.itemAllergenOverrideAddSearchInput) {
+      elements.itemAllergenOverrideAddSearchInput.addEventListener("input", function () {
+        renderAllergenOverrideSearchResults("add", elements.itemAllergenOverrideAddSearchInput.value);
+      });
+    }
+
+    if (elements.itemAllergenOverrideRemoveSearchInput) {
+      elements.itemAllergenOverrideRemoveSearchInput.addEventListener("input", function () {
+        renderAllergenOverrideSearchResults("remove", elements.itemAllergenOverrideRemoveSearchInput.value);
+      });
+    }
 
     elements.ingredientSearchResults.addEventListener("click", function (event) {
       var button = event.target.closest("[data-add-ingredient]");
@@ -9764,11 +10031,29 @@
       addIngredient(button.getAttribute("data-add-ingredient"));
     });
 
-    elements.allergenSearchResults.addEventListener("click", function (event) {
-      var button = event.target.closest("[data-add-allergen]");
-      if (!button) return;
-      addAllergen(button.getAttribute("data-add-allergen"));
-    });
+    if (elements.itemAllergenOverrideAddSearchResults) {
+      elements.itemAllergenOverrideAddSearchResults.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-add-allergen-override]");
+        if (!button) return;
+        var rawValue = button.getAttribute("data-add-allergen-override") || "";
+        var separatorIndex = rawValue.indexOf(":");
+        var mode = separatorIndex >= 0 ? rawValue.slice(0, separatorIndex) : "add";
+        var allergenId = separatorIndex >= 0 ? rawValue.slice(separatorIndex + 1) : rawValue;
+        addItemAllergenOverride(mode, allergenId);
+      });
+    }
+
+    if (elements.itemAllergenOverrideRemoveSearchResults) {
+      elements.itemAllergenOverrideRemoveSearchResults.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-add-allergen-override]");
+        if (!button) return;
+        var rawValue = button.getAttribute("data-add-allergen-override") || "";
+        var separatorIndex = rawValue.indexOf(":");
+        var mode = separatorIndex >= 0 ? rawValue.slice(0, separatorIndex) : "remove";
+        var allergenId = separatorIndex >= 0 ? rawValue.slice(separatorIndex + 1) : rawValue;
+        addItemAllergenOverride(mode, allergenId);
+      });
+    }
 
     elements.ingredientChipList.addEventListener("click", function (event) {
       var removeButton = event.target.closest("[data-remove-ingredient]");
@@ -9776,11 +10061,29 @@
       removeIngredient(removeButton.getAttribute("data-remove-ingredient"));
     });
 
-    elements.allergenChipList.addEventListener("click", function (event) {
-      var removeButton = event.target.closest("[data-remove-allergen]");
-      if (!removeButton) return;
-      removeAllergen(removeButton.getAttribute("data-remove-allergen"));
-    });
+    if (elements.itemAllergenOverrideAddChipList) {
+      elements.itemAllergenOverrideAddChipList.addEventListener("click", function (event) {
+        var removeButton = event.target.closest("[data-remove-allergen-override]");
+        if (!removeButton) return;
+        var rawValue = removeButton.getAttribute("data-remove-allergen-override") || "";
+        var separatorIndex = rawValue.indexOf(":");
+        var mode = separatorIndex >= 0 ? rawValue.slice(0, separatorIndex) : "add";
+        var allergenId = separatorIndex >= 0 ? rawValue.slice(separatorIndex + 1) : rawValue;
+        removeItemAllergenOverride(mode, allergenId);
+      });
+    }
+
+    if (elements.itemAllergenOverrideRemoveChipList) {
+      elements.itemAllergenOverrideRemoveChipList.addEventListener("click", function (event) {
+        var removeButton = event.target.closest("[data-remove-allergen-override]");
+        if (!removeButton) return;
+        var rawValue = removeButton.getAttribute("data-remove-allergen-override") || "";
+        var separatorIndex = rawValue.indexOf(":");
+        var mode = separatorIndex >= 0 ? rawValue.slice(0, separatorIndex) : "remove";
+        var allergenId = separatorIndex >= 0 ? rawValue.slice(separatorIndex + 1) : rawValue;
+        removeItemAllergenOverride(mode, allergenId);
+      });
+    }
 
     elements.ingredientChipList.addEventListener("dragstart", function (event) {
       var chip = event.target.closest("[data-chip-index]");
@@ -10965,7 +11268,6 @@
         draft: null,
         ingredients: [],
         tags: [],
-        allergens: [],
         availability: { available: true, soldOutReason: "" }
       };
 

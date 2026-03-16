@@ -18,7 +18,7 @@ Both systems share a **data layer** (JSON files in `data/`) and are connected th
 | Build | No build step for production; dev server via `npm run dev` |
 | Hosting | Netlify (static site + serverless functions) |
 | Auth | Netlify Identity (admin panel only) |
-| Tests | Validation scripts + menu traits smoke tests (`npm run validate:*`, `npm test`) |
+| Tests | Validation scripts + menu traits/allergen smoke tests (`npm run validate:*`, `npm test`) |
 
 ---
 
@@ -66,7 +66,10 @@ website-figata/
 ├── shared/                    ← Shared validators + public runtime modules
 │   ├── figata-cover-transition.js Shared cover transition engine (route + modal)
 │   ├── menu-traits.js            Menu Traits V2 derivation + validation engine
+│   ├── menu-allergens.js         Menu allergen derivation + validation engine
 │   ├── public-navbar.js          Canonical public navbar loader/cache bridge for multi-route pages
+│   ├── public-scroll-indicator.css Overlay root scrollbar hide + progress meter styles
+│   ├── public-scroll-indicator.js  Native-scroll progress meter runtime for public routes
 │   ├── ingredients-contract.js   Ingredient data validation
 │   ├── categories-contract.js    Category data validation
 │   ├── restaurant-contract.js    Restaurant data validation
@@ -84,6 +87,7 @@ website-figata/
 │   ├── validate-restaurant.js    Validates restaurant.json
 │   ├── check_admin_ui.js         Checks admin UI element IDs
 │   ├── test-menu-traits.js       Smoke tests for derived dietary/content/experience traits
+│   ├── test-menu-allergens.js    Smoke tests for derived item allergens + overrides
 │   └── dynamic_probe.js          Runtime analysis tool
 ├── assets/                    ← Static assets (images, icons, SVGs)
 │   ├── menu/                     Menu item images (WebP) by category + placeholders
@@ -177,7 +181,7 @@ npm run validate:ingredients   # validates data/ingredients.json
 npm run validate:categories    # validates data/categories.json
 npm run validate:restaurant    # validates data/restaurant.json
 npm run check:admin-ui         # checks admin UI element IDs
-npm test                       # smoke tests for Menu Traits V2
+npm test                       # smoke tests for Menu Traits V2 + Menu Allergens
 ```
 
 ### Deployment
@@ -215,10 +219,13 @@ Admin modules must load **before** `app.js` in `admin/app/index.html`. Current o
 `constants` → `utils` → `auth` → `drafts` → `publish` → `navigation` → `command-palette` → `sidebar` → `accordion` → `panels` → `render-utils` → `menu-media` → `dashboard` → `panels/restaurant-panel` → `panels/media-panel` → `panels/pages-panel` → `app.js`
 
 Shared runtime helpers used by traits/validation must load before their consumers:
-`shared/menu-traits.js` → contracts/data loaders → feature scripts.
+`shared/menu-traits.js` + `shared/menu-allergens.js` → contracts/data loaders → feature scripts.
 
 On `/menu/`, route scripts must load in this order:
 `shared/public-navbar.js` → `js/navbar-collapse.js` → `js/menu-page.js` → `js/menu-page-navbar.js`
+
+The shared public scroll indicator is optional and should be loaded after the route's primary public scripts so it can measure the final document scroll state without affecting route initialization:
+`shared/public-scroll-indicator.css` in the page `<head>` and `shared/public-scroll-indicator.js` near the end of the public script list.
 
 ### Data Conventions
 

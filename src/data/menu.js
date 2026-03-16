@@ -7,6 +7,7 @@
 
   let cachedMenuStorePromise;
   const menuTraitsApi = window.FigataMenuTraits || null;
+  const menuAllergensApi = window.FigataMenuAllergens || null;
 
   const normalizeId = (value) => String(value || '').trim();
 
@@ -78,6 +79,19 @@
       content: [],
       experience: [],
       flat: [],
+    },
+  });
+
+  const createEmptyAllergenReport = () => ({
+    automatic: {
+      ids: [],
+      sources_by_allergen: {},
+      ingredient_ids: [],
+    },
+    overrides: null,
+    resolved: {
+      ids: [],
+      unattributed_ids: [],
     },
   });
 
@@ -419,7 +433,7 @@
     categoriesStore,
     availabilityStore,
     mediaApi,
-    ingredientsById
+    ingredientsPayload
   ) => {
     const id = normalizeId(item?.id);
     const slug = inferItemSlug(item);
@@ -447,10 +461,14 @@
       : itemLevelSoldOutReason;
     const traitReport =
       menuTraitsApi && typeof menuTraitsApi.deriveItemTraitReport === 'function'
-        ? menuTraitsApi.deriveItemTraitReport(item, ingredientsById, {
+        ? menuTraitsApi.deriveItemTraitReport(item, ingredientsPayload?.ingredients || ingredientsPayload, {
             useLegacyFields: true,
           })
         : createEmptyTraitReport();
+    const allergenReport =
+      menuAllergensApi && typeof menuAllergensApi.deriveItemAllergenReport === 'function'
+        ? menuAllergensApi.deriveItemAllergenReport(item, ingredientsPayload)
+        : createEmptyAllergenReport();
 
     return {
       ...item,
@@ -470,7 +488,9 @@
       price: normalizedPrice,
       priceFormatted: formatMenuPrice(normalizedPrice, currency),
       ingredients: normalizeStringArray(item?.ingredients),
-      allergens: normalizeStringArray(item?.allergens),
+      allergens: allergenReport.resolved.ids,
+      automatic_allergens: allergenReport.automatic,
+      allergen_overrides: allergenReport.overrides,
       featured: normalizeBoolean(item?.featured, false),
       dietary: traitReport.resolved.dietary,
       content_flags: traitReport.resolved.content_flags,
@@ -513,10 +533,10 @@
     const sections = Array.isArray(menu?.sections) ? menu.sections : [];
     const categories = buildCategoriesStore(categoriesJson, sections);
     const availability = buildAvailabilityStore(availabilityJson);
-    const ingredientsById =
-      ingredientsJson?.ingredients && typeof ingredientsJson.ingredients === 'object'
-        ? ingredientsJson.ingredients
-        : {};
+    const ingredientsPayload =
+      ingredientsJson && typeof ingredientsJson === 'object'
+        ? ingredientsJson
+        : { ingredients: {}, allergens: {} };
     const items = [];
     const byId = new Map();
     const itemsByCategory = new Map();
@@ -533,7 +553,7 @@
           categories,
           availability,
           mediaApi,
-          ingredientsById
+          ingredientsPayload
         );
 
         if (!runtimeItem.id || (shouldHideUnavailable && runtimeItem.available === false)) {
@@ -555,7 +575,7 @@
       menu,
       categories,
       availability,
-      ingredientsById,
+      ingredientsById: ingredientsPayload.ingredients || {},
       items,
       byId,
       itemsByCategory,

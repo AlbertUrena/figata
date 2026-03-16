@@ -587,15 +587,74 @@
                     </section>
 
                     <section class="item-tab-panel" data-tab-panel="allergens">
-                      <label class="field">
-                        <span>Buscar alergeno</span>
-                        <input id="allergen-search-input" type="search" placeholder="Ej: milk" />
-                      </label>
-                      <div id="allergen-search-results" class="token-search-results"></div>
-                      <ul id="allergen-chip-list" class="chip-list"></ul>
-                      <p class="inline-help">
-                        Dieta, contenido y experiencia ya no se editan aquí; se derivan desde Ingredients V2.
-                      </p>
+                      <section class="traits-panel-section">
+                        <header class="traits-panel-section__header">
+                          <h4>Derivación automática</h4>
+                          <p>
+                            El source of truth vive en <code>ingredients[*].allergens</code>. El item calcula su lista
+                            final por unión desde sus ingredientes y solo aplica overrides cuando hace falta una excepción.
+                          </p>
+                        </header>
+
+                        <div class="traits-panel-grid">
+                          <div class="traits-panel-card">
+                            <span class="traits-panel-card__label">Alérgenos automáticos</span>
+                            <div id="item-derived-allergens" class="traits-pill-list"></div>
+                          </div>
+
+                          <div class="traits-panel-card">
+                            <span class="traits-panel-card__label">Resultado final</span>
+                            <div id="item-resolved-allergens" class="traits-pill-list"></div>
+                            <p id="item-unattributed-allergens" class="inline-help"></p>
+                          </div>
+                        </div>
+                      </section>
+
+                      <section class="traits-panel-section">
+                        <header class="traits-panel-section__header">
+                          <h4>Fuentes por alérgeno</h4>
+                          <p>
+                            Aquí ves qué ingredientes están aportando cada alérgeno detectado automáticamente.
+                          </p>
+                        </header>
+                        <div id="item-allergen-sources" class="allergen-source-list"></div>
+                      </section>
+
+                      <section class="traits-panel-section">
+                        <header class="traits-panel-section__header">
+                          <h4>Overrides editoriales</h4>
+                          <p>
+                            Usa overrides solo como excepción. <code>gluten</code> por base implícita no modelada es una
+                            solución transitoria y controlada, no el modelo final ideal.
+                          </p>
+                        </header>
+
+                        <div class="allergen-override-grid">
+                          <div class="allergen-override-column">
+                            <label class="field">
+                              <span>Override add</span>
+                              <input id="allergen-override-add-search-input" type="search" placeholder="Ej: gluten" />
+                            </label>
+                            <div id="allergen-override-add-search-results" class="token-search-results"></div>
+                            <ul id="allergen-override-add-chip-list" class="chip-list"></ul>
+                            <p class="inline-help">
+                              Agrega alérgenos finales cuando la fuente real no está modelada aún en ingredients.
+                            </p>
+                          </div>
+
+                          <div class="allergen-override-column">
+                            <label class="field">
+                              <span>Override remove</span>
+                              <input id="allergen-override-remove-search-input" type="search" placeholder="Ej: milk" />
+                            </label>
+                            <div id="allergen-override-remove-search-results" class="token-search-results"></div>
+                            <ul id="allergen-override-remove-chip-list" class="chip-list"></ul>
+                            <p class="inline-help">
+                              Remueve casos excepcionales del resultado automático sin tocar el catálogo base.
+                            </p>
+                          </div>
+                        </div>
+                      </section>
                     </section>
 
                     <section class="item-tab-panel" data-tab-panel="media">
@@ -1217,6 +1276,7 @@
 
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
     <script src="/shared/menu-traits.js"></script>
+    <script src="/shared/menu-allergens.js"></script>
     <script src="/shared/ingredients-contract.js"></script>
     <script src="/shared/categories-contract.js"></script>
     <script src="/shared/restaurant-contract.js"></script>

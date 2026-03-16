@@ -47,6 +47,8 @@
     lastCompactPillWidth: -1,
     wasStickyActive: false,
     stickyGeometryLockUntil: 0,
+    searchMorphLockUntil: 0,
+    lastStickySearchOpen: false,
     tabsViewportRafId: 0,
     tabsViewportRevealActive: false,
     tabsViewportImmediate: false,
@@ -242,24 +244,25 @@
       return;
     }
 
-    const edgePadding = 20;
+    const edgePaddingStart = 0;
+    const edgePaddingEnd = 20;
     const safetyInset = 2;
-    const visibleLeft = refs.tabsScroll.scrollLeft + edgePadding + safetyInset;
+    const visibleLeft = refs.tabsScroll.scrollLeft + edgePaddingStart + safetyInset;
     const visibleRight =
       refs.tabsScroll.scrollLeft +
       refs.tabsScroll.clientWidth -
-      edgePadding -
+      edgePaddingEnd -
       safetyInset;
     const activeLeft = activeButton.offsetLeft;
     const activeRight = activeLeft + activeButton.offsetWidth;
     let targetScrollLeft = refs.tabsScroll.scrollLeft;
 
     if (activeLeft < visibleLeft) {
-      targetScrollLeft = Math.max(0, activeLeft - edgePadding);
+      targetScrollLeft = Math.max(0, activeLeft - edgePaddingStart - safetyInset);
     } else if (activeRight > visibleRight) {
       targetScrollLeft = Math.min(
         maxScrollLeft,
-        activeRight - refs.tabsScroll.clientWidth + edgePadding + safetyInset
+        activeRight - refs.tabsScroll.clientWidth + edgePaddingEnd + safetyInset
       );
     }
 
@@ -373,7 +376,10 @@
       (
         sameCategory &&
         !sameGeometry &&
-        state.stickyGeometryLockUntil > window.performance.now()
+        (
+          state.stickyGeometryLockUntil > window.performance.now() ||
+          state.searchMorphLockUntil > window.performance.now()
+        )
       );
     const shouldRevealImmediately = immediate || (sameCategory && !sameGeometry);
 
@@ -484,6 +490,12 @@
       state.stickyGeometryLockUntil = 0;
     }
 
+    if (searchOpen !== state.lastStickySearchOpen) {
+      state.searchMorphLockUntil = searchOpen || state.lastStickySearchOpen
+        ? window.performance.now() + 820
+        : 0;
+    }
+
     header.dataset.menuStickyAvailability = stickyEligible ? 'visible' : 'hidden';
     header.dataset.menuStickyMode = stickyActive ? 'sticky' : 'default';
     header.dataset.menuStickySearch = searchOpen ? 'open' : 'closed';
@@ -508,6 +520,10 @@
     if (refs.filterButton instanceof HTMLButtonElement) {
       refs.filterButton.disabled = !stickyActive;
       refs.filterButton.tabIndex = stickyActive ? 0 : -1;
+      refs.filterButton.setAttribute(
+        'aria-expanded',
+        state.menuState?.isFilterModalOpen ? 'true' : 'false'
+      );
     }
 
     if (refs.tools instanceof HTMLElement) {
@@ -585,6 +601,7 @@
     }
 
     state.wasStickyActive = stickyActive;
+    state.lastStickySearchOpen = searchOpen;
   };
 
   const syncStickyState = () => {
@@ -798,6 +815,15 @@
       state.stickySearchOpen = !state.stickySearchOpen;
       state.shouldFocusCompactSearch = state.stickySearchOpen;
       applyUiState();
+    });
+
+    filterButton.addEventListener('click', (event) => {
+      if (!isStickyActive()) {
+        return;
+      }
+
+      event.preventDefault();
+      window.FigataMenuPage?.toggleFilterModal?.();
     });
 
     if (refs.compactSearchInput instanceof HTMLInputElement) {

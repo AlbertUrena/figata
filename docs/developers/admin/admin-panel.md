@@ -294,7 +294,7 @@ Each editor follows a common pattern:
 
 ### Panel: Item Editor
 - **Purpose:** Create/edit a single menu item with tabbed form
-- **Tabs:** Basic info, descriptions, ingredients, derived traits + `trait_overrides`, allergens, media, availability
+- **Tabs:** Basic info, descriptions, ingredients, derived traits + `trait_overrides`, derived allergens + `allergen_overrides`, media, availability
 - **Key functions:** `openItemEditor()`, `saveItemEditorDraft()`, `deleteItem()`
 
 ### Panel: Homepage Editor

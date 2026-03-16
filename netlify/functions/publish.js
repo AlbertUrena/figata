@@ -6,6 +6,7 @@
 // Preview branch: CMS_PREVIEW_BRANCH (defaults to cms-preview)
 var ingredientsContract = require("../../shared/ingredients-contract.js");
 var menuTraits = require("../../shared/menu-traits.js");
+var menuAllergens = require("../../shared/menu-allergens.js");
 var categoriesContract = require("../../shared/categories-contract.js");
 var restaurantContract = require("../../shared/restaurant-contract.js");
 var mediaContract = require("../../shared/media-contract.js");
@@ -58,7 +59,51 @@ function validateIngredientsPayload(payload, menuPayload) {
 }
 
 function validateMenuPayload(payload, ingredientsPayload) {
-  return menuTraits.validateMenuPayload(payload, ingredientsPayload);
+  var reports = [
+    menuTraits.validateMenuPayload(payload, ingredientsPayload),
+    menuAllergens.validateMenuAllergens(payload, ingredientsPayload)
+  ];
+  var merged = {
+    errors: [],
+    warnings: [],
+    itemIssuesById: {}
+  };
+  var seenErrors = {};
+  var seenWarnings = {};
+
+  reports.forEach(function (report) {
+    (report && report.errors ? report.errors : []).forEach(function (message) {
+      if (seenErrors[message]) return;
+      seenErrors[message] = true;
+      merged.errors.push(message);
+    });
+    (report && report.warnings ? report.warnings : []).forEach(function (message) {
+      if (seenWarnings[message]) return;
+      seenWarnings[message] = true;
+      merged.warnings.push(message);
+    });
+    Object.keys(report && report.itemIssuesById ? report.itemIssuesById : {}).forEach(function (itemId) {
+      var bucket = report.itemIssuesById[itemId] || {};
+      if (!merged.itemIssuesById[itemId]) {
+        merged.itemIssuesById[itemId] = {
+          errors: [],
+          warnings: []
+        };
+      }
+      (bucket.errors || []).forEach(function (message) {
+        if (!merged.itemIssuesById[itemId].errors.includes(message)) {
+          merged.itemIssuesById[itemId].errors.push(message);
+        }
+      });
+      (bucket.warnings || []).forEach(function (message) {
+        if (!merged.itemIssuesById[itemId].warnings.includes(message)) {
+          merged.itemIssuesById[itemId].warnings.push(message);
+        }
+      });
+    });
+  });
+
+  return merged;
 }
 
 function validateCategoriesPayload(payload, menuPayload) {
