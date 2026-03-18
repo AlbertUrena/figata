@@ -3,6 +3,7 @@ const path = require('path');
 
 const menuTraits = require('../shared/menu-traits.js');
 const menuAllergens = require('../shared/menu-allergens.js');
+const menuSensory = require('../shared/menu-sensory.js');
 
 const projectRoot = process.cwd();
 const ingredientsPath = path.join(projectRoot, 'data', 'ingredients.json');
@@ -71,7 +72,8 @@ const mergeValidationReports = (...reports) => {
 
 const validation = mergeValidationReports(
   menuTraits.validateMenuPayload(menu, ingredients),
-  menuAllergens.validateMenuAllergens(menu, ingredients)
+  menuAllergens.validateMenuAllergens(menu, ingredients),
+  menuSensory.validateMenuSensoryProfiles(menu)
 );
 const errors = readErrors.concat(validation.errors || []);
 const warnings = validation.warnings || [];

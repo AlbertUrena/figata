@@ -7,6 +7,7 @@
 var ingredientsContract = require("../../shared/ingredients-contract.js");
 var menuTraits = require("../../shared/menu-traits.js");
 var menuAllergens = require("../../shared/menu-allergens.js");
+var menuSensory = require("../../shared/menu-sensory.js");
 var categoriesContract = require("../../shared/categories-contract.js");
 var restaurantContract = require("../../shared/restaurant-contract.js");
 var mediaContract = require("../../shared/media-contract.js");
@@ -61,7 +62,8 @@ function validateIngredientsPayload(payload, menuPayload) {
 function validateMenuPayload(payload, ingredientsPayload) {
   var reports = [
     menuTraits.validateMenuPayload(payload, ingredientsPayload),
-    menuAllergens.validateMenuAllergens(payload, ingredientsPayload)
+    menuAllergens.validateMenuAllergens(payload, ingredientsPayload),
+    menuSensory.validateMenuSensoryProfiles(payload)
   ];
   var merged = {
     errors: [],

@@ -19,9 +19,9 @@ The menu system has two public surfaces:
 | **Menu navbar enhancer** | `js/menu-page-navbar.js` | ~500 | Two-stage sticky-menu transformation inside the shared navbar |
 | **Full menu page styles** | `menu/menu-page.css` | ~560 | Centered intro, top tab sizing, integrated search bar, responsive grid, detail subview styling |
 | **Card template** | `index.html` (`#mas-pedidas-card-template`) | ~20 | HTML template cloned for each card |
-| **Menu data generator** | `src/data/menu.js` | 660 | In-browser generator exposing `getFeaturedMenuItems()` |
+| **Menu data generator** | `src/data/menu.js` | 660 | In-browser generator exposing `getFeaturedMenuItems()`, `getMenuItemsByCategory()`, and `getSensoryProfileSchema()` |
 | **Ingredients component** | `src/ui/ingredient-icon-row.js` | 52 | Renders ingredient icon chips |
-| **Media resolver** | `src/data/media.js` | 302 | Provides `get(itemId, variant)`, `getAlt()`, `getGallery()`, `prefetch()` |
+| **Media resolver** | `src/data/media.js` | ~490 | Provides `get(itemId, variant)`, `getAlt()`, `getGallery()`, `getEditorialGallery()`, `prefetch()` |
 
 ---
 
@@ -36,6 +36,7 @@ src/data/media.js     → window.FigataData.media.get(itemId, variant)
 src/data/ingredients.js → window.FigataData.ingredients (for icon row)
 shared/menu-traits.js → derives dietary/content/experience badges from ingredients metadata
 shared/menu-allergens.js → derives final item allergens from ingredient refs + optional overrides
+shared/menu-sensory.js → normalizes structured `item.sensory_profile` for detail-view consumers
     ↓
 js/mas-pedidas.js
     ├── resolvePopularSelection()   ← reads home.json popular.featuredIds + limit
@@ -52,8 +53,9 @@ Menu page route loads (/menu/)
 shared/public-navbar.js → mounts canonical navbar from homepage source
     ↓
 src/data/menu.js      → getMenuItemsByCategory()
-src/data/media.js     → media variants + prefetch helpers
+src/data/media.js     → media variants + editorial gallery auto-detection + prefetch helpers
 shared/menu-allergens.js → derived `item.allergens` for detail view + allergen filter exclusion
+shared/menu-sensory.js → exposes the fixed 8-axis sensory schema for detail-view sensory visualizations
     ↓
 js/menu-page.js
     ├── renderMenu()                 ← renders 5 grouped tabs + items
@@ -86,6 +88,7 @@ The route is item-driven but uses a fixed top-level navigation grouping:
 - The pizza subtype tabs use that same draft/apply flow: `Todas` leaves the catalog untouched, while `Clásicas` and `De autor` collapse the visible catalog to only that pizza source
 - The `Dieta` cards also write into drafts only and evaluate against the derived runtime `item.dietary` traits; selecting both `Vegetariana` and `Vegana` uses OR semantics
 - The organoleptic chips also stay in drafts until apply and filter against runtime `item.experience_tags`; selecting multiple chips uses OR semantics
+- Structured detail-view sensory profiles live separately in runtime `item.sensory_profile`; they do not replace the organoleptic filter tags
 - The allergen chips in that modal use canonical allergen IDs (`gluten`, `milk`, `nuts`, `fish`) and filter against the derived runtime `item.allergens`
 - The price range slider and the `Mostrar X platos` counter update against the current drafts in real time, while `Limpiar` resets drafts only
 - While searching, category grouping is replaced by a single unified results grid; if nothing matches, the page shows a single global empty state
@@ -95,6 +98,7 @@ The route is item-driven but uses a fixed top-level navigation grouping:
 - Active category can update from scroll position
 - Each category section renders its own title and item grid
 - Item detail uses a dynamic route (`/menu/<id>`) inside the same page shell (no modal, no per-item HTML files)
+- When `item.sensory_profile` exists, the detail view renders a dedicated `Perfil sensorial` section with an editorial subtitle, a right-aligned compact `Radar` / `Barras` toggle in the same heading row, radar as the default view, preserved summary copy, editorial icon-based radar axes, a smoothed radar area without per-axis point markers, a subtle stroke halo, and shared tap/focus icon tooltips (radar axes + bars X-axis icons) that auto-dismiss after 5 seconds or on outside dismissal; `Barras` renders one consolidated vertical chart (Y scale 1–10, shared accent bars with value-based opacity, and icon-only X axis)
 
 ### Sticky Navbar Layer
 
@@ -150,6 +154,12 @@ For each item, `resolveItemMedia(item)` resolves paths from `media.json`:
 | `modal` | `mediaApi.get(id, "modal")` | Card image |
 | `alt` | `mediaApi.getAlt(id)` | `item.name` |
 | `gallery` | `mediaApi.getGallery(id)` | Empty array |
+
+For mobile detail hero, `js/menu-page.js` also resolves `mediaApi.getEditorialGallery(id)` with this priority:
+
+1. `overrides.gallery` from `data/media.json` (if present)
+2. Auto-detected assets: `assets/menu/editorial/<item-id>-slide-<n>.webp` (also accepts underscore/hyphen equivalent for the same item id)
+3. Catalog fallback (`modal`/`card`) when no editorial slides exist
 
 ### Prefetching
 

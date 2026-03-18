@@ -15,6 +15,8 @@
   }
 
   const COLLAPSED_CLASS = "nav--collapsed";
+  const MOBILE_BREAKPOINT = 820;
+  const FORCE_COLLAPSED_MOBILE_ATTR = "data-nav-force-collapsed-mobile";
   const THRESHOLD_OFFSET = 462;
   const fallbackThresholdRaw =
     root.getAttribute("data-nav-collapse-threshold") ||
@@ -25,6 +27,7 @@
   let sentinel = null;
   let observer = null;
   let resizeObserver = null;
+  let rootAttrObserver = null;
   let rafId = 0;
   let isCollapsed = root.classList.contains(COLLAPSED_CLASS);
   let prefersReducedMotion = motionQuery.matches;
@@ -189,14 +192,39 @@
 
   const setCollapsed = (collapsed) => {
     const next = Boolean(collapsed);
+    const shouldSnapCollapsed = next && isForcedMobileCollapse();
+
+    const snapProgress = (snapTarget) => {
+      target = snapTarget ? 1 : 0;
+      progress = target;
+      velocity = 0;
+
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+
+      root.style.setProperty("--nav-collapse", String(target));
+      root.style.setProperty("--nav-collapse-inv", String(1 - target));
+    };
 
     if (next === isCollapsed) {
+      if (shouldSnapCollapsed) {
+        snapProgress(true);
+      }
+
       return;
     }
 
     isCollapsed = next;
     syncNavWidthVars();
     root.classList.toggle(COLLAPSED_CLASS, next);
+
+    if (shouldSnapCollapsed) {
+      snapProgress(true);
+      return;
+    }
+
     animateTo(next);
   };
 
@@ -251,7 +279,18 @@
     if (!raf) raf = requestAnimationFrame(tick);
   }
 
+  const isMobileViewport = () =>
+    (window.innerWidth || root.clientWidth || 0) <= MOBILE_BREAKPOINT;
+
+  const isForcedMobileCollapse = () =>
+    isMobileViewport() &&
+    root.getAttribute(FORCE_COLLAPSED_MOBILE_ATTR) === "true";
+
   const shouldCollapse = () => {
+    if (isForcedMobileCollapse()) {
+      return true;
+    }
+
     if (hero) {
       if (!sentinel) {
         return false;
@@ -319,6 +358,16 @@
   refresh();
 
   startIntersectionObserver();
+
+  if ("MutationObserver" in window) {
+    rootAttrObserver = new MutationObserver(() => {
+      scheduleEvaluate();
+    });
+    rootAttrObserver.observe(root, {
+      attributes: true,
+      attributeFilter: [FORCE_COLLAPSED_MOBILE_ATTR],
+    });
+  }
 
   window.addEventListener("scroll", handleScroll, { passive: true });
 

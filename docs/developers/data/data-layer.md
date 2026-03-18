@@ -6,7 +6,7 @@
 
 - [Overview](#overview)
 - [Data Files](#data-files) — menu, categories, ingredients, availability, home, restaurant, media, media-variants, media-report
-- [Validation Contracts](#validation-contracts) — menu traits, menu allergens, ingredients, categories, restaurant, media
+- [Validation Contracts](#validation-contracts) — menu traits, menu allergens, menu sensory profile, ingredients, categories, restaurant, media
 - [Data Flow](#data-flow) — from admin drafts to live site
 - [Key Rules](#key-rules)
 
@@ -16,7 +16,7 @@
 
 The data layer consists of **9 JSON files** in `data/` that serve as the shared data store between the public website and the admin panel. These files are committed to Git and deployed statically. The admin panel modifies them through a publish pipeline (Netlify serverless function).
 
-The shared layer now includes a central **Menu Traits V2** engine, a separate **Menu Allergens** derivation engine, plus validation contracts for ingredients, categories, restaurant, and media. These modules are used by both the admin panel (client-side validation before publish) and the publish pipeline (server-side validation before commit).
+The shared layer now includes a central **Menu Traits V2** engine, a separate **Menu Allergens** derivation engine, a structured **Menu Sensory Profile** contract, plus validation contracts for ingredients, categories, restaurant, and media. These modules are used by both the admin panel (client-side validation before publish) and the publish pipeline (server-side validation before commit).
 
 ---
 
@@ -28,7 +28,8 @@ The primary menu data file. Contains all items grouped by section (category).
 
 ```
 {
-  "version": 3,
+  "version": 5,
+  "schema": "figata.menu.v5",
   "currency": "DOP",
   "taxIncluded": false,
   "sections": [
@@ -46,7 +47,7 @@ The primary menu data file. Contains all items grouped by section (category).
           "descriptionLong": "",         // modal/detail description
           "price": 550,                  // integer, in DOP
           "ingredients": ["berenjena", "salsa_de_tomate", ...],  // refs to ingredients.json
-          "image": "assets/berenjenas-parmesana.png",  // primary image path
+          "image": "assets/menu/entradas/berenjenas-a-la-parmesana.webp",  // primary image path
           "featured": false,             // appears in homepage featured section
           "allergen_overrides": {        // optional editorial exceptions over derived allergens
             "add": ["gluten"]
@@ -55,6 +56,19 @@ The primary menu data file. Contains all items grouped by section (category).
             "dietary": { "vegetarian": true },
             "content_flags": { "pork": false },
             "experience_tags": ["truffled"]
+          },
+          "sensory_profile": {           // optional structured sensory layer for detail view
+            "summary": "Salado y aromatico, con cuerpo medio y final ligero.",
+            "axes": {
+              "dulce": { "value": 2 },
+              "salado": { "value": 7 },
+              "acido": { "value": 4 },
+              "cremosa": { "value": 6 },
+              "crujiente": { "value": 3 },
+              "ligero": { "value": 8 },
+              "aromatico": { "value": 8 },
+              "intensidad": { "value": 5 }
+            }
           },
           "available": true,             // runtime availability (also in availability.json)
           "reviews": "121 reseñas"       // optional social proof text
@@ -73,6 +87,20 @@ The primary menu data file. Contains all items grouped by section (category).
 - Item allergens are **derived at runtime** via `shared/menu-allergens.js` from `ingredients[*].allergens`
 - `items[].allergen_overrides` is the persisted exception surface for derived allergens
 - `items[].trait_overrides` is the only persisted editorial override surface for derived item traits
+- `items[].sensory_profile` is the structured detail-view sensory layer; it coexists with `experience_tags` and does not replace filters/chips
+
+#### Structured Sensory Profile (`items[].sensory_profile`)
+
+- Field is **optional during rollout**; when present it must be complete and render-ready
+- Official fixed axes: `dulce`, `salado`, `acido`, `cremosa`, `crujiente`, `ligero`, `aromatico`, `intensidad`
+- Scale is always integer `1..10`
+- Shape is fixed as `summary + axes.<axisId>.value`
+- `axes.<axisId>.explanation` is reserved for future per-attribute explanations/tooltips
+- Grouping is global/system-level, not per-item:
+  - `sabor` → `dulce`, `salado`, `acido`
+  - `textura_cuerpo` → `cremosa`, `crujiente`, `ligero`
+  - `caracter` → `aromatico`, `intensidad`
+- Future sibling fields under `sensory_profile` may be added without replacing the base `summary + axes` contract, but `axes` itself only accepts the 8 official IDs
 
 ---
 
@@ -306,6 +334,20 @@ Maps visual assets (images) to entities, evolving from a flat schema to a `sourc
 The system uses `source` by default, but falls back to the `overrides` dictionary to specify distinct visual intents (not merely resolutions) for contexts like card or modal.
 **Validated by:** `shared/media-contract.js`, `scripts/validate_media_json.js`
 
+#### Editorial Detail Slides (`overrides.gallery`)
+
+- `items[<itemId>].overrides.gallery` is the persisted list used for item detail editorial slides.
+- Runtime priority in `/menu/<item-id>` detail view:
+  1. `media.items[itemId].overrides.gallery` (if non-empty)
+  2. Auto-detected assets by naming convention
+  3. Catalog image fallback (`modal`/`card`)
+- Auto-detection convention (progressive, no required JSON edit):
+  - Folder: `assets/menu/editorial/`
+  - Pattern: `<item-id>-slide-<n>.webp` (also accepts underscore/hyphen equivalent; e.g. `aperol_spritz` ↔ `aperol-spritz`)
+  - Example: `assets/menu/editorial/margherita-slide-0.webp`
+- Detection is contiguous from `slide-0` forward; first missing index stops detection.
+- This keeps editorial support optional: items without editorial slides continue using the existing catalog flow.
+
 ---
 
 ### `data/media-variants.json` — Media Variant Specs
@@ -351,6 +393,15 @@ Exports the allergen derivation/validation engine used by both the public site a
 - Editorial override normalization (`allergen_overrides.add/remove`)
 - Source tracing (`sources_by_allergen`) for the admin panel
 - `validateMenuAllergens()` for `data/menu.json`
+
+### `shared/menu-sensory.js`
+
+Exports the structured sensory profile contract used by the public runtime, the admin validator, the CLI validator, and the publish pipeline. It provides:
+- The official schema metadata for the new detail-view sensory system (`scale`, `groups`, `axes`)
+- Empty-profile scaffolding for future editors/UI
+- Structured normalization for `item.sensory_profile`
+- Completeness checks for render-ready profiles
+- `validateMenuSensoryProfiles()` for `data/menu.json`
 
 ### `shared/ingredients-contract.js`
 
@@ -404,4 +455,6 @@ flowchart TD
 6. **Image paths** are relative to the repo root. Menu images go in `assets/menu/`. Ingredient icons go in `assets/Ingredients/`.
 7. **Derived menu traits are not persisted** as free-form `item.tags`; they come from `ingredients[*].metadata` plus optional `item.trait_overrides`.
 8. **Derived menu allergens are not persisted** as `item.allergens`; they come from `ingredients[*].allergens` plus optional `item.allergen_overrides`.
-9. **Public data loaders must fetch from site root** (`/data/*.json`) so nested routes (for example `/menu/`) resolve JSON correctly.
+9. **Structured sensory profiles live in `item.sensory_profile`** and do not replace the existing traits/experience tag system used for filters and badges.
+10. **When `item.sensory_profile` exists**, it must include a non-empty `summary` plus all 8 official axes as `axes.<axisId>.value` integers from `1` to `10`.
+11. **Public data loaders must fetch from site root** (`/data/*.json`) so nested routes (for example `/menu/`) resolve JSON correctly.

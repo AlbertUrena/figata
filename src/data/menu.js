@@ -8,6 +8,7 @@
   let cachedMenuStorePromise;
   const menuTraitsApi = window.FigataMenuTraits || null;
   const menuAllergensApi = window.FigataMenuAllergens || null;
+  const menuSensoryApi = window.FigataMenuSensory || null;
 
   const normalizeId = (value) => String(value || '').trim();
 
@@ -388,6 +389,20 @@
   const getItemLongDescription = (item) =>
     item?.descriptionLong || item?.description || item?.descriptionShort || '';
 
+  const resolveItemSensoryProfile = (item) => {
+    if (
+      !menuSensoryApi ||
+      typeof menuSensoryApi.sanitizeSensoryProfile !== 'function'
+    ) {
+      return null;
+    }
+
+    return menuSensoryApi.sanitizeSensoryProfile(item?.sensory_profile, {
+      requireComplete: true,
+      preserveUnknown: true,
+    });
+  };
+
   const resolveCategoryId = (rawCategoryId, sectionId, categoriesStore) => {
     const candidates = [normalizeId(rawCategoryId), normalizeId(sectionId)].filter(
       Boolean
@@ -469,6 +484,7 @@
       menuAllergensApi && typeof menuAllergensApi.deriveItemAllergenReport === 'function'
         ? menuAllergensApi.deriveItemAllergenReport(item, ingredientsPayload)
         : createEmptyAllergenReport();
+    const sensoryProfile = resolveItemSensoryProfile(item);
 
     return {
       ...item,
@@ -499,6 +515,7 @@
       public_badges: traitReport.public_badges,
       trait_overrides: traitReport.overrides,
       automatic_traits: traitReport.automatic,
+      sensory_profile: sensoryProfile,
       available,
       soldOutReason,
     };
@@ -754,6 +771,11 @@
     };
   };
 
+  const getSensoryProfileSchema = () =>
+    menuSensoryApi && typeof menuSensoryApi.getProfileSchema === 'function'
+      ? menuSensoryApi.getProfileSchema()
+      : null;
+
   window.FigataData = window.FigataData || {};
   window.FigataData.menu = {
     loadMenuStore,
@@ -763,5 +785,6 @@
     getMenuCategoryById,
     getMenuItemsByCategory,
     getAvailabilityConfig,
+    getSensoryProfileSchema,
   };
 })();

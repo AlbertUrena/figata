@@ -35,6 +35,8 @@
   const FILTER_MODAL_EXIT_MS = 520;
   const FILTER_MODAL_FOOTER_SHADOW_EPSILON = 2;
   const SEARCH_EMPTY_ART_PATH = '/assets/home/no-result.webp';
+  const DETAIL_EDITORIAL_HERO_QUERY = window.matchMedia('(max-width: 767px)');
+  const MOBILE_CARD_QUERY = window.matchMedia('(max-width: 1023px)');
   const MENU_GROUPS = [
     {
       id: 'entradas',
@@ -95,14 +97,41 @@
 
   const detailBackButton = document.getElementById('menu-detail-back');
   const detailStatusNode = document.getElementById('menu-detail-status');
+  const detailTopline = document.getElementById('menu-detail-topline');
   const detailMeta = document.getElementById('menu-detail-meta');
+  const detailBadge = document.getElementById('menu-detail-badge');
+  const detailBadgeIcon = document.getElementById('menu-detail-badge-icon');
+  const detailBadgeLabel = document.getElementById('menu-detail-badge-label');
   const detailPanel = document.getElementById('menu-detail-panel');
   const detailMedia = document.getElementById('menu-detail-media');
+  const detailEditorialRoot = document.getElementById('menu-detail-editorial');
+  const detailEditorialTrack = document.getElementById('menu-detail-editorial-track');
+  const detailEditorialDots = document.getElementById('menu-detail-editorial-dots');
   const detailImage = document.getElementById('menu-detail-image');
   const detailReviews = document.getElementById('menu-detail-reviews');
   const detailTitle = document.getElementById('menu-detail-title');
   const detailDescription = document.getElementById('menu-detail-description');
   const detailPrice = document.getElementById('menu-detail-price');
+  const detailSensoryDivider = document.getElementById('menu-detail-sensory-divider');
+  const detailSensorySection = document.getElementById('menu-detail-sensory-section');
+  const detailSensoryViewTabsRoot = document.getElementById(
+    'menu-detail-sensory-view-tabs'
+  );
+  const detailSensoryBarsPanel = document.getElementById(
+    'menu-detail-sensory-bars-panel'
+  );
+  const detailSensoryRadarPanel = document.getElementById(
+    'menu-detail-sensory-radar-panel'
+  );
+  const detailSensoryPanelsStack = document.getElementById(
+    'menu-detail-sensory-panels-stack'
+  );
+  const detailSensoryGroups = document.getElementById('menu-detail-sensory-groups');
+  const detailSensoryRadar = document.getElementById('menu-detail-sensory-radar');
+  const detailSensorySummary = document.getElementById('menu-detail-sensory-summary');
+  const detailPairingsDivider = document.getElementById('menu-detail-pairings-divider');
+  const detailPairingsSection = document.getElementById('menu-detail-pairings-section');
+  const detailPairingCta = document.getElementById('menu-detail-pairing-cta');
   const detailSpecGrid = document.getElementById('menu-detail-spec-grid');
   const detailSpecsDivider = document.getElementById('menu-detail-specs-divider');
   const detailTagsDivider = document.getElementById('menu-detail-tags-divider');
@@ -117,6 +146,8 @@
   );
   const detailAllergens = document.getElementById('menu-detail-allergens');
   const detailSoldOutReason = document.getElementById('menu-detail-soldout-reason');
+  const detailCloseButton = document.getElementById('menu-detail-close');
+  const detailAddButton = document.getElementById('menu-detail-add');
   const menuPageBody = document.body;
   const filterModal = document.getElementById('menu-filter-modal');
   const filterDialog = document.getElementById('menu-filter-modal-dialog');
@@ -140,6 +171,79 @@
     'smoked',
   ]);
   const DIETARY_FILTER_IDS = new Set(['vegetarian', 'vegan']);
+  const DETAIL_SENSORY_VIEW_IDS = Object.freeze(['radar', 'bars']);
+  const DEFAULT_DETAIL_SENSORY_VIEW = 'radar';
+  const DETAIL_SENSORY_RADAR_SVG_NS = 'http://www.w3.org/2000/svg';
+  const DETAIL_SENSORY_RADAR_ICON_PATHS = Object.freeze({
+    dulce: '/assets/menu/editorial/iconos/dulce.webp',
+    salado: '/assets/menu/editorial/iconos/salado.webp',
+    acido: '/assets/menu/editorial/iconos/acido.webp',
+    cremosa: '/assets/menu/editorial/iconos/cremoso.webp',
+    crujiente: '/assets/menu/editorial/iconos/crujiente.webp',
+    ligero: '/assets/menu/editorial/iconos/ligero.webp',
+    aromatico: '/assets/menu/editorial/iconos/aromatico.webp',
+    intensidad: '/assets/menu/editorial/iconos/intenso.webp',
+  });
+  const DETAIL_SENSORY_AXIS_TOOLTIP_COPY = Object.freeze({
+    dulce: Object.freeze({
+      title: 'Dulzor',
+      description: 'Qué tan presentes son las notas dulces.',
+    }),
+    salado: Object.freeze({
+      title: 'Salinidad',
+      description: 'Nivel de sal y sazón dominante.',
+    }),
+    acido: Object.freeze({
+      title: 'Acidez',
+      description: 'Frescura cítrica o sensación ácida en boca.',
+    }),
+    cremosa: Object.freeze({
+      title: 'Cremosidad',
+      description: 'Textura suave, untuosa y envolvente.',
+    }),
+    crujiente: Object.freeze({
+      title: 'Crujiente',
+      description: 'Grado de crocancia al morder.',
+    }),
+    ligero: Object.freeze({
+      title: 'Ligereza',
+      description: 'Qué tan liviano se siente el plato.',
+    }),
+    aromatico: Object.freeze({
+      title: 'Aromas',
+      description: 'Intensidad y riqueza aromática al servir.',
+    }),
+    intensidad: Object.freeze({
+      title: 'Intensidad',
+      description: 'Fuerza global del sabor en cada bocado.',
+    }),
+  });
+  const DETAIL_SENSORY_TOOLTIP_AUTO_CLOSE_MS = 5000;
+  const DETAIL_SENSORY_TOOLTIP_EXIT_MS = 620;
+  const DETAIL_SENSORY_VIEW_EXIT_MS = 180;
+  const DETAIL_SENSORY_VIEW_ENTER_MS = 300;
+  const DETAIL_SENSORY_VIEW_EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+  const DETAIL_SENSORY_SECTION_RESIZE_BASE_MS = 430;
+  const DETAIL_SENSORY_SECTION_RESIZE_EASE = 'cubic-bezier(0.42, 0, 0.58, 1)';
+  const DETAIL_SENSORY_RADAR_REVEAL_MS = 520;
+  const DETAIL_SENSORY_RADAR_STAGGER_MS = 68;
+  const DETAIL_SENSORY_BARS_REVEAL_MS = 760;
+  const DETAIL_SENSORY_BARS_STAGGER_MS = 92;
+  const DETAIL_HERO_BADGE_KIND = Object.freeze({
+    VEGAN: 'vegan',
+    VEGETARIAN: 'vegetarian',
+    FEATURED: 'featured',
+  });
+  const DETAIL_HERO_BADGE_COPY = Object.freeze({
+    [DETAIL_HERO_BADGE_KIND.VEGAN]: 'Vegana',
+    [DETAIL_HERO_BADGE_KIND.VEGETARIAN]: 'Vegetariana',
+    [DETAIL_HERO_BADGE_KIND.FEATURED]: 'Top Seller',
+  });
+  const DETAIL_HERO_BADGE_ICON_BY_KIND = Object.freeze({
+    [DETAIL_HERO_BADGE_KIND.VEGAN]: '/assets/vegana.webp',
+    [DETAIL_HERO_BADGE_KIND.VEGETARIAN]: '/assets/vegetariana.webp',
+  });
+  const DETAIL_V1_PAIRING_ITEM_IDS = new Set(['margherita']);
   const ORGANOLEPTIC_PROFILE_ICON_IDS = Object.freeze({
     fresh: 'albahaca',
     aromatic: 'romero',
@@ -194,6 +298,7 @@
     renderedSearchSignature: '',
     renderedSearchQuery: '',
     scrollTicking: false,
+    tabsOverflowFrameId: 0,
     tabAnimationFrameId: 0,
     tabPillX: 0,
     tabsBound: false,
@@ -202,18 +307,27 @@
     filterModalOpen: false,
     draftFilters: createDefaultFilters(),
     appliedFilters: createDefaultFilters(),
+    detailSensoryView: DEFAULT_DETAIL_SENSORY_VIEW,
     globalPriceMin: 0,
     globalPriceMax: 0,
   };
   let bridgeReadyResolver = null;
+  let detailSensoryRadarTooltipController = null;
+  let detailSensoryBarsTooltipController = null;
+  let detailSensoryRadarAnimationController = null;
+  let detailSensoryBarsAnimationController = null;
+  let detailSensoryViewTransitionToken = 0;
+  let detailSensorySectionHeightCleanupTimerId = 0;
   let filterModalCloseTimerId = 0;
   let filterModalChromeFrameId = 0;
   let filterModalRestoreFocusNode = null;
   let organolepticIconsPromise = null;
+  let homePopularFeaturedIdsPromise = null;
   let organolepticIconPathsByProfileId = new Map();
   let searchHelperTimerId = 0;
   let searchHelperAnimationTimerId = 0;
   let searchHelperFrameId = 0;
+  let detailEditorialDotsFrameId = 0;
   let searchHelperWordIndex = 0;
   let searchHelperHasStarted = false;
   let searchHelperAnimating = false;
@@ -225,8 +339,11 @@
   const PIZZA_GROUP_ID = 'pizzas';
 
   const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const isMobileCardViewport = () => MOBILE_CARD_QUERY.matches;
 
   const normalizeText = (value) => String(value || '').trim();
+  const isObject = (value) =>
+    Boolean(value) && typeof value === 'object' && !Array.isArray(value);
   const formatDetailPrice = (item) => {
     const numericPrice = Number(item?.price);
 
@@ -251,6 +368,37 @@
     }
 
     return '';
+  };
+  const formatCardPrice = (priceLabel) => {
+    const normalizedPrice = normalizeText(priceLabel);
+    if (!normalizedPrice) {
+      return '';
+    }
+    return normalizedPrice
+      .replace(/^RD\s*\$/i, '$')
+      .replace(/^RD\b\s*/i, '')
+      .trim();
+  };
+  const getDetailSensoryProfileSchema = () =>
+    typeof menuApi?.getSensoryProfileSchema === 'function'
+      ? menuApi.getSensoryProfileSchema()
+      : null;
+  const getDetailSensoryScaleMax = () =>
+    Math.max(1, Math.round(Number(getDetailSensoryProfileSchema()?.scale?.max) || 10));
+  const normalizeSensoryAxisValue = (value, scaleMax = getDetailSensoryScaleMax()) => {
+    const numeric = Number(value);
+
+    if (!Number.isInteger(numeric) || numeric < 1 || numeric > scaleMax) {
+      return null;
+    }
+
+    return numeric;
+  };
+  const normalizeDetailSensoryView = (value) => {
+    const normalizedValue = normalizeText(value).toLowerCase();
+    return DETAIL_SENSORY_VIEW_IDS.includes(normalizedValue)
+      ? normalizedValue
+      : DEFAULT_DETAIL_SENSORY_VIEW;
   };
   const DETAIL_ALLERGEN_ICONS = Object.freeze({
     milk: '/assets/lacteos.webp',
@@ -678,6 +826,438 @@
     }
   };
 
+  const getDetailSensoryViewTabs = () => {
+    if (!(detailSensoryViewTabsRoot instanceof HTMLElement)) {
+      return [];
+    }
+
+    return Array.from(
+      detailSensoryViewTabsRoot.querySelectorAll(
+        '.menu-page-detail__sensory-view-tab[role="tab"]'
+      )
+    ).filter((tab) => tab instanceof HTMLElement);
+  };
+
+  const clearDetailSensoryRadarTooltipController = () => {
+    if (!detailSensoryRadarTooltipController) {
+      return;
+    }
+
+    if (typeof detailSensoryRadarTooltipController.destroy === 'function') {
+      detailSensoryRadarTooltipController.destroy();
+    }
+
+    detailSensoryRadarTooltipController = null;
+  };
+
+  const hideDetailSensoryRadarTooltip = () => {
+    if (!detailSensoryRadarTooltipController) {
+      return;
+    }
+
+    if (typeof detailSensoryRadarTooltipController.hide === 'function') {
+      detailSensoryRadarTooltipController.hide();
+    }
+  };
+
+  const clearDetailSensoryBarsTooltipController = () => {
+    if (!detailSensoryBarsTooltipController) {
+      return;
+    }
+
+    if (typeof detailSensoryBarsTooltipController.destroy === 'function') {
+      detailSensoryBarsTooltipController.destroy();
+    }
+
+    detailSensoryBarsTooltipController = null;
+  };
+
+  const hideDetailSensoryBarsTooltip = () => {
+    if (!detailSensoryBarsTooltipController) {
+      return;
+    }
+
+    if (typeof detailSensoryBarsTooltipController.hide === 'function') {
+      detailSensoryBarsTooltipController.hide();
+    }
+  };
+
+  const clearDetailSensoryRadarAnimationController = () => {
+    if (!detailSensoryRadarAnimationController) {
+      return;
+    }
+
+    if (typeof detailSensoryRadarAnimationController.destroy === 'function') {
+      detailSensoryRadarAnimationController.destroy();
+    }
+
+    detailSensoryRadarAnimationController = null;
+  };
+
+  const clearDetailSensoryBarsAnimationController = () => {
+    if (!detailSensoryBarsAnimationController) {
+      return;
+    }
+
+    if (typeof detailSensoryBarsAnimationController.destroy === 'function') {
+      detailSensoryBarsAnimationController.destroy();
+    }
+
+    detailSensoryBarsAnimationController = null;
+  };
+
+  const runDetailSensoryViewRevealAnimation = (
+    view,
+    { immediate = false } = {}
+  ) => {
+    if (view === 'radar') {
+      if (typeof detailSensoryRadarAnimationController?.reveal === 'function') {
+        detailSensoryRadarAnimationController.reveal({ immediate });
+      }
+      return;
+    }
+
+    if (view === 'bars') {
+      if (typeof detailSensoryBarsAnimationController?.reveal === 'function') {
+        detailSensoryBarsAnimationController.reveal({ immediate });
+      }
+    }
+  };
+
+  const getDetailSensoryPanelByView = (view) => {
+    if (view === 'bars' && detailSensoryBarsPanel instanceof HTMLElement) {
+      return detailSensoryBarsPanel;
+    }
+
+    if (view === 'radar' && detailSensoryRadarPanel instanceof HTMLElement) {
+      return detailSensoryRadarPanel;
+    }
+
+    return null;
+  };
+
+  const setDetailSensoryPanelVisibility = (activeView) => {
+    if (detailSensoryBarsPanel instanceof HTMLElement) {
+      detailSensoryBarsPanel.hidden = activeView !== 'bars';
+    }
+
+    if (detailSensoryRadarPanel instanceof HTMLElement) {
+      detailSensoryRadarPanel.hidden = activeView !== 'radar';
+    }
+  };
+
+  const getDetailSensoryHeightTarget = () => {
+    if (detailSensoryPanelsStack instanceof HTMLElement) {
+      return detailSensoryPanelsStack;
+    }
+
+    if (detailSensorySection instanceof HTMLElement) {
+      return detailSensorySection;
+    }
+
+    return null;
+  };
+
+  const clearDetailSensorySectionHeightAnimation = () => {
+    if (detailSensorySectionHeightCleanupTimerId) {
+      window.clearTimeout(detailSensorySectionHeightCleanupTimerId);
+      detailSensorySectionHeightCleanupTimerId = 0;
+    }
+
+    const heightTarget = getDetailSensoryHeightTarget();
+
+    if (heightTarget instanceof HTMLElement) {
+      heightTarget.style.removeProperty('height');
+      heightTarget.style.removeProperty('overflow');
+      heightTarget.style.removeProperty('will-change');
+      heightTarget.style.removeProperty('transition');
+    }
+
+    // Legacy cleanup in case old inline styles remain on section.
+    if (detailSensorySection instanceof HTMLElement) {
+      detailSensorySection.style.removeProperty('height');
+      detailSensorySection.style.removeProperty('overflow');
+      detailSensorySection.style.removeProperty('will-change');
+      detailSensorySection.style.removeProperty('transition');
+    }
+  };
+
+  const animateDetailSensorySectionHeight = ({
+    fromHeight = 0,
+    toHeight = 0,
+    transitionToken,
+  }) => {
+    const heightTarget = getDetailSensoryHeightTarget();
+
+    if (
+      !(heightTarget instanceof HTMLElement) ||
+      (detailSensorySection instanceof HTMLElement && detailSensorySection.hidden) ||
+      reducedMotionQuery.matches
+    ) {
+      clearDetailSensorySectionHeightAnimation();
+      return;
+    }
+
+    const startHeight = Math.max(0, fromHeight);
+    const endHeight = Math.max(0, toHeight);
+    const heightDelta = Math.abs(endHeight - startHeight);
+
+    if (heightDelta < 1) {
+      clearDetailSensorySectionHeightAnimation();
+      return;
+    }
+
+    if (detailSensorySectionHeightCleanupTimerId) {
+      window.clearTimeout(detailSensorySectionHeightCleanupTimerId);
+      detailSensorySectionHeightCleanupTimerId = 0;
+    }
+
+    const resizeDuration = Math.min(
+      620,
+      Math.max(360, Math.round(DETAIL_SENSORY_SECTION_RESIZE_BASE_MS + heightDelta * 0.32))
+    );
+
+    heightTarget.style.height = `${startHeight}px`;
+    heightTarget.style.overflow = 'hidden';
+    heightTarget.style.willChange = 'height';
+    heightTarget.style.transition = 'none';
+
+    // Force sync so the next frame can transition from the locked height.
+    void heightTarget.offsetHeight;
+
+    window.requestAnimationFrame(() => {
+      if (detailSensoryViewTransitionToken !== transitionToken) {
+        return;
+      }
+
+      heightTarget.style.transition = `height ${resizeDuration}ms ${DETAIL_SENSORY_SECTION_RESIZE_EASE}`;
+      heightTarget.style.height = `${endHeight}px`;
+    });
+
+    detailSensorySectionHeightCleanupTimerId = window.setTimeout(() => {
+      if (detailSensoryViewTransitionToken !== transitionToken) {
+        return;
+      }
+
+      clearDetailSensorySectionHeightAnimation();
+    }, resizeDuration + 96);
+  };
+
+  const animateDetailSensoryViewTransition = ({ fromView = '', toView }) => {
+    const nextPanel = getDetailSensoryPanelByView(toView);
+
+    if (!(nextPanel instanceof HTMLElement)) {
+      clearDetailSensorySectionHeightAnimation();
+      setDetailSensoryPanelVisibility(toView);
+      runDetailSensoryViewRevealAnimation(toView, { immediate: true });
+      return;
+    }
+
+    const currentPanel = getDetailSensoryPanelByView(fromView);
+    const transitionToken = detailSensoryViewTransitionToken + 1;
+    detailSensoryViewTransitionToken = transitionToken;
+    const heightTarget = getDetailSensoryHeightTarget();
+    const isSensorySectionVisible =
+      !(detailSensorySection instanceof HTMLElement) || !detailSensorySection.hidden;
+    const shouldAnimateSectionHeight =
+      heightTarget instanceof HTMLElement &&
+      isSensorySectionVisible &&
+      !reducedMotionQuery.matches;
+    const initialSectionHeight = shouldAnimateSectionHeight
+      ? heightTarget.getBoundingClientRect().height
+      : 0;
+
+    if (shouldAnimateSectionHeight) {
+      clearDetailSensorySectionHeightAnimation();
+      heightTarget.style.height = `${initialSectionHeight}px`;
+      heightTarget.style.overflow = 'hidden';
+      heightTarget.style.willChange = 'height';
+      heightTarget.style.transition = 'none';
+    } else {
+      clearDetailSensorySectionHeightAnimation();
+    }
+
+    if (fromView === 'radar') {
+      hideDetailSensoryRadarTooltip();
+    }
+
+    if (fromView === 'bars') {
+      hideDetailSensoryBarsTooltip();
+    }
+
+    const runEnter = () => {
+      if (detailSensoryViewTransitionToken !== transitionToken) {
+        return;
+      }
+
+      setDetailSensoryPanelVisibility(toView);
+      nextPanel.style.opacity = '0';
+      nextPanel.style.transform = 'translateY(8px) scale(0.988)';
+      nextPanel.style.willChange = 'opacity, transform';
+
+      if (shouldAnimateSectionHeight) {
+        const nextPanelTargetHeight = Math.max(
+          0,
+          nextPanel.scrollHeight || nextPanel.getBoundingClientRect().height
+        );
+        animateDetailSensorySectionHeight({
+          fromHeight: initialSectionHeight,
+          toHeight: nextPanelTargetHeight,
+          transitionToken,
+        });
+      }
+
+      runDetailSensoryViewRevealAnimation(toView);
+
+      window.requestAnimationFrame(() => {
+        if (detailSensoryViewTransitionToken !== transitionToken) {
+          return;
+        }
+
+        const enterAnimation = nextPanel.animate(
+          [
+            { opacity: 0, transform: 'translateY(8px) scale(0.988)' },
+            { opacity: 1, transform: 'translateY(0) scale(1)' },
+          ],
+          {
+            duration: DETAIL_SENSORY_VIEW_ENTER_MS,
+            easing: DETAIL_SENSORY_VIEW_EASE,
+            fill: 'forwards',
+          }
+        );
+
+        const clearStyles = () => {
+          if (detailSensoryViewTransitionToken !== transitionToken) {
+            return;
+          }
+
+          nextPanel.style.removeProperty('opacity');
+          nextPanel.style.removeProperty('transform');
+          nextPanel.style.removeProperty('will-change');
+        };
+
+        enterAnimation.onfinish = clearStyles;
+        enterAnimation.oncancel = clearStyles;
+      });
+    };
+
+    if (
+      !(currentPanel instanceof HTMLElement) ||
+      currentPanel === nextPanel ||
+      currentPanel.hidden
+    ) {
+      runEnter();
+      return;
+    }
+
+    currentPanel.style.willChange = 'opacity, transform';
+    const exitAnimation = currentPanel.animate(
+      [
+        { opacity: 1, transform: 'translateY(0) scale(1)' },
+        { opacity: 0, transform: 'translateY(5px) scale(0.992)' },
+      ],
+      {
+        duration: DETAIL_SENSORY_VIEW_EXIT_MS,
+        easing: DETAIL_SENSORY_VIEW_EASE,
+        fill: 'forwards',
+      }
+    );
+
+    const finishExit = () => {
+      if (detailSensoryViewTransitionToken !== transitionToken) {
+        return;
+      }
+
+      currentPanel.hidden = true;
+      currentPanel.style.removeProperty('opacity');
+      currentPanel.style.removeProperty('transform');
+      currentPanel.style.removeProperty('will-change');
+      runEnter();
+    };
+
+    exitAnimation.onfinish = finishExit;
+    exitAnimation.oncancel = finishExit;
+  };
+
+  const syncDetailSensoryViewState = ({ focus = false } = {}) => {
+    if (!(detailSensoryViewTabsRoot instanceof HTMLElement)) {
+      return;
+    }
+
+    const tabs = getDetailSensoryViewTabs();
+
+    if (!tabs.length) {
+      return;
+    }
+
+    const activeView = normalizeDetailSensoryView(state.detailSensoryView);
+    state.detailSensoryView = activeView;
+    const activeIndex = Math.max(
+      0,
+      tabs.findIndex(
+        (tab) => normalizeDetailSensoryView(tab.dataset.sensoryView) === activeView
+      )
+    );
+
+    detailSensoryViewTabsRoot.style.setProperty(
+      '--menu-detail-sensory-toggle-count',
+      String(tabs.length)
+    );
+    detailSensoryViewTabsRoot.style.setProperty(
+      '--menu-detail-sensory-toggle-active-index',
+      String(activeIndex)
+    );
+
+    tabs.forEach((tab, tabIndex) => {
+      const isActive = tabIndex === activeIndex;
+      tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      tab.setAttribute('tabindex', isActive ? '0' : '-1');
+      tab.classList.toggle('is-active', isActive);
+    });
+
+    const previousViewRaw = normalizeText(
+      detailSensoryViewTabsRoot.dataset.activeSensoryView
+    ).toLowerCase();
+    const hasPreviousView = DETAIL_SENSORY_VIEW_IDS.includes(previousViewRaw);
+    const previousView = hasPreviousView ? previousViewRaw : '';
+
+    if (activeView !== 'radar') {
+      hideDetailSensoryRadarTooltip();
+    }
+
+    if (activeView !== 'bars') {
+      hideDetailSensoryBarsTooltip();
+    }
+
+    if (!(detailSensorySection instanceof HTMLElement) || detailSensorySection.hidden) {
+      clearDetailSensorySectionHeightAnimation();
+      setDetailSensoryPanelVisibility(activeView);
+      runDetailSensoryViewRevealAnimation(activeView, { immediate: true });
+      detailSensoryViewTabsRoot.dataset.activeSensoryView = activeView;
+
+      if (focus) {
+        tabs[activeIndex].focus();
+      }
+      return;
+    }
+
+    if (!hasPreviousView || previousView !== activeView) {
+      animateDetailSensoryViewTransition({
+        fromView: previousView,
+        toView: activeView,
+      });
+    } else {
+      clearDetailSensorySectionHeightAnimation();
+      setDetailSensoryPanelVisibility(activeView);
+    }
+
+    detailSensoryViewTabsRoot.dataset.activeSensoryView = activeView;
+
+    if (focus) {
+      tabs[activeIndex].focus();
+    }
+  };
+
   const updatePriceSliderVisuals = (filters = state.draftFilters) => {
     const minInput = document.getElementById('menu-filter-range-min');
     const maxInput = document.getElementById('menu-filter-range-max');
@@ -1089,6 +1669,77 @@
     filterPizzaTabsRoot.dataset.bound = 'true';
   };
 
+  const bindDetailSensoryViewTabs = () => {
+    if (!(detailSensoryViewTabsRoot instanceof HTMLElement)) {
+      return;
+    }
+
+    if (detailSensoryViewTabsRoot.dataset.bound === 'true') {
+      return;
+    }
+
+    const tabs = getDetailSensoryViewTabs();
+
+    if (!tabs.length) {
+      return;
+    }
+
+    const activateTab = (index, { focus = false } = {}) => {
+      const nextIndex = Math.max(0, Math.min(index, tabs.length - 1));
+      state.detailSensoryView = normalizeDetailSensoryView(
+        tabs[nextIndex].dataset.sensoryView
+      );
+      syncDetailSensoryViewState({ focus });
+    };
+
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => {
+        activateTab(index);
+      });
+
+      tab.addEventListener('keydown', (event) => {
+        const currentIndex = tabs.findIndex(
+          (entry) => entry.getAttribute('aria-selected') === 'true'
+        );
+        const safeCurrentIndex = currentIndex >= 0 ? currentIndex : 0;
+
+        if (event.key === 'ArrowRight') {
+          event.preventDefault();
+          activateTab((safeCurrentIndex + 1) % tabs.length, { focus: true });
+          return;
+        }
+
+        if (event.key === 'ArrowLeft') {
+          event.preventDefault();
+          activateTab((safeCurrentIndex - 1 + tabs.length) % tabs.length, {
+            focus: true,
+          });
+          return;
+        }
+
+        if (event.key === 'Home') {
+          event.preventDefault();
+          activateTab(0, { focus: true });
+          return;
+        }
+
+        if (event.key === 'End') {
+          event.preventDefault();
+          activateTab(tabs.length - 1, { focus: true });
+          return;
+        }
+
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          activateTab(index);
+        }
+      });
+    });
+
+    syncDetailSensoryViewState();
+    detailSensoryViewTabsRoot.dataset.bound = 'true';
+  };
+
   const getFilterModalFocusableElements = () => {
     if (!(filterDialog instanceof HTMLElement)) {
       return [];
@@ -1287,6 +1938,47 @@
       : toMenuListUrl();
   };
 
+  const loadHomePopularFeaturedIds = () => {
+    if (homePopularFeaturedIdsPromise) {
+      return homePopularFeaturedIdsPromise;
+    }
+
+    homePopularFeaturedIdsPromise = fetch('/data/home.json', { cache: 'no-cache' })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`No se pudo cargar /data/home.json (${response.status})`);
+        }
+        return response.json();
+      })
+      .then((homePayload) => {
+        const featuredIds = Array.isArray(homePayload?.popular?.featuredIds)
+          ? homePayload.popular.featuredIds
+          : [];
+
+        return new Set(featuredIds.map((featuredId) => normalizeText(featuredId)).filter(Boolean));
+      })
+      .catch((error) => {
+        console.warn('[menu-page] No se pudo resolver popular.featuredIds para badge hero.', error);
+        return new Set();
+      });
+
+    return homePopularFeaturedIdsPromise;
+  };
+
+  const disableNativeScrollRestoration = () => {
+    if (!('scrollRestoration' in window.history)) {
+      return;
+    }
+
+    try {
+      window.history.scrollRestoration = 'manual';
+    } catch {
+      // Ignore browsers that block setting history.scrollRestoration.
+    }
+  };
+
+  disableNativeScrollRestoration();
+
   const loadOrganolepticIconPaths = () => {
     if (organolepticIconsPromise) {
       return organolepticIconsPromise;
@@ -1373,6 +2065,79 @@
   };
 
   const getRouteItemId = () => getRouteItemIdFromPathname() || getLegacyRouteItemId();
+
+  const toHistoryStateObject = (value) =>
+    value && typeof value === 'object' ? { ...value } : {};
+
+  const getHistoryMenuListContext = () => {
+    const currentState = toHistoryStateObject(window.history.state);
+    const rawContext =
+      currentState.menuListContext && typeof currentState.menuListContext === 'object'
+        ? currentState.menuListContext
+        : null;
+
+    if (!rawContext) {
+      return null;
+    }
+
+    const scrollY = Number(rawContext.scrollY);
+
+    return {
+      categoryId: normalizeText(rawContext.categoryId),
+      scrollY: Number.isFinite(scrollY) ? Math.max(0, Math.round(scrollY)) : null,
+    };
+  };
+
+  const restoreListScrollFromHistory = () => {
+    const context = getHistoryMenuListContext();
+
+    if (!context || context.scrollY === null) {
+      return;
+    }
+
+    window.requestAnimationFrame(() => {
+      window.scrollTo({
+        top: context.scrollY,
+        left: 0,
+        behavior: 'auto',
+      });
+    });
+  };
+
+  const resetDetailScrollPosition = () => {
+    if (window.scrollY <= 0) {
+      return;
+    }
+
+    window.requestAnimationFrame(() => {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'auto',
+      });
+    });
+  };
+
+  const resolveGroupIdBySourceCategoryId = (sourceCategoryId) => {
+    const normalizedSourceCategoryId = normalizeText(sourceCategoryId);
+
+    if (!normalizedSourceCategoryId) {
+      return '';
+    }
+
+    const matchedCategory = state.categories.find((category) =>
+      Array.isArray(category?.sourceCategoryIds) &&
+      category.sourceCategoryIds.some(
+        (candidateSourceCategoryId) =>
+          normalizeText(candidateSourceCategoryId) === normalizedSourceCategoryId
+      )
+    );
+
+    return normalizeText(matchedCategory?.id);
+  };
+
+  const resolveGroupIdByItem = (item) =>
+    resolveGroupIdBySourceCategoryId(item?.category);
 
   const setStatus = (text, { isError = false, hide = false } = {}) => {
     statusNode.textContent = text;
@@ -1549,6 +2314,83 @@
     });
   };
 
+  const resolveDietaryHeroKind = (item, badges = []) => {
+    const dietary = item?.dietary && typeof item.dietary === 'object' ? item.dietary : {};
+
+    if (dietary.vegan === true) {
+      return DETAIL_HERO_BADGE_KIND.VEGAN;
+    }
+
+    if (dietary.vegetarian === true) {
+      return DETAIL_HERO_BADGE_KIND.VEGETARIAN;
+    }
+
+    if (!Array.isArray(badges) || !badges.length) {
+      return null;
+    }
+
+    const dietaryBadge = badges.find((badge) => normalizeText(badge?.group) === 'dietary');
+    const dietaryKey = normalizeText(dietaryBadge?.key).toLowerCase();
+    const dietaryLabel = normalizeText(dietaryBadge?.label).toLowerCase();
+
+    if (dietaryKey === DETAIL_HERO_BADGE_KIND.VEGAN || dietaryLabel === 'vegana') {
+      return DETAIL_HERO_BADGE_KIND.VEGAN;
+    }
+
+    if (
+      dietaryKey === DETAIL_HERO_BADGE_KIND.VEGETARIAN ||
+      dietaryLabel === 'vegetariana'
+    ) {
+      return DETAIL_HERO_BADGE_KIND.VEGETARIAN;
+    }
+
+    return null;
+  };
+
+  const resolveDetailHeroBadge = ({ item, badges = [], featuredIds = new Set() } = {}) => {
+    const dietaryKind = resolveDietaryHeroKind(item, badges);
+
+    if (dietaryKind) {
+      return {
+        kind: dietaryKind,
+        label: DETAIL_HERO_BADGE_COPY[dietaryKind] || '',
+        icon: DETAIL_HERO_BADGE_ICON_BY_KIND[dietaryKind] || '',
+      };
+    }
+
+    const itemId = normalizeText(item?.id);
+
+    if (itemId && featuredIds instanceof Set && featuredIds.has(itemId)) {
+      return {
+        kind: DETAIL_HERO_BADGE_KIND.FEATURED,
+        label: DETAIL_HERO_BADGE_COPY[DETAIL_HERO_BADGE_KIND.FEATURED],
+        icon: '',
+      };
+    }
+
+    return null;
+  };
+
+  const filterDetailSectionTags = (badges = []) =>
+    Array.isArray(badges)
+      ? badges.filter((badge) => {
+          const group = normalizeText(badge?.group).toLowerCase();
+          const key = normalizeText(badge?.key).toLowerCase();
+          const label = normalizeText(badge?.label).toLowerCase();
+
+          if (group !== 'dietary') {
+            return true;
+          }
+
+          return !(
+            key === DETAIL_HERO_BADGE_KIND.VEGAN ||
+            key === DETAIL_HERO_BADGE_KIND.VEGETARIAN ||
+            label === 'vegana' ||
+            label === 'vegetariana'
+          );
+        })
+      : [];
+
   const renderTextList = (container, values = []) => {
     if (!(container instanceof HTMLElement)) {
       return;
@@ -1704,6 +2546,1328 @@
     renderDetailIconList(container, allergens);
   };
 
+  const createSvgNode = (tagName, attributes = {}) => {
+    const node = document.createElementNS(DETAIL_SENSORY_RADAR_SVG_NS, tagName);
+
+    Object.entries(attributes).forEach(([attributeName, attributeValue]) => {
+      if (attributeValue === undefined || attributeValue === null || attributeValue === '') {
+        return;
+      }
+
+      node.setAttribute(attributeName, String(attributeValue));
+    });
+
+    return node;
+  };
+
+  const toDetailSensoryRadarPoint = ({ centerX, centerY, radius, angle }) => ({
+    x: centerX + Math.cos(angle) * radius,
+    y: centerY + Math.sin(angle) * radius,
+  });
+
+  const toDetailSensoryRadarPointsString = (points) =>
+    points.map(({ x, y }) => `${x.toFixed(2)},${y.toFixed(2)}`).join(' ');
+
+  const toDetailSensoryRadarPath = (points) => {
+    if (!Array.isArray(points) || points.length < 2) {
+      return '';
+    }
+
+    if (points.length === 2) {
+      return `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)} L ${points[1].x.toFixed(2)} ${points[1].y.toFixed(2)} Z`;
+    }
+
+    const smoothing = 0.14;
+    let path = `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`;
+
+    for (let index = 0; index < points.length; index += 1) {
+      const previous = points[(index - 1 + points.length) % points.length];
+      const current = points[index];
+      const next = points[(index + 1) % points.length];
+      const nextNext = points[(index + 2) % points.length];
+      const controlPointA = {
+        x: current.x + (next.x - previous.x) * smoothing,
+        y: current.y + (next.y - previous.y) * smoothing,
+      };
+      const controlPointB = {
+        x: next.x - (nextNext.x - current.x) * smoothing,
+        y: next.y - (nextNext.y - current.y) * smoothing,
+      };
+
+      path += ` C ${controlPointA.x.toFixed(2)} ${controlPointA.y.toFixed(2)}, ${controlPointB.x.toFixed(2)} ${controlPointB.y.toFixed(2)}, ${next.x.toFixed(2)} ${next.y.toFixed(2)}`;
+    }
+
+    return `${path} Z`;
+  };
+
+  const getDetailSensoryRadarLevels = (scaleMax) => {
+    const ringCount = Math.min(5, Math.max(1, scaleMax));
+    const levels = new Set();
+
+    for (let index = 1; index <= ringCount; index += 1) {
+      levels.add(Math.max(1, Math.round((scaleMax * index) / ringCount)));
+    }
+
+    return Array.from(levels).sort((left, right) => left - right);
+  };
+
+  const buildDetailSensoryProfileModel = (profile) => {
+    if (!isObject(profile) || !isObject(profile.axes)) {
+      return null;
+    }
+
+    const summary = normalizeText(profile.summary);
+    const schema = getDetailSensoryProfileSchema();
+    const groups = Array.isArray(schema?.groups) ? schema.groups : [];
+    const axes = Array.isArray(schema?.axes) ? schema.axes : [];
+    const scaleMax = getDetailSensoryScaleMax();
+
+    if (!summary || !groups.length || !axes.length) {
+      return null;
+    }
+
+    const axisDefinitionById = new Map(
+      axes.map((axis) => [normalizeText(axis?.id), axis])
+    );
+    const groupedAxes = [];
+    const flatAxes = [];
+
+    for (const group of groups) {
+      const groupAxisIds = Array.isArray(group?.axisIds) ? group.axisIds : [];
+      const groupEntries = [];
+
+      for (const axisId of groupAxisIds) {
+        const normalizedAxisId = normalizeText(axisId);
+        const axisDefinition = axisDefinitionById.get(normalizedAxisId);
+        const axisValue = normalizeSensoryAxisValue(
+          profile.axes?.[normalizedAxisId]?.value,
+          scaleMax
+        );
+
+        if (!axisDefinition || axisValue === null) {
+          return null;
+        }
+
+        const axisEntry = {
+          id: normalizedAxisId,
+          label: normalizeText(axisDefinition?.label || normalizedAxisId),
+          value: axisValue,
+          groupId: normalizeText(group?.id),
+          groupLabel: normalizeText(group?.label || group?.id),
+        };
+
+        groupEntries.push(axisEntry);
+        flatAxes.push(axisEntry);
+      }
+
+      if (groupEntries.length) {
+        groupedAxes.push({
+          id: normalizeText(group?.id),
+          label: normalizeText(group?.label || group?.id),
+          axes: groupEntries,
+        });
+      }
+    }
+
+    if (!groupedAxes.length || !flatAxes.length) {
+      return null;
+    }
+
+    return {
+      summary,
+      scaleMax,
+      groups: groupedAxes,
+      axes: flatAxes,
+    };
+  };
+
+  const clearDetailSensoryProfile = () => {
+    clearDetailSensorySectionHeightAnimation();
+    clearDetailSensoryRadarTooltipController();
+    clearDetailSensoryBarsTooltipController();
+    clearDetailSensoryRadarAnimationController();
+    clearDetailSensoryBarsAnimationController();
+    detailSensoryViewTransitionToken += 1;
+
+    if (detailSensoryViewTabsRoot instanceof HTMLElement) {
+      detailSensoryViewTabsRoot.hidden = true;
+      delete detailSensoryViewTabsRoot.dataset.activeSensoryView;
+    }
+
+    if (detailSensoryBarsPanel instanceof HTMLElement) {
+      detailSensoryBarsPanel.hidden = true;
+    }
+
+    if (detailSensoryRadarPanel instanceof HTMLElement) {
+      detailSensoryRadarPanel.hidden = true;
+    }
+
+    if (detailSensoryGroups instanceof HTMLElement) {
+      detailSensoryGroups.replaceChildren();
+    }
+
+    if (detailSensoryRadar instanceof HTMLElement) {
+      detailSensoryRadar.replaceChildren();
+      detailSensoryRadar.removeAttribute('role');
+      detailSensoryRadar.removeAttribute('aria-label');
+    }
+
+    if (detailSensorySummary instanceof HTMLElement) {
+      detailSensorySummary.textContent = '';
+      detailSensorySummary.hidden = true;
+    }
+
+    if (detailSensorySection instanceof HTMLElement) {
+      detailSensorySection.hidden = true;
+    }
+  };
+
+  const renderDetailSensoryBars = (model) => {
+    if (!(detailSensoryGroups instanceof HTMLElement)) {
+      return false;
+    }
+
+    clearDetailSensoryBarsTooltipController();
+    clearDetailSensoryBarsAnimationController();
+
+    if (!Array.isArray(model.axes) || !model.axes.length) {
+      return false;
+    }
+
+    const barsSummary = model.axes
+      .map((axis) => `${axis.label} ${axis.value} de ${model.scaleMax}`)
+      .join(', ');
+
+    const barsChart = document.createElement('div');
+    barsChart.className = 'menu-page-detail__sensory-bars-chart';
+    barsChart.setAttribute('role', 'group');
+    barsChart.setAttribute(
+      'aria-label',
+      `Perfil sensorial en barras. ${barsSummary}. Escala de 1 a ${model.scaleMax}.`
+    );
+    barsChart.style.setProperty(
+      '--menu-detail-sensory-axes-count',
+      String(model.axes.length)
+    );
+
+    const yAxis = document.createElement('div');
+    yAxis.className = 'menu-page-detail__sensory-bars-y-axis';
+    yAxis.setAttribute('aria-hidden', 'true');
+
+    const barsMain = document.createElement('div');
+    barsMain.className = 'menu-page-detail__sensory-bars-main';
+
+    const barsPlot = document.createElement('div');
+    barsPlot.className = 'menu-page-detail__sensory-bars-plot';
+
+    const barsGrid = document.createElement('div');
+    barsGrid.className = 'menu-page-detail__sensory-bars-grid';
+    barsGrid.setAttribute('aria-hidden', 'true');
+
+    const barsColumns = document.createElement('div');
+    barsColumns.className = 'menu-page-detail__sensory-bars-columns';
+    barsColumns.setAttribute('role', 'list');
+
+    const barsIcons = document.createElement('div');
+    barsIcons.className = 'menu-page-detail__sensory-bars-icons';
+    const barFillNodes = [];
+    const barIconNodes = [];
+
+    const tooltip = document.createElement('div');
+    tooltip.className = 'menu-page-detail__sensory-radar-tooltip';
+    tooltip.id = 'menu-detail-sensory-bars-tooltip';
+    tooltip.setAttribute('role', 'tooltip');
+    tooltip.setAttribute('aria-hidden', 'true');
+    tooltip.hidden = true;
+
+    const tooltipTitle = document.createElement('p');
+    tooltipTitle.className = 'menu-page-detail__sensory-radar-tooltip-title';
+    const tooltipDivider = document.createElement('div');
+    tooltipDivider.className = 'menu-page-detail__sensory-radar-tooltip-divider';
+    tooltipDivider.setAttribute('aria-hidden', 'true');
+    const tooltipDescription = document.createElement('p');
+    tooltipDescription.className = 'menu-page-detail__sensory-radar-tooltip-description';
+    tooltip.append(tooltipTitle, tooltipDivider, tooltipDescription);
+
+    let activeIcon = null;
+    let tooltipTimerId = 0;
+    let tooltipExitTimerId = 0;
+    let tooltipShowFrameId = 0;
+    let documentDismissHandlersBound = false;
+
+    const clearTooltipTimer = () => {
+      if (!tooltipTimerId) {
+        return;
+      }
+
+      window.clearTimeout(tooltipTimerId);
+      tooltipTimerId = 0;
+    };
+
+    const clearTooltipExitTimer = () => {
+      if (!tooltipExitTimerId) {
+        return;
+      }
+
+      window.clearTimeout(tooltipExitTimerId);
+      tooltipExitTimerId = 0;
+    };
+
+    const clearTooltipShowFrame = () => {
+      if (!tooltipShowFrameId) {
+        return;
+      }
+
+      window.cancelAnimationFrame(tooltipShowFrameId);
+      tooltipShowFrameId = 0;
+    };
+
+    const handleViewportChange = () => {
+      if (!(activeIcon instanceof HTMLElement) || tooltip.hidden) {
+        return;
+      }
+
+      const chartRect = barsChart.getBoundingClientRect();
+      const iconRect = activeIcon.getBoundingClientRect();
+
+      if (!chartRect.width || !chartRect.height || !iconRect.width || !iconRect.height) {
+        return;
+      }
+
+      const viewportWidth = Math.max(
+        320,
+        window.innerWidth || document.documentElement.clientWidth || chartRect.width
+      );
+      const tooltipWidth = Math.max(152, Math.min(208, viewportWidth - 16));
+      tooltip.style.width = `${tooltipWidth}px`;
+
+      const tooltipHeight = tooltip.offsetHeight || 72;
+      const iconCenterViewportX = iconRect.left + iconRect.width / 2;
+      const desiredLeftViewport = iconCenterViewportX - tooltipWidth / 2;
+      const minViewportLeft = 8;
+      const maxViewportLeft = Math.max(
+        minViewportLeft,
+        viewportWidth - tooltipWidth - 8
+      );
+      const clampedLeftViewport = Math.min(
+        maxViewportLeft,
+        Math.max(minViewportLeft, desiredLeftViewport)
+      );
+      const desiredTopViewport = iconRect.top - tooltipHeight - 12;
+      const topViewport = Math.max(8, desiredTopViewport);
+      const left = clampedLeftViewport - chartRect.left;
+      const top = topViewport - chartRect.top;
+      const arrowX = Math.max(
+        14,
+        Math.min(tooltipWidth - 14, iconCenterViewportX - clampedLeftViewport)
+      );
+
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${top}px`;
+      tooltip.style.setProperty('--menu-detail-sensory-tooltip-arrow-x', `${arrowX}px`);
+    };
+
+    const detachDocumentDismissHandlers = () => {
+      if (!documentDismissHandlersBound) {
+        return;
+      }
+
+      documentDismissHandlersBound = false;
+      document.removeEventListener('pointerdown', handleDocumentPointerDown, true);
+      document.removeEventListener('focusin', handleDocumentFocusIn, true);
+      window.removeEventListener('resize', handleViewportChange);
+      window.removeEventListener('scroll', handleViewportChange, true);
+    };
+
+    const hideTooltip = ({ immediate = false } = {}) => {
+      clearTooltipTimer();
+      detachDocumentDismissHandlers();
+      clearTooltipShowFrame();
+
+      if (activeIcon instanceof HTMLElement) {
+        activeIcon.classList.remove('is-tooltip-active');
+        activeIcon.setAttribute('aria-expanded', 'false');
+      }
+
+      activeIcon = null;
+      tooltip.classList.remove('is-visible');
+      tooltip.setAttribute('aria-hidden', 'true');
+
+      clearTooltipExitTimer();
+
+      if (immediate) {
+        tooltip.hidden = true;
+        return;
+      }
+
+      tooltipExitTimerId = window.setTimeout(() => {
+        tooltip.hidden = true;
+        tooltipExitTimerId = 0;
+      }, DETAIL_SENSORY_TOOLTIP_EXIT_MS);
+    };
+
+    const handleDocumentPointerDown = (event) => {
+      const target = event.target;
+
+      if (
+        activeIcon instanceof Node &&
+        target instanceof Node &&
+        (target === activeIcon || activeIcon.contains(target))
+      ) {
+        return;
+      }
+
+      hideTooltip();
+    };
+
+    const handleDocumentFocusIn = (event) => {
+      const target = event.target;
+
+      if (
+        activeIcon instanceof Node &&
+        target instanceof Node &&
+        (target === activeIcon || activeIcon.contains(target))
+      ) {
+        return;
+      }
+
+      hideTooltip();
+    };
+
+    const attachDocumentDismissHandlers = () => {
+      if (documentDismissHandlersBound) {
+        return;
+      }
+
+      documentDismissHandlersBound = true;
+      document.addEventListener('pointerdown', handleDocumentPointerDown, true);
+      document.addEventListener('focusin', handleDocumentFocusIn, true);
+      window.addEventListener('resize', handleViewportChange);
+      window.addEventListener('scroll', handleViewportChange, true);
+    };
+
+    const scheduleTooltipHide = () => {
+      clearTooltipTimer();
+      tooltipTimerId = window.setTimeout(() => {
+        hideTooltip();
+      }, DETAIL_SENSORY_TOOLTIP_AUTO_CLOSE_MS);
+    };
+
+    const showTooltip = (icon, copy) => {
+      if (!(icon instanceof HTMLElement)) {
+        return;
+      }
+
+      if (activeIcon instanceof HTMLElement && activeIcon !== icon) {
+        activeIcon.classList.remove('is-tooltip-active');
+        activeIcon.setAttribute('aria-expanded', 'false');
+      }
+
+      const resolvedTitle = normalizeText(copy?.title || icon.dataset.axisLabel || 'Atributo');
+      const resolvedDescription = normalizeText(
+        copy?.description ||
+          `Cómo se percibe ${normalizeText(icon.dataset.axisLabel).toLowerCase()} en el plato.`
+      );
+
+      activeIcon = icon;
+      tooltipTitle.textContent = resolvedTitle;
+      tooltipDescription.textContent = resolvedDescription;
+      clearTooltipExitTimer();
+      clearTooltipShowFrame();
+      tooltip.hidden = false;
+      tooltip.setAttribute('aria-hidden', 'false');
+      tooltip.classList.remove('is-visible');
+      handleViewportChange();
+
+      tooltipShowFrameId = window.requestAnimationFrame(() => {
+        tooltipShowFrameId = window.requestAnimationFrame(() => {
+          if (!tooltip.hidden) {
+            tooltip.classList.add('is-visible');
+          }
+          tooltipShowFrameId = 0;
+        });
+      });
+
+      icon.classList.add('is-tooltip-active');
+      icon.setAttribute('aria-expanded', 'true');
+      attachDocumentDismissHandlers();
+      scheduleTooltipHide();
+    };
+
+    const tickValues = [];
+    const tickStep = Math.max(1, Math.round(model.scaleMax / 5));
+    for (let value = model.scaleMax; value >= 2; value -= tickStep) {
+      tickValues.push(value);
+    }
+    if (!tickValues.length || tickValues[0] !== model.scaleMax) {
+      tickValues.unshift(model.scaleMax);
+    }
+
+    tickValues.forEach((value) => {
+      const yRatio = (model.scaleMax - value) / model.scaleMax;
+      const yTick = document.createElement('span');
+      yTick.className = 'menu-page-detail__sensory-bars-y-tick';
+      yTick.textContent = String(value);
+      yTick.style.setProperty('--menu-detail-sensory-y-ratio', String(yRatio));
+      yAxis.appendChild(yTick);
+
+      const gridLine = document.createElement('span');
+      gridLine.className = 'menu-page-detail__sensory-bars-grid-line';
+      gridLine.style.setProperty('--menu-detail-sensory-y-ratio', String(yRatio));
+      barsGrid.appendChild(gridLine);
+    });
+
+    model.axes.forEach((axis) => {
+      const valueRatio = Math.max(0, Math.min(1, axis.value / model.scaleMax));
+      const barPresence = 0.2 + valueRatio * 0.8;
+      const axisTooltipCopy = DETAIL_SENSORY_AXIS_TOOLTIP_COPY[axis.id] || {
+        title: axis.label,
+        description: `Cómo se percibe ${axis.label.toLowerCase()} en el plato.`,
+      };
+
+      const column = document.createElement('div');
+      column.className = 'menu-page-detail__sensory-bars-column';
+      column.setAttribute('role', 'listitem');
+      column.setAttribute(
+        'aria-label',
+        `${axis.label}: ${axis.value} de ${model.scaleMax}`
+      );
+
+      const barFill = document.createElement('div');
+      barFill.className = 'menu-page-detail__sensory-bars-fill';
+      barFill.style.height = `${Math.max(4, valueRatio * 100)}%`;
+      barFill.style.opacity = barPresence.toFixed(3);
+      barFill.dataset.finalOpacity = barPresence.toFixed(3);
+      barFill.style.transformOrigin = '50% 100%';
+      column.appendChild(barFill);
+      barFillNodes.push(barFill);
+      barsColumns.appendChild(column);
+
+      const iconCell = document.createElement('div');
+      iconCell.className = 'menu-page-detail__sensory-bars-icon-cell menu-page-detail__sensory-bars-icon-button';
+      iconCell.dataset.axisId = axis.id;
+      iconCell.dataset.axisLabel = axis.label;
+      iconCell.setAttribute(
+        'aria-label',
+        `${axisTooltipCopy.title}. ${axisTooltipCopy.description}`
+      );
+      iconCell.setAttribute('tabindex', '0');
+      iconCell.setAttribute('role', 'button');
+      iconCell.setAttribute('aria-haspopup', 'true');
+      iconCell.setAttribute('aria-expanded', 'false');
+      iconCell.setAttribute('aria-describedby', tooltip.id);
+      const iconPath = toAbsoluteAssetPath(
+        DETAIL_SENSORY_RADAR_ICON_PATHS[axis.id] || ''
+      );
+
+      if (iconPath) {
+        const icon = document.createElement('img');
+        icon.className = 'menu-page-detail__sensory-bars-icon';
+        icon.src = iconPath;
+        icon.alt = '';
+        icon.width = 22;
+        icon.height = 22;
+        icon.loading = 'lazy';
+        icon.decoding = 'async';
+        iconCell.appendChild(icon);
+      } else {
+        const fallback = document.createElement('span');
+        fallback.className = 'menu-page-detail__sensory-bars-icon-fallback';
+        fallback.textContent = normalizeText(axis.label).charAt(0) || '•';
+        iconCell.appendChild(fallback);
+      }
+
+      iconCell.addEventListener('click', (event) => {
+        event.preventDefault();
+
+        if (activeIcon === iconCell && !tooltip.hidden) {
+          hideTooltip();
+          return;
+        }
+
+        showTooltip(iconCell, axisTooltipCopy);
+      });
+      iconCell.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          showTooltip(iconCell, axisTooltipCopy);
+          return;
+        }
+
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          hideTooltip();
+          if (typeof iconCell.blur === 'function') {
+            iconCell.blur();
+          }
+        }
+      });
+      iconCell.addEventListener('mouseleave', () => {
+        if (activeIcon === iconCell) {
+          hideTooltip();
+        }
+      });
+      iconCell.addEventListener('blur', () => {
+        window.setTimeout(() => {
+          if (activeIcon === iconCell && document.activeElement !== iconCell) {
+            hideTooltip();
+          }
+        }, 0);
+      });
+
+      barsIcons.appendChild(iconCell);
+      barIconNodes.push(iconCell);
+    });
+
+    barsPlot.append(barsGrid, barsColumns);
+    barsMain.append(barsPlot, barsIcons);
+    barsChart.append(yAxis, barsMain, tooltip);
+
+    let barsFillAnimations = [];
+    let barsIconAnimations = [];
+
+    const clearBarsRevealAnimations = () => {
+      barsFillAnimations.forEach((animation) => animation?.cancel());
+      barsIconAnimations.forEach((animation) => animation?.cancel());
+      barsFillAnimations = [];
+      barsIconAnimations = [];
+    };
+
+    const applyBarsFinalVisualState = () => {
+      barFillNodes.forEach((barFill) => {
+        barFill.style.removeProperty('transform');
+        barFill.style.opacity = barFill.dataset.finalOpacity || '1';
+        barFill.style.removeProperty('will-change');
+      });
+
+      barIconNodes.forEach((iconCell) => {
+        iconCell.style.opacity = '1';
+        iconCell.style.removeProperty('will-change');
+      });
+    };
+
+    detailSensoryBarsAnimationController = {
+      reveal: ({ immediate = false } = {}) => {
+        clearBarsRevealAnimations();
+
+        const prefersReducedMotion =
+          typeof window.matchMedia === 'function' &&
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (immediate || prefersReducedMotion) {
+          applyBarsFinalVisualState();
+          return;
+        }
+
+        barFillNodes.forEach((barFill) => {
+          barFill.style.transform = 'scaleY(0)';
+          barFill.style.opacity = '0';
+        });
+
+        barIconNodes.forEach((iconCell) => {
+          iconCell.style.opacity = '0';
+        });
+
+        barFillNodes.forEach((barFill, axisIndex) => {
+          const parsedOpacity = Number.parseFloat(barFill.dataset.finalOpacity || '1');
+          const finalOpacity = Number.isFinite(parsedOpacity) ? parsedOpacity : 1;
+          barFill.style.willChange = 'transform, opacity';
+
+          const fillAnimation = barFill.animate(
+            [
+              { transform: 'scaleY(0)', opacity: 0 },
+              { transform: 'scaleY(1)', opacity: finalOpacity },
+            ],
+            {
+              duration: DETAIL_SENSORY_BARS_REVEAL_MS,
+              delay: axisIndex * DETAIL_SENSORY_BARS_STAGGER_MS,
+              easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+              fill: 'forwards',
+            }
+          );
+
+          fillAnimation.onfinish = () => {
+            barFill.style.removeProperty('will-change');
+          };
+          fillAnimation.oncancel = () => {
+            barFill.style.removeProperty('will-change');
+          };
+
+          barsFillAnimations.push(fillAnimation);
+        });
+
+        barIconNodes.forEach((iconCell, axisIndex) => {
+          iconCell.style.willChange = 'opacity';
+
+          const iconAnimation = iconCell.animate(
+            [{ opacity: 0 }, { opacity: 1 }],
+            {
+              duration: 460,
+              delay:
+                240 +
+                axisIndex * Math.max(30, Math.round(DETAIL_SENSORY_BARS_STAGGER_MS * 0.8)),
+              easing: DETAIL_SENSORY_VIEW_EASE,
+              fill: 'forwards',
+            }
+          );
+
+          iconAnimation.onfinish = () => {
+            iconCell.style.removeProperty('will-change');
+          };
+          iconAnimation.oncancel = () => {
+            iconCell.style.removeProperty('will-change');
+          };
+
+          barsIconAnimations.push(iconAnimation);
+        });
+      },
+      destroy: () => {
+        clearBarsRevealAnimations();
+        applyBarsFinalVisualState();
+      },
+    };
+
+    detailSensoryBarsTooltipController = {
+      hide: () => hideTooltip(),
+      destroy: () => hideTooltip({ immediate: true }),
+    };
+    detailSensoryGroups.appendChild(barsChart);
+
+    return true;
+  };
+
+  const renderDetailSensoryRadar = (model) => {
+    if (!(detailSensoryRadar instanceof HTMLElement)) {
+      return false;
+    }
+
+    clearDetailSensoryRadarTooltipController();
+    clearDetailSensoryRadarAnimationController();
+
+    const chartWidth = 440;
+    const chartHeight = 404;
+    const iconSize = 24;
+    const iconHalf = iconSize / 2;
+    const iconInsetX = 28;
+    const iconInsetY = 10;
+    const iconGapFromGrid = 12;
+    const centerX = chartWidth / 2;
+    const centerY = chartHeight / 2;
+    // Fill more of the SVG while preserving a small safety margin for the icon ring.
+    const labelRadius = Math.min(
+      centerX - iconInsetX - iconHalf,
+      centerY - iconInsetY - iconHalf
+    );
+    const outerRadius = labelRadius - iconHalf - iconGapFromGrid;
+    const angleStep = (Math.PI * 2) / model.axes.length;
+    const ringLevels = getDetailSensoryRadarLevels(model.scaleMax);
+    const svg = createSvgNode('svg', {
+      class: 'menu-page-detail__sensory-radar-svg',
+      viewBox: `0 0 ${chartWidth} ${chartHeight}`,
+      'aria-hidden': 'true',
+      focusable: 'false',
+    });
+    const tooltip = document.createElement('div');
+    tooltip.className = 'menu-page-detail__sensory-radar-tooltip';
+    tooltip.id = 'menu-detail-sensory-tooltip';
+    tooltip.setAttribute('role', 'tooltip');
+    tooltip.setAttribute('aria-hidden', 'true');
+    tooltip.hidden = true;
+
+    const tooltipTitle = document.createElement('p');
+    tooltipTitle.className = 'menu-page-detail__sensory-radar-tooltip-title';
+    const tooltipDivider = document.createElement('div');
+    tooltipDivider.className = 'menu-page-detail__sensory-radar-tooltip-divider';
+    tooltipDivider.setAttribute('aria-hidden', 'true');
+    const tooltipDescription = document.createElement('p');
+    tooltipDescription.className = 'menu-page-detail__sensory-radar-tooltip-description';
+    tooltip.append(tooltipTitle, tooltipDivider, tooltipDescription);
+    const radarIconNodes = [];
+
+    let activeIcon = null;
+    let tooltipTimerId = 0;
+    let tooltipExitTimerId = 0;
+    let tooltipShowFrameId = 0;
+    let documentDismissHandlersBound = false;
+
+    const clearTooltipTimer = () => {
+      if (!tooltipTimerId) {
+        return;
+      }
+
+      window.clearTimeout(tooltipTimerId);
+      tooltipTimerId = 0;
+    };
+
+    const clearTooltipExitTimer = () => {
+      if (!tooltipExitTimerId) {
+        return;
+      }
+
+      window.clearTimeout(tooltipExitTimerId);
+      tooltipExitTimerId = 0;
+    };
+
+    const clearTooltipShowFrame = () => {
+      if (!tooltipShowFrameId) {
+        return;
+      }
+
+      window.cancelAnimationFrame(tooltipShowFrameId);
+      tooltipShowFrameId = 0;
+    };
+
+    const handleViewportChange = () => {
+      if (!(activeIcon instanceof SVGElement) || tooltip.hidden) {
+        return;
+      }
+
+      const radarRect = detailSensoryRadar.getBoundingClientRect();
+      const iconRect = activeIcon.getBoundingClientRect();
+
+      if (!radarRect.width || !radarRect.height || !iconRect.width || !iconRect.height) {
+        return;
+      }
+
+      const viewportWidth = Math.max(
+        320,
+        window.innerWidth || document.documentElement.clientWidth || radarRect.width
+      );
+      const tooltipWidth = Math.max(152, Math.min(208, viewportWidth - 16));
+      tooltip.style.width = `${tooltipWidth}px`;
+
+      const tooltipHeight = tooltip.offsetHeight || 72;
+      const iconCenterViewportX = iconRect.left + iconRect.width / 2;
+      const desiredLeftViewport = iconCenterViewportX - tooltipWidth / 2;
+      const minViewportLeft = 8;
+      const maxViewportLeft = Math.max(
+        minViewportLeft,
+        viewportWidth - tooltipWidth - 8
+      );
+      const clampedLeftViewport = Math.min(
+        maxViewportLeft,
+        Math.max(minViewportLeft, desiredLeftViewport)
+      );
+      const desiredTopViewport = iconRect.top - tooltipHeight - 12;
+      const topViewport = Math.max(8, desiredTopViewport);
+      const left = clampedLeftViewport - radarRect.left;
+      const top = topViewport - radarRect.top;
+      const arrowX = Math.max(
+        14,
+        Math.min(tooltipWidth - 14, iconCenterViewportX - clampedLeftViewport)
+      );
+
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${top}px`;
+      tooltip.style.setProperty('--menu-detail-sensory-tooltip-arrow-x', `${arrowX}px`);
+    };
+
+    const detachDocumentDismissHandlers = () => {
+      if (!documentDismissHandlersBound) {
+        return;
+      }
+
+      documentDismissHandlersBound = false;
+      document.removeEventListener('pointerdown', handleDocumentPointerDown, true);
+      document.removeEventListener('focusin', handleDocumentFocusIn, true);
+      window.removeEventListener('resize', handleViewportChange);
+      window.removeEventListener('scroll', handleViewportChange, true);
+    };
+
+    const hideTooltip = ({ immediate = false } = {}) => {
+      clearTooltipTimer();
+      detachDocumentDismissHandlers();
+      clearTooltipShowFrame();
+
+      if (activeIcon instanceof SVGElement) {
+        activeIcon.classList.remove('is-tooltip-active');
+        activeIcon.setAttribute('aria-expanded', 'false');
+      }
+
+      activeIcon = null;
+      tooltip.classList.remove('is-visible');
+      tooltip.setAttribute('aria-hidden', 'true');
+
+      clearTooltipExitTimer();
+
+      if (immediate) {
+        tooltip.hidden = true;
+        return;
+      }
+
+      tooltipExitTimerId = window.setTimeout(() => {
+        tooltip.hidden = true;
+        tooltipExitTimerId = 0;
+      }, DETAIL_SENSORY_TOOLTIP_EXIT_MS);
+    };
+
+    const handleDocumentPointerDown = (event) => {
+      const target = event.target;
+
+      if (
+        activeIcon instanceof Node &&
+        target instanceof Node &&
+        (target === activeIcon || activeIcon.contains(target))
+      ) {
+        return;
+      }
+
+      hideTooltip();
+    };
+
+    const handleDocumentFocusIn = (event) => {
+      const target = event.target;
+
+      if (
+        activeIcon instanceof Node &&
+        target instanceof Node &&
+        (target === activeIcon || activeIcon.contains(target))
+      ) {
+        return;
+      }
+
+      hideTooltip();
+    };
+
+    const attachDocumentDismissHandlers = () => {
+      if (documentDismissHandlersBound) {
+        return;
+      }
+
+      documentDismissHandlersBound = true;
+      document.addEventListener('pointerdown', handleDocumentPointerDown, true);
+      document.addEventListener('focusin', handleDocumentFocusIn, true);
+      window.addEventListener('resize', handleViewportChange);
+      window.addEventListener('scroll', handleViewportChange, true);
+    };
+
+    const scheduleTooltipHide = () => {
+      clearTooltipTimer();
+      tooltipTimerId = window.setTimeout(() => {
+        hideTooltip();
+      }, DETAIL_SENSORY_TOOLTIP_AUTO_CLOSE_MS);
+    };
+
+    const showTooltip = (icon, copy) => {
+      if (!(icon instanceof SVGElement)) {
+        return;
+      }
+
+      if (activeIcon instanceof SVGElement && activeIcon !== icon) {
+        activeIcon.classList.remove('is-tooltip-active');
+        activeIcon.setAttribute('aria-expanded', 'false');
+      }
+
+      const resolvedTitle = normalizeText(copy?.title || icon.dataset.axisLabel || 'Atributo');
+      const resolvedDescription = normalizeText(
+        copy?.description ||
+          `Cómo se percibe ${normalizeText(icon.dataset.axisLabel).toLowerCase()} en el plato.`
+      );
+
+      activeIcon = icon;
+      tooltipTitle.textContent = resolvedTitle;
+      tooltipDescription.textContent = resolvedDescription;
+      clearTooltipExitTimer();
+      clearTooltipShowFrame();
+      tooltip.hidden = false;
+      tooltip.setAttribute('aria-hidden', 'false');
+      tooltip.classList.remove('is-visible');
+      handleViewportChange();
+
+      tooltipShowFrameId = window.requestAnimationFrame(() => {
+        tooltipShowFrameId = window.requestAnimationFrame(() => {
+          if (!tooltip.hidden) {
+            tooltip.classList.add('is-visible');
+          }
+          tooltipShowFrameId = 0;
+        });
+      });
+
+      icon.classList.add('is-tooltip-active');
+      icon.setAttribute('aria-expanded', 'true');
+      attachDocumentDismissHandlers();
+      scheduleTooltipHide();
+    };
+
+    const radarSummary = model.axes
+      .map((axis) => `${axis.label} ${axis.value} de ${model.scaleMax}`)
+      .join(', ');
+
+    detailSensoryRadar.setAttribute('role', 'group');
+    detailSensoryRadar.setAttribute(
+      'aria-label',
+      `Perfil sensorial en radar. ${radarSummary}.`
+    );
+
+    const axisPoints = model.axes.map((axis, axisIndex) => {
+      const angle = -Math.PI / 2 + angleStep * axisIndex;
+      const outerPoint = toDetailSensoryRadarPoint({
+        centerX,
+        centerY,
+        radius: outerRadius,
+        angle,
+      });
+      const labelPoint = toDetailSensoryRadarPoint({
+        centerX,
+        centerY,
+        radius: labelRadius,
+        angle,
+      });
+      const dataPoint = toDetailSensoryRadarPoint({
+        centerX,
+        centerY,
+        radius: outerRadius * (axis.value / model.scaleMax),
+        angle,
+      });
+
+      return {
+        ...axis,
+        angle,
+        outerPoint,
+        labelPoint,
+        dataPoint,
+        iconPath: toAbsoluteAssetPath(DETAIL_SENSORY_RADAR_ICON_PATHS[axis.id] || ''),
+      };
+    });
+
+    ringLevels.forEach((level) => {
+      const ringPoints = axisPoints.map((axis) =>
+        toDetailSensoryRadarPoint({
+          centerX,
+          centerY,
+          radius: outerRadius * (level / model.scaleMax),
+          angle: axis.angle,
+        })
+      );
+      const ring = createSvgNode('polygon', {
+        class:
+          level === model.scaleMax
+            ? 'menu-page-detail__sensory-radar-ring is-outer'
+            : 'menu-page-detail__sensory-radar-ring',
+        points: toDetailSensoryRadarPointsString(ringPoints),
+      });
+      svg.append(ring);
+    });
+
+    axisPoints.forEach((axis) => {
+      const axisLine = createSvgNode('line', {
+        class: 'menu-page-detail__sensory-radar-axis',
+        x1: centerX,
+        y1: centerY,
+        x2: axis.outerPoint.x,
+        y2: axis.outerPoint.y,
+      });
+      svg.appendChild(axisLine);
+    });
+
+    const areaPath = toDetailSensoryRadarPath(
+      axisPoints.map((axis) => axis.dataPoint)
+    );
+    const glow = createSvgNode('path', {
+      class: 'menu-page-detail__sensory-radar-glow',
+      d: areaPath,
+    });
+    svg.appendChild(glow);
+
+    const area = createSvgNode('path', {
+      class: 'menu-page-detail__sensory-radar-area',
+      d: areaPath,
+    });
+    svg.appendChild(area);
+
+    axisPoints.forEach((axis) => {
+      if (axis.iconPath) {
+        const axisTooltipCopy = DETAIL_SENSORY_AXIS_TOOLTIP_COPY[axis.id] || {
+          title: axis.label,
+          description: `Cómo se percibe ${axis.label.toLowerCase()} en el plato.`,
+        };
+        const icon = createSvgNode('image', {
+          class: 'menu-page-detail__sensory-radar-icon',
+          href: axis.iconPath,
+          x: axis.labelPoint.x - iconHalf,
+          y: axis.labelPoint.y - iconHalf,
+          width: iconSize,
+          height: iconSize,
+          preserveAspectRatio: 'xMidYMid meet',
+        });
+        icon.dataset.axisId = axis.id;
+        icon.dataset.axisLabel = axis.label;
+        icon.setAttribute(
+          'aria-label',
+          `${axisTooltipCopy.title}. ${axisTooltipCopy.description}`
+        );
+        icon.setAttribute('tabindex', '0');
+        icon.setAttribute('focusable', 'true');
+        icon.setAttribute('role', 'button');
+        icon.setAttribute('aria-haspopup', 'true');
+        icon.setAttribute('aria-expanded', 'false');
+        icon.setAttribute('aria-describedby', tooltip.id);
+        icon.addEventListener('click', (event) => {
+          event.preventDefault();
+
+          if (activeIcon === icon && !tooltip.hidden) {
+            hideTooltip();
+            return;
+          }
+
+          showTooltip(icon, axisTooltipCopy);
+        });
+        icon.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            showTooltip(icon, axisTooltipCopy);
+            return;
+          }
+
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            hideTooltip();
+            if (typeof icon.blur === 'function') {
+              icon.blur();
+            }
+          }
+        });
+        icon.addEventListener('mouseleave', () => {
+          if (activeIcon === icon) {
+            hideTooltip();
+          }
+        });
+        icon.addEventListener('blur', () => {
+          window.setTimeout(() => {
+            if (activeIcon === icon && document.activeElement !== icon) {
+              hideTooltip();
+            }
+          }, 0);
+        });
+        svg.appendChild(icon);
+        radarIconNodes.push(icon);
+      }
+    });
+
+    const centerDot = createSvgNode('circle', {
+      class: 'menu-page-detail__sensory-radar-center',
+      cx: centerX,
+      cy: centerY,
+      r: 3,
+    });
+    svg.appendChild(centerDot);
+
+    detailSensoryRadar.append(svg, tooltip);
+
+    let radarRevealFrameId = 0;
+    let radarIconRevealAnimations = [];
+
+    const clampUnit = (value) => Math.min(1, Math.max(0, value));
+    const easeOutReveal = (value) => 1 - Math.pow(1 - clampUnit(value), 3);
+
+    const clearRadarRevealAnimations = () => {
+      if (radarRevealFrameId) {
+        window.cancelAnimationFrame(radarRevealFrameId);
+        radarRevealFrameId = 0;
+      }
+
+      radarIconRevealAnimations.forEach((animation) => animation?.cancel());
+      radarIconRevealAnimations = [];
+    };
+
+    const setRadarAreaFromProgress = (axisProgressList) => {
+      const nextAreaPath = toDetailSensoryRadarPath(
+        axisPoints.map((axis, axisIndex) => {
+          const axisProgress = clampUnit(axisProgressList[axisIndex] || 0);
+          return toDetailSensoryRadarPoint({
+            centerX,
+            centerY,
+            radius: outerRadius * (axis.value / model.scaleMax) * axisProgress,
+            angle: axis.angle,
+          });
+        })
+      );
+
+      area.setAttribute('d', nextAreaPath);
+      glow.setAttribute('d', nextAreaPath);
+    };
+
+    const applyRadarFinalVisualState = () => {
+      area.setAttribute('d', areaPath);
+      glow.setAttribute('d', areaPath);
+      area.style.removeProperty('opacity');
+      glow.style.removeProperty('opacity');
+
+      radarIconNodes.forEach((icon) => {
+        icon.style.opacity = '1';
+        icon.style.removeProperty('transform');
+        icon.style.removeProperty('will-change');
+      });
+    };
+
+    detailSensoryRadarAnimationController = {
+      reveal: ({ immediate = false } = {}) => {
+        clearRadarRevealAnimations();
+
+        const prefersReducedMotion =
+          typeof window.matchMedia === 'function' &&
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (immediate || prefersReducedMotion) {
+          applyRadarFinalVisualState();
+          return;
+        }
+
+        setRadarAreaFromProgress(axisPoints.map(() => 0));
+        area.style.opacity = '0.2';
+        glow.style.opacity = '0.18';
+        const revealedIconsByAxis = axisPoints.map(() => false);
+
+        radarIconNodes.forEach((icon) => {
+          icon.style.opacity = '0';
+          icon.style.transform = 'scale(0.9)';
+          icon.style.removeProperty('will-change');
+        });
+
+        const revealRadarIcon = (axisIndex) => {
+          if (revealedIconsByAxis[axisIndex]) {
+            return;
+          }
+
+          const icon = radarIconNodes[axisIndex];
+          if (!(icon instanceof SVGElement)) {
+            revealedIconsByAxis[axisIndex] = true;
+            return;
+          }
+
+          revealedIconsByAxis[axisIndex] = true;
+          icon.style.willChange = 'opacity, transform';
+
+          const iconAnimation = icon.animate(
+            [
+              { opacity: 0, transform: 'scale(0.9)' },
+              { opacity: 1, transform: 'scale(1.02)', offset: 0.78 },
+              { opacity: 1, transform: 'scale(1)' },
+            ],
+            {
+              duration: 560,
+              easing: 'cubic-bezier(0.2, 0.85, 0.32, 1)',
+              fill: 'forwards',
+            }
+          );
+
+          iconAnimation.onfinish = () => {
+            icon.style.opacity = '1';
+            icon.style.removeProperty('transform');
+            icon.style.removeProperty('will-change');
+            iconAnimation.cancel();
+          };
+          iconAnimation.oncancel = () => {
+            icon.style.removeProperty('will-change');
+          };
+
+          radarIconRevealAnimations.push(iconAnimation);
+        };
+
+        const axisDuration = DETAIL_SENSORY_RADAR_REVEAL_MS;
+        const axisStagger = DETAIL_SENSORY_RADAR_STAGGER_MS;
+        const maxAxisIndex = Math.max(0, axisPoints.length - 1);
+        const revealDuration = axisDuration + axisStagger * maxAxisIndex;
+        const revealStart = window.performance.now();
+
+        const tickRadarReveal = (frameTime) => {
+          const elapsed = frameTime - revealStart;
+          const axisProgressList = axisPoints.map((_, axisIndex) => {
+            const axisElapsed = elapsed - axisStagger * axisIndex;
+            const axisLinearProgress = axisElapsed / axisDuration;
+            return easeOutReveal(axisLinearProgress);
+          });
+
+          axisProgressList.forEach((axisProgress, axisIndex) => {
+            if (axisProgress >= 0.96) {
+              revealRadarIcon(axisIndex);
+            }
+          });
+
+          setRadarAreaFromProgress(axisProgressList);
+
+          const overallProgress = easeOutReveal(elapsed / revealDuration);
+          area.style.opacity = String(0.2 + overallProgress * 0.8);
+          glow.style.opacity = String(0.18 + overallProgress * 0.54);
+
+          if (elapsed < revealDuration + 24) {
+            radarRevealFrameId = window.requestAnimationFrame(tickRadarReveal);
+            return;
+          }
+
+          radarRevealFrameId = 0;
+          applyRadarFinalVisualState();
+        };
+
+        radarRevealFrameId = window.requestAnimationFrame(tickRadarReveal);
+      },
+      destroy: () => {
+        clearRadarRevealAnimations();
+        applyRadarFinalVisualState();
+      },
+    };
+
+    detailSensoryRadarTooltipController = {
+      hide: () => hideTooltip(),
+      destroy: () => hideTooltip({ immediate: true }),
+    };
+    return true;
+  };
+
+  const renderDetailSensoryProfile = (profile) => {
+    if (
+      !(detailSensorySection instanceof HTMLElement) ||
+      !(detailSensoryViewTabsRoot instanceof HTMLElement) ||
+      !(detailSensoryBarsPanel instanceof HTMLElement) ||
+      !(detailSensoryRadarPanel instanceof HTMLElement) ||
+      !(detailSensoryGroups instanceof HTMLElement) ||
+      !(detailSensoryRadar instanceof HTMLElement) ||
+      !(detailSensorySummary instanceof HTMLElement)
+    ) {
+      return false;
+    }
+
+    clearDetailSensoryProfile();
+
+    const model = buildDetailSensoryProfileModel(profile);
+
+    if (!model) {
+      return false;
+    }
+
+    if (!renderDetailSensoryBars(model) || !renderDetailSensoryRadar(model)) {
+      clearDetailSensoryProfile();
+      return false;
+    }
+
+    state.detailSensoryView = DEFAULT_DETAIL_SENSORY_VIEW;
+    detailSensoryViewTabsRoot.hidden = false;
+    detailSensorySummary.textContent = model.summary;
+    detailSensorySummary.hidden = false;
+    detailSensorySection.hidden = false;
+    syncDetailSensoryViewState();
+    return true;
+  };
+
+  const syncDetailPairingsSection = (itemId) => {
+    const normalizedItemId = normalizeText(itemId);
+    const shouldShowPairings = DETAIL_V1_PAIRING_ITEM_IDS.has(normalizedItemId);
+
+    if (detailPairingsSection instanceof HTMLElement) {
+      detailPairingsSection.hidden = !shouldShowPairings;
+    }
+
+    if (detailPairingsDivider instanceof HTMLElement) {
+      detailPairingsDivider.hidden = !shouldShowPairings;
+    }
+
+    if (detailPairingCta instanceof HTMLButtonElement) {
+      detailPairingCta.disabled = !shouldShowPairings;
+    }
+
+    return shouldShowPairings;
+  };
+
   const resolveItemMedia = (item) => {
     const fallback = toAbsoluteAssetPath(item?.image);
     const fallbackAlt = normalizeText(item?.name || item?.id);
@@ -1713,6 +3877,7 @@
         card: fallback,
         hover: '',
         detail: fallback,
+        gallery: [],
         alt: fallbackAlt,
       };
     }
@@ -1720,6 +3885,12 @@
     const card = toAbsoluteAssetPath(mediaApi.get(item.id, 'card'));
     const hover = toAbsoluteAssetPath(mediaApi.get(item.id, 'hover'));
     const detail = toAbsoluteAssetPath(mediaApi.get(item.id, 'modal'));
+    const gallery = Array.isArray(mediaApi.getGallery?.(item.id))
+      ? mediaApi
+          .getGallery(item.id)
+          .map((path) => toAbsoluteAssetPath(path))
+          .filter(Boolean)
+      : [];
     const alt = normalizeText(mediaApi.getAlt(item.id) || fallbackAlt);
     const fallbackIsConcrete = Boolean(fallback) && !isMenuPlaceholderPath(fallback);
     const cardIsPlaceholder = isMenuPlaceholderPath(card);
@@ -1735,12 +3906,167 @@
       card: resolvedCard,
       hover: hover && hover !== resolvedCard && !isMenuPlaceholderPath(hover) ? hover : '',
       detail: resolvedDetail,
+      gallery,
       alt: alt || fallbackAlt,
     };
   };
 
+  const buildDetailEditorialSlides = (paths = [], fallbackAlt = '') =>
+    (Array.isArray(paths) ? paths : [])
+      .map((path, index) => {
+        const src = toAbsoluteAssetPath(path);
+
+        if (!src) {
+          return null;
+        }
+
+        return {
+          src,
+          alt: fallbackAlt
+            ? `${fallbackAlt} - slide editorial ${index + 1}`
+            : `Slide editorial ${index + 1}`,
+        };
+      })
+      .filter(Boolean);
+
+  const clearDetailEditorialCarousel = () => {
+    if (detailEditorialDotsFrameId) {
+      window.cancelAnimationFrame(detailEditorialDotsFrameId);
+      detailEditorialDotsFrameId = 0;
+    }
+
+    if (detailEditorialTrack instanceof HTMLElement) {
+      detailEditorialTrack.onscroll = null;
+      detailEditorialTrack.scrollLeft = 0;
+      detailEditorialTrack.replaceChildren();
+    }
+
+    if (detailEditorialDots instanceof HTMLElement) {
+      detailEditorialDots.hidden = true;
+      detailEditorialDots.replaceChildren();
+    }
+
+    if (detailEditorialRoot instanceof HTMLElement) {
+      detailEditorialRoot.hidden = true;
+    }
+  };
+
+  const setDetailEditorialActiveDot = (activeIndex) => {
+    if (!(detailEditorialDots instanceof HTMLElement)) {
+      return;
+    }
+
+    const dots = Array.from(
+      detailEditorialDots.querySelectorAll('.menu-page-detail__editorial-dot')
+    ).filter((dot) => dot instanceof HTMLButtonElement);
+
+    dots.forEach((dot, dotIndex) => {
+      const isActive = dotIndex === activeIndex;
+      dot.classList.toggle('is-active', isActive);
+      dot.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      dot.setAttribute('tabindex', isActive ? '0' : '-1');
+      dot.setAttribute('aria-current', isActive ? 'true' : 'false');
+    });
+  };
+
+  const getDetailEditorialActiveIndex = () => {
+    if (!(detailEditorialTrack instanceof HTMLElement)) {
+      return 0;
+    }
+
+    const slideWidth = detailEditorialTrack.clientWidth;
+
+    if (!slideWidth) {
+      return 0;
+    }
+
+    return Math.max(0, Math.round(detailEditorialTrack.scrollLeft / slideWidth));
+  };
+
+  const renderDetailEditorialCarousel = (slides = []) => {
+    if (
+      !(detailEditorialRoot instanceof HTMLElement) ||
+      !(detailEditorialTrack instanceof HTMLElement) ||
+      !(detailEditorialDots instanceof HTMLElement)
+    ) {
+      return false;
+    }
+
+    clearDetailEditorialCarousel();
+
+    if (!Array.isArray(slides) || !slides.length) {
+      return false;
+    }
+
+    const trackFragment = document.createDocumentFragment();
+
+    slides.forEach((slide, index) => {
+      const pane = document.createElement('figure');
+      pane.className = 'menu-page-detail__editorial-slide';
+
+      const image = document.createElement('img');
+      image.className = 'menu-page-detail__editorial-image';
+      image.src = slide.src;
+      image.alt = normalizeText(slide.alt);
+      image.decoding = 'async';
+      image.loading = index === 0 ? 'eager' : 'lazy';
+      image.setAttribute('fetchpriority', index === 0 ? 'high' : 'auto');
+      pane.appendChild(image);
+
+      trackFragment.appendChild(pane);
+    });
+
+    detailEditorialTrack.appendChild(trackFragment);
+    detailEditorialRoot.hidden = false;
+
+    if (slides.length > 1) {
+      const dotsFragment = document.createDocumentFragment();
+
+      slides.forEach((slide, index) => {
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'menu-page-detail__editorial-dot';
+        dot.setAttribute('role', 'tab');
+        dot.setAttribute(
+          'aria-label',
+          `Ver slide ${index + 1} de ${slides.length}`
+        );
+        dot.addEventListener('click', () => {
+          const slideWidth = detailEditorialTrack.clientWidth || 1;
+          detailEditorialTrack.scrollTo({
+            left: slideWidth * index,
+            behavior: reducedMotionQuery.matches ? 'auto' : 'smooth',
+          });
+          setDetailEditorialActiveDot(index);
+        });
+        dotsFragment.appendChild(dot);
+      });
+
+      detailEditorialDots.appendChild(dotsFragment);
+      detailEditorialDots.hidden = false;
+    }
+
+    detailEditorialTrack.scrollLeft = 0;
+    setDetailEditorialActiveDot(0);
+
+    detailEditorialTrack.onscroll = () => {
+      if (detailEditorialDotsFrameId) {
+        return;
+      }
+
+      detailEditorialDotsFrameId = window.requestAnimationFrame(() => {
+        detailEditorialDotsFrameId = 0;
+        setDetailEditorialActiveDot(getDetailEditorialActiveIndex());
+      });
+    };
+
+    return true;
+  };
+
   const toCardViewModel = (item) => {
     const media = resolveItemMedia(item);
+    const isAvailable = item?.available !== false;
+    const soldOutReason = normalizeText(item?.soldOutReason);
 
     return {
       id: normalizeText(item?.id),
@@ -1749,15 +4075,36 @@
         normalizeText(item?.descriptionShort) ||
         normalizeText(item?.descriptionLong),
       price: normalizeText(item?.priceFormatted),
-      available: item?.available !== false,
+      available: isAvailable,
+      meta: !isAvailable ? soldOutReason || 'No disponible' : '',
       image: media.card,
       hoverImage: media.hover,
       imageAlt: media.alt,
     };
   };
 
-  const toDetailViewModel = (item) => {
+  const toDetailViewModel = async (item) => {
     const media = resolveItemMedia(item);
+    const editorialAltBase = normalizeText(media.alt || item?.name || item?.id);
+    let editorialGallery = Array.isArray(media.gallery) ? media.gallery.slice() : [];
+
+    if (!editorialGallery.length && mediaApi?.getEditorialGallery) {
+      try {
+        const detectedGallery = await mediaApi.getEditorialGallery(item?.id);
+        if (Array.isArray(detectedGallery) && detectedGallery.length) {
+          editorialGallery = detectedGallery
+            .map((path) => toAbsoluteAssetPath(path))
+            .filter(Boolean);
+        }
+      } catch (error) {
+        console.warn(
+          '[menu-page] No se pudo resolver la galería editorial para el detalle.',
+          error
+        );
+      }
+    }
+
+    const editorialSlides = buildDetailEditorialSlides(editorialGallery, editorialAltBase);
     const badges = Array.isArray(item?.public_badges?.flat)
       ? item.public_badges.flat
       : [];
@@ -1774,8 +4121,10 @@
       badges,
       ingredients: Array.isArray(item?.ingredients) ? item.ingredients : [],
       allergens: Array.isArray(item?.allergens) ? item.allergens : [],
+      sensoryProfile: isObject(item?.sensory_profile) ? item.sensory_profile : null,
       image: media.detail || media.card,
       imageAlt: media.alt,
+      editorialSlides,
     };
   };
 
@@ -1837,6 +4186,28 @@
     const targetX = getTargetX(index);
     state.tabPillX = targetX;
     tabPill.style.transform = `translateX(${targetX}px)`;
+  };
+
+  const setTabsOverflowState = () => {
+    const maxScrollLeft = Math.max(0, tabRoot.scrollWidth - tabRoot.clientWidth);
+    const overflowing = maxScrollLeft > 1;
+    const hasLeftOverflow = overflowing && tabRoot.scrollLeft > 1;
+    const hasRightOverflow = overflowing && tabRoot.scrollLeft < maxScrollLeft - 1;
+
+    tabRoot.dataset.overflowing = overflowing ? 'true' : 'false';
+    tabRoot.dataset.overflowLeft = hasLeftOverflow ? 'true' : 'false';
+    tabRoot.dataset.overflowRight = hasRightOverflow ? 'true' : 'false';
+  };
+
+  const scheduleTabsOverflowSync = () => {
+    if (state.tabsOverflowFrameId) {
+      return;
+    }
+
+    state.tabsOverflowFrameId = window.requestAnimationFrame(() => {
+      state.tabsOverflowFrameId = 0;
+      setTabsOverflowState();
+    });
   };
 
   const animatePillToIndex = (index) => {
@@ -1921,6 +4292,8 @@
       setPillPosition(nextIndex, true);
     }
 
+    scheduleTabsOverflowSync();
+
     if (focus) {
       state.categories[nextIndex].tab.focus();
     }
@@ -2000,6 +4373,8 @@
 
     tabRoot.style.setProperty('--events-tab-count', String(state.categories.length));
     syncRailSpacers(state.categories.length);
+    setTabsOverflowState();
+    tabRoot.addEventListener('scroll', scheduleTabsOverflowSync, { passive: true });
 
     state.categories.forEach((category, index) => {
       category.tab.addEventListener('click', () => {
@@ -2044,6 +4419,45 @@
     state.tabsBound = true;
   };
 
+  const openDetailFromListCard = (itemId) => {
+    const normalizedItemId = normalizeText(itemId);
+
+    if (!normalizedItemId) {
+      return;
+    }
+
+    const detailUrl = toMenuDetailUrl(normalizedItemId);
+    const currentState = toHistoryStateObject(window.history.state);
+    const sourceItem = state.itemsById.get(normalizedItemId);
+    const returnCategoryId =
+      normalizeText(state.activeCategoryId) || resolveGroupIdByItem(sourceItem);
+    const returnScrollY = Math.max(0, Math.round(window.scrollY || 0));
+
+    window.history.replaceState(
+      {
+        ...currentState,
+        menuListContext: {
+          categoryId: returnCategoryId,
+          scrollY: returnScrollY,
+        },
+      },
+      '',
+      window.location.href
+    );
+
+    window.history.pushState(
+      {
+        item: normalizedItemId,
+        fromMenuList: true,
+        returnCategoryId,
+        returnScrollY,
+      },
+      '',
+      detailUrl
+    );
+    void renderRouteFromLocation();
+  };
+
   const createCard = (card) => {
     const node = cardTemplate.content.cloneNode(true);
     const article = node.querySelector('.mas-pedidas-card');
@@ -2052,8 +4466,10 @@
     const hoverImage = node.querySelector('.mas-pedidas-card__image--hover');
     const title = node.querySelector('.mas-pedidas-card__title');
     const description = node.querySelector('.mas-pedidas-card__description');
+    const metaRow = node.querySelector('.mas-pedidas-card__meta-row');
+    const meta = node.querySelector('.mas-pedidas-card__meta');
     const price = node.querySelector('.mas-pedidas-card__price');
-    const detailsButton = node.querySelector('.mas-pedidas-card__button');
+    const cardActionButton = node.querySelector('.mas-pedidas-card__button');
 
     if (
       !(article instanceof HTMLElement) ||
@@ -2062,18 +4478,36 @@
       !(hoverImage instanceof HTMLImageElement) ||
       !(title instanceof HTMLElement) ||
       !(description instanceof HTMLElement) ||
+      !(metaRow instanceof HTMLElement) ||
+      !(meta instanceof HTMLElement) ||
       !(price instanceof HTMLElement) ||
-      !(detailsButton instanceof HTMLButtonElement)
+      !(cardActionButton instanceof HTMLButtonElement)
     ) {
       return document.createDocumentFragment();
     }
 
+    const mobileCardInteractive = isMobileCardViewport();
+
     title.textContent = card.title;
-    description.textContent = card.description;
-    price.textContent = card.price;
+    description.textContent = card.description || '';
+    price.textContent = formatCardPrice(card.price);
+    meta.textContent = normalizeText(card.meta);
+    metaRow.hidden = !meta.textContent;
     article.dataset.menuItemId = normalizeText(card.id);
     article.classList.toggle('is-unavailable', !card.available);
+    article.classList.toggle('has-meta', !metaRow.hidden);
     mediaContainer.classList.remove('is-empty');
+    article.classList.toggle('is-mobile-interactive', mobileCardInteractive);
+
+    if (mobileCardInteractive) {
+      article.setAttribute('role', 'button');
+      article.tabIndex = 0;
+      article.setAttribute('aria-label', `Ver ${card.title}`);
+    } else {
+      article.removeAttribute('role');
+      article.removeAttribute('tabindex');
+      article.removeAttribute('aria-label');
+    }
 
     if (card.image) {
       baseImage.src = card.image;
@@ -2101,10 +4535,53 @@
       article.classList.remove('has-hover-image');
     }
 
-    detailsButton.addEventListener('click', () => {
-      const detailUrl = toMenuDetailUrl(card.id);
-      window.history.pushState({ item: card.id }, '', detailUrl);
-      void renderRouteFromLocation();
+    cardActionButton.addEventListener('click', (event) => {
+      if (isMobileCardViewport()) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+
+      openDetailFromListCard(card.id);
+    });
+
+    cardActionButton.addEventListener('keydown', (event) => {
+      if (!isMobileCardViewport()) {
+        return;
+      }
+
+      if (event.key !== 'Enter' && event.key !== ' ') {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+    });
+
+    article.addEventListener('click', (event) => {
+      if (!isMobileCardViewport() || event.defaultPrevented) {
+        return;
+      }
+
+      const target = event.target;
+      if (target instanceof Element && target.closest('.mas-pedidas-card__button')) {
+        return;
+      }
+
+      openDetailFromListCard(card.id);
+    });
+
+    article.addEventListener('keydown', (event) => {
+      if (!isMobileCardViewport()) {
+        return;
+      }
+
+      if (event.key !== 'Enter' && event.key !== ' ') {
+        return;
+      }
+
+      event.preventDefault();
+      openDetailFromListCard(card.id);
     });
 
     article.addEventListener(
@@ -2992,7 +5469,11 @@
   const showListView = () => {
     if (menuPageBody instanceof HTMLElement) {
       menuPageBody.setAttribute('data-menu-page-view', 'list');
+      menuPageBody.removeAttribute('data-menu-detail-hero');
     }
+
+    detailView.setAttribute('data-detail-hero-mode', 'catalog');
+    clearDetailEditorialCarousel();
 
     detailView.hidden = true;
     listView.hidden = false;
@@ -3028,9 +5509,37 @@
     emitBridgeState();
   };
 
+  const goToMenuListView = async () => {
+    const detailHistoryState = toHistoryStateObject(window.history.state);
+
+    if (detailHistoryState.fromMenuList === true) {
+      window.history.back();
+      return;
+    }
+
+    const routeItemId = getRouteItemId();
+    const routeItem = routeItemId ? state.itemsById.get(routeItemId) : null;
+    const fallbackCategoryId =
+      normalizeText(detailHistoryState.returnCategoryId) ||
+      resolveGroupIdByItem(routeItem);
+
+    window.history.pushState({}, '', toMenuListUrl());
+    await renderRouteFromLocation();
+
+    if (fallbackCategoryId) {
+      window.requestAnimationFrame(() => {
+        scrollToCategory(fallbackCategoryId);
+      });
+    }
+  };
+
   const renderDetail = async (item) => {
     if (
+      !(detailTopline instanceof HTMLElement) ||
       !(detailMeta instanceof HTMLElement) ||
+      !(detailBadge instanceof HTMLElement) ||
+      !(detailBadgeIcon instanceof HTMLImageElement) ||
+      !(detailBadgeLabel instanceof HTMLElement) ||
       !(detailPanel instanceof HTMLElement) ||
       !(detailMedia instanceof HTMLElement) ||
       !(detailImage instanceof HTMLImageElement) ||
@@ -3038,6 +5547,10 @@
       !(detailTitle instanceof HTMLElement) ||
       !(detailDescription instanceof HTMLElement) ||
       !(detailPrice instanceof HTMLElement) ||
+      !(detailSensoryDivider instanceof HTMLElement) ||
+      !(detailSensorySection instanceof HTMLElement) ||
+      !(detailSensoryGroups instanceof HTMLElement) ||
+      !(detailSensorySummary instanceof HTMLElement) ||
       !(detailSpecGrid instanceof HTMLElement) ||
       !(detailSpecsDivider instanceof HTMLElement) ||
       !(detailTagsDivider instanceof HTMLElement) ||
@@ -3052,11 +5565,30 @@
       return;
     }
 
-    const detail = toDetailViewModel(item);
+    const detail = await toDetailViewModel(item);
+    const featuredIds = await loadHomePopularFeaturedIds();
+    const heroBadge = resolveDetailHeroBadge({
+      item,
+      badges: detail.badges,
+      featuredIds,
+    });
+    const heroBadgeLabel = normalizeText(heroBadge?.label);
+    const heroBadgeIconPath = normalizeText(heroBadge?.icon);
 
     detailReviews.textContent = detail.reviews;
     detailReviews.hidden = !detail.reviews;
     detailMeta.hidden = !detail.reviews;
+    detailBadge.setAttribute('data-badge-kind', normalizeText(heroBadge?.kind));
+    detailBadgeLabel.textContent = heroBadgeLabel;
+    if (heroBadgeIconPath) {
+      detailBadgeIcon.src = heroBadgeIconPath;
+      detailBadgeIcon.hidden = false;
+    } else {
+      detailBadgeIcon.hidden = true;
+      detailBadgeIcon.removeAttribute('src');
+    }
+    detailBadge.hidden = !heroBadgeLabel;
+    detailTopline.hidden = !detail.reviews && !heroBadgeLabel;
 
     detailTitle.textContent = detail.title;
     detailDescription.textContent = detail.description;
@@ -3066,20 +5598,59 @@
       ? ''
       : detail.soldOutReason || 'Temporalmente no disponible.';
     detailSoldOutReason.hidden = detail.available;
+    const hasSensoryProfile = renderDetailSensoryProfile(detail.sensoryProfile);
+    detailSensoryDivider.hidden = !hasSensoryProfile;
+    syncDetailPairingsSection(detail.id);
+    if (detailAddButton instanceof HTMLButtonElement) {
+      const isAvailable = detail.available !== false;
+      detailAddButton.textContent = isAvailable ? 'Añadir' : 'No disponible';
+      detailAddButton.classList.toggle('is-available', isAvailable);
+      detailAddButton.classList.toggle('is-unavailable', !isAvailable);
+      detailAddButton.disabled = true;
+    }
     detailPanel.setAttribute(
       'data-availability',
       detail.available ? 'available' : 'unavailable'
     );
+    const hasEditorialSlides = Array.isArray(detail.editorialSlides)
+      ? detail.editorialSlides.length > 0
+      : false;
+    const shouldUseEditorialHero =
+      hasEditorialSlides &&
+      DETAIL_EDITORIAL_HERO_QUERY.matches &&
+      renderDetailEditorialCarousel(detail.editorialSlides);
 
-    if (detail.image) {
-      detailImage.src = detail.image;
-      detailImage.alt = detail.imageAlt || detail.title;
-      detailImage.hidden = false;
-      detailMedia.setAttribute('data-image-state', 'ready');
-    } else {
+    detailView.setAttribute(
+      'data-detail-hero-mode',
+      shouldUseEditorialHero ? 'editorial' : 'catalog'
+    );
+
+    if (menuPageBody instanceof HTMLElement) {
+      menuPageBody.setAttribute(
+        'data-menu-detail-hero',
+        shouldUseEditorialHero ? 'editorial' : 'catalog'
+      );
+    }
+
+    if (shouldUseEditorialHero) {
       detailImage.hidden = true;
       detailImage.removeAttribute('src');
       detailImage.alt = '';
+      detailMedia.setAttribute('data-media-mode', 'editorial');
+      detailMedia.setAttribute('data-image-state', 'ready');
+    } else if (detail.image) {
+      clearDetailEditorialCarousel();
+      detailImage.src = detail.image;
+      detailImage.alt = detail.imageAlt || detail.title;
+      detailImage.hidden = false;
+      detailMedia.setAttribute('data-media-mode', 'catalog');
+      detailMedia.setAttribute('data-image-state', 'ready');
+    } else {
+      clearDetailEditorialCarousel();
+      detailImage.hidden = true;
+      detailImage.removeAttribute('src');
+      detailImage.alt = '';
+      detailMedia.setAttribute('data-media-mode', 'catalog');
       detailMedia.setAttribute('data-image-state', 'empty');
     }
 
@@ -3101,8 +5672,9 @@
     );
     detailSpecsDivider.hidden = !hasSpecs;
 
-    renderTagBadges(detailTags, detail.badges);
-    const hasTags = detail.badges.length > 0;
+    const tagsForSection = filterDetailSectionTags(detail.badges);
+    renderTagBadges(detailTags, tagsForSection);
+    const hasTags = tagsForSection.length > 0;
     detailTagsSection.hidden = !hasTags;
     detailTagsDivider.hidden = !hasTags;
 
@@ -3117,6 +5689,7 @@
 
     if (!requestedItemId) {
       showListView();
+      restoreListScrollFromHistory();
       return;
     }
 
@@ -3132,6 +5705,7 @@
     }
 
     await renderDetail(item);
+    resetDetailScrollPosition();
   };
 
   const buildGroupItems = async (group) => {
@@ -3246,13 +5820,15 @@
   };
 
   if (detailBackButton instanceof HTMLButtonElement) {
-    detailBackButton.addEventListener('click', () => {
-      window.history.pushState({}, '', toMenuListUrl());
-      void renderRouteFromLocation();
-    });
+    detailBackButton.addEventListener('click', goToMenuListView);
+  }
+
+  if (detailCloseButton instanceof HTMLButtonElement) {
+    detailCloseButton.addEventListener('click', goToMenuListView);
   }
 
   bindFilterPizzaTabs();
+  bindDetailSensoryViewTabs();
 
   const applySearchQuery = (
     value,
@@ -3528,6 +6104,7 @@
     if (activeIndex >= 0) {
       setPillPosition(activeIndex, true);
     }
+    scheduleTabsOverflowSync();
     syncSearchHelperWidth();
     updatePriceSliderVisuals(state.draftFilters);
     scheduleActiveCategoryUpdate();
@@ -3545,6 +6122,23 @@
     reducedMotionQuery.addEventListener('change', handleReducedMotionChange);
   } else if (typeof reducedMotionQuery.addListener === 'function') {
     reducedMotionQuery.addListener(handleReducedMotionChange);
+  }
+
+  const handleDetailEditorialViewportChange = () => {
+    if (detailView.hidden) {
+      return;
+    }
+
+    void renderRouteFromLocation();
+  };
+
+  if (typeof DETAIL_EDITORIAL_HERO_QUERY.addEventListener === 'function') {
+    DETAIL_EDITORIAL_HERO_QUERY.addEventListener(
+      'change',
+      handleDetailEditorialViewportChange
+    );
+  } else if (typeof DETAIL_EDITORIAL_HERO_QUERY.addListener === 'function') {
+    DETAIL_EDITORIAL_HERO_QUERY.addListener(handleDetailEditorialViewportChange);
   }
 
   window.addEventListener('popstate', () => {

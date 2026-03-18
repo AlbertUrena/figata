@@ -1817,6 +1817,13 @@
       reports.push(window.FigataMenuAllergens.validateMenuAllergens(menuDraft, ingredientsDraft));
     }
 
+    if (
+      window.FigataMenuSensory &&
+      typeof window.FigataMenuSensory.validateMenuSensoryProfiles === "function"
+    ) {
+      reports.push(window.FigataMenuSensory.validateMenuSensoryProfiles(menuDraft));
+    }
+
     if (!reports.length) {
       return merged;
     }
@@ -2712,11 +2719,21 @@
       [mediaEntry.source, mediaEntry.card, mediaEntry.hover, mediaEntry.modal].forEach(function (path) {
         addMenuMediaCandidatesToSet(mediaPathsSet, path);
       });
+      if (Array.isArray(mediaEntry.gallery)) {
+        mediaEntry.gallery.forEach(function (path) {
+          addMenuMediaCandidatesToSet(mediaPathsSet, path);
+        });
+      }
       if (mediaEntry.overrides && typeof mediaEntry.overrides === "object") {
         [mediaEntry.overrides.card, mediaEntry.overrides.hover, mediaEntry.overrides.modal]
           .forEach(function (path) {
             addMenuMediaCandidatesToSet(mediaPathsSet, path);
           });
+        if (Array.isArray(mediaEntry.overrides.gallery)) {
+          mediaEntry.overrides.gallery.forEach(function (path) {
+            addMenuMediaCandidatesToSet(mediaPathsSet, path);
+          });
+        }
       }
     });
 

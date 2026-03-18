@@ -22,6 +22,8 @@
     searchQuery: "",
     mode: "browser"
   };
+  var EDITORIAL_MEDIA_ROOT = "assets/menu/editorial";
+  var EDITORIAL_SLIDE_EXTENSION = ".webp";
 
   function escapeHtml(value) {
     return RU.escapeHtml(value == null ? "" : String(value));
@@ -42,6 +44,186 @@
 
   function getContract() {
     return window.FigataMediaContract || null;
+  }
+
+  function normalizeAssetPath(value) {
+    return String(value || "").trim().replace(/^\/+/, "");
+  }
+
+  function resolveAssetUrl(path) {
+    var normalizedPath = normalizeAssetPath(path);
+    if (!normalizedPath) return "";
+    if (/^(https?:|data:|blob:)/i.test(normalizedPath)) {
+      return normalizedPath;
+    }
+    return "/" + normalizedPath;
+  }
+
+  function parseGalleryInputValue(value) {
+    if (!value) return [];
+    return String(value)
+      .split(/\r?\n/)
+      .map(function (line) {
+        return normalizeAssetPath(line);
+      })
+      .filter(Boolean);
+  }
+
+  function dedupePaths(paths) {
+    if (!Array.isArray(paths) || !paths.length) return [];
+    var seen = {};
+    var unique = [];
+    paths.forEach(function (path) {
+      var normalizedPath = normalizeAssetPath(path);
+      if (!normalizedPath || seen[normalizedPath]) return;
+      seen[normalizedPath] = true;
+      unique.push(normalizedPath);
+    });
+    return unique;
+  }
+
+  function escapeRegExp(value) {
+    return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  function getKnownMediaPaths(ctx) {
+    var indexes = ctx && ctx.state && ctx.state.indexes ? ctx.state.indexes : {};
+    if (Array.isArray(indexes.localMenuMediaPaths) && indexes.localMenuMediaPaths.length) {
+      return indexes.localMenuMediaPaths.slice();
+    }
+    if (Array.isArray(indexes.mediaPaths) && indexes.mediaPaths.length) {
+      return indexes.mediaPaths.slice();
+    }
+    if (indexes.menuMediaPathSet && typeof indexes.menuMediaPathSet === "object") {
+      return Object.keys(indexes.menuMediaPathSet);
+    }
+    return [];
+  }
+
+  function resolveConfiguredGallery(entry) {
+    var contract = getContract();
+    if (contract && typeof contract.resolveItemGallery === "function") {
+      return dedupePaths(contract.resolveItemGallery(entry));
+    }
+
+    if (!entry || typeof entry !== "object") {
+      return [];
+    }
+
+    var overrides = entry.overrides && typeof entry.overrides === "object" ? entry.overrides : {};
+    if (Array.isArray(overrides.gallery)) {
+      return dedupePaths(overrides.gallery);
+    }
+
+    if (Array.isArray(entry.gallery)) {
+      return dedupePaths(entry.gallery);
+    }
+
+    return [];
+  }
+
+  function getEditorialIdVariants(itemId) {
+    var normalizedItemId = normalizeAssetPath(itemId);
+    if (!normalizedItemId) return [];
+
+    var variants = [
+      normalizedItemId,
+      normalizedItemId.replace(/_/g, "-"),
+      normalizedItemId.replace(/-/g, "_")
+    ];
+
+    var seen = {};
+    return variants.filter(function (variant) {
+      if (!variant || seen[variant]) return false;
+      seen[variant] = true;
+      return true;
+    });
+  }
+
+  function detectEditorialGallery(ctx, itemId) {
+    var normalizedItemId = normalizeAssetPath(itemId);
+    if (!normalizedItemId) return [];
+
+    var knownPaths = getKnownMediaPaths(ctx).map(function (path) {
+      return normalizeAssetPath(path);
+    }).filter(Boolean);
+
+    var idVariants = getEditorialIdVariants(normalizedItemId);
+    for (var variantIndex = 0; variantIndex < idVariants.length; variantIndex += 1) {
+      var candidateId = idVariants[variantIndex];
+      var matcher = new RegExp(
+        "^" +
+        escapeRegExp(EDITORIAL_MEDIA_ROOT + "/" + candidateId + "-slide-") +
+        "(\\d+)" +
+        escapeRegExp(EDITORIAL_SLIDE_EXTENSION) +
+        "$",
+        "i"
+      );
+
+      var bySlideIndex = {};
+      knownPaths.forEach(function (path) {
+        var match = path.match(matcher);
+        if (!match) return;
+
+        var slideIndex = Number(match[1]);
+        if (!Number.isFinite(slideIndex)) return;
+        if (!bySlideIndex[slideIndex]) {
+          bySlideIndex[slideIndex] = path;
+        }
+      });
+
+      var contiguousSlides = [];
+      for (var slide = 0; slide < 24; slide += 1) {
+        if (!bySlideIndex[slide]) {
+          break;
+        }
+        contiguousSlides.push(bySlideIndex[slide]);
+      }
+
+      if (contiguousSlides.length) {
+        return contiguousSlides;
+      }
+    }
+
+    return [];
+  }
+
+  function areSamePathArrays(left, right) {
+    if (!Array.isArray(left) || !Array.isArray(right)) return false;
+    if (left.length !== right.length) return false;
+    for (var i = 0; i < left.length; i += 1) {
+      if (normalizeAssetPath(left[i]) !== normalizeAssetPath(right[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function renderEditorialPreviewList(paths, itemLabel) {
+    var slides = Array.isArray(paths) ? paths : [];
+
+    if (!slides.length) {
+      return '<p class="inline-help">Sin slides editoriales para mostrar.</p>';
+    }
+
+    return ''
+      + '<ol class="media-editorial-preview-list">'
+      + slides.map(function (path, index) {
+        var normalizedPath = normalizeAssetPath(path);
+        var slideLabel = "Slide " + (index + 1);
+        var imageSrc = resolveAssetUrl(normalizedPath || C.MENU_PLACEHOLDER_IMAGE);
+        var imageAlt = itemLabel
+          ? itemLabel + " " + slideLabel.toLowerCase()
+          : slideLabel;
+
+        return ''
+          + '<li class="media-editorial-preview-item">'
+          + '  <p class="kicker">' + escapeHtml(slideLabel) + '</p>'
+          + '  <img src="' + escapeHtml(imageSrc) + '" alt="' + escapeHtml(imageAlt) + '" loading="lazy" />'
+          + '  <code>' + escapeHtml(normalizedPath) + '</code>'
+          + '</li>';
+      }).join("")
+      + '</ol>';
   }
 
   function createFallbackItem(itemId, itemName) {
@@ -235,7 +417,6 @@
       + '  </div>'
       + '  <div class="media-card__info">'
       + '    <strong>' + escapeHtml(item.name || itemId) + '</strong>'
-      + '    <div class="inline-help">' + escapeHtml(entry.sectionLabel || entry.sectionId || "") + '</div>'
       + '  </div>'
       + '</button>';
   }
@@ -435,6 +616,54 @@
     var cardPath = resolveMediaPath(entry, "card", mediaDraft.defaults);
     var hoverPath = resolveMediaPath(entry, "hover", mediaDraft.defaults);
     var modalPath = resolveMediaPath(entry, "modal", mediaDraft.defaults);
+    var cardPreviewSrc = resolveAssetUrl(cardPath || C.MENU_PLACEHOLDER_IMAGE);
+    var hoverPreviewSrc = resolveAssetUrl(hoverPath || C.MENU_PLACEHOLDER_IMAGE);
+    var modalPreviewSrc = resolveAssetUrl(modalPath || C.MENU_MODAL_PLACEHOLDER_IMAGE);
+    var configuredGallery = resolveConfiguredGallery(entry);
+    var detectedGallery = detectEditorialGallery(ctx, itemId);
+    var effectiveGallery = detectedGallery.length ? detectedGallery.slice() : configuredGallery.slice();
+    var hasLocalMediaInventory = Boolean(
+      ctx &&
+      ctx.state &&
+      ctx.state.indexes &&
+      Array.isArray(ctx.state.indexes.localMenuMediaPaths) &&
+      ctx.state.indexes.localMenuMediaPaths.length
+    );
+    var editorialIdVariants = getEditorialIdVariants(itemId);
+    var editorialPatternExample =
+      EDITORIAL_MEDIA_ROOT + "/" + (editorialIdVariants[0] || itemId) + "-slide-0" + EDITORIAL_SLIDE_EXTENSION;
+    var editorialPatternAltExample = editorialIdVariants.length > 1
+      ? EDITORIAL_MEDIA_ROOT + "/" + editorialIdVariants[1] + "-slide-0" + EDITORIAL_SLIDE_EXTENSION
+      : "";
+    var editorialRuntimeMode = "fallback";
+    if (detectedGallery.length) {
+      editorialRuntimeMode = "auto";
+    } else if (configuredGallery.length) {
+      editorialRuntimeMode = "persisted";
+    }
+    var editorialRuntimeLabel = editorialRuntimeMode === "auto"
+      ? "Editorial automático por assets"
+      : (editorialRuntimeMode === "persisted"
+        ? "Editorial persistido en overrides.gallery"
+        : "Fallback a catálogo");
+    var editorialRuntimeClass = editorialRuntimeMode === "auto"
+      ? "is-auto"
+      : (editorialRuntimeMode === "persisted" ? "is-persisted" : "is-fallback");
+    var galleryFieldValue = effectiveGallery.join("\n");
+    var editorialRows = Math.max(3, Math.min(8, effectiveGallery.length + 1));
+    var showPersistedPreview =
+      configuredGallery.length > 0 &&
+      !areSamePathArrays(configuredGallery, effectiveGallery);
+    var editorialHelpCopy = hasLocalMediaInventory
+      ? "Ordena por líneas. Detecta slides por naming (item_id o item-id), prellena este campo y al guardar persiste en overrides.gallery."
+      : "Sin inventario local de assets en esta sesión. Puedes pegar rutas manuales o mantener overrides.gallery existente.";
+    var persistedPreviewHtml = showPersistedPreview
+      ? ''
+        + '<div class="media-editorial-preview-group">'
+        + '  <p class="kicker">Slides guardados en draft (' + escapeHtml(String(configuredGallery.length)) + ')</p>'
+        + renderEditorialPreviewList(configuredGallery, item.name || itemId)
+        + '</div>'
+      : "";
 
     return ''
       + '<section class="media-item-view">'
@@ -448,23 +677,10 @@
       + '      <button class="btn btn-ghost" type="button" data-action="open-browser">Volver al browser</button>'
       + '    </div>'
       + '  </header>'
-      + '  <div class="media-detail media-detail--standalone">'
-      + '    <div class="media-detail__grid">'
-      + '      <div class="media-global-grid">'
-      + '        <div class="media-detail__preview">'
-      + '          <span class="kicker">Card</span>'
-      + '          <img src="/' + escapeHtml(cardPath || C.MENU_PLACEHOLDER_IMAGE) + '" alt="" />'
-      + '        </div>'
-      + '        <div class="media-detail__preview">'
-      + '          <span class="kicker">Hover</span>'
-      + '          <img src="/' + escapeHtml(hoverPath || C.MENU_PLACEHOLDER_IMAGE) + '" alt="" />'
-      + '        </div>'
-      + '        <div class="media-detail__preview">'
-      + '          <span class="kicker">Modal</span>'
-      + '          <img src="/' + escapeHtml(modalPath || C.MENU_MODAL_PLACEHOLDER_IMAGE) + '" alt="" />'
-      + '        </div>'
-      + '      </div>'
-      + '      <div class="media-detail__fields">'
+      + '  <div class="media-detail media-detail--standalone media-detail--item-clean">'
+      + '    <div class="media-detail__fields media-detail__fields--item">'
+      + '      <section class="media-field-block">'
+      + '        <h4 class="media-field-block__title">Media base</h4>'
       + '        <label class="field media-field-row">'
       + '          <span>Imagen fuente</span>'
       + '          <input id="media-item-source" class="input-text" type="text" value="' + escapeHtml(entry.source || "") + '" placeholder="assets/menu/ejemplo.webp" />'
@@ -474,7 +690,10 @@
       + '          <span>Texto alt</span>'
       + '          <input id="media-item-alt" class="input-text" type="text" value="' + escapeHtml(entry.alt || "") + '" placeholder="Descripci\u00f3n accesible de la imagen" />'
       + '        </label>'
-      + '        <div class="media-global-grid">'
+      + '      </section>'
+      + '      <section class="media-field-block">'
+      + '        <h4 class="media-field-block__title">Overrides de catálogo</h4>'
+      + '        <div class="media-global-grid media-global-grid--overrides">'
       + '          <label class="field media-field-row' + (overrides.card ? ' has-override' : '') + '">'
       + '            <span>Override para card</span>'
       + '            <input id="media-override-card" class="input-text" type="text" value="' + escapeHtml(overrides.card || "") + '" placeholder="Opcional" />'
@@ -488,11 +707,52 @@
       + '            <input id="media-override-modal" class="input-text" type="text" value="' + escapeHtml(overrides.modal || "") + '" placeholder="Opcional" />'
       + '          </label>'
       + '        </div>'
-      + '        <div class="home-editor__actions">'
+      + '      </section>'
+      + '        <section class="media-editorial">'
+      + '          <header class="media-editorial__header">'
+      + '            <div>'
+      + '              <h4>Media editorial / detail slides</h4>'
+      + '              <p class="inline-help">Patrón automático: <code>' + escapeHtml(editorialPatternExample) + '</code>' + (editorialPatternAltExample ? (' o <code>' + escapeHtml(editorialPatternAltExample) + '</code>') : '') + ' ...</p>'
+      + '            </div>'
+      + '            <div class="media-editorial__chips">'
+      + '              <span class="media-editorial-chip ' + editorialRuntimeClass + '">' + escapeHtml(editorialRuntimeLabel) + '</span>'
+      + '              <span class="media-editorial-chip">Detectados: ' + escapeHtml(String(detectedGallery.length)) + '</span>'
+      + '              <span class="media-editorial-chip">Draft: ' + escapeHtml(String(configuredGallery.length)) + '</span>'
+      + '            </div>'
+      + '          </header>'
+      + '          <label class="field media-field-row">'
+      + '            <span>Slides editoriales (una ruta por línea)</span>'
+      + '            <textarea id="media-editorial-gallery" class="input-text media-editorial__textarea" rows="' + escapeHtml(String(editorialRows)) + '" placeholder="' + escapeHtml(editorialPatternExample) + '">' + escapeHtml(galleryFieldValue) + '</textarea>'
+      + '            <small class="inline-help">' + escapeHtml(editorialHelpCopy) + '</small>'
+      + '            <small class="inline-help">Si no hay slides, la vista detalle vuelve automáticamente a la imagen de catálogo.</small>'
+      + '          </label>'
+      + '          <div class="media-editorial-preview-group">'
+      + '            <p class="kicker">Slides efectivos para detalle (' + escapeHtml(String(effectiveGallery.length)) + ')</p>'
+      + renderEditorialPreviewList(effectiveGallery, item.name || itemId)
+      + '          </div>'
+      + persistedPreviewHtml
+      + '        </section>'
+      + '        <details class="media-variant-previews">'
+      + '          <summary>Previews de catálogo (secundario)</summary>'
+      + '          <div class="media-variant-previews__grid">'
+      + '            <figure class="media-variant-preview">'
+      + '              <figcaption class="kicker">Card</figcaption>'
+      + '              <img src="' + escapeHtml(cardPreviewSrc) + '" alt="" loading="lazy" />'
+      + '            </figure>'
+      + '            <figure class="media-variant-preview">'
+      + '              <figcaption class="kicker">Hover</figcaption>'
+      + '              <img src="' + escapeHtml(hoverPreviewSrc) + '" alt="" loading="lazy" />'
+      + '            </figure>'
+      + '            <figure class="media-variant-preview">'
+      + '              <figcaption class="kicker">Modal</figcaption>'
+      + '              <img src="' + escapeHtml(modalPreviewSrc) + '" alt="" loading="lazy" />'
+      + '            </figure>'
+      + '          </div>'
+      + '        </details>'
+      + '        <div class="home-editor__actions media-item-view__actions">'
       + '          <button id="media-save-item-button" class="btn btn-primary" type="button" data-action="save-item">Guardar cambios</button>'
       + '          <button class="btn btn-ghost" type="button" data-action="open-browser">Volver al browser</button>'
       + '        </div>'
-      + '      </div>'
       + '    </div>'
       + '  </div>'
       + '</section>';
@@ -529,7 +789,7 @@
 
     var title = isItemMode ? "Editor de media por \u00edtem" : "Activos visuales";
     var subtitle = isItemMode
-      ? "Edita source, alt y overrides en una vista dedicada por \u00edtem."
+      ? "Edita source, alt, overrides y slides editoriales en una vista dedicada por \u00edtem."
       : "Administra fuentes, overrides, valores por defecto y activos globales sin salir del Admin custom.";
 
     panel.innerHTML = ''
@@ -587,15 +847,16 @@
     var overrideCardInput = panel.querySelector("#media-override-card");
     var overrideHoverInput = panel.querySelector("#media-override-hover");
     var overrideModalInput = panel.querySelector("#media-override-modal");
+    var editorialGalleryInput = panel.querySelector("#media-editorial-gallery");
 
     entry.source = sourceInput ? String(sourceInput.value || "").trim() : "";
     entry.alt = altInput ? String(altInput.value || "").trim() : "";
     entry.overrides.card = overrideCardInput ? String(overrideCardInput.value || "").trim() : "";
     entry.overrides.hover = overrideHoverInput ? String(overrideHoverInput.value || "").trim() : "";
     entry.overrides.modal = overrideModalInput ? String(overrideModalInput.value || "").trim() : "";
-    if (!Array.isArray(entry.overrides.gallery)) {
-      entry.overrides.gallery = [];
-    }
+    entry.overrides.gallery = dedupePaths(
+      parseGalleryInputValue(editorialGalleryInput ? editorialGalleryInput.value : "")
+    );
 
     mediaDraft.items[itemId] = entry;
     ctx.setMediaDraftUpdatedAt("admin-app");

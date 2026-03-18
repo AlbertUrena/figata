@@ -294,6 +294,10 @@ Uses `shared/ingredients-contract.js`. Validation runs:
 - Edits `state.drafts.media`
 - Validates with `shared/media-contract.js`
 - Uses a dedicated item route (`#/media/item/:id`) instead of an inline detail section in the main flow
+- Item view now includes **editorial/detail slides** support:
+  - Auto-detects slides using `assets/menu/editorial/<item-id>-slide-<n>.webp` from known media paths (underscore/hyphen item id variants are both accepted)
+  - Shows detected count, draft count, active runtime mode (`auto`, `persisted`, `fallback`)
+  - Renders ordered slide previews and exposes a textarea (one path per line) bound to `overrides.gallery`
 - Main panel sections are short and focused: `browser`, `homepage`, `brand`, `defaults`, `integrity`
 - Browser cards are grouped by menu category (same scanning pattern as Menu, adapted for Media)
 - Uses the shared scroll-spy pattern from `app.js`/`panels.js` instead of a panel-specific navigation system

@@ -1,5 +1,6 @@
 {
-  "version": 3,
+  "version": 5,
+  "schema": "figata.menu.v5",
   "currency": "DOP",
   "taxIncluded": false,
   "sections": [
@@ -217,6 +218,35 @@
             "add": [
               "gluten"
             ]
+          },
+          "sensory_profile": {
+            "summary": "Equilibrada y ligera, con tomate brillante, mozzarella cremosa y aroma fresco.",
+            "axes": {
+              "dulce": {
+                "value": 3
+              },
+              "salado": {
+                "value": 5
+              },
+              "acido": {
+                "value": 6
+              },
+              "cremosa": {
+                "value": 6
+              },
+              "crujiente": {
+                "value": 4
+              },
+              "ligero": {
+                "value": 8
+              },
+              "aromatico": {
+                "value": 7
+              },
+              "intensidad": {
+                "value": 4
+              }
+            }
           }
         },
         {
@@ -241,6 +271,35 @@
             "add": [
               "gluten"
             ]
+          },
+          "sensory_profile": {
+            "summary": "Más afilada y aromática, con acidez marcada, cuerpo ligero y final seco.",
+            "axes": {
+              "dulce": {
+                "value": 1
+              },
+              "salado": {
+                "value": 3
+              },
+              "acido": {
+                "value": 8
+              },
+              "cremosa": {
+                "value": 1
+              },
+              "crujiente": {
+                "value": 4
+              },
+              "ligero": {
+                "value": 9
+              },
+              "aromatico": {
+                "value": 8
+              },
+              "intensidad": {
+                "value": 5
+              }
+            }
           }
         },
         {
@@ -661,6 +720,35 @@
             "add": [
               "gluten"
             ]
+          },
+          "sensory_profile": {
+            "summary": "Picante y envolvente, con cremosidad marcada y una intensidad que se queda.",
+            "axes": {
+              "dulce": {
+                "value": 1
+              },
+              "salado": {
+                "value": 7
+              },
+              "acido": {
+                "value": 4
+              },
+              "cremosa": {
+                "value": 8
+              },
+              "crujiente": {
+                "value": 3
+              },
+              "ligero": {
+                "value": 1
+              },
+              "aromatico": {
+                "value": 8
+              },
+              "intensidad": {
+                "value": 10
+              }
+            }
           }
         },
         {
@@ -826,7 +914,36 @@
           "ingredients": [],
           "image": "assets/menu/postres/tiramisu.webp",
           "featured": true,
-          "reviews": "132 reseñas"
+          "reviews": "132 reseñas",
+          "sensory_profile": {
+            "summary": "Dulce y cremoso, con café y cacao al frente y un cierre suave.",
+            "axes": {
+              "dulce": {
+                "value": 8
+              },
+              "salado": {
+                "value": 1
+              },
+              "acido": {
+                "value": 1
+              },
+              "cremosa": {
+                "value": 9
+              },
+              "crujiente": {
+                "value": 1
+              },
+              "ligero": {
+                "value": 3
+              },
+              "aromatico": {
+                "value": 8
+              },
+              "intensidad": {
+                "value": 6
+              }
+            }
+          }
         },
         {
           "id": "helado_artesanal",
@@ -887,7 +1004,36 @@
           "ingredients": [],
           "image": "assets/menu/bebidas/negroni.webp",
           "featured": false,
-          "available": true
+          "available": true,
+          "sensory_profile": {
+            "summary": "Herbal, seco e intenso, con mucha presencia aromática y un paso firme.",
+            "axes": {
+              "dulce": {
+                "value": 3
+              },
+              "salado": {
+                "value": 1
+              },
+              "acido": {
+                "value": 3
+              },
+              "cremosa": {
+                "value": 1
+              },
+              "crujiente": {
+                "value": 1
+              },
+              "ligero": {
+                "value": 2
+              },
+              "aromatico": {
+                "value": 9
+              },
+              "intensidad": {
+                "value": 9
+              }
+            }
+          }
         },
         {
           "id": "passion_spritz",
@@ -1064,6 +1210,35 @@
             "add": [
               "gluten"
             ]
+          },
+          "sensory_profile": {
+            "summary": "Corteza crujiente, miga aireada y carácter de masa madre bien definido.",
+            "axes": {
+              "dulce": {
+                "value": 2
+              },
+              "salado": {
+                "value": 3
+              },
+              "acido": {
+                "value": 4
+              },
+              "cremosa": {
+                "value": 1
+              },
+              "crujiente": {
+                "value": 9
+              },
+              "ligero": {
+                "value": 6
+              },
+              "aromatico": {
+                "value": 6
+              },
+              "intensidad": {
+                "value": 4
+              }
+            }
           }
         }
       ]

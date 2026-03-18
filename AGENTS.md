@@ -67,6 +67,7 @@ website-figata/
 │   ├── figata-cover-transition.js Shared cover transition engine (route + modal)
 │   ├── menu-traits.js            Menu Traits V2 derivation + validation engine
 │   ├── menu-allergens.js         Menu allergen derivation + validation engine
+│   ├── menu-sensory.js           Structured sensory profile schema + validation engine
 │   ├── public-navbar.js          Canonical public navbar loader/cache bridge for multi-route pages
 │   ├── public-scroll-indicator.css Overlay root scrollbar hide + progress meter styles
 │   ├── public-scroll-indicator.js  Native-scroll progress meter runtime for public routes
@@ -219,7 +220,7 @@ Admin modules must load **before** `app.js` in `admin/app/index.html`. Current o
 `constants` → `utils` → `auth` → `drafts` → `publish` → `navigation` → `command-palette` → `sidebar` → `accordion` → `panels` → `render-utils` → `menu-media` → `dashboard` → `panels/restaurant-panel` → `panels/media-panel` → `panels/pages-panel` → `app.js`
 
 Shared runtime helpers used by traits/validation must load before their consumers:
-`shared/menu-traits.js` + `shared/menu-allergens.js` → contracts/data loaders → feature scripts.
+`shared/menu-traits.js` + `shared/menu-allergens.js` + `shared/menu-sensory.js` → contracts/data loaders → feature scripts.
 
 On `/menu/`, route scripts must load in this order:
 `shared/public-navbar.js` → `js/navbar-collapse.js` → `js/menu-page.js` → `js/menu-page-navbar.js`

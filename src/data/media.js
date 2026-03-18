@@ -3,6 +3,8 @@
   const MEDIA_URL = new URL('data/media.json', ROOT_URL);
 
   const VARIANTS = new Set(['card', 'hover', 'modal']);
+  const EDITORIAL_MEDIA_ROOT = 'assets/menu/editorial';
+  const MAX_EDITORIAL_SLIDES = 12;
 
   const STATIC_DEFAULTS = {
     card: 'assets/menu/placeholders/card.svg',
@@ -87,6 +89,9 @@
       warnedKeys: new Set(),
       missingMediaIds: new Set(),
       prefetchedPaths: new Set(),
+      editorialDetections: new Map(),
+      editorialDetectionPromises: new Map(),
+      editorialProbeCache: new Map(),
     };
 
     Object.entries(sourceItems).forEach(([rawId, rawEntry]) => {
@@ -233,6 +238,149 @@
     return item.gallery.slice();
   };
 
+  const getEditorialIdVariants = (itemId) => {
+    const normalizedId = normalizeId(itemId);
+
+    if (!normalizedId) {
+      return [];
+    }
+
+    return Array.from(
+      new Set([
+        normalizedId,
+        normalizedId.replace(/_/g, '-'),
+        normalizedId.replace(/-/g, '_'),
+      ].filter(Boolean))
+    );
+  };
+
+  const buildEditorialSlidePath = (itemId, slideIndex) =>
+    `${EDITORIAL_MEDIA_ROOT}/${normalizeId(itemId)}-slide-${slideIndex}.webp`;
+
+  const toProbeUrl = (path) => {
+    const normalizedPath = normalizeAssetPath(path);
+
+    if (!normalizedPath) {
+      return '';
+    }
+
+    return new URL(normalizedPath, ROOT_URL).toString();
+  };
+
+  const resolveProbeCacheValue = async (cacheValue) => {
+    if (typeof cacheValue === 'boolean') {
+      return cacheValue;
+    }
+
+    if (cacheValue && typeof cacheValue.then === 'function') {
+      return cacheValue;
+    }
+
+    return false;
+  };
+
+  const probeAssetExists = async (store, path) => {
+    const normalizedPath = normalizeAssetPath(path);
+
+    if (!normalizedPath) {
+      return false;
+    }
+
+    if (store.editorialProbeCache.has(normalizedPath)) {
+      return resolveProbeCacheValue(store.editorialProbeCache.get(normalizedPath));
+    }
+
+    const probePromise = (async () => {
+      const probeUrl = toProbeUrl(normalizedPath);
+
+      if (!probeUrl) {
+        return false;
+      }
+
+      try {
+        const headResponse = await fetch(probeUrl, {
+          method: 'HEAD',
+          cache: 'no-store',
+        });
+
+        if (headResponse.ok) {
+          return true;
+        }
+
+        if (headResponse.status !== 405 && headResponse.status !== 501) {
+          return false;
+        }
+      } catch (_error) {
+        // Fallback to GET probe below.
+      }
+
+      try {
+        const getResponse = await fetch(probeUrl, {
+          method: 'GET',
+          cache: 'no-store',
+        });
+        return getResponse.ok;
+      } catch (_error) {
+        return false;
+      }
+    })();
+
+    store.editorialProbeCache.set(normalizedPath, probePromise);
+    const exists = await probePromise;
+    store.editorialProbeCache.set(normalizedPath, exists);
+    return exists;
+  };
+
+  const detectEditorialGallery = async (store, itemId) => {
+    const normalizedId = normalizeId(itemId);
+
+    if (!normalizedId) {
+      return [];
+    }
+
+    if (store.editorialDetections.has(normalizedId)) {
+      return store.editorialDetections.get(normalizedId).slice();
+    }
+
+    if (store.editorialDetectionPromises.has(normalizedId)) {
+      const pendingResult = await store.editorialDetectionPromises.get(normalizedId);
+      return pendingResult.slice();
+    }
+
+    const detectionPromise = (async () => {
+      const idVariants = getEditorialIdVariants(normalizedId);
+      let detectedPaths = [];
+
+      for (const editorialId of idVariants) {
+        const candidatePaths = [];
+
+        for (let slideIndex = 0; slideIndex < MAX_EDITORIAL_SLIDES; slideIndex += 1) {
+          const candidatePath = buildEditorialSlidePath(editorialId, slideIndex);
+          const exists = await probeAssetExists(store, candidatePath);
+
+          if (!exists) {
+            break;
+          }
+
+          candidatePaths.push(candidatePath);
+        }
+
+        if (candidatePaths.length) {
+          detectedPaths = candidatePaths;
+          break;
+        }
+      }
+
+      store.editorialDetections.set(normalizedId, detectedPaths.slice());
+      store.editorialDetectionPromises.delete(normalizedId);
+      return detectedPaths;
+    })();
+
+    store.editorialDetectionPromises.set(normalizedId, detectionPromise);
+    const result = await detectionPromise;
+    return result.slice();
+  };
+
   const buildMediaStore = async () => {
     const mediaJson = await fetchJson(MEDIA_URL, 'media.json', {
       optional: true,
@@ -281,6 +429,24 @@
   const getGallery = (itemId) => {
     const store = ensureStore();
     return resolveGallery(store, itemId);
+  };
+
+  const getEditorialGallery = async (itemId) => {
+    let store;
+
+    try {
+      store = await loadMediaStore();
+    } catch (_error) {
+      store = ensureStore();
+    }
+
+    const configuredGallery = resolveGallery(store, itemId);
+
+    if (configuredGallery.length) {
+      return configuredGallery;
+    }
+
+    return detectEditorialGallery(store, itemId);
   };
 
   const prefetch = (itemId, variant = 'modal') => {
@@ -344,6 +510,7 @@
     get,
     getAlt,
     getGallery,
+    getEditorialGallery,
     getMissingMediaIds,
     getConfigSnapshot,
     prefetch,
