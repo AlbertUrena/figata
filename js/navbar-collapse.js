@@ -17,6 +17,7 @@
   const COLLAPSED_CLASS = "nav--collapsed";
   const MOBILE_BREAKPOINT = 820;
   const FORCE_COLLAPSED_MOBILE_ATTR = "data-nav-force-collapsed-mobile";
+  const MENU_ROUTE_VIEW_TRANSITION_ROOT_ATTR = "data-menu-route-vt";
   const THRESHOLD_OFFSET = 462;
   const fallbackThresholdRaw =
     root.getAttribute("data-nav-collapse-threshold") ||
@@ -190,9 +191,18 @@
     el.style.bottom = `${offset}px`;
   };
 
+  const isDetailViewActive = () =>
+    document.body?.getAttribute("data-menu-page-view") === "detail";
+
+  const isMenuRouteViewTransitionActive = () =>
+    root.getAttribute(MENU_ROUTE_VIEW_TRANSITION_ROOT_ATTR) === "active";
+
   const setCollapsed = (collapsed) => {
     const next = Boolean(collapsed);
-    const shouldSnapCollapsed = next && isForcedMobileCollapse();
+    const shouldSnapCollapsed =
+      next &&
+      isForcedMobileCollapse() &&
+      (!isDetailViewActive() || isMenuRouteViewTransitionActive());
 
     const snapProgress = (snapTarget) => {
       target = snapTarget ? 1 : 0;
@@ -361,6 +371,11 @@
 
   if ("MutationObserver" in window) {
     rootAttrObserver = new MutationObserver(() => {
+      if (isMenuRouteViewTransitionActive()) {
+        evaluate();
+        return;
+      }
+
       scheduleEvaluate();
     });
     rootAttrObserver.observe(root, {

@@ -292,9 +292,7 @@ html.nav--collapsed .navbar__inner {
   transition:
     border-radius 360ms cubic-bezier(0.22, 1, 0.36, 1),
     background-color 360ms ease,
-    box-shadow 360ms ease,
-    backdrop-filter 360ms ease,
-    -webkit-backdrop-filter 360ms ease;
+    box-shadow 360ms ease;
 }
 
 .navbar--menu-route .navbar__brand-slot {
@@ -533,8 +531,8 @@ html.nav--collapsed .site-header[data-menu-sticky-mode="sticky"][data-menu-stick
 }
 
 .navbar--menu-route .navbar__mobile-action--account svg {
-  width: 17px;
-  height: 17px;
+  width: 15.3px;
+  height: 15.3px;
 }
 
 .navbar--menu-route .navbar__mobile-search-panel,
@@ -2944,9 +2942,7 @@ html.page-reload-transition main {
     overflow: hidden;
     transition:
       background-color 360ms ease,
-      box-shadow 360ms ease,
-      backdrop-filter 360ms ease,
-      -webkit-backdrop-filter 360ms ease;
+      box-shadow 360ms ease;
   }
 
   html.nav--collapsed .site-header[data-menu-sticky-mode="sticky"] .navbar--menu-route .navbar__inner {
@@ -3094,6 +3090,11 @@ html.page-reload-transition main {
   .navbar--menu-route .navbar__mobile-action svg {
     width: 16px;
     height: 16px;
+  }
+
+  .navbar--menu-route .navbar__mobile-action--account svg {
+    width: 14.4px;
+    height: 14.4px;
   }
 
   .navbar--menu-route .navbar__mobile-search-tool {

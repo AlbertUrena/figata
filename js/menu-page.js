@@ -32,6 +32,45 @@
   const SEARCH_HELPER_BLUR_PX = 6;
   const SEARCH_HELPER_OUT_EASE = 'cubic-bezier(0.4, 0, 1, 1)';
   const SEARCH_HELPER_IN_EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+  const MENU_CART_TARGET_SELECTOR = '[data-menu-cart-target]';
+  const MENU_CART_BADGE_CLASS = 'navbar__menu-cart-badge';
+  const MENU_CART_PULSE_CLASS = 'is-menu-cart-pulse';
+  const MENU_CART_COUNT_CAP = 99;
+  const MENU_CART_PULSE_MS = 320;
+  const MENU_CART_FLIGHT_MIN_MS = 460;
+  const MENU_CART_FLIGHT_MAX_MS = 760;
+  const MENU_CART_FLIGHT_EASE = 'cubic-bezier(0.18, 0.78, 0.32, 1)';
+  const MENU_CART_FALLBACK_COMMIT_DELAY_MS = 140;
+  const ACCOUNT_STORAGE_KEY = 'figata:menu-account:v2';
+  const ACCOUNT_STORAGE_VERSION = 2;
+  const ACCOUNT_STORAGE_TTL_MS = 3 * 60 * 60 * 1000;
+  const ACCOUNT_UNCATEGORIZED_GROUP_ID = '__otros__';
+  const ACCOUNT_UNCATEGORIZED_GROUP_LABEL = 'Otros';
+  const ACCOUNT_ITBIS_RATE = 0.18;
+  const ACCOUNT_LEGAL_TIP_RATE = 0.1;
+  const ACCOUNT_VALUE_OUT_DURATION_MS = SEARCH_HELPER_OUT_DURATION_MS;
+  const ACCOUNT_VALUE_IN_DURATION_MS = SEARCH_HELPER_IN_DURATION_MS;
+  const ACCOUNT_VALUE_IN_DELAY_MS = SEARCH_HELPER_IN_DELAY_MS;
+  const ACCOUNT_VALUE_OUT_STAGGER_MS = SEARCH_HELPER_OUT_STAGGER_MS;
+  const ACCOUNT_VALUE_IN_STAGGER_MS = SEARCH_HELPER_IN_STAGGER_MS;
+  const ACCOUNT_VALUE_OUT_Y_PX = SEARCH_HELPER_OUT_Y_PX;
+  const ACCOUNT_VALUE_IN_Y_PX = SEARCH_HELPER_IN_Y_PX;
+  const ACCOUNT_VALUE_BLUR_PX = SEARCH_HELPER_BLUR_PX;
+  const ACCOUNT_VALUE_OUT_EASE = SEARCH_HELPER_OUT_EASE;
+  const ACCOUNT_VALUE_IN_EASE = SEARCH_HELPER_IN_EASE;
+  const ACCOUNT_REMOVE_TOAST_DURATION_MS = 6000;
+  const ACCOUNT_REMOVE_TOAST_TITLE = 'Ítem eliminado';
+  const ACCOUNT_REMOVE_TOAST_COPY = 'Si fue un error, aún puedes deshacerlo';
+  const ACCOUNT_CARD_VIEW_TRANSITION_NAME_PREFIX = 'menu-account-card-';
+  const ACCOUNT_CARD_VIEW_TRANSITION_MS = 360;
+  const ACCOUNT_CARD_VIEW_TRANSITION_EASE = 'cubic-bezier(0, 0, 0.2, 1)';
+  const ACCOUNT_CARD_VIEW_TRANSITION_ROOT_ATTR = 'data-account-card-vt';
+  const ACCOUNT_CARD_VIEW_TRANSITION_ROOT_ACTIVE = 'active';
+  const MENU_ROUTE_VIEW_TRANSITION_ROOT_ATTR = 'data-menu-route-vt';
+  const MENU_ROUTE_VIEW_TRANSITION_ROOT_ACTIVE = 'active';
+  const MENU_ROUTE_VIEW_TRANSITION_DIRECTION_ATTR = 'data-menu-route-vt-direction';
+  const MENU_ROUTE_VIEW_TRANSITION_FORWARD = 'forward';
+  const MENU_ROUTE_VIEW_TRANSITION_BACK = 'back';
   const FILTER_MODAL_EXIT_MS = 520;
   const FILTER_MODAL_FOOTER_SHADOW_EPSILON = 2;
   const SEARCH_EMPTY_ART_PATH = '/assets/home/no-result.webp';
@@ -159,6 +198,18 @@
     filterDialog instanceof HTMLElement
       ? filterDialog.querySelector('.menu-filter-modal__body')
       : null;
+  const accountModal = document.getElementById('menu-account-modal');
+  const accountDialog = document.getElementById('menu-account-modal-dialog');
+  const accountCloseButton = document.getElementById('menu-account-modal-close');
+  const accountModalBody = document.getElementById('menu-account-modal-body');
+  const accountSubtotalNode = document.getElementById('menu-account-subtotal');
+  const accountItbisNode = document.getElementById('menu-account-itbis');
+  const accountLegalTipNode = document.getElementById('menu-account-legal-tip');
+  const accountTotalNode = document.getElementById('menu-account-total');
+  const accountTotalInfoToggle = document.getElementById('menu-account-total-info-toggle');
+  const accountToast = document.getElementById('menu-account-toast');
+  const accountToastTitle = document.getElementById('menu-account-toast-title');
+  const accountToastCopy = document.getElementById('menu-account-toast-copy');
   const traitsApi = window.FigataMenuTraits;
   const ORGANOLEPTIC_PROFILE_IDS = new Set([
     'fresh',
@@ -289,10 +340,26 @@
     priceMax: null,
   });
 
+  const createDefaultAccountTotals = () => ({
+    subtotal: 0,
+    itbis: 0,
+    legalTip: 0,
+    total: 0,
+    units: 0,
+  });
+
+  const createDefaultAccount = () => ({
+    itemsById: new Map(),
+    order: [],
+    totals: createDefaultAccountTotals(),
+  });
+
   const state = {
     categories: [],
     sectionsByCategoryId: new Map(),
     itemsById: new Map(),
+    visualCartCount: 0,
+    account: createDefaultAccount(),
     activeCategoryId: '',
     searchQuery: '',
     renderedSearchSignature: '',
@@ -305,12 +372,15 @@
     searchTransitionToken: 0,
     searchTransitioning: false,
     filterModalOpen: false,
+    accountModalOpen: false,
     draftFilters: createDefaultFilters(),
     appliedFilters: createDefaultFilters(),
     detailSensoryView: DEFAULT_DETAIL_SENSORY_VIEW,
     globalPriceMin: 0,
     globalPriceMax: 0,
   };
+  const cartPulseTimeoutByTarget = new WeakMap();
+  const accountMorphCleanupByNode = new WeakMap();
   let bridgeReadyResolver = null;
   let detailSensoryRadarTooltipController = null;
   let detailSensoryBarsTooltipController = null;
@@ -321,6 +391,15 @@
   let filterModalCloseTimerId = 0;
   let filterModalChromeFrameId = 0;
   let filterModalRestoreFocusNode = null;
+  let accountModalCloseTimerId = 0;
+  let accountModalRestoreFocusNode = null;
+  let accountRemovalToastTimerId = 0;
+  let accountRemovalToastSnapshot = null;
+  let accountCardViewTransitionStyleNode = null;
+  let accountCardViewTransitionActive = false;
+  let accountCardViewTransitionTask = Promise.resolve();
+  let menuRouteViewTransitionTask = Promise.resolve();
+  let lastRenderedRouteItemId = '';
   let organolepticIconsPromise = null;
   let homePopularFeaturedIdsPromise = null;
   let organolepticIconPathsByProfileId = new Map();
@@ -344,6 +423,1416 @@
   const normalizeText = (value) => String(value || '').trim();
   const isObject = (value) =>
     Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+  const clampNumber = (value, min, max) => Math.min(max, Math.max(min, value));
+  const wait = (ms) =>
+    new Promise((resolve) => {
+      window.setTimeout(resolve, ms);
+    });
+  const supportsAccountCardViewTransition = () =>
+    typeof document.startViewTransition === 'function' &&
+    (
+      !window.CSS ||
+      typeof window.CSS.supports !== 'function' ||
+      window.CSS.supports('view-transition-name: menu-account-card-test')
+    );
+  const toAccountCardViewTransitionName = (itemId) => {
+    const token = normalizeText(itemId)
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    return `${ACCOUNT_CARD_VIEW_TRANSITION_NAME_PREFIX}${token || 'item'}`;
+  };
+  const syncAccountCardViewTransitionIdentity = (card, itemId) => {
+    if (!(card instanceof HTMLElement)) {
+      return;
+    }
+
+    const viewTransitionName = toAccountCardViewTransitionName(itemId);
+    card.dataset.accountCardVtName = viewTransitionName;
+    card.style.viewTransitionName = viewTransitionName;
+  };
+  const clearAccountCardViewTransitionRuntime = () => {
+    document.documentElement.removeAttribute(ACCOUNT_CARD_VIEW_TRANSITION_ROOT_ATTR);
+
+    if (!(accountCardViewTransitionStyleNode instanceof HTMLStyleElement)) {
+      return;
+    }
+
+    accountCardViewTransitionStyleNode.remove();
+    accountCardViewTransitionStyleNode = null;
+  };
+  const setAccountCardViewTransitionRuntimeStyles = (
+    { exitName = '', enterName = '' } = {}
+  ) => {
+    const rootSelector = `html[${ACCOUNT_CARD_VIEW_TRANSITION_ROOT_ATTR}="${ACCOUNT_CARD_VIEW_TRANSITION_ROOT_ACTIVE}"]`;
+    const cssRules = [];
+
+    if (exitName) {
+      cssRules.push(
+        `${rootSelector}::view-transition-old(${exitName}) { animation-name: menu-account-card-vt-exit-left; animation-duration: ${ACCOUNT_CARD_VIEW_TRANSITION_MS}ms; animation-timing-function: ${ACCOUNT_CARD_VIEW_TRANSITION_EASE}; animation-fill-mode: both; }`,
+        `${rootSelector}::view-transition-new(${exitName}) { animation: none; opacity: 0; }`
+      );
+    }
+
+    if (enterName) {
+      cssRules.push(
+        `${rootSelector}::view-transition-old(${enterName}) { animation: none; opacity: 0; }`,
+        `${rootSelector}::view-transition-new(${enterName}) { animation-name: menu-account-card-vt-enter-left; animation-duration: ${ACCOUNT_CARD_VIEW_TRANSITION_MS}ms; animation-timing-function: ${ACCOUNT_CARD_VIEW_TRANSITION_EASE}; animation-fill-mode: both; }`
+      );
+    }
+
+    if (!cssRules.length) {
+      return;
+    }
+
+    if (!(accountCardViewTransitionStyleNode instanceof HTMLStyleElement)) {
+      accountCardViewTransitionStyleNode = document.createElement('style');
+      accountCardViewTransitionStyleNode.setAttribute('data-menu-account-card-vt', 'true');
+      document.head.appendChild(accountCardViewTransitionStyleNode);
+    }
+
+    accountCardViewTransitionStyleNode.textContent = cssRules.join('\n');
+  };
+  const runAccountCardsViewTransition = (
+    updateFn,
+    { exitItemId = '', enterItemId = '' } = {}
+  ) => {
+    if (typeof updateFn !== 'function') {
+      return;
+    }
+
+    const normalizedExitItemId = normalizeText(exitItemId);
+    const normalizedEnterItemId = normalizeText(enterItemId);
+    const hasCardDelta = Boolean(normalizedExitItemId || normalizedEnterItemId);
+    const canAnimate =
+      hasCardDelta &&
+      state.accountModalOpen &&
+      accountModal instanceof HTMLElement &&
+      !accountModal.hidden &&
+      !reducedMotionQuery.matches &&
+      supportsAccountCardViewTransition();
+
+    if (!canAnimate) {
+      updateFn();
+      return;
+    }
+
+    const exitName = normalizedExitItemId
+      ? toAccountCardViewTransitionName(normalizedExitItemId)
+      : '';
+    const enterName = normalizedEnterItemId
+      ? toAccountCardViewTransitionName(normalizedEnterItemId)
+      : '';
+    const runTransition = () => {
+      const stillCanAnimate =
+        state.accountModalOpen &&
+        accountModal instanceof HTMLElement &&
+        !accountModal.hidden &&
+        !reducedMotionQuery.matches &&
+        supportsAccountCardViewTransition();
+
+      if (!stillCanAnimate) {
+        updateFn();
+        return Promise.resolve();
+      }
+
+      clearAccountCardViewTransitionRuntime();
+      document.documentElement.setAttribute(
+        ACCOUNT_CARD_VIEW_TRANSITION_ROOT_ATTR,
+        ACCOUNT_CARD_VIEW_TRANSITION_ROOT_ACTIVE
+      );
+      setAccountCardViewTransitionRuntimeStyles({ exitName, enterName });
+      accountCardViewTransitionActive = true;
+
+      try {
+        const transition = document.startViewTransition(() => {
+          updateFn();
+        });
+
+        return Promise.resolve(transition?.finished)
+          .catch(() => {})
+          .finally(() => {
+            accountCardViewTransitionActive = false;
+            clearAccountCardViewTransitionRuntime();
+          });
+      } catch (error) {
+        accountCardViewTransitionActive = false;
+        clearAccountCardViewTransitionRuntime();
+        updateFn();
+        return Promise.resolve();
+      }
+    };
+
+    if (accountCardViewTransitionActive) {
+      accountCardViewTransitionTask = accountCardViewTransitionTask
+        .catch(() => {})
+        .then(() => runTransition());
+      return;
+    }
+
+    accountCardViewTransitionTask = runTransition();
+  };
+  const isElementVisibleForFlight = (element) => {
+    if (!(element instanceof HTMLElement) || !element.isConnected) {
+      return false;
+    }
+
+    const rect = element.getBoundingClientRect();
+    if (rect.width <= 1 || rect.height <= 1) {
+      return false;
+    }
+
+    let cursor = element;
+
+    while (cursor instanceof HTMLElement) {
+      const styles = window.getComputedStyle(cursor);
+
+      if (styles.display === 'none' || styles.visibility === 'hidden') {
+        return false;
+      }
+
+      const opacity = Number(styles.opacity);
+      if (Number.isFinite(opacity) && opacity <= 0.05) {
+        return false;
+      }
+
+      cursor = cursor.parentElement;
+    }
+
+    return true;
+  };
+  const getMenuCartTargets = () =>
+    Array.from(document.querySelectorAll(MENU_CART_TARGET_SELECTOR)).filter(
+      (target) => target instanceof HTMLElement
+    );
+  const getPreferredMenuCartTarget = () => {
+    const targets = getMenuCartTargets();
+    if (!targets.length) {
+      return null;
+    }
+
+    const visibleTarget = targets.find((target) => isElementVisibleForFlight(target));
+    return visibleTarget || targets[0];
+  };
+  const formatMenuCartCount = (count) =>
+    count > MENU_CART_COUNT_CAP ? `${MENU_CART_COUNT_CAP}+` : String(count);
+  const accountMoneyFormatter = new Intl.NumberFormat('es-DO', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  const ensureMenuCartBadge = (target) => {
+    let badge = target.querySelector(`.${MENU_CART_BADGE_CLASS}`);
+
+    if (!(badge instanceof HTMLElement)) {
+      badge = document.createElement('span');
+      badge.className = MENU_CART_BADGE_CLASS;
+      badge.textContent = '0';
+      badge.hidden = true;
+      badge.setAttribute('aria-live', 'polite');
+      badge.setAttribute('aria-atomic', 'true');
+      target.appendChild(badge);
+    }
+
+    return badge;
+  };
+  const syncMenuCartBadges = () => {
+    const targets = getMenuCartTargets();
+    const units = Number(state.account?.totals?.units) || 0;
+    const hasItems = units > 0;
+    const countLabel = formatMenuCartCount(units);
+    state.visualCartCount = units;
+
+    targets.forEach((target) => {
+      const badge = ensureMenuCartBadge(target);
+      target.setAttribute('aria-haspopup', 'dialog');
+      target.setAttribute('aria-controls', 'menu-account-modal');
+      target.setAttribute('aria-expanded', state.accountModalOpen ? 'true' : 'false');
+      target.classList.toggle('has-menu-cart-items', hasItems);
+      badge.hidden = !hasItems;
+      badge.textContent = hasItems ? countLabel : '0';
+    });
+  };
+  const pulseMenuCartTargets = () => {
+    const targets = getMenuCartTargets();
+
+    targets.forEach((target) => {
+      const icon = target.querySelector('svg');
+      const pulseNode = icon instanceof SVGElement ? icon : target;
+      pulseNodeWithMenuCartClass(pulseNode);
+    });
+  };
+  const pulseNodeWithMenuCartClass = (node) => {
+    if (
+      !(node instanceof HTMLElement) &&
+      !(node instanceof SVGElement)
+    ) {
+      return;
+    }
+
+    const activeTimeoutId = cartPulseTimeoutByTarget.get(node);
+    if (Number.isFinite(activeTimeoutId)) {
+      window.clearTimeout(activeTimeoutId);
+    }
+
+    node.classList.remove(MENU_CART_PULSE_CLASS);
+    // Force reflow so repeated interactions can replay the pulse class.
+    void node.getBoundingClientRect();
+    node.classList.add(MENU_CART_PULSE_CLASS);
+
+    const timeoutId = window.setTimeout(() => {
+      node.classList.remove(MENU_CART_PULSE_CLASS);
+      cartPulseTimeoutByTarget.delete(node);
+    }, MENU_CART_PULSE_MS + 34);
+
+    cartPulseTimeoutByTarget.set(node, timeoutId);
+  };
+  const ensureAccountStepperGlyph = (button, fallbackGlyph = '') => {
+    if (!(button instanceof HTMLButtonElement)) {
+      return null;
+    }
+
+    let glyphNode = button.querySelector('.menu-account-modal__stepper-glyph');
+    if (!(glyphNode instanceof HTMLElement)) {
+      glyphNode = document.createElement('span');
+      glyphNode.className = 'menu-account-modal__stepper-glyph';
+      button.replaceChildren(glyphNode);
+    }
+
+    const explicitGlyph = normalizeText(fallbackGlyph);
+    const currentGlyph = normalizeText(glyphNode.textContent);
+    const action = normalizeText(button.dataset.accountAction);
+    const actionFallback = action === 'decrease' ? '-' : '+';
+    const nextGlyph = explicitGlyph || currentGlyph || actionFallback;
+    glyphNode.textContent = nextGlyph;
+    glyphNode.setAttribute('aria-hidden', 'true');
+    return glyphNode;
+  };
+  const pulseAccountStepperGlyph = (button) => {
+    if (!(button instanceof HTMLButtonElement)) {
+      return;
+    }
+
+    const action = normalizeText(button.dataset.accountAction);
+    if (action !== 'increase' && action !== 'decrease') {
+      return;
+    }
+
+    const glyphNode = ensureAccountStepperGlyph(button);
+    if (!(glyphNode instanceof HTMLElement)) {
+      return;
+    }
+
+    pulseNodeWithMenuCartClass(glyphNode);
+    pulseNodeWithMenuCartClass(button);
+  };
+  const resolveCardAddSourceImage = (baseImage, hoverImage) => {
+    if (
+      baseImage instanceof HTMLImageElement &&
+      !baseImage.hidden &&
+      isElementVisibleForFlight(baseImage)
+    ) {
+      return baseImage;
+    }
+
+    if (
+      hoverImage instanceof HTMLImageElement &&
+      !hoverImage.hidden &&
+      isElementVisibleForFlight(hoverImage)
+    ) {
+      return hoverImage;
+    }
+
+    if (baseImage instanceof HTMLImageElement) {
+      return baseImage;
+    }
+
+    if (hoverImage instanceof HTMLImageElement) {
+      return hoverImage;
+    }
+
+    return null;
+  };
+  const createMenuCartFlightClone = (sourceImage, sourceRect) => {
+    const clone = sourceImage.cloneNode(true);
+
+    if (!(clone instanceof HTMLImageElement)) {
+      return null;
+    }
+
+    const sourceStyles = window.getComputedStyle(sourceImage);
+    clone.classList.add('menu-page-cart-flight-clone');
+    clone.setAttribute('aria-hidden', 'true');
+    clone.removeAttribute('id');
+    clone.removeAttribute('srcset');
+    clone.removeAttribute('sizes');
+    clone.style.left = `${sourceRect.left}px`;
+    clone.style.top = `${sourceRect.top}px`;
+    clone.style.width = `${sourceRect.width}px`;
+    clone.style.height = `${sourceRect.height}px`;
+    clone.style.borderRadius = sourceStyles.borderRadius;
+    clone.style.objectFit = sourceStyles.objectFit || 'cover';
+    clone.style.objectPosition = sourceStyles.objectPosition || 'center center';
+    return clone;
+  };
+  const animateMenuCartFlight = async (sourceImage, target) => {
+    if (
+      !(sourceImage instanceof HTMLImageElement) ||
+      !(target instanceof HTMLElement) ||
+      !(menuPageBody instanceof HTMLBodyElement)
+    ) {
+      await wait(MENU_CART_FALLBACK_COMMIT_DELAY_MS);
+      return;
+    }
+
+    const sourceRect = sourceImage.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+
+    const sourceHasSize = sourceRect.width > 4 && sourceRect.height > 4;
+    const targetHasSize = targetRect.width > 4 && targetRect.height > 4;
+
+    if (!sourceHasSize || !targetHasSize || reducedMotionQuery.matches) {
+      await wait(MENU_CART_FALLBACK_COMMIT_DELAY_MS);
+      return;
+    }
+
+    const clone = createMenuCartFlightClone(sourceImage, sourceRect);
+    if (!(clone instanceof HTMLImageElement)) {
+      await wait(MENU_CART_FALLBACK_COMMIT_DELAY_MS);
+      return;
+    }
+
+    menuPageBody.appendChild(clone);
+
+    const sourceCenterX = sourceRect.left + sourceRect.width / 2;
+    const sourceCenterY = sourceRect.top + sourceRect.height / 2;
+    const targetCenterX = targetRect.left + targetRect.width / 2;
+    const targetCenterY = targetRect.top + targetRect.height / 2;
+    const deltaX = targetCenterX - sourceCenterX;
+    const deltaY = targetCenterY - sourceCenterY;
+    const travel = Math.hypot(deltaX, deltaY);
+    const travelDuration = Math.round(
+      clampNumber(430 + travel * 0.34, MENU_CART_FLIGHT_MIN_MS, MENU_CART_FLIGHT_MAX_MS)
+    );
+    const arcLift = Math.min(76, Math.max(18, travel * 0.14));
+    const midX = deltaX * 0.72;
+    const midY = deltaY * 0.72 - arcLift;
+
+    await new Promise((resolve) => {
+      let settled = false;
+      const settle = () => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        if (clone.isConnected) {
+          clone.remove();
+        }
+        resolve();
+      };
+
+      const animation = clone.animate(
+        [
+          {
+            transform: 'translate3d(0, 0, 0) scale(1)',
+            opacity: 1,
+          },
+          {
+            transform: `translate3d(${midX}px, ${midY}px, 0) scale(0.62)`,
+            opacity: 0.58,
+            offset: 0.7,
+          },
+          {
+            transform: `translate3d(${deltaX}px, ${deltaY}px, 0) scale(0.16)`,
+            opacity: 0,
+          },
+        ],
+        {
+          duration: travelDuration,
+          easing: MENU_CART_FLIGHT_EASE,
+          fill: 'forwards',
+        }
+      );
+
+      if (animation && animation.finished && typeof animation.finished.then === 'function') {
+        animation.finished.then(settle).catch(settle);
+      } else {
+        window.setTimeout(settle, travelDuration + 40);
+      }
+    });
+  };
+  const commitMenuCartVisualAdd = (itemId) => {
+    const normalizedItemId = normalizeText(itemId);
+    if (!normalizedItemId) {
+      return;
+    }
+
+    addItemToAccount(normalizedItemId, 1, { pulse: true });
+  };
+  const runMenuCartVisualAdd = async (sourceImage, itemId) => {
+    const target = getPreferredMenuCartTarget();
+    await animateMenuCartFlight(sourceImage, target);
+    commitMenuCartVisualAdd(itemId);
+  };
+  const roundAccountValue = (value) =>
+    Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+  const parseCurrencyValue = (value) => {
+    const raw = normalizeText(value);
+    if (!raw) {
+      return NaN;
+    }
+
+    const cleaned = raw.replace(/[^0-9.,-]/g, '');
+    if (!cleaned) {
+      return NaN;
+    }
+
+    const commaIndex = cleaned.lastIndexOf(',');
+    const dotIndex = cleaned.lastIndexOf('.');
+    let normalized = cleaned;
+
+    if (commaIndex >= 0 && dotIndex >= 0) {
+      const decimalSeparator = commaIndex > dotIndex ? ',' : '.';
+      const thousandsSeparator = decimalSeparator === ',' ? '.' : ',';
+      normalized = cleaned.split(thousandsSeparator).join('');
+      if (decimalSeparator === ',') {
+        normalized = normalized.replace(',', '.');
+      }
+    } else if (commaIndex >= 0) {
+      const segments = cleaned.split(',');
+      if (segments.length === 2 && segments[1].length <= 2) {
+        normalized = `${segments[0].replace(/,/g, '')}.${segments[1]}`;
+      } else {
+        normalized = cleaned.replace(/,/g, '');
+      }
+    } else {
+      normalized = cleaned.replace(/,/g, '');
+    }
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : NaN;
+  };
+  const formatAccountMoneyParts = (value) => {
+    const safeValue = Number.isFinite(value) ? Math.max(value, 0) : 0;
+    return {
+      currency: 'RD$',
+      amount: accountMoneyFormatter.format(roundAccountValue(safeValue)),
+    };
+  };
+  const formatAccountMoney = (value) => {
+    const parts = formatAccountMoneyParts(value);
+    return `${parts.currency} ${parts.amount}`;
+  };
+  const createAccountMorphChar = (character) => {
+    const char = document.createElement('span');
+    char.className = 'menu-account-modal__morph-char';
+    char.textContent = character === ' ' ? '\u00A0' : character;
+    return char;
+  };
+  const setAccountMorphCharState = (char, { opacity, blurPx, translateYPx }) => {
+    char.style.opacity = String(opacity);
+    char.style.filter = `blur(${blurPx}px)`;
+    char.style.transform = `translateY(${translateYPx}px)`;
+  };
+  const createAccountMorphLayer = (value, initialState = null) => {
+    const layer = document.createElement('span');
+    layer.className = 'menu-account-modal__morph-layer';
+
+    Array.from(value).forEach((character) => {
+      const char = createAccountMorphChar(character);
+      if (initialState) {
+        setAccountMorphCharState(char, initialState);
+      }
+      layer.appendChild(char);
+    });
+
+    return layer;
+  };
+  const resetAccountMorphCharTransitions = (chars) => {
+    chars.forEach((char) => {
+      char.style.transitionProperty = 'none';
+      char.style.transitionDuration = '0ms';
+      char.style.transitionDelay = '0ms';
+      char.style.transitionTimingFunction = 'linear';
+    });
+  };
+  const animateAccountMorphChars = (
+    chars,
+    {
+      durationMs,
+      staggerMs,
+      delayMs = 0,
+      easing,
+      targetOpacity,
+      targetBlurPx,
+      targetTranslateYPx,
+    }
+  ) => {
+    chars.forEach((char, index) => {
+      char.style.transitionProperty = 'transform, opacity, filter';
+      char.style.transitionDuration = `${durationMs}ms`;
+      char.style.transitionTimingFunction = easing;
+      char.style.transitionDelay = `${delayMs + index * staggerMs}ms`;
+      setAccountMorphCharState(char, {
+        opacity: targetOpacity,
+        blurPx: targetBlurPx,
+        translateYPx: targetTranslateYPx,
+      });
+    });
+  };
+  const setAccountTextValue = (node, value, { animate = false } = {}) => {
+    if (!(node instanceof HTMLElement)) {
+      return;
+    }
+
+    const nextText = normalizeText(value);
+    if (node.dataset.accountMorphValue === nextText) {
+      return;
+    }
+
+    const activeCleanup = accountMorphCleanupByNode.get(node);
+    if (typeof activeCleanup === 'function') {
+      activeCleanup();
+      accountMorphCleanupByNode.delete(node);
+    }
+
+    const previousText = normalizeText(node.textContent);
+    if (!animate || reducedMotionQuery.matches || !previousText || previousText === nextText) {
+      node.textContent = nextText;
+      node.dataset.accountMorphValue = nextText;
+      return;
+    }
+
+    const shell = document.createElement('span');
+    shell.className = 'menu-account-modal__morph-shell';
+    if (
+      node instanceof HTMLParagraphElement ||
+      node.classList.contains('menu-account-modal__amount')
+    ) {
+      const textAlign = window.getComputedStyle(node).textAlign;
+      if (textAlign === 'right' || textAlign === 'end') {
+        shell.classList.add('menu-account-modal__morph-shell--end');
+      } else if (textAlign === 'center') {
+        shell.classList.add('menu-account-modal__morph-shell--center');
+      }
+    }
+
+    const oldLayer = createAccountMorphLayer(previousText, {
+      opacity: 1,
+      blurPx: 0,
+      translateYPx: 0,
+    });
+    const newLayer = createAccountMorphLayer(nextText, {
+      opacity: 0,
+      blurPx: ACCOUNT_VALUE_BLUR_PX,
+      translateYPx: ACCOUNT_VALUE_IN_Y_PX,
+    });
+    const oldChars = Array.from(oldLayer.children);
+    const newChars = Array.from(newLayer.children);
+
+    shell.append(oldLayer, newLayer);
+    resetAccountMorphCharTransitions(oldChars);
+    resetAccountMorphCharTransitions(newChars);
+    node.replaceChildren(shell);
+    node.dataset.accountMorphValue = nextText;
+
+    let settled = false;
+    let frameId = 0;
+    let finishTimerId = 0;
+    const settle = () => {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      node.textContent = nextText;
+      node.dataset.accountMorphValue = nextText;
+      accountMorphCleanupByNode.delete(node);
+    };
+
+    frameId = window.requestAnimationFrame(() => {
+      frameId = 0;
+
+      if (!node.contains(shell)) {
+        return;
+      }
+
+      animateAccountMorphChars(oldChars, {
+        durationMs: ACCOUNT_VALUE_OUT_DURATION_MS,
+        staggerMs: ACCOUNT_VALUE_OUT_STAGGER_MS,
+        easing: ACCOUNT_VALUE_OUT_EASE,
+        targetOpacity: 0,
+        targetBlurPx: ACCOUNT_VALUE_BLUR_PX,
+        targetTranslateYPx: ACCOUNT_VALUE_OUT_Y_PX,
+      });
+      animateAccountMorphChars(newChars, {
+        durationMs: ACCOUNT_VALUE_IN_DURATION_MS,
+        staggerMs: ACCOUNT_VALUE_IN_STAGGER_MS,
+        delayMs: ACCOUNT_VALUE_IN_DELAY_MS,
+        easing: ACCOUNT_VALUE_IN_EASE,
+        targetOpacity: 1,
+        targetBlurPx: 0,
+        targetTranslateYPx: 0,
+      });
+    });
+
+    const totalOutMs =
+      ACCOUNT_VALUE_OUT_DURATION_MS +
+      Math.max(0, oldChars.length - 1) * ACCOUNT_VALUE_OUT_STAGGER_MS;
+    const totalInMs =
+      ACCOUNT_VALUE_IN_DELAY_MS +
+      ACCOUNT_VALUE_IN_DURATION_MS +
+      Math.max(0, newChars.length - 1) * ACCOUNT_VALUE_IN_STAGGER_MS;
+    finishTimerId = window.setTimeout(settle, Math.max(totalOutMs, totalInMs) + 40);
+
+    accountMorphCleanupByNode.set(node, () => {
+      if (frameId) {
+        window.cancelAnimationFrame(frameId);
+      }
+      if (finishTimerId) {
+        window.clearTimeout(finishTimerId);
+      }
+      settle();
+    });
+  };
+  const syncAccountMoneyValueNode = (
+    node,
+    value,
+    { dimCurrency = false, animate = false } = {}
+  ) => {
+    if (!(node instanceof HTMLElement)) {
+      return;
+    }
+
+    const parts = formatAccountMoneyParts(value);
+    let currencyNode = node.querySelector('.menu-account-modal__currency');
+    let amountNode = node.querySelector('.menu-account-modal__amount');
+
+    if (!(currencyNode instanceof HTMLElement) || !(amountNode instanceof HTMLElement)) {
+      currencyNode = document.createElement('span');
+      amountNode = document.createElement('span');
+      node.replaceChildren(
+        currencyNode,
+        document.createTextNode(' '),
+        amountNode
+      );
+    }
+
+    currencyNode.className = dimCurrency
+      ? 'menu-account-modal__currency menu-account-modal__currency--muted'
+      : 'menu-account-modal__currency';
+    currencyNode.textContent = parts.currency;
+    amountNode.className = 'menu-account-modal__amount';
+    setAccountTextValue(amountNode, parts.amount, { animate });
+    node.setAttribute('aria-label', `${parts.currency} ${parts.amount}`);
+  };
+  const formatAccountCardMoney = (value) => {
+    const safeValue = Number.isFinite(value) ? Math.max(value, 0) : 0;
+    return `$${Math.round(safeValue).toLocaleString('en-US')}`;
+  };
+  const resolveAccountItemPrice = (item) => {
+    const numericPrice = Number(item?.price);
+    if (Number.isFinite(numericPrice) && numericPrice >= 0) {
+      return numericPrice;
+    }
+
+    const parsedFormattedPrice = parseCurrencyValue(item?.priceFormatted);
+    if (Number.isFinite(parsedFormattedPrice) && parsedFormattedPrice >= 0) {
+      return parsedFormattedPrice;
+    }
+
+    return 0;
+  };
+  const getAccountQuantity = (itemId) => {
+    const normalizedItemId = normalizeText(itemId);
+    if (!normalizedItemId) {
+      return 0;
+    }
+
+    const storedQuantity = state.account.itemsById.get(normalizedItemId);
+    const parsedQuantity = Number(storedQuantity);
+    return Number.isFinite(parsedQuantity) && parsedQuantity > 0
+      ? Math.max(0, Math.round(parsedQuantity))
+      : 0;
+  };
+  const buildAccountSessionPayload = () =>
+    state.account.order
+      .map((itemId) => {
+        const normalizedItemId = normalizeText(itemId);
+        const quantity = getAccountQuantity(normalizedItemId);
+        if (!normalizedItemId || quantity <= 0) {
+          return null;
+        }
+
+        return {
+          id: normalizedItemId,
+          qty: quantity,
+        };
+      })
+      .filter(Boolean);
+  const clearPersistedAccountStorage = () => {
+    try {
+      window.localStorage.removeItem(ACCOUNT_STORAGE_KEY);
+    } catch (error) {
+      console.warn('[menu-page] No se pudo limpiar la cuenta local.', error);
+    }
+  };
+  const isAccountStorageExpired = (updatedAt) => {
+    const timestamp = Number(updatedAt);
+    if (!Number.isFinite(timestamp) || timestamp <= 0) {
+      return true;
+    }
+
+    return Date.now() - timestamp > ACCOUNT_STORAGE_TTL_MS;
+  };
+  const readPersistedAccountStorage = () => {
+    try {
+      const raw = window.localStorage.getItem(ACCOUNT_STORAGE_KEY);
+      if (!raw) {
+        return { items: null, shouldClear: false };
+      }
+
+      const parsed = JSON.parse(raw);
+      if (!isObject(parsed)) {
+        return { items: null, shouldClear: true };
+      }
+
+      if (Number(parsed.version) !== ACCOUNT_STORAGE_VERSION) {
+        return { items: null, shouldClear: true };
+      }
+
+      if (isAccountStorageExpired(parsed.updatedAt)) {
+        return { items: null, shouldClear: true };
+      }
+
+      if (!Array.isArray(parsed.items)) {
+        return { items: null, shouldClear: true };
+      }
+
+      return { items: parsed.items, shouldClear: false };
+    } catch (error) {
+      console.warn('[menu-page] No se pudo leer la cuenta local.', error);
+      return { items: null, shouldClear: true };
+    }
+  };
+  const persistAccountSession = () => {
+    try {
+      const items = buildAccountSessionPayload();
+      if (!items.length) {
+        clearPersistedAccountStorage();
+        return;
+      }
+
+      const payload = {
+        version: ACCOUNT_STORAGE_VERSION,
+        updatedAt: Date.now(),
+        items,
+      };
+      window.localStorage.setItem(ACCOUNT_STORAGE_KEY, JSON.stringify(payload));
+    } catch (error) {
+      console.warn('[menu-page] No se pudo persistir la cuenta local.', error);
+    }
+  };
+  const computeAccountTotals = () => {
+    let subtotal = 0;
+    let units = 0;
+
+    state.account.order.forEach((itemId) => {
+      const quantity = getAccountQuantity(itemId);
+      const item = state.itemsById.get(itemId);
+
+      if (!item || quantity <= 0) {
+        return;
+      }
+
+      const unitPrice = resolveAccountItemPrice(item);
+      subtotal += unitPrice * quantity;
+      units += quantity;
+    });
+
+    const normalizedSubtotal = roundAccountValue(subtotal);
+    const itbis = roundAccountValue(normalizedSubtotal * ACCOUNT_ITBIS_RATE);
+    const legalTip = roundAccountValue(normalizedSubtotal * ACCOUNT_LEGAL_TIP_RATE);
+    const total = roundAccountValue(normalizedSubtotal + itbis + legalTip);
+
+    state.account.totals = {
+      subtotal: normalizedSubtotal,
+      itbis,
+      legalTip,
+      total,
+      units,
+    };
+  };
+  const syncAccountFooter = ({ animate = false } = {}) => {
+    if (accountSubtotalNode instanceof HTMLElement) {
+      syncAccountMoneyValueNode(accountSubtotalNode, state.account.totals.subtotal, {
+        dimCurrency: true,
+        animate,
+      });
+    }
+
+    if (accountItbisNode instanceof HTMLElement) {
+      syncAccountMoneyValueNode(accountItbisNode, state.account.totals.itbis, {
+        dimCurrency: true,
+        animate,
+      });
+    }
+
+    if (accountLegalTipNode instanceof HTMLElement) {
+      syncAccountMoneyValueNode(accountLegalTipNode, state.account.totals.legalTip, {
+        dimCurrency: true,
+        animate,
+      });
+    }
+
+    if (accountTotalNode instanceof HTMLElement) {
+      syncAccountMoneyValueNode(accountTotalNode, state.account.totals.total, {
+        animate,
+      });
+    }
+  };
+  const buildAccountEntries = () =>
+    state.account.order
+      .map((itemId) => {
+        const quantity = getAccountQuantity(itemId);
+        const item = state.itemsById.get(itemId);
+
+        if (!item || quantity <= 0) {
+          return null;
+        }
+
+        const media = resolveItemMedia(item);
+        const unitPrice = resolveAccountItemPrice(item);
+        const linePrice = roundAccountValue(unitPrice * quantity);
+        const groupId = normalizeText(resolveGroupIdByItem(item));
+
+        return {
+          id: normalizeText(item?.id),
+          name: normalizeText(item?.name || item?.id),
+          description:
+            normalizeText(item?.descriptionShort) ||
+            normalizeText(item?.descriptionLong),
+          image: media.card || media.detail || '',
+          imageAlt: normalizeText(media.alt || item?.name || item?.id),
+          quantity,
+          linePrice,
+          groupId,
+        };
+      })
+      .filter(Boolean);
+  const buildAccountEntryGroups = (entries = []) => {
+    const orderByGroupId = new Map();
+    const labelByGroupId = new Map();
+    state.categories.forEach((category, index) => {
+      const groupId = normalizeText(category?.id);
+      if (!groupId) {
+        return;
+      }
+
+      orderByGroupId.set(groupId, index);
+      labelByGroupId.set(groupId, normalizeText(category?.label) || groupId);
+    });
+
+    const groupsById = new Map();
+
+    entries.forEach((entry) => {
+      const normalizedGroupId = normalizeText(entry?.groupId);
+      const hasKnownGroup = orderByGroupId.has(normalizedGroupId);
+      const groupId = hasKnownGroup ? normalizedGroupId : ACCOUNT_UNCATEGORIZED_GROUP_ID;
+      const groupLabel = hasKnownGroup
+        ? labelByGroupId.get(groupId) || normalizedGroupId
+        : ACCOUNT_UNCATEGORIZED_GROUP_LABEL;
+
+      let group = groupsById.get(groupId);
+      if (!group) {
+        group = {
+          id: groupId,
+          label: groupLabel,
+          subtotal: 0,
+          items: [],
+        };
+        groupsById.set(groupId, group);
+      }
+
+      group.items.push(entry);
+      group.subtotal = roundAccountValue(group.subtotal + Number(entry?.linePrice || 0));
+    });
+
+    return Array.from(groupsById.values()).sort((left, right) => {
+      const leftOrder =
+        left.id === ACCOUNT_UNCATEGORIZED_GROUP_ID
+          ? Number.MAX_SAFE_INTEGER
+          : orderByGroupId.get(left.id) ?? Number.MAX_SAFE_INTEGER - 1;
+      const rightOrder =
+        right.id === ACCOUNT_UNCATEGORIZED_GROUP_ID
+          ? Number.MAX_SAFE_INTEGER
+          : orderByGroupId.get(right.id) ?? Number.MAX_SAFE_INTEGER - 1;
+
+      return leftOrder - rightOrder;
+    });
+  };
+  const createAccountGroupNode = (group) => {
+    const section = document.createElement('section');
+    section.className = 'menu-account-modal__group';
+    section.setAttribute('data-account-group-id', group.id);
+
+    const header = document.createElement('header');
+    header.className = 'menu-account-modal__group-header';
+
+    const title = document.createElement('h3');
+    title.className = 'menu-account-modal__group-title';
+    title.textContent = group.label;
+
+    const divider = document.createElement('span');
+    divider.className = 'menu-account-modal__group-divider';
+    divider.setAttribute('aria-hidden', 'true');
+
+    const subtotal = document.createElement('p');
+    subtotal.className = 'menu-account-modal__group-subtotal';
+    subtotal.textContent = formatAccountMoney(group.subtotal);
+
+    header.append(title, divider, subtotal);
+    section.appendChild(header);
+
+    const items = document.createElement('div');
+    items.className = 'menu-account-modal__group-items';
+    section.appendChild(items);
+
+    return {
+      section,
+      items,
+    };
+  };
+  const createAccountEmptyStateNode = () => {
+    const node = document.createElement('section');
+    node.className = 'menu-account-modal__empty menu-page-search-empty';
+    node.setAttribute('aria-labelledby', 'menu-account-empty-title');
+
+    const art = document.createElement('img');
+    art.className = 'menu-page-search-empty__art menu-account-modal__empty-art';
+    art.src = toAbsoluteAssetPath(SEARCH_EMPTY_ART_PATH);
+    art.alt = '';
+    art.decoding = 'async';
+    art.loading = 'eager';
+
+    const title = document.createElement('h3');
+    title.className = 'menu-page-search-empty__title menu-account-modal__empty-title';
+    title.id = 'menu-account-empty-title';
+    title.textContent = '¡Aún no has añadido nada!';
+
+    const message = document.createElement('p');
+    message.className = 'menu-page-search-empty__message menu-account-modal__empty-message';
+    message.textContent =
+      'Explora el menú y cada plato o bebida que añadas aparecerá aquí con su total estimado';
+
+    node.append(art, title, message);
+    return node;
+  };
+  const createAccountCardNode = (entry) => {
+    const card = document.createElement('article');
+    card.className = 'menu-account-modal__item';
+    card.setAttribute('data-account-item-id', entry.id);
+    syncAccountCardViewTransitionIdentity(card, entry.id);
+
+    const thumbWrap = document.createElement('div');
+    thumbWrap.className = 'menu-account-modal__thumb-wrap';
+
+    const thumb = document.createElement('img');
+    thumb.className = 'menu-account-modal__thumb';
+    thumb.src = entry.image || '/assets/menu/placeholders/card.svg';
+    thumb.alt = entry.imageAlt;
+    thumb.loading = 'lazy';
+    thumb.decoding = 'async';
+    thumbWrap.appendChild(thumb);
+    card.appendChild(thumbWrap);
+
+    const content = document.createElement('div');
+    content.className = 'menu-account-modal__item-content';
+
+    const topRow = document.createElement('div');
+    topRow.className = 'menu-account-modal__item-top';
+
+    const meta = document.createElement('div');
+    meta.className = 'menu-account-modal__item-meta';
+
+    const removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.className = 'menu-account-modal__remove';
+    removeButton.setAttribute('aria-label', `Eliminar ${entry.name}`);
+    removeButton.setAttribute('data-account-action', 'remove');
+    removeButton.setAttribute('data-account-item-id', entry.id);
+    removeButton.innerHTML = `
+      <svg aria-hidden="true" role="presentation" width="12" height="13" viewBox="0 0 12 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9.33333 13H2.66667C1.93029 13 1.33333 12.418 1.33333 11.7V3.25H0V1.95H2.66667V1.3C2.66667 0.58203 3.26362 0 4 0H8C8.73638 0 9.33333 0.58203 9.33333 1.3V1.95H12V3.25H10.6667V11.7C10.6667 12.418 10.0697 13 9.33333 13ZM2.66667 3.25V11.7H9.33333V3.25H2.66667ZM4 1.3V1.95H8V1.3H4ZM8 10.4H6.66667V4.55H8V10.4ZM5.33333 10.4H4V4.55H5.33333V10.4Z" fill="currentColor"/>
+      </svg>
+    `;
+
+    const title = document.createElement('h3');
+    title.className = 'menu-account-modal__item-title';
+    title.textContent = entry.name;
+    meta.appendChild(title);
+
+    const description = document.createElement('p');
+    description.className = 'menu-account-modal__item-description';
+    description.textContent = entry.description || '';
+    description.hidden = !description.textContent;
+    meta.appendChild(description);
+
+    topRow.appendChild(meta);
+    topRow.appendChild(removeButton);
+    content.appendChild(topRow);
+
+    const bottomRow = document.createElement('div');
+    bottomRow.className = 'menu-account-modal__item-bottom';
+
+    const stepper = document.createElement('div');
+    stepper.className = 'menu-account-modal__stepper';
+    stepper.setAttribute('aria-label', `Cantidad de ${entry.name}`);
+
+    const decreaseButton = document.createElement('button');
+    decreaseButton.type = 'button';
+    decreaseButton.className = 'menu-account-modal__stepper-btn';
+    decreaseButton.setAttribute('data-account-action', 'decrease');
+    decreaseButton.setAttribute('data-account-item-id', entry.id);
+    decreaseButton.setAttribute('aria-label', `Disminuir ${entry.name}`);
+    ensureAccountStepperGlyph(decreaseButton, '-');
+
+    const quantityNode = document.createElement('span');
+    quantityNode.className = 'menu-account-modal__stepper-qty';
+    quantityNode.setAttribute('data-account-role', 'quantity');
+    setAccountTextValue(quantityNode, String(entry.quantity), { animate: false });
+
+    const increaseButton = document.createElement('button');
+    increaseButton.type = 'button';
+    increaseButton.className = 'menu-account-modal__stepper-btn';
+    increaseButton.setAttribute('data-account-action', 'increase');
+    increaseButton.setAttribute('data-account-item-id', entry.id);
+    increaseButton.setAttribute('aria-label', `Aumentar ${entry.name}`);
+    ensureAccountStepperGlyph(increaseButton, '+');
+
+    stepper.appendChild(decreaseButton);
+    stepper.appendChild(quantityNode);
+    stepper.appendChild(increaseButton);
+    bottomRow.appendChild(stepper);
+
+    const price = document.createElement('p');
+    price.className = 'menu-account-modal__item-price';
+    price.setAttribute('data-account-role', 'line-price');
+    setAccountTextValue(price, formatAccountCardMoney(entry.linePrice), { animate: false });
+    bottomRow.appendChild(price);
+
+    content.appendChild(bottomRow);
+    card.appendChild(content);
+    return card;
+  };
+  const syncAccountCardNode = (card, entry, { animate = false } = {}) => {
+    if (!(card instanceof HTMLElement) || !entry) {
+      return;
+    }
+
+    card.setAttribute('data-account-item-id', entry.id);
+    syncAccountCardViewTransitionIdentity(card, entry.id);
+
+    const thumb = card.querySelector('.menu-account-modal__thumb');
+    if (thumb instanceof HTMLImageElement) {
+      const nextSrc = entry.image || '/assets/menu/placeholders/card.svg';
+      if (thumb.currentSrc !== nextSrc && thumb.getAttribute('src') !== nextSrc) {
+        thumb.src = nextSrc;
+      }
+
+      const nextAlt = entry.imageAlt || entry.name;
+      if (thumb.alt !== nextAlt) {
+        thumb.alt = nextAlt;
+      }
+    }
+
+    const title = card.querySelector('.menu-account-modal__item-title');
+    if (title instanceof HTMLElement && title.textContent !== entry.name) {
+      title.textContent = entry.name;
+    }
+
+    const description = card.querySelector('.menu-account-modal__item-description');
+    if (description instanceof HTMLElement) {
+      const nextDescription = entry.description || '';
+      if (description.textContent !== nextDescription) {
+        description.textContent = nextDescription;
+      }
+      description.hidden = !nextDescription;
+    }
+
+    const quantityNode = card.querySelector('[data-account-role="quantity"]');
+    setAccountTextValue(quantityNode, String(entry.quantity), { animate });
+
+    const linePriceNode = card.querySelector('[data-account-role="line-price"]');
+    setAccountTextValue(linePriceNode, formatAccountCardMoney(entry.linePrice), {
+      animate,
+    });
+
+    card
+      .querySelectorAll('[data-account-item-id]')
+      .forEach((node) => {
+        node.setAttribute('data-account-item-id', entry.id);
+      });
+
+    const removeButton = card.querySelector('[data-account-action="remove"]');
+    if (removeButton instanceof HTMLElement) {
+      removeButton.setAttribute('aria-label', `Eliminar ${entry.name}`);
+    }
+
+    const decreaseButton = card.querySelector('[data-account-action="decrease"]');
+    if (decreaseButton instanceof HTMLElement) {
+      decreaseButton.setAttribute('aria-label', `Disminuir ${entry.name}`);
+      ensureAccountStepperGlyph(decreaseButton);
+    }
+
+    const increaseButton = card.querySelector('[data-account-action="increase"]');
+    if (increaseButton instanceof HTMLElement) {
+      increaseButton.setAttribute('aria-label', `Aumentar ${entry.name}`);
+      ensureAccountStepperGlyph(increaseButton);
+    }
+  };
+  const renderAccountModalBody = ({ animate = false } = {}) => {
+    if (!(accountModalBody instanceof HTMLElement)) {
+      return;
+    }
+
+    const previousScrollTop = accountModalBody.scrollTop;
+    const entries = buildAccountEntries();
+
+    if (!entries.length) {
+      accountModalBody.replaceChildren(createAccountEmptyStateNode());
+      return;
+    }
+
+    const groups = buildAccountEntryGroups(entries);
+    const list = document.createElement('div');
+    list.className = 'menu-account-modal__list';
+
+    const existingCardsById = new Map();
+    accountModalBody
+      .querySelectorAll('.menu-account-modal__item[data-account-item-id]')
+      .forEach((node) => {
+        const itemId = normalizeText(node.getAttribute('data-account-item-id'));
+        if (itemId) {
+          syncAccountCardViewTransitionIdentity(node, itemId);
+          existingCardsById.set(itemId, node);
+        }
+      });
+
+    groups.forEach((group) => {
+      const groupNode = createAccountGroupNode(group);
+
+      group.items.forEach((entry) => {
+        let card = existingCardsById.get(entry.id);
+
+        if (card instanceof HTMLElement) {
+          syncAccountCardNode(card, entry, { animate });
+          existingCardsById.delete(entry.id);
+        } else {
+          card = createAccountCardNode(entry);
+        }
+
+        groupNode.items.appendChild(card);
+      });
+
+      list.appendChild(groupNode.section);
+    });
+
+    existingCardsById.forEach((node) => {
+      node.remove();
+    });
+
+    accountModalBody.replaceChildren(list);
+    accountModalBody.scrollTop = previousScrollTop;
+  };
+  const renderAccountState = ({ persist = true, pulse = false, animate = false } = {}) => {
+    computeAccountTotals();
+    syncMenuCartBadges();
+    syncAccountFooter({ animate });
+    renderAccountModalBody({ animate });
+    window.FigataScrollIndicators?.refresh?.();
+
+    if (persist) {
+      persistAccountSession();
+    }
+
+    if (pulse) {
+      pulseMenuCartTargets();
+    }
+  };
+  const clearAccountRemovalToastTimer = () => {
+    if (!accountRemovalToastTimerId) {
+      return;
+    }
+
+    window.clearTimeout(accountRemovalToastTimerId);
+    accountRemovalToastTimerId = 0;
+  };
+  const hideAccountRemovalToast = ({ clearSnapshot = true } = {}) => {
+    clearAccountRemovalToastTimer();
+
+    if (accountToast instanceof HTMLElement) {
+      accountToast.classList.remove('is-visible');
+      accountToast.hidden = true;
+    }
+
+    if (clearSnapshot) {
+      accountRemovalToastSnapshot = null;
+    }
+  };
+  const showAccountRemovalToast = (snapshot) => {
+    if (!(accountToast instanceof HTMLElement)) {
+      return;
+    }
+
+    accountRemovalToastSnapshot = {
+      itemId: normalizeText(snapshot?.itemId),
+      quantity: clampNumber(Math.round(Number(snapshot?.quantity) || 0), 0, 999),
+      orderIndex: clampNumber(Math.round(Number(snapshot?.orderIndex) || 0), 0, 999),
+    };
+
+    if (!accountRemovalToastSnapshot.itemId || accountRemovalToastSnapshot.quantity <= 0) {
+      return;
+    }
+
+    if (accountToastTitle instanceof HTMLElement) {
+      accountToastTitle.textContent = ACCOUNT_REMOVE_TOAST_TITLE;
+    }
+
+    if (accountToastCopy instanceof HTMLElement) {
+      accountToastCopy.textContent = ACCOUNT_REMOVE_TOAST_COPY;
+    }
+
+    clearAccountRemovalToastTimer();
+    accountToast.hidden = false;
+    accountToast.classList.remove('is-visible');
+    // Force reflow so the progress animation restarts on repeated removals.
+    void accountToast.getBoundingClientRect();
+    accountToast.classList.add('is-visible');
+
+    accountRemovalToastTimerId = window.setTimeout(() => {
+      hideAccountRemovalToast();
+    }, ACCOUNT_REMOVE_TOAST_DURATION_MS);
+  };
+  const undoAccountRemovalToast = () => {
+    const snapshot = accountRemovalToastSnapshot;
+    if (!snapshot) {
+      return false;
+    }
+
+    const itemId = normalizeText(snapshot.itemId);
+    const quantity = clampNumber(Math.round(Number(snapshot.quantity) || 0), 0, 999);
+    const orderIndex = clampNumber(
+      Math.round(Number(snapshot.orderIndex) || 0),
+      0,
+      state.account.order.length
+    );
+
+    if (!itemId || quantity <= 0 || !state.itemsById.has(itemId)) {
+      hideAccountRemovalToast();
+      return false;
+    }
+
+    state.account.itemsById.set(itemId, quantity);
+    state.account.order = state.account.order.filter((entryId) => entryId !== itemId);
+    const restoreIndex = clampNumber(orderIndex, 0, state.account.order.length);
+    state.account.order.splice(restoreIndex, 0, itemId);
+    runAccountCardsViewTransition(
+      () => {
+        renderAccountState({ persist: true, animate: true });
+      },
+      { enterItemId: itemId }
+    );
+    hideAccountRemovalToast();
+    return true;
+  };
+  const setAccountItemQuantity = (
+    itemId,
+    quantity,
+    { persist = true, pulse = false, animate = true, showUndoToast = true } = {}
+  ) => {
+    const normalizedItemId = normalizeText(itemId);
+    if (!normalizedItemId || !state.itemsById.has(normalizedItemId)) {
+      return false;
+    }
+
+    const previousQuantity = getAccountQuantity(normalizedItemId);
+    const previousOrderIndex = state.account.order.indexOf(normalizedItemId);
+    const nextQuantity = clampNumber(Math.round(Number(quantity) || 0), 0, 999);
+
+    const isItemRemoval = previousQuantity > 0 && nextQuantity <= 0;
+    const isItemInsertion = previousQuantity <= 0 && nextQuantity > 0;
+
+    if (nextQuantity <= 0) {
+      state.account.itemsById.delete(normalizedItemId);
+      state.account.order = state.account.order.filter((id) => id !== normalizedItemId);
+    } else {
+      state.account.itemsById.set(normalizedItemId, nextQuantity);
+      if (!state.account.order.includes(normalizedItemId)) {
+        state.account.order.push(normalizedItemId);
+      }
+    }
+
+    runAccountCardsViewTransition(
+      () => {
+        renderAccountState({ persist, pulse, animate });
+      },
+      {
+        exitItemId: isItemRemoval ? normalizedItemId : '',
+        enterItemId: isItemInsertion ? normalizedItemId : '',
+      }
+    );
+    if (
+      showUndoToast &&
+      state.accountModalOpen &&
+      isItemRemoval
+    ) {
+      showAccountRemovalToast({
+        itemId: normalizedItemId,
+        quantity: previousQuantity,
+        orderIndex: previousOrderIndex,
+      });
+    }
+    return true;
+  };
+  const addItemToAccount = (itemId, delta = 1, options = {}) => {
+    const normalizedItemId = normalizeText(itemId);
+    if (!normalizedItemId) {
+      return false;
+    }
+
+    const step = Math.max(1, Math.round(Number(delta) || 1));
+    const currentQuantity = getAccountQuantity(normalizedItemId);
+    return setAccountItemQuantity(normalizedItemId, currentQuantity + step, options);
+  };
+  const removeItemFromAccount = (itemId, options = {}) =>
+    setAccountItemQuantity(itemId, 0, options);
+  const hydrateAccountSession = () => {
+    state.account.itemsById.clear();
+    state.account.order = [];
+
+    const { items, shouldClear } = readPersistedAccountStorage();
+    if (shouldClear) {
+      clearPersistedAccountStorage();
+    }
+
+    if (Array.isArray(items)) {
+      items.forEach((entry) => {
+        const itemId = normalizeText(entry?.id);
+        const quantity = clampNumber(Math.round(Number(entry?.qty) || 0), 0, 999);
+        if (!itemId || quantity <= 0 || !state.itemsById.has(itemId)) {
+          return;
+        }
+
+        state.account.itemsById.set(itemId, quantity);
+        if (!state.account.order.includes(itemId)) {
+          state.account.order.push(itemId);
+        }
+      });
+    }
+
+    renderAccountState({ persist: false, animate: false });
+  };
   const formatDetailPrice = (item) => {
     const numericPrice = Number(item?.price);
 
@@ -377,6 +1866,7 @@
     return normalizedPrice
       .replace(/^RD\s*\$/i, '$')
       .replace(/^RD\b\s*/i, '')
+      .replace(/[.,]\d+$/, '')
       .trim();
   };
   const getDetailSensoryProfileSchema = () =>
@@ -508,9 +1998,18 @@
     }
   };
 
-  const setFilterModalDocumentState = (isOpen) => {
-    document.documentElement.classList.toggle('menu-filters-open', isOpen);
-    document.body.classList.toggle('menu-filters-open', isOpen);
+  const setAccountTriggerExpanded = (isOpen) => {
+    getMenuCartTargets().forEach((target) => {
+      target.setAttribute('aria-haspopup', 'dialog');
+      target.setAttribute('aria-controls', 'menu-account-modal');
+      target.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+  };
+
+  const setFilterModalDocumentState = () => {
+    const hasOpenModal = Boolean(state.filterModalOpen || state.accountModalOpen);
+    document.documentElement.classList.toggle('menu-filters-open', hasOpenModal);
+    document.body.classList.toggle('menu-filters-open', hasOpenModal);
   };
 
   const clearFilterModalCloseTimer = () => {
@@ -520,6 +2019,15 @@
 
     window.clearTimeout(filterModalCloseTimerId);
     filterModalCloseTimerId = 0;
+  };
+
+  const clearAccountModalCloseTimer = () => {
+    if (!accountModalCloseTimerId) {
+      return;
+    }
+
+    window.clearTimeout(accountModalCloseTimerId);
+    accountModalCloseTimerId = 0;
   };
 
   const cancelFilterModalChromeFrame = () => {
@@ -1740,16 +3248,32 @@
     detailSensoryViewTabsRoot.dataset.bound = 'true';
   };
 
-  const getFilterModalFocusableElements = () => {
-    if (!(filterDialog instanceof HTMLElement)) {
+  const getModalFocusableElements = (dialogNode) => {
+    if (!(dialogNode instanceof HTMLElement)) {
       return [];
     }
 
     return Array.from(
-      filterDialog.querySelectorAll(
+      dialogNode.querySelectorAll(
         'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
       )
-    ).filter((node) => node instanceof HTMLElement && !node.hidden);
+    ).filter(
+      (node) =>
+        node instanceof HTMLElement &&
+        !node.hidden &&
+        node.getClientRects().length > 0
+    );
+  };
+
+  const getFilterModalFocusableElements = () => getModalFocusableElements(filterDialog);
+
+  const getAccountModalFocusableElements = () => getModalFocusableElements(accountDialog);
+  const setAccountTotalInfoOpen = (isOpen) => {
+    if (!(accountTotalInfoToggle instanceof HTMLButtonElement)) {
+      return;
+    }
+
+    accountTotalInfoToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
   };
 
   const finishFilterModalClose = ({ restoreFocus = true } = {}) => {
@@ -1762,7 +3286,7 @@
 
     filterModal.hidden = true;
     filterModal.removeAttribute('data-state');
-    setFilterModalDocumentState(false);
+    setFilterModalDocumentState();
     setFilterTriggerExpanded(false);
 
     if (filterDialog instanceof HTMLElement) {
@@ -1797,6 +3321,104 @@
     }, FILTER_MODAL_EXIT_MS);
   };
 
+  const finishAccountModalClose = ({ restoreFocus = true } = {}) => {
+    clearAccountModalCloseTimer();
+    setAccountTotalInfoOpen(false);
+    hideAccountRemovalToast();
+
+    if (!(accountModal instanceof HTMLElement)) {
+      return;
+    }
+
+    accountModal.hidden = true;
+    accountModal.removeAttribute('data-state');
+    setFilterModalDocumentState();
+    setAccountTriggerExpanded(false);
+
+    if (accountDialog instanceof HTMLElement) {
+      accountDialog.setAttribute('data-footer-shadow', 'hidden');
+    }
+
+    if (restoreFocus && accountModalRestoreFocusNode instanceof HTMLElement) {
+      accountModalRestoreFocusNode.focus();
+    }
+
+    accountModalRestoreFocusNode = null;
+  };
+
+  const closeAccountModal = ({ restoreFocus = true, immediate = false } = {}) => {
+    if (!(accountModal instanceof HTMLElement)) {
+      return;
+    }
+
+    clearAccountModalCloseTimer();
+    state.accountModalOpen = false;
+    setAccountTriggerExpanded(false);
+    emitBridgeState();
+
+    if (accountModal.hidden || immediate || reducedMotionQuery.matches) {
+      finishAccountModalClose({ restoreFocus });
+      return;
+    }
+
+    accountModal.setAttribute('data-state', 'closing');
+    accountModalCloseTimerId = window.setTimeout(() => {
+      finishAccountModalClose({ restoreFocus });
+    }, FILTER_MODAL_EXIT_MS);
+  };
+
+  const openAccountModal = () => {
+    if (!(accountModal instanceof HTMLElement) || !(accountDialog instanceof HTMLElement)) {
+      return;
+    }
+
+    clearAccountModalCloseTimer();
+    setAccountTotalInfoOpen(false);
+    hideAccountRemovalToast();
+    renderAccountState({ persist: false, animate: false });
+
+    if (state.filterModalOpen) {
+      closeFilterModal({ restoreFocus: false, immediate: true });
+    }
+
+    if (!accountModal.hidden && state.accountModalOpen) {
+      return;
+    }
+
+    accountModalRestoreFocusNode =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : getPreferredMenuCartTarget();
+    state.accountModalOpen = true;
+    accountModal.hidden = false;
+    setFilterModalDocumentState();
+    setAccountTriggerExpanded(true);
+    emitBridgeState();
+    accountModal.setAttribute('data-state', 'opening');
+    accountDialog.setAttribute('data-footer-shadow', 'hidden');
+
+    window.requestAnimationFrame(() => {
+      if (!(accountModal instanceof HTMLElement)) {
+        return;
+      }
+
+      accountModal.setAttribute('data-state', 'open');
+      window.FigataScrollIndicators?.refresh?.();
+    });
+
+    window.setTimeout(() => {
+      const focusTarget = accountCloseButton instanceof HTMLButtonElement
+        ? accountCloseButton
+        : getAccountModalFocusableElements()[0] || accountDialog;
+
+      window.FigataScrollIndicators?.refresh?.();
+
+      if (focusTarget instanceof HTMLElement) {
+        focusTarget.focus();
+      }
+    }, reducedMotionQuery.matches ? 0 : 70);
+  };
+
   const loadDraftFiltersFromApplied = () => {
     replaceFilters(state.draftFilters, state.appliedFilters);
     syncDraftFiltersToModal();
@@ -1808,6 +3430,11 @@
     }
 
     clearFilterModalCloseTimer();
+
+    if (state.accountModalOpen) {
+      closeAccountModal({ restoreFocus: false, immediate: true });
+    }
+
     loadDraftFiltersFromApplied();
     renderFilterModalShell();
 
@@ -1819,7 +3446,7 @@
       document.activeElement instanceof HTMLElement ? document.activeElement : filterButton;
     state.filterModalOpen = true;
     filterModal.hidden = false;
-    setFilterModalDocumentState(true);
+    setFilterModalDocumentState();
     setFilterTriggerExpanded(true);
     emitBridgeState();
     filterModal.setAttribute('data-state', 'opening');
@@ -1873,6 +3500,7 @@
     isSearching: Boolean(normalizeText(state.searchQuery)),
     isListViewVisible: !listView.hidden,
     isFilterModalOpen: Boolean(state.filterModalOpen),
+    isAccountModalOpen: Boolean(state.accountModalOpen),
   });
 
   const emitBridgeState = () => {
@@ -2065,6 +3693,112 @@
   };
 
   const getRouteItemId = () => getRouteItemIdFromPathname() || getLegacyRouteItemId();
+
+  const supportsMenuRouteViewTransition = () =>
+    typeof document.startViewTransition === 'function';
+
+  const normalizeMenuRouteTransitionDirection = (value) => {
+    const normalized = normalizeText(value).toLowerCase();
+
+    if (normalized === MENU_ROUTE_VIEW_TRANSITION_FORWARD) {
+      return MENU_ROUTE_VIEW_TRANSITION_FORWARD;
+    }
+
+    if (normalized === MENU_ROUTE_VIEW_TRANSITION_BACK) {
+      return MENU_ROUTE_VIEW_TRANSITION_BACK;
+    }
+
+    return 'none';
+  };
+
+  const clearMenuRouteViewTransitionRuntime = () => {
+    document.documentElement.removeAttribute(MENU_ROUTE_VIEW_TRANSITION_ROOT_ATTR);
+    document.documentElement.removeAttribute(MENU_ROUTE_VIEW_TRANSITION_DIRECTION_ATTR);
+  };
+
+  const runMenuRouteViewTransition = async (
+    updateFn,
+    { direction = 'none', animate = true } = {}
+  ) => {
+    if (typeof updateFn !== 'function') {
+      return;
+    }
+
+    const normalizedDirection = normalizeMenuRouteTransitionDirection(direction);
+    const canAnimate =
+      animate &&
+      normalizedDirection !== 'none' &&
+      !reducedMotionQuery.matches &&
+      supportsMenuRouteViewTransition();
+
+    if (!canAnimate) {
+      await updateFn();
+      return;
+    }
+
+    const runTransition = async () => {
+      const stillCanAnimate =
+        !reducedMotionQuery.matches &&
+        supportsMenuRouteViewTransition();
+
+      if (!stillCanAnimate) {
+        await updateFn();
+        return;
+      }
+
+      clearMenuRouteViewTransitionRuntime();
+      document.documentElement.setAttribute(
+        MENU_ROUTE_VIEW_TRANSITION_ROOT_ATTR,
+        MENU_ROUTE_VIEW_TRANSITION_ROOT_ACTIVE
+      );
+      document.documentElement.setAttribute(
+        MENU_ROUTE_VIEW_TRANSITION_DIRECTION_ATTR,
+        normalizedDirection
+      );
+
+      let transition = null;
+
+      try {
+        transition = document.startViewTransition(() => updateFn());
+      } catch (error) {
+        clearMenuRouteViewTransitionRuntime();
+        await updateFn();
+        return;
+      }
+
+      try {
+        await Promise.resolve(transition?.finished);
+      } catch {
+        // Transition can be skipped by the browser; DOM update has already happened.
+      } finally {
+        clearMenuRouteViewTransitionRuntime();
+      }
+    };
+
+    menuRouteViewTransitionTask = menuRouteViewTransitionTask
+      .catch(() => {})
+      .then(() => runTransition());
+
+    await menuRouteViewTransitionTask;
+  };
+
+  const inferMenuRouteTransitionDirection = () => {
+    const nextItemId = normalizeText(getRouteItemId());
+    const isLeavingList = !lastRenderedRouteItemId && nextItemId;
+    const isReturningToList = lastRenderedRouteItemId && !nextItemId;
+
+    if (isLeavingList) {
+      return MENU_ROUTE_VIEW_TRANSITION_FORWARD;
+    }
+
+    if (isReturningToList) {
+      return MENU_ROUTE_VIEW_TRANSITION_BACK;
+    }
+
+    return 'none';
+  };
+
+  lastRenderedRouteItemId = normalizeText(getRouteItemId());
 
   const toHistoryStateObject = (value) =>
     value && typeof value === 'object' ? { ...value } : {};
@@ -4455,7 +6189,9 @@
       '',
       detailUrl
     );
-    void renderRouteFromLocation();
+    void runMenuRouteViewTransition(() => renderRouteFromLocation(), {
+      direction: MENU_ROUTE_VIEW_TRANSITION_FORWARD,
+    });
   };
 
   const createCard = (card) => {
@@ -4539,6 +6275,14 @@
       if (isMobileCardViewport()) {
         event.preventDefault();
         event.stopPropagation();
+
+        if (card.available === false) {
+          openDetailFromListCard(card.id);
+          return;
+        }
+
+        const sourceImage = resolveCardAddSourceImage(baseImage, hoverImage);
+        void runMenuCartVisualAdd(sourceImage, card.id);
         return;
       }
 
@@ -4556,6 +6300,14 @@
 
       event.preventDefault();
       event.stopPropagation();
+
+      if (card.available === false) {
+        openDetailFromListCard(card.id);
+        return;
+      }
+
+      const sourceImage = resolveCardAddSourceImage(baseImage, hoverImage);
+      void runMenuCartVisualAdd(sourceImage, card.id);
     });
 
     article.addEventListener('click', (event) => {
@@ -5524,7 +7276,9 @@
       resolveGroupIdByItem(routeItem);
 
     window.history.pushState({}, '', toMenuListUrl());
-    await renderRouteFromLocation();
+    await runMenuRouteViewTransition(() => renderRouteFromLocation(), {
+      direction: MENU_ROUTE_VIEW_TRANSITION_BACK,
+    });
 
     if (fallbackCategoryId) {
       window.requestAnimationFrame(() => {
@@ -5606,7 +7360,8 @@
       detailAddButton.textContent = isAvailable ? 'Añadir' : 'No disponible';
       detailAddButton.classList.toggle('is-available', isAvailable);
       detailAddButton.classList.toggle('is-unavailable', !isAvailable);
-      detailAddButton.disabled = true;
+      detailAddButton.disabled = !isAvailable;
+      detailAddButton.dataset.menuItemId = detail.id;
     }
     detailPanel.setAttribute(
       'data-availability',
@@ -5690,6 +7445,7 @@
     if (!requestedItemId) {
       showListView();
       restoreListScrollFromHistory();
+      lastRenderedRouteItemId = '';
       return;
     }
 
@@ -5701,11 +7457,13 @@
       window.history.replaceState({}, '', toMenuListUrl());
       setStatus('El ítem solicitado no existe.', { isError: true });
       showListView();
+      lastRenderedRouteItemId = '';
       return;
     }
 
     await renderDetail(item);
     resetDetailScrollPosition();
+    lastRenderedRouteItemId = normalizeText(item.id) || requestedItemId;
   };
 
   const buildGroupItems = async (group) => {
@@ -5827,6 +7585,31 @@
     detailCloseButton.addEventListener('click', goToMenuListView);
   }
 
+  if (detailAddButton instanceof HTMLButtonElement) {
+    detailAddButton.addEventListener('click', (event) => {
+      event.preventDefault();
+
+      if (detailAddButton.disabled) {
+        return;
+      }
+
+      const itemId = normalizeText(detailAddButton.dataset.menuItemId || getRouteItemId());
+      const item = state.itemsById.get(itemId);
+      if (!item || item.available === false) {
+        return;
+      }
+
+      const sourceImage =
+        detailImage instanceof HTMLImageElement &&
+        !detailImage.hidden &&
+        isElementVisibleForFlight(detailImage)
+          ? detailImage
+          : null;
+
+      void runMenuCartVisualAdd(sourceImage, itemId);
+    });
+  }
+
   bindFilterPizzaTabs();
   bindDetailSensoryViewTabs();
 
@@ -5939,6 +7722,27 @@
     });
   }
 
+  document.addEventListener('click', (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      return;
+    }
+
+    const accountTrigger = target.closest(MENU_CART_TARGET_SELECTOR);
+    if (!(accountTrigger instanceof HTMLElement)) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (state.accountModalOpen) {
+      closeAccountModal();
+      return;
+    }
+
+    openAccountModal();
+  });
+
   if (filterClearButton instanceof HTMLButtonElement) {
     filterClearButton.addEventListener('click', (event) => {
       event.preventDefault();
@@ -6049,6 +7853,92 @@
     });
   }
 
+  if (accountModal instanceof HTMLElement) {
+    accountModal.addEventListener('click', (event) => {
+      const target = event.target;
+
+      if (!(target instanceof Element)) {
+        return;
+      }
+
+      if (target.closest('[data-account-toast-undo]')) {
+        event.preventDefault();
+        undoAccountRemovalToast();
+        return;
+      }
+
+      const totalInfoToggle = target.closest('[data-account-total-info-toggle]');
+      if (totalInfoToggle instanceof HTMLButtonElement) {
+        event.preventDefault();
+        const isOpen = totalInfoToggle.getAttribute('aria-expanded') === 'true';
+        setAccountTotalInfoOpen(!isOpen);
+        return;
+      }
+
+      if (!target.closest('[data-account-total-info]')) {
+        setAccountTotalInfoOpen(false);
+      }
+
+      const actionButton = target.closest('[data-account-action]');
+      if (actionButton instanceof HTMLButtonElement) {
+        event.preventDefault();
+
+        const itemId = normalizeText(actionButton.dataset.accountItemId);
+        if (!itemId) {
+          return;
+        }
+
+        const action = normalizeText(actionButton.dataset.accountAction);
+        if (action === 'increase') {
+          pulseAccountStepperGlyph(actionButton);
+          addItemToAccount(itemId, 1);
+          return;
+        }
+
+        if (action === 'decrease') {
+          pulseAccountStepperGlyph(actionButton);
+          const nextQuantity = getAccountQuantity(itemId) - 1;
+          if (nextQuantity <= 0) {
+            removeItemFromAccount(itemId);
+          } else {
+            setAccountItemQuantity(itemId, nextQuantity);
+          }
+          return;
+        }
+
+        if (action === 'remove') {
+          removeItemFromAccount(itemId);
+        }
+        return;
+      }
+
+      if (target.closest('[data-menu-account-close]')) {
+        event.preventDefault();
+        closeAccountModal();
+      }
+    });
+
+    accountModal.addEventListener('focusin', (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLButtonElement)) {
+        return;
+      }
+
+      const action = normalizeText(target.dataset.accountAction);
+      if (action !== 'increase' && action !== 'decrease') {
+        return;
+      }
+
+      const isFocusVisible =
+        typeof target.matches === 'function' ? target.matches(':focus-visible') : true;
+      if (!isFocusVisible) {
+        return;
+      }
+
+      pulseAccountStepperGlyph(target);
+    });
+  }
+
   if (filterModalBody instanceof HTMLElement) {
     filterModalBody.addEventListener('scroll', scheduleFilterModalChromeSync, {
       passive: true,
@@ -6058,13 +7948,29 @@
   window.addEventListener('resize', scheduleFilterModalChromeSync);
 
   document.addEventListener('keydown', (event) => {
-    if (!state.filterModalOpen) {
+    const accountModalOpen = state.accountModalOpen;
+    const filterModalOpen = state.filterModalOpen;
+
+    if (!accountModalOpen && !filterModalOpen) {
       return;
     }
 
     if (event.key === 'Escape') {
       event.preventDefault();
-      closeFilterModal();
+      if (
+        accountModalOpen &&
+        accountTotalInfoToggle instanceof HTMLButtonElement &&
+        accountTotalInfoToggle.getAttribute('aria-expanded') === 'true'
+      ) {
+        setAccountTotalInfoOpen(false);
+        return;
+      }
+
+      if (accountModalOpen) {
+        closeAccountModal();
+      } else {
+        closeFilterModal();
+      }
       return;
     }
 
@@ -6072,12 +7978,15 @@
       return;
     }
 
-    const focusableNodes = getFilterModalFocusableElements();
+    const activeDialog = accountModalOpen ? accountDialog : filterDialog;
+    const focusableNodes = accountModalOpen
+      ? getAccountModalFocusableElements()
+      : getFilterModalFocusableElements();
 
     if (!focusableNodes.length) {
-      if (filterDialog instanceof HTMLElement) {
+      if (activeDialog instanceof HTMLElement) {
         event.preventDefault();
-        filterDialog.focus();
+        activeDialog.focus();
       }
 
       return;
@@ -6142,7 +8051,10 @@
   }
 
   window.addEventListener('popstate', () => {
-    void renderRouteFromLocation();
+    const direction = inferMenuRouteTransitionDirection();
+    void runMenuRouteViewTransition(() => renderRouteFromLocation(), {
+      direction,
+    });
   });
 
   const waitForPublicNavbar = async () => {
@@ -6179,6 +8091,23 @@
 
       return state.filterModalOpen;
     },
+    openAccountModal: () => {
+      openAccountModal();
+      return state.accountModalOpen;
+    },
+    closeAccountModal: (options) => {
+      closeAccountModal(options);
+      return state.accountModalOpen;
+    },
+    toggleAccountModal: () => {
+      if (state.accountModalOpen) {
+        closeAccountModal();
+      } else {
+        openAccountModal();
+      }
+
+      return state.accountModalOpen;
+    },
     scrollToCategory: (categoryId) => {
       scrollToCategory(normalizeText(categoryId));
     },
@@ -6198,10 +8127,28 @@
     },
   };
 
+  window.addEventListener('figata:menu-page-navbar-ready', () => {
+    syncMenuCartBadges();
+  });
+
+  window.addEventListener('storage', (event) => {
+    if (event.storageArea !== window.localStorage) {
+      return;
+    }
+
+    if (event.key !== ACCOUNT_STORAGE_KEY) {
+      return;
+    }
+
+    hideAccountRemovalToast();
+    hydrateAccountSession();
+  });
+
   void (async () => {
     try {
       await waitForPublicNavbar();
       await renderMenu();
+      hydrateAccountSession();
       renderSearchHelperWord(SEARCH_HELPER_WORDS[0]);
       syncSearchHelperWidth();
       syncSearchControls();

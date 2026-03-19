@@ -530,8 +530,11 @@
 
     if (type === 'account') {
       return `
-        <svg viewBox="0 0 25 25" focusable="false" aria-hidden="true">
-          <path d="M6.50001 5.5C8.50003 5.5 8.50003 8 8.50003 8V9.5M6.50001 5.5C4.5 5.5 4.5 8 4.5 8L4.50001 9.5H8.50003M6.50001 5.5C6.50001 5.5 15.8333 5.5 17.6667 5.5C19.5 5.5 19.5 8.5 19.5 8.5V20L17.6667 19L15.8333 20L14 19L12.1667 20L10.3334 19L8.50003 20V9.5M11 12.5H15M11 9.5H16M11 15.5H16" fill="none" stroke="currentColor" stroke-width="1.2"></path>
+        <svg viewBox="0 0 32 32" focusable="false" aria-hidden="true">
+          <path d="M16 7h2a1 1 0 0 0 0-2h-1a1 1 0 0 0-2 0v.18A3 3 0 0 0 16 11a1 1 0 0 1 0 2H14a1 1 0 0 0 0 2h1a1 1 0 0 0 2 0v-.18A3 3 0 0 0 16 9a1 1 0 0 1 0-2Z" fill="currentColor"></path>
+          <path d="M31 24H28V3a3 3 0 0 0-3-3H3A3 3 0 0 0 0 3V9a1 1 0 0 0 1 1H4V29a3 3 0 0 0 3 3H29a3 3 0 0 0 3-3V25A1 1 0 0 0 31 24ZM2 3A1 1 0 0 1 4 3V8H2ZM8 25v4a1 1 0 0 1-.31.71A.93.93 0 0 1 7 30a1 1 0 0 1-1-1V3a3 3 0 0 0-.18-1H25a1 1 0 0 1 1 1V24H9A1 1 0 0 0 8 25Zm22 4a1 1 0 0 1-.31.71A.93.93 0 0 1 29 30H9.83A3 3 0 0 0 10 29V26H30Z" fill="currentColor"></path>
+          <path d="M17 19H9a1 1 0 0 0 0 2h8a1 1 0 0 0 0-2Z" fill="currentColor"></path>
+          <path d="M23 19H21a1 1 0 0 0 0 2h2a1 1 0 0 0 0-2Z" fill="currentColor"></path>
         </svg>
       `;
     }
@@ -1349,6 +1352,7 @@
       'account'
     );
     mobileAccountButton.classList.add('navbar__mobile-action', 'navbar__mobile-action--account');
+    mobileAccountButton.setAttribute('data-menu-cart-target', '');
     mobileActions.appendChild(mobileAccountButton);
 
     const mobileMenuButton = createMenuToolsButton(
@@ -1627,6 +1631,7 @@
       });
 
       handleMenuStateChange(state.menuState);
+      window.dispatchEvent(new Event('figata:menu-page-navbar-ready'));
 
       if (document.fonts && typeof document.fonts.ready?.then === 'function') {
         document.fonts.ready.then(() => {
