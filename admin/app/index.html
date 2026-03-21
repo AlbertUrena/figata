@@ -8,6 +8,7 @@
       name="description"
       content="Panel interno de administracion para gestionar contenido de Figata."
     />
+    <link rel="icon" type="image/png" href="/assets/favicon-ap.png" />
     <link rel="stylesheet" href="/admin/app/styles.css" />
   </head>
   <body>
@@ -32,33 +33,41 @@
             <div class="sidebar-inner">
               <div class="sidebar-main">
                 <div class="sidebar-head">
-                  <button
-                    id="sidebar-home-button"
-                    class="sidebar-logo"
-                    type="button"
-                    aria-label="Ir al dashboard"
-                  >
-                    <img
-                      class="sidebar-logo-icon"
-                      src="/assets/svg-icons/logo-icon.svg"
-                      alt=""
-                      aria-hidden="true"
-                    />
-                  </button>
+                  <div class="sidebar-head-top">
+                    <button
+                      id="sidebar-home-button"
+                      class="sidebar-logo"
+                      type="button"
+                      aria-label="Ir al dashboard"
+                    >
+                      <img
+                        class="sidebar-logo-icon"
+                        src="/assets/svg-icons/logo-icon.svg"
+                        alt=""
+                        aria-hidden="true"
+                      />
+                    </button>
+                  </div>
 
-                  <button
-                    id="sidebar-toggle-button"
-                    class="sidebar-toggle"
-                    type="button"
-                    aria-label="Colapsar navegacion"
-                    aria-pressed="false"
-                  >
-                    <svg viewBox="0 0 16 16" aria-hidden="true">
-                      <path
-                        d="M1.8 1 0 2.8v10.4L1.8 15h12.4l1.8-1.8V2.8L14.2 1zm4.805 12.2V2.8H14.2v10.4zm-1.8-10.4H1.8v10.4h3.005z"
-                      ></path>
-                    </svg>
-                  </button>
+                  <div class="sidebar-toggle-shell">
+                    <div class="sidebar-toggle-track">
+                      <div class="sidebar-toggle-float">
+                        <button
+                          id="sidebar-toggle-button"
+                          class="sidebar-toggle"
+                          type="button"
+                          aria-label="Colapsar navegacion"
+                          aria-pressed="false"
+                        >
+                          <svg viewBox="0 0 16 16" aria-hidden="true">
+                            <path
+                              d="M1.8 1 0 2.8v10.4L1.8 15h12.4l1.8-1.8V2.8L14.2 1zm4.805 12.2V2.8H14.2v10.4zm-1.8-10.4H1.8v10.4h3.005z"
+                            ></path>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <button
@@ -85,6 +94,7 @@
                 </button>
 
                 <nav class="sidebar-nav" aria-label="Figata admin sections">
+                  <span id="sidebar-nav-active-indicator" class="sidebar-nav-active-indicator" aria-hidden="true"></span>
                   <button id="sidebar-nav-dashboard" class="sidebar-nav__item" type="button">
                     <span class="sidebar-nav__icon" aria-hidden="true">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
@@ -105,14 +115,40 @@
 
                   <div id="sidebar-menu-accordion" class="sidebar-menu-accordion" aria-hidden="true"></div>
 
-                  <a class="sidebar-nav__item" href="/admin/cms/#/collections/home">
+                  <button id="sidebar-nav-homepage" class="sidebar-nav__item" type="button">
                     <span class="sidebar-nav__icon" aria-hidden="true">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
                         <path d="M298.2 72.6C310.5 61.2 329.5 61.2 341.7 72.6L432 156.3L432 144C432 126.3 446.3 112 464 112L496 112C513.7 112 528 126.3 528 144L528 245.5L565.8 280.6C575.4 289.6 578.6 303.5 573.8 315.7C569 327.9 557.2 336 544 336L528 336L528 512C528 547.3 499.3 576 464 576L176 576C140.7 576 112 547.3 112 512L112 336L96 336C82.8 336 71 327.9 66.2 315.7C61.4 303.5 64.6 289.5 74.2 280.6L298.2 72.6zM304 384C277.5 384 256 405.5 256 432L256 528L384 528L384 432C384 405.5 362.5 384 336 384L304 384z"></path>
                       </svg>
                     </span>
-                    <span class="sidebar-nav__label">Home</span>
-                  </a>
+                    <span class="sidebar-nav__label">HomePage</span>
+                  </button>
+                  <div id="sidebar-homepage-accordion" class="sidebar-menu-accordion" aria-hidden="true"></div>
+
+                  <button id="sidebar-nav-pages" class="sidebar-nav__item" type="button">
+                    <span class="sidebar-nav__icon" aria-hidden="true">
+                      <svg viewBox="0 0 16 16">
+                        <path
+                          fill-rule="evenodd"
+                          d="M2.25 1h7.616L13.75 4.884V14.5l-.5.5h-11l-.5-.5v-13l.5-.5Zm1 1v12h9.5V5.25H9.5V2ZM10 2.707V4.75h2.043Z"
+                          clip-rule="evenodd"
+                        ></path>
+                        <path d="M4.5 7h7v1h-7zm0 2.5h7v1h-7zm0 2.5h4.5v1H4.5z"></path>
+                      </svg>
+                    </span>
+                    <span class="sidebar-nav__label">Pages</span>
+                  </button>
+                  <div id="sidebar-pages-accordion" class="sidebar-menu-accordion" aria-hidden="true"></div>
+
+                  <button id="sidebar-nav-ingredients" class="sidebar-nav__item" type="button">
+                    <span class="sidebar-nav__icon" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3">
+                        <path d="M640-80q-100 0-170-70t-70-170q0-100 70-170t170-70q100 0 170 70t70 170q0 100-70 170T640-80Zm0-80q66 0 113-47t47-113q0-66-47-113t-113-47q-66 0-113 47t-47 113q0 66 47 113t113 47Zm-480 0q-33 0-56.5-23.5T80-240v-304q0-8 1.5-16t4.5-16l80-184h-6q-17 0-28.5-11.5T120-800v-40q0-17 11.5-28.5T160-880h280q17 0 28.5 11.5T480-840v40q0 17-11.5 28.5T440-760h-6l66 152q-19 10-36 21t-32 25l-84-198h-96l-92 216v304h170q5 21 13.5 41.5T364-160H160Zm480-440q-42 0-71-29t-29-71q0-42 29-71t71-29v200q0-42 29-71t71-29q42 0 71 29t29 71H640Z"></path>
+                      </svg>
+                    </span>
+                    <span class="sidebar-nav__label">Ingredients</span>
+                  </button>
+                  <div id="sidebar-ingredients-accordion" class="sidebar-menu-accordion" aria-hidden="true"></div>
 
                   <a class="sidebar-nav__item" href="/admin/cms/#/collections/availability">
                     <span class="sidebar-nav__icon" aria-hidden="true">
@@ -127,7 +163,7 @@
                     <span class="sidebar-nav__label">Availability</span>
                   </a>
 
-                  <a class="sidebar-nav__item" href="/admin/cms/#/collections/categories">
+                  <button id="sidebar-nav-categories" class="sidebar-nav__item" type="button">
                     <span class="sidebar-nav__icon" aria-hidden="true">
                       <svg viewBox="0 0 16 16">
                         <path
@@ -136,18 +172,20 @@
                       </svg>
                     </span>
                     <span class="sidebar-nav__label">Categories</span>
-                  </a>
+                  </button>
+                  <div id="sidebar-categories-accordion" class="sidebar-menu-accordion" aria-hidden="true"></div>
 
-                  <a class="sidebar-nav__item" href="/admin/cms/#/collections/restaurant">
+                  <button id="sidebar-nav-restaurant" class="sidebar-nav__item" type="button">
                     <span class="sidebar-nav__icon" aria-hidden="true">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
                         <path d="M120-120v-122q-18-5-30-19t-14-34L40-680h25q23 0 40.5 16t19.5 39l24 265h171q33 0 56.5 23.5T400-280v40h-40v120h-60v-120H180v120h-60Zm320 0v-320H200q0-33 23.5-56.5T280-520h400q33 0 56.5 23.5T760-440H520v320h-80ZM280-600v-40q0-66 47-113t113-47v-120h80v120q66 0 113 47t47 113v40H280Zm91-80h218q-11-19-29-29.5T520-720h-80q-22 0-40 10.5T371-680Zm229 560v-120h-40v-40q0-33 23.5-56.5T640-360h172l24-265q2-23 19-39t40-16h25l-35 385q-2 20-14.5 34T840-242v122h-60v-120H660v120h-60ZM480-680Z"></path>
                       </svg>
                     </span>
-                    <span class="sidebar-nav__label">Restaurant</span>
-                  </a>
+                    <span class="sidebar-nav__label">Restaurante</span>
+                  </button>
+                  <div id="sidebar-restaurant-accordion" class="sidebar-menu-accordion" aria-hidden="true"></div>
 
-                  <a class="sidebar-nav__item" href="/admin/cms/#/collections/media">
+                  <button id="sidebar-nav-media" class="sidebar-nav__item" type="button">
                     <span class="sidebar-nav__icon" aria-hidden="true">
                       <svg viewBox="0 0 16 16">
                         <path
@@ -163,7 +201,8 @@
                       </svg>
                     </span>
                     <span class="sidebar-nav__label">Media</span>
-                  </a>
+                  </button>
+                  <div id="sidebar-media-accordion" class="sidebar-menu-accordion" aria-hidden="true"></div>
                 </nav>
               </div>
 
@@ -178,7 +217,9 @@
                       aria-expanded="false"
                       aria-controls="sidebar-user-menu"
                     >
-                      <span id="session-avatar" class="sidebar-user-avatar" aria-hidden="true">U</span>
+                      <span id="session-avatar" class="sidebar-user-avatar" aria-hidden="true">
+                        <img class="sidebar-user-avatar-image" src="/assets/avatar.webp" alt="" />
+                      </span>
                       <span class="sidebar-user-meta">
                         <span id="session-name" class="sidebar-user-name">Usuario</span>
                         <span id="session-email" class="sidebar-user-email">-</span>
@@ -245,12 +286,26 @@
                   </div>
                 </article>
 
-                <a class="dash-card" href="/admin/cms/#/collections/home">
+                <button id="open-homepage-editor-button" class="dash-card dash-card--button" type="button">
                   <p class="dash-card__eyebrow">Homepage</p>
-                  <h2>Home</h2>
+                  <h2>HomePage</h2>
                   <p id="metric-home" class="dash-card__metric">-</p>
                   <p>Hero, featured y links.</p>
-                </a>
+                </button>
+
+                <button id="open-pages-editor-button" class="dash-card dash-card--button" type="button">
+                  <p class="dash-card__eyebrow">Single Pages</p>
+                  <h2>Pages</h2>
+                  <p class="dash-card__metric">6 secciones base</p>
+                  <p>Base visual para Menu, Nosotros, Ubicacion, Contacto, Eventos y FAQs.</p>
+                </button>
+
+                <button id="open-ingredients-editor-button" class="dash-card dash-card--button" type="button">
+                  <p class="dash-card__eyebrow">Catalogo</p>
+                  <h2>Ingredients</h2>
+                  <p id="metric-ingredients" class="dash-card__metric">-</p>
+                  <p>Ingredientes, tags y alergenos.</p>
+                </button>
 
                 <a class="dash-card" href="/admin/cms/#/collections/availability">
                   <p class="dash-card__eyebrow">Operacion</p>
@@ -259,26 +314,26 @@
                   <p>Disponibilidad y notas.</p>
                 </a>
 
-                <a class="dash-card" href="/admin/cms/#/collections/categories">
+                <button id="open-categories-editor-button" class="dash-card dash-card--button" type="button">
                   <p class="dash-card__eyebrow">Estructura</p>
                   <h2>Categories</h2>
                   <p id="metric-categories" class="dash-card__metric">-</p>
                   <p>Categorias y orden de secciones.</p>
-                </a>
+                </button>
 
-                <a class="dash-card" href="/admin/cms/#/collections/restaurant">
+                <button id="open-restaurant-editor-button" class="dash-card dash-card--button" type="button">
                   <p class="dash-card__eyebrow">Negocio</p>
-                  <h2>Restaurant</h2>
+                  <h2>Restaurante</h2>
                   <p id="metric-restaurant" class="dash-card__metric">-</p>
                   <p>Telefono, horarios y datos generales.</p>
-                </a>
+                </button>
 
-                <a class="dash-card" href="/admin/cms/#/collections/media">
+                <button id="open-media-editor-button" class="dash-card dash-card--button" type="button">
                   <p class="dash-card__eyebrow">Activos</p>
                   <h2>Media</h2>
                   <p id="metric-media" class="dash-card__metric">-</p>
                   <p>Mapa completo de imagenes por item.</p>
-                </a>
+                </button>
               </section>
             </section>
 
@@ -343,11 +398,10 @@
                     <button class="item-tab is-active" data-tab="basic" type="button">Basico</button>
                     <button class="item-tab" data-tab="descriptions" type="button">Descripciones</button>
                     <button class="item-tab" data-tab="ingredients" type="button">Ingredientes</button>
-                    <button class="item-tab" data-tab="tags" type="button">Tags</button>
+                    <button class="item-tab" data-tab="traits" type="button">Traits</button>
                     <button class="item-tab" data-tab="allergens" type="button">Alergenos</button>
                     <button class="item-tab" data-tab="media" type="button">Media</button>
                     <button class="item-tab" data-tab="availability" type="button">Disponibilidad</button>
-                    <button class="item-tab" data-tab="special" type="button">Especiales</button>
                   </nav>
 
                   <div class="item-tab-panels">
@@ -389,10 +443,7 @@
 
                       <p id="item-price-preview" class="inline-help">DOP 0</p>
 
-                      <label class="toggle-field">
-                        <input id="item-field-featured" type="checkbox" />
-                        <span>Featured</span>
-                      </label>
+                      <div id="item-field-featured-toggle-mount"></div>
                     </section>
 
                     <section class="item-tab-panel" data-tab-panel="descriptions">
@@ -417,25 +468,193 @@
                       <p class="inline-help">Arrastra para cambiar el orden de ingredientes.</p>
                     </section>
 
-                    <section class="item-tab-panel" data-tab-panel="tags">
-                      <label class="field">
-                        <span>Buscar tag</span>
-                        <input id="tag-search-input" type="search" placeholder="Ej: spicy" />
-                      </label>
-                      <div id="tag-search-results" class="token-search-results"></div>
-                      <ul id="tag-chip-list" class="chip-list"></ul>
+                    <section class="item-tab-panel" data-tab-panel="traits">
+                      <section class="traits-panel-section">
+                        <header class="traits-panel-section__header">
+                          <h4>Calculado automáticamente</h4>
+                          <p>
+                            El motor V2 deriva dieta, contenido y experiencia desde
+                            <code>ingredients.metadata</code>.
+                          </p>
+                        </header>
+
+                        <div class="traits-panel-grid">
+                          <div class="traits-panel-card">
+                            <span class="traits-panel-card__label">Dieta</span>
+                            <div id="item-derived-dietary" class="traits-pill-list"></div>
+                          </div>
+
+                          <div class="traits-panel-card">
+                            <span class="traits-panel-card__label">Contenido</span>
+                            <div id="item-derived-content-flags" class="traits-pill-list"></div>
+                          </div>
+
+                          <div class="traits-panel-card">
+                            <span class="traits-panel-card__label">Experiencia visible</span>
+                            <div id="item-derived-experience-tags" class="traits-pill-list"></div>
+                          </div>
+                        </div>
+
+                        <div class="field">
+                          <span>Scores de experiencia</span>
+                          <div id="item-derived-score-list" class="traits-score-list"></div>
+                        </div>
+                      </section>
+
+                      <section class="traits-panel-section">
+                        <header class="traits-panel-section__header">
+                          <h4>Overrides editoriales</h4>
+                          <p>
+                            Si dejas un campo en <strong>Auto</strong>, el runtime usa el cálculo automático.
+                          </p>
+                        </header>
+
+                        <div class="traits-override-grid">
+                          <label class="field">
+                            <span>Dieta: Vegetariana</span>
+                            <select id="item-field-override-vegetarian">
+                              <option value="auto">Auto</option>
+                              <option value="true">Forzar sí</option>
+                              <option value="false">Forzar no</option>
+                            </select>
+                          </label>
+
+                          <label class="field">
+                            <span>Dieta: Vegana</span>
+                            <select id="item-field-override-vegan">
+                              <option value="auto">Auto</option>
+                              <option value="true">Forzar sí</option>
+                              <option value="false">Forzar no</option>
+                            </select>
+                          </label>
+
+                          <label class="field">
+                            <span>Contenido: Cerdo</span>
+                            <select id="item-field-override-pork">
+                              <option value="auto">Auto</option>
+                              <option value="true">Forzar sí</option>
+                              <option value="false">Forzar no</option>
+                            </select>
+                          </label>
+
+                          <label class="field">
+                            <span>Contenido: Pescado</span>
+                            <select id="item-field-override-fish">
+                              <option value="auto">Auto</option>
+                              <option value="true">Forzar sí</option>
+                              <option value="false">Forzar no</option>
+                            </select>
+                          </label>
+
+                          <label class="field">
+                            <span>Contenido: Frutos secos</span>
+                            <select id="item-field-override-nuts">
+                              <option value="auto">Auto</option>
+                              <option value="true">Forzar sí</option>
+                              <option value="false">Forzar no</option>
+                            </select>
+                          </label>
+
+                          <label class="field">
+                            <span>Badges de experiencia</span>
+                            <select id="item-field-experience-tags-mode">
+                              <option value="auto">Automático</option>
+                              <option value="manual">Manual</option>
+                            </select>
+                          </label>
+                        </div>
+
+                        <div class="field">
+                          <span>Experience tags editoriales</span>
+                          <small class="ingredients-field__hint">
+                            Máximo 2 visibles cuando el modo es manual.
+                          </small>
+                          <div id="item-experience-tags-editor" class="token-search-results ingredients-meta-list"></div>
+                        </div>
+
+                        <details class="advanced-box">
+                          <summary>Compatibilidad legacy</summary>
+                          <p id="item-legacy-summary" class="inline-help">
+                            Este item no tiene campos legacy detectados.
+                          </p>
+
+                          <label class="field">
+                            <span>item.reviews</span>
+                            <input id="item-field-reviews" type="text" />
+                          </label>
+                        </details>
+                      </section>
                     </section>
 
                     <section class="item-tab-panel" data-tab-panel="allergens">
-                      <label class="field">
-                        <span>Buscar alergeno</span>
-                        <input id="allergen-search-input" type="search" placeholder="Ej: milk" />
-                      </label>
-                      <div id="allergen-search-results" class="token-search-results"></div>
-                      <ul id="allergen-chip-list" class="chip-list"></ul>
-                      <button id="item-autodetect-meta-button" class="btn btn-ghost" type="button">
-                        Autodetectar tags y alergenos
-                      </button>
+                      <section class="traits-panel-section">
+                        <header class="traits-panel-section__header">
+                          <h4>Derivación automática</h4>
+                          <p>
+                            El source of truth vive en <code>ingredients[*].allergens</code>. El item calcula su lista
+                            final por unión desde sus ingredientes y solo aplica overrides cuando hace falta una excepción.
+                          </p>
+                        </header>
+
+                        <div class="traits-panel-grid">
+                          <div class="traits-panel-card">
+                            <span class="traits-panel-card__label">Alérgenos automáticos</span>
+                            <div id="item-derived-allergens" class="traits-pill-list"></div>
+                          </div>
+
+                          <div class="traits-panel-card">
+                            <span class="traits-panel-card__label">Resultado final</span>
+                            <div id="item-resolved-allergens" class="traits-pill-list"></div>
+                            <p id="item-unattributed-allergens" class="inline-help"></p>
+                          </div>
+                        </div>
+                      </section>
+
+                      <section class="traits-panel-section">
+                        <header class="traits-panel-section__header">
+                          <h4>Fuentes por alérgeno</h4>
+                          <p>
+                            Aquí ves qué ingredientes están aportando cada alérgeno detectado automáticamente.
+                          </p>
+                        </header>
+                        <div id="item-allergen-sources" class="allergen-source-list"></div>
+                      </section>
+
+                      <section class="traits-panel-section">
+                        <header class="traits-panel-section__header">
+                          <h4>Overrides editoriales</h4>
+                          <p>
+                            Usa overrides solo como excepción. <code>gluten</code> por base implícita no modelada es una
+                            solución transitoria y controlada, no el modelo final ideal.
+                          </p>
+                        </header>
+
+                        <div class="allergen-override-grid">
+                          <div class="allergen-override-column">
+                            <label class="field">
+                              <span>Override add</span>
+                              <input id="allergen-override-add-search-input" type="search" placeholder="Ej: gluten" />
+                            </label>
+                            <div id="allergen-override-add-search-results" class="token-search-results"></div>
+                            <ul id="allergen-override-add-chip-list" class="chip-list"></ul>
+                            <p class="inline-help">
+                              Agrega alérgenos finales cuando la fuente real no está modelada aún en ingredients.
+                            </p>
+                          </div>
+
+                          <div class="allergen-override-column">
+                            <label class="field">
+                              <span>Override remove</span>
+                              <input id="allergen-override-remove-search-input" type="search" placeholder="Ej: milk" />
+                            </label>
+                            <div id="allergen-override-remove-search-results" class="token-search-results"></div>
+                            <ul id="allergen-override-remove-chip-list" class="chip-list"></ul>
+                            <p class="inline-help">
+                              Remueve casos excepcionales del resultado automático sin tocar el catálogo base.
+                            </p>
+                          </div>
+                        </div>
+                      </section>
                     </section>
 
                     <section class="item-tab-panel" data-tab-panel="media">
@@ -448,6 +667,7 @@
                         <span>Media picker</span>
                         <select id="item-media-picker"></select>
                       </label>
+                      <p id="item-media-status" class="media-status"></p>
 
                       <div class="media-preview-box">
                         <img id="item-media-preview" alt="Preview media" />
@@ -455,10 +675,7 @@
                     </section>
 
                     <section class="item-tab-panel" data-tab-panel="availability">
-                      <label class="toggle-field">
-                        <input id="item-availability-toggle" type="checkbox" />
-                        <span>Disponible</span>
-                      </label>
+                      <div id="item-availability-toggle-mount"></div>
 
                       <label class="field">
                         <span>Razon agotado</span>
@@ -466,39 +683,6 @@
                       </label>
                     </section>
 
-                    <section class="item-tab-panel" data-tab-panel="special">
-                      <label class="field">
-                        <span>Spicy level: <strong id="item-spicy-level-value">0</strong></span>
-                        <input id="item-field-spicy-level" type="range" min="0" max="3" step="1" />
-                      </label>
-
-                      <label class="toggle-field">
-                        <input id="item-field-vegetarian" type="checkbox" />
-                        <span>Vegetariano</span>
-                      </label>
-
-                      <label class="toggle-field">
-                        <input id="item-field-vegan" type="checkbox" />
-                        <span>Vegano</span>
-                      </label>
-
-                      <details class="advanced-box">
-                        <summary>Advanced (legacy)</summary>
-                        <label class="field">
-                          <span>item.spicy</span>
-                          <select id="item-field-spicy-legacy">
-                            <option value="">(sin valor)</option>
-                            <option value="true">true</option>
-                            <option value="false">false</option>
-                          </select>
-                        </label>
-
-                        <label class="field">
-                          <span>item.reviews</span>
-                          <input id="item-field-reviews" type="text" />
-                        </label>
-                      </details>
-                    </section>
                   </div>
                 </section>
 
@@ -526,12 +710,594 @@
                 </aside>
               </div>
             </section>
+
+            <section id="home-editor-panel" class="home-editor is-hidden" aria-label="HomePage Editor">
+              <div class="home-editor__header">
+                <div>
+                  <p class="kicker">HomePage Editor</p>
+                  <h2>Secciones del homepage</h2>
+                  <p class="home-editor__subtitle">
+                    Edita Hero, Featured, Delivery, Testimonials, Eventos, Footer y secciones relacionadas.
+                  </p>
+                </div>
+                <div class="home-editor__actions">
+                  <button id="home-save-button" class="btn btn-primary" type="button">Guardar</button>
+                  <button id="home-export-json-button" class="btn btn-ghost" type="button">
+                    Exportar JSON
+                  </button>
+                  <button id="home-publish-preview-button" class="btn btn-primary" type="button">
+                    Publish Preview
+                  </button>
+                  <button id="home-publish-production-button" class="btn btn-ghost" type="button">
+                    Publish Production
+                  </button>
+                </div>
+              </div>
+
+              <p id="home-editor-status" class="status-message" role="status" aria-live="polite"></p>
+
+              <div class="home-editor__layout">
+                <div id="home-sections-content" class="home-sections-content"></div>
+              </div>
+            </section>
+
+            <section id="ingredients-editor-panel" class="ingredients-editor is-hidden" aria-label="Ingredients Editor">
+              <div class="ingredients-editor__header">
+                <div>
+                  <p class="kicker">Ingredients Editor</p>
+                  <h2 id="ingredients-panel-title">Catalogo de ingredientes</h2>
+                  <p id="ingredients-panel-subtitle" class="ingredients-editor__subtitle">
+                    Explora el catalogo en cards. Click en un ingrediente para abrir su editor.
+                  </p>
+                  <nav id="ingredients-tabs-nav" class="ingredients-tabs" aria-label="Ingredients tabs">
+                    <button
+                      id="ingredients-tab-ingredients"
+                      class="ingredients-tab is-active"
+                      type="button"
+                      data-ingredients-tab="ingredients"
+                    >
+                      Ingredients
+                    </button>
+                    <button
+                      id="ingredients-tab-icons"
+                      class="ingredients-tab"
+                      type="button"
+                      data-ingredients-tab="icons"
+                    >
+                      Icons
+                    </button>
+                  </nav>
+                </div>
+                <div id="ingredients-catalog-actions" class="ingredients-editor__actions">
+                  <button id="ingredients-new-button" class="btn btn-primary" type="button">Nuevo ingrediente</button>
+                  <button id="ingredients-normalize-aliases-button" class="btn btn-ghost" type="button">
+                    Normalize aliases
+                  </button>
+                  <button id="ingredients-new-icon-button" class="btn btn-primary is-hidden" type="button">Nuevo icono</button>
+                </div>
+                <div id="ingredients-editor-actions" class="ingredients-editor__actions is-hidden">
+                  <button id="ingredients-save-button" class="btn btn-primary" type="button">Guardar</button>
+                  <button id="ingredients-export-json-button" class="btn btn-ghost" type="button">
+                    Exportar JSON
+                  </button>
+                  <button id="ingredients-publish-preview-button" class="btn btn-primary" type="button">
+                    Publish Preview
+                  </button>
+                  <button id="ingredients-publish-production-button" class="btn btn-ghost" type="button">
+                    Publish Production
+                  </button>
+                </div>
+              </div>
+
+              <p id="ingredients-editor-status" class="status-message" role="status" aria-live="polite"></p>
+
+              <section id="ingredients-catalog-view" class="ingredients-catalog-view ingredients-tab-panel" aria-label="Catalogo de ingredientes">
+                <div class="ingredients-catalog-view__toolbar card">
+                  <label class="field">
+                    <span>Buscar ingrediente</span>
+                    <input id="ingredients-search-input" type="search" placeholder="Ej: mozzarella, pomodoro..." />
+                  </label>
+                  <p id="ingredients-catalog-count" class="inline-help">-</p>
+                  <p id="ingredients-global-warning" class="inline-help"></p>
+                </div>
+                <div id="ingredients-list" class="ingredients-categories-content"></div>
+              </section>
+
+              <section id="ingredients-detail-view" class="ingredients-detail-view ingredients-tab-panel card is-hidden" aria-label="Editor de ingrediente">
+                <div class="ingredients-detail-view__header">
+                  <button id="ingredients-back-button" class="btn btn-ghost" type="button">Volver al catalogo</button>
+                  <div class="ingredients-detail-view__title-wrap">
+                    <p class="kicker">Ingredients / Item</p>
+                    <h3 id="ingredients-detail-title">Editar ingrediente</h3>
+                    <p class="ingredients-detail-view__subtitle">
+                      Completa los campos clave, valida clasificacion y revisa el impacto en menu.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="ingredients-detail-layout">
+                  <section class="ingredients-detail-section">
+                    <header class="ingredients-detail-section__header">
+                      <h4>Identidad</h4>
+                      <p>ID interno, label visible e icono utilizado en el catalogo.</p>
+                    </header>
+                    <div class="ingredients-editor__grid">
+                      <label class="field ingredients-field">
+                        <span>ID</span>
+                        <input id="ingredients-field-id" type="text" />
+                        <small class="ingredients-field__hint">Solo editable cuando creas un ingrediente nuevo.</small>
+                      </label>
+
+                      <label class="field ingredients-field">
+                        <span>Label</span>
+                        <input id="ingredients-field-label" type="text" />
+                        <small class="ingredients-field__hint">Nombre que se mostrara en el catalogo y editor.</small>
+                      </label>
+
+                      <label class="field ingredients-field">
+                        <span>Icon (catalogo)</span>
+                        <select id="ingredients-field-icon-select"></select>
+                        <small class="ingredients-field__hint">Selecciona un icono del catalogo central.</small>
+                      </label>
+
+                      <label class="field ingredients-field">
+                        <span>Icon ID / path manual</span>
+                        <input id="ingredients-field-icon" type="text" list="ingredients-icon-options" placeholder="Ej: queso o /assets/Ingredients/queso.webp" />
+                        <small class="ingredients-field__hint">Puedes usar ID de icono o ruta manual de asset.</small>
+                        <datalist id="ingredients-icon-options"></datalist>
+                      </label>
+
+                      <div class="field ingredients-field ingredients-icon-preview-field" data-span="full">
+                        <span>Icono seleccionado</span>
+                        <div class="ingredients-icon-preview-box">
+                          <span id="ingredients-field-icon-preview" class="ingredients-icon-preview" aria-hidden="true"></span>
+                          <button id="ingredients-view-icon-button" class="btn btn-ghost" type="button">
+                            Ver icono
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="ingredients-detail-section">
+                    <header class="ingredients-detail-section__header">
+                      <h4>Metadata V2</h4>
+                      <p>Define aliases, perfil dietario, content flags, experience signals e internal traits.</p>
+                    </header>
+                    <div class="ingredients-editor__grid">
+                      <div class="field ingredients-field" data-span="full">
+                        <span>Aliases</span>
+                        <div class="field-inline ingredients-alias-inline">
+                          <input id="ingredients-alias-input" type="text" placeholder="Alias (normalizado automaticamente)" />
+                          <button id="ingredients-alias-add-button" class="btn btn-ghost" type="button">Agregar</button>
+                        </div>
+                        <ul id="ingredients-alias-list" class="chip-list ingredients-alias-list"></ul>
+                      </div>
+
+                      <label class="field ingredients-field">
+                        <span>Vegetarian safe</span>
+                        <select id="ingredients-field-vegetarian-safe">
+                          <option value="true">Sí</option>
+                          <option value="false">No</option>
+                        </select>
+                      </label>
+
+                      <label class="field ingredients-field">
+                        <span>Vegan safe</span>
+                        <select id="ingredients-field-vegan-safe">
+                          <option value="true">Sí</option>
+                          <option value="false">No</option>
+                        </select>
+                      </label>
+
+                      <div class="field ingredients-field" data-span="full">
+                        <span>Content flags</span>
+                        <small class="ingredients-field__hint">Flags visibles a nivel item cuando el ingrediente está presente.</small>
+                        <div id="ingredients-content-flags-list" class="token-search-results ingredients-meta-list"></div>
+                      </div>
+
+                      <div class="field ingredients-field" data-span="full">
+                        <span>Experience signals</span>
+                        <small class="ingredients-field__hint">Intensidad base que el motor suma por ingrediente.</small>
+                        <div id="ingredients-experience-signals" class="ingredients-signals-grid"></div>
+                      </div>
+
+                      <div class="field ingredients-field" data-span="full">
+                        <span>Internal traits</span>
+                        <small class="ingredients-field__hint">Rasgos internos para bonuses y reglas de combinación.</small>
+                        <div id="ingredients-internal-traits-list" class="token-search-results ingredients-meta-list"></div>
+                      </div>
+
+                      <div class="field ingredients-field" data-span="full">
+                        <span>Alergenos</span>
+                        <small class="ingredients-field__hint">Selecciona todos los alergenos que apliquen a este ingrediente.</small>
+                        <div id="ingredients-allergens-list" class="token-search-results ingredients-meta-list"></div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="ingredients-detail-section">
+                    <header class="ingredients-detail-section__header">
+                      <h4>Impacto en menu</h4>
+                      <p>Items que usan este ingrediente actualmente.</p>
+                    </header>
+                    <p id="ingredients-impact-count" class="inline-help">-</p>
+                    <ul id="ingredients-impact-list" class="ingredients-impact-list ingredients-grid"></ul>
+                  </section>
+                </div>
+
+                <div class="ingredients-editor__footer">
+                  <button id="ingredients-delete-button" class="btn btn-danger" type="button">Eliminar ingrediente</button>
+                  <p id="ingredients-validation-summary" class="inline-help"></p>
+                </div>
+              </section>
+
+              <section id="ingredients-icons-catalog-view" class="ingredients-catalog-view ingredients-tab-panel is-hidden" aria-label="Catalogo de iconos">
+                <div class="ingredients-catalog-view__toolbar card">
+                  <label class="field">
+                    <span>Buscar icono</span>
+                    <input id="ingredients-icons-search-input" type="search" placeholder="Ej: queso, tomate..." />
+                  </label>
+                  <p id="ingredients-icons-catalog-count" class="inline-help">-</p>
+                  <p id="ingredients-icons-global-warning" class="inline-help"></p>
+                </div>
+                <ul id="ingredients-icons-list" class="ingredients-grid"></ul>
+              </section>
+
+              <section id="ingredients-icons-detail-view" class="ingredients-detail-view ingredients-tab-panel card is-hidden" aria-label="Editor de icono">
+                <div class="ingredients-detail-view__header">
+                  <button id="ingredients-icons-back-button" class="btn btn-ghost" type="button">Volver a iconos</button>
+                  <div class="ingredients-detail-view__title-wrap">
+                    <p class="kicker">Ingredients / Icon</p>
+                    <h3 id="ingredients-icons-detail-title">Editar icono</h3>
+                    <p class="ingredients-detail-view__subtitle">
+                      Actualiza label/path y revisa que ingredientes dependen de este icono.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="ingredients-detail-layout">
+                  <section class="ingredients-detail-section">
+                    <header class="ingredients-detail-section__header">
+                      <h4>Identidad de icono</h4>
+                      <p>Key unico, label visible y path del asset.</p>
+                    </header>
+                    <div class="ingredients-editor__grid">
+                      <label class="field ingredients-field">
+                        <span>Key</span>
+                        <input id="ingredients-icon-field-key" type="text" />
+                        <small class="ingredients-field__hint">Solo editable cuando creas un icono nuevo.</small>
+                      </label>
+
+                      <label class="field ingredients-field">
+                        <span>Label</span>
+                        <input id="ingredients-icon-field-label" type="text" />
+                        <small class="ingredients-field__hint">Nombre visible en selectores y catalogo.</small>
+                      </label>
+
+                      <label class="field ingredients-field" data-span="full">
+                        <span>Path / filename</span>
+                        <input id="ingredients-icon-field-path" type="text" placeholder="Ej: queso.webp o /assets/Ingredients/queso.webp" />
+                        <small class="ingredients-field__hint">Si usas filename relativo, se resolvera con basePath.</small>
+                      </label>
+
+                      <div class="field ingredients-field ingredients-icon-preview-field" data-span="full">
+                        <span>Preview</span>
+                        <div class="ingredients-icon-preview-box">
+                          <span id="ingredients-icon-preview" class="ingredients-icon-preview" aria-hidden="true"></span>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="ingredients-detail-section">
+                    <header class="ingredients-detail-section__header">
+                      <h4>Used by</h4>
+                      <p>Ingredientes que usan este icono.</p>
+                    </header>
+                    <p id="ingredients-icon-used-by-count" class="inline-help">-</p>
+                    <ul id="ingredients-icon-used-by-list" class="ingredients-impact-list ingredients-grid"></ul>
+                  </section>
+                </div>
+
+                <div class="ingredients-editor__footer">
+                  <button id="ingredients-icon-delete-button" class="btn btn-danger" type="button">Eliminar icono</button>
+                  <p id="ingredients-icon-validation-summary" class="inline-help"></p>
+                </div>
+              </section>
+            </section>
+
+            <section id="categories-editor-panel" class="categories-editor is-hidden" aria-label="Categories Editor">
+              <div class="categories-editor__header">
+                <div>
+                  <p class="kicker">Categories</p>
+                  <h2>Categories</h2>
+                  <p class="categories-editor__subtitle">
+                    Estructura y orden de secciones del menu
+                  </p>
+                </div>
+                <div class="categories-editor__actions">
+                  <button id="categories-new-button" class="btn btn-primary" type="button">New Category</button>
+                  <button id="categories-export-json-button" class="btn btn-ghost" type="button">Export</button>
+                  <button id="categories-clear-drafts-button" class="btn btn-ghost" type="button">Clear drafts</button>
+                </div>
+              </div>
+
+              <p id="categories-editor-status" class="status-message" role="status" aria-live="polite"></p>
+              <p id="categories-editor-warning" class="inline-help"></p>
+              <p id="categories-cards-summary" class="inline-help">-</p>
+              <p id="categories-validation-summary" class="inline-help"></p>
+
+              <div id="categories-cards-content" class="categories-cards-content"></div>
+
+              <section class="categories-order card" aria-label="Order categories">
+                <header class="categories-order__header">
+                  <div>
+                    <p class="kicker">Categories / Order</p>
+                    <h3>Order categories</h3>
+                    <p class="inline-help">Arrastra desde el handle de seis puntos para reordenar.</p>
+                  </div>
+                </header>
+                <ul id="categories-order-list" class="home-featured-list categories-order-list"></ul>
+              </section>
+            </section>
+
+            <section id="restaurant-editor-panel" class="restaurant-editor is-hidden" aria-label="Editor de restaurante"></section>
+
+            <section id="media-editor-panel" class="media-editor is-hidden" aria-label="Editor de media"></section>
+
+            <section id="pages-editor-panel" class="pages-editor is-hidden" aria-label="Editor de paginas"></section>
+          </div>
+        </div>
+
+        <div
+          id="command-palette-shell"
+          class="command-palette-shell is-hidden"
+          data-state="closed"
+          aria-hidden="true"
+        >
+          <div id="command-palette-overlay" class="command-palette-overlay" aria-hidden="true"></div>
+          <div
+            id="command-palette-dialog"
+            class="command-palette-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Command Palette"
+            aria-labelledby="command-palette-title"
+            aria-describedby="command-palette-live"
+            tabindex="-1"
+          >
+            <div id="command-palette-root" class="command-palette">
+              <h2 id="command-palette-title" class="command-palette__sr-only">Command Palette</h2>
+              <div
+                id="command-palette-live"
+                class="command-palette__sr-only"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                Loading...
+              </div>
+
+              <div class="command-palette__header">
+                <div class="command-palette__input-wrapper">
+                  <svg viewBox="0 0 16 16" aria-hidden="true" class="command-palette__search-icon">
+                    <path
+                      d="M2.96 6.79a3.83 3.83 0 1 1 7.66 0 3.83 3.83 0 0 1-7.66 0m3.83-5.63a5.63 5.63 0 1 0 3.29 10.2l3.04 3.04a.9.9 0 1 0 1.28-1.28l-3.05-3.04A5.63 5.63 0 0 0 6.8 1.16Z"
+                    ></path>
+                  </svg>
+                  <input
+                    id="command-palette-input"
+                    class="command-palette__input"
+                    type="text"
+                    placeholder="Search for projects, settings, and actions..."
+                    aria-label="Search commands"
+                    role="combobox"
+                    aria-expanded="true"
+                    aria-controls="command-palette-list"
+                    autocomplete="off"
+                    autocorrect="off"
+                    spellcheck="false"
+                  />
+                </div>
+              </div>
+
+              <div id="command-palette-list" class="command-palette__list" role="listbox" aria-label="Suggestions">
+                <div class="command-palette__group" role="presentation">
+                  <div class="command-palette__group-heading" aria-hidden="true">Quick actions</div>
+                  <div class="command-palette__group-items" role="group" aria-label="Quick actions">
+                    <div
+                      id="command-palette-item-0"
+                      class="command-palette__item"
+                      role="option"
+                      aria-selected="true"
+                      data-selected="true"
+                      data-command-index="0"
+                      data-command-label="Search projects..."
+                    >
+                      <span class="command-palette__item-icon" aria-hidden="true">
+                        <svg viewBox="0 0 16 16">
+                          <path
+                            fill-rule="evenodd"
+                            d="M11.167 1H4.833L3.5 2.333l.167.167h8.666l.167-.167zm1 2.5H3.833L2.5 4.833 2.667 5h10.666l.167-.167zM1.5 7v7l1 1h11l1-1V7l-1-1h-11zm1.5.621v5.758l.121.121h9.758l.121-.121V7.62l-.121-.121H3.12z"
+                            clip-rule="evenodd"
+                          ></path>
+                        </svg>
+                      </span>
+                      <span class="command-palette__item-text">Search projects...</span>
+                      <kbd class="command-palette__shortcut" aria-hidden="true">s</kbd>
+                    </div>
+
+                    <div
+                      id="command-palette-item-1"
+                      class="command-palette__item"
+                      role="option"
+                      aria-selected="false"
+                      data-selected="false"
+                      data-command-index="1"
+                      data-command-label="Add new..."
+                    >
+                      <span class="command-palette__item-icon" aria-hidden="true">
+                        <svg viewBox="0 0 16 16">
+                          <path
+                            d="M8.841 13.159V8.84h4.318A.84.84 0 0 0 14 8a.84.84 0 0 0-.841-.841H8.84V2.84A.84.84 0 0 0 8 2a.84.84 0 0 0-.841.841V7.16H2.84A.84.84 0 0 0 2 8a.84.84 0 0 0 .841.841H7.16v4.318A.84.84 0 0 0 8 14a.844.844 0 0 0 .841-.841"
+                          ></path>
+                        </svg>
+                      </span>
+                      <span class="command-palette__item-text">Add new...</span>
+                      <kbd class="command-palette__shortcut" aria-hidden="true">a</kbd>
+                    </div>
+
+                    <div
+                      id="command-palette-item-2"
+                      class="command-palette__item"
+                      role="option"
+                      aria-selected="false"
+                      data-selected="false"
+                      data-command-index="2"
+                      data-command-label="Ask Netlify"
+                    >
+                      <span class="command-palette__item-icon" aria-hidden="true">
+                        <svg viewBox="0 0 16 16">
+                          <path
+                            fill-rule="evenodd"
+                            d="m7.98 9.63.6 1.47c.05.09.14.15.24.15h.96c.1 0 .18-.1.13-.2L7.38 4.9a.25.25 0 0 0-.23-.15h-.8c-.1 0-.2.06-.24.15L3.6 11.04c-.05.1.03.21.13.21h.95c.1 0 .2-.06.24-.15l.6-1.47h2.47Zm-.51-1.26-.72-1.75-.72 1.75z"
+                            clip-rule="evenodd"
+                          ></path>
+                          <path d="M10.75 11.25a.25.25 0 0 1-.25-.25V5c0-.14.11-.25.25-.25h.75c.14 0 .25.11.25.25v6c0 .14-.11.25-.25.25z"></path>
+                          <path
+                            fill-rule="evenodd"
+                            d="M0 5.5a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5v5a5 5 0 0 1-5 5H5a5 5 0 0 1-5-5zm5-3.75h6a3.75 3.75 0 0 1 3.75 3.75v5A3.75 3.75 0 0 1 11 14.25H5a3.75 3.75 0 0 1-3.75-3.75v-5A3.75 3.75 0 0 1 5 1.75"
+                            clip-rule="evenodd"
+                          ></path>
+                        </svg>
+                      </span>
+                      <span class="command-palette__item-text">Ask Netlify</span>
+                      <kbd class="command-palette__shortcut" aria-hidden="true">n</kbd>
+                    </div>
+
+                    <div
+                      id="command-palette-item-3"
+                      class="command-palette__item"
+                      role="option"
+                      aria-selected="false"
+                      data-selected="false"
+                      data-command-index="3"
+                      data-command-label="Search support guides..."
+                    >
+                      <span class="command-palette__item-icon" aria-hidden="true">
+                        <svg viewBox="0 0 16 16">
+                          <path
+                            d="M6.6 9.02c.02-.65.23-1.28.61-1.81.4-.56 1.13-.95 1.7-1.18h.01c.62-.23.98-.86.87-1.5-.1-.29-.27-.55-.51-.75a1.7 1.7 0 0 0-.86-.37H8.4a2.2 2.2 0 0 0-1.73.42c-.3.24-.49.6-.5.97 0 .32-.12.62-.35.84a1.23 1.23 0 0 1-1.71 0 1.17 1.17 0 0 1-.36-.84c.01-1.08.51-2.1 1.37-2.79a4.56 4.56 0 0 1 3.7-.94c.78.12 1.52.45 2.12.97s1.02 1.2 1.23 1.96v.02c.18.84.05 1.72-.36 2.48a3.74 3.74 0 0 1-1.9 1.68H9.9l-.02.01-.39.16a.8.8 0 0 0-.25.16c-.12.16-.2.34-.22.53v.27c0 .32-.13.62-.35.84a1.23 1.23 0 0 1-1.72 0 1.17 1.17 0 0 1-.35-.84v-.3Zm2.65 4.48a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"
+                          ></path>
+                        </svg>
+                      </span>
+                      <span class="command-palette__item-text">Search support guides...</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="command-palette__group" role="presentation">
+                  <div class="command-palette__group-heading" aria-hidden="true">Team navigation</div>
+                  <div class="command-palette__group-items" role="group" aria-label="Team navigation">
+                    <div
+                      id="command-palette-item-4"
+                      class="command-palette__item"
+                      role="option"
+                      aria-selected="false"
+                      data-selected="false"
+                      data-command-index="4"
+                      data-command-label="Builds"
+                    >
+                      <span class="command-palette__item-icon" aria-hidden="true">
+                        <svg viewBox="0 0 16 16">
+                          <path
+                            fill-rule="evenodd"
+                            d="m9.91 9.401 1.279 1.08-.214.214v.7l.353.355h.7l3.222-3.225v-.657l-.397-.398h-.657l-.185.186-1.302-1.18-.172-1.58-2.17-2.213-3.44-1.433H4.25v1.443l1.564 1.408.432 3.173 1.96 1.973zm1.423-2.242 1.68 1.495-.852.854-1.782-1.54-1.634-.214L7.701 6.71l-.59-3.118L5.963 2.39l3.35 1.348 1.79 1.812c0-.015.208 1.44.23 1.609"
+                            clip-rule="evenodd"
+                          ></path>
+                          <path d="M7.25 9.968v.344L2.812 14.75H.992l-.242-.245v-1.817L5.188 8.25h.344z"></path>
+                        </svg>
+                      </span>
+                      <span class="command-palette__item-text">Builds</span>
+                    </div>
+
+                    <div
+                      id="command-palette-item-5"
+                      class="command-palette__item"
+                      role="option"
+                      aria-selected="false"
+                      data-selected="false"
+                      data-command-index="5"
+                      data-command-label="Builds usage & insights"
+                    >
+                      <span class="command-palette__item-icon" aria-hidden="true">
+                        <svg viewBox="0 0 16 16">
+                          <path d="M6.25 2a1 1 0 0 1 1-1h1.5a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-1.5a1 1 0 0 1-1-1zM1 6a1 1 0 0 1 1-1h1.5a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zM12.5 8a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1H14a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1z"></path>
+                        </svg>
+                      </span>
+                      <span class="command-palette__item-text">Builds usage &amp; insights</span>
+                    </div>
+
+                    <div
+                      id="command-palette-item-6"
+                      class="command-palette__item"
+                      role="option"
+                      aria-selected="false"
+                      data-selected="false"
+                      data-command-index="6"
+                      data-command-label="Integrations"
+                    >
+                      <span class="command-palette__item-icon" aria-hidden="true">
+                        <svg viewBox="0 0 16 16">
+                          <path d="M4.667 3.5 4.5 3.333V.705L5.206 0h.588L6.5.705v2.628l-.167.167zM9.667 3.5 9.5 3.333V.705L10.206 0h.588l.706.705v2.628l-.167.167zM13.3 5H2.7l-.2.214v1.572L2.7 7h.237v2l2.25 1.714v1.143L6.313 13H7v2.313l.706.687h.588L9 15.313V13h.688l1.124-1.143v-1.143L13 9V7h.3l.2-.214V5.214z"></path>
+                        </svg>
+                      </span>
+                      <span class="command-palette__item-text">Integrations</span>
+                      <kbd class="command-palette__shortcut" aria-hidden="true">g + e</kbd>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <footer
+                class="command-palette__footer"
+                aria-label="Keyboard shortcuts: Arrow keys to navigate, Enter to select, Escape to close"
+              >
+                <span class="command-palette__footer-hint"><kbd>↑↓</kbd> to navigate</span>
+                <span class="command-palette__footer-hint"><kbd>↵</kbd> to select</span>
+                <span class="command-palette__footer-hint"><kbd>esc</kbd> to close</span>
+              </footer>
+            </div>
           </div>
         </div>
       </section>
     </main>
 
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <script src="/shared/menu-traits.js"></script>
+    <script src="/shared/menu-allergens.js"></script>
+    <script src="/shared/menu-sensory.js"></script>
+    <script src="/shared/ingredients-contract.js"></script>
+    <script src="/shared/categories-contract.js"></script>
+    <script src="/shared/restaurant-contract.js"></script>
+    <script src="/shared/media-contract.js"></script>
+    <script src="/admin/app/modules/constants.js"></script>
+    <script src="/admin/app/modules/utils.js"></script>
+    <script src="/admin/app/modules/auth.js"></script>
+    <script src="/admin/app/modules/drafts.js"></script>
+    <script src="/admin/app/modules/publish.js"></script>
+    <script src="/admin/app/modules/navigation.js"></script>
+    <script src="/admin/app/modules/command-palette.js"></script>
+    <script src="/admin/app/modules/sidebar.js"></script>
+    <script src="/admin/app/modules/accordion.js"></script>
+    <script src="/admin/app/modules/panels.js"></script>
+    <script src="/admin/app/modules/render-utils.js"></script>
+    <script src="/admin/app/modules/menu-media.js"></script>
+    <script src="/admin/app/modules/dashboard.js"></script>
+    <script src="/admin/app/modules/panels/restaurant-panel.js"></script>
+    <script src="/admin/app/modules/panels/media-panel.js"></script>
+    <script src="/admin/app/modules/panels/pages-panel.js"></script>
     <script src="/admin/app/app.js"></script>
   </body>
 </html>

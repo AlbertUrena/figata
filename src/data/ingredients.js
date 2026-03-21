@@ -1,6 +1,7 @@
 (() => {
-  const INGREDIENTS_URL = new URL('data/ingredients.json', window.location.href);
-  const INGREDIENTS_USAGE_URL = new URL('data/ingredients-usage.json', window.location.href);
+  const ROOT_URL = new URL('/', window.location.origin);
+  const INGREDIENTS_URL = new URL('data/ingredients.json', ROOT_URL);
+  const menuTraitsApi = window.FigataMenuTraits || null;
 
   let cachedIngredientsStorePromise;
 
@@ -37,14 +38,11 @@
   };
 
   const buildIngredientsStore = async () => {
-    const [ingredientsJson, ingredientsUsageJson] = await Promise.all([
-      fetchJson(INGREDIENTS_URL, 'ingredients.json'),
-      fetchJson(INGREDIENTS_USAGE_URL, 'ingredients-usage.json'),
-    ]);
+    const ingredientsJson = await fetchJson(INGREDIENTS_URL, 'ingredients.json');
 
     const ingredients = ingredientsJson?.ingredients || {};
     const icons = ingredientsJson?.icons || {};
-    const aliasToIconFromUsage = ingredientsUsageJson?.ingredientAliasesToIcon || {};
+    const allergens = ingredientsJson?.allergens || {};
     const normalizedToIngredientId = new Map();
 
     const registerAlias = (alias, ingredientId) => {
@@ -66,16 +64,10 @@
       aliases.forEach((alias) => registerAlias(alias, ingredientId));
     });
 
-    Object.entries(aliasToIconFromUsage).forEach(([alias, iconId]) => {
-      const icon = icons?.[iconId];
-      const covers = Array.isArray(icon?.covers) ? icon.covers : [];
-
-      covers.forEach((coveredIngredientId) => registerAlias(alias, coveredIngredientId));
-    });
-
     return {
       ingredients,
       icons,
+      allergens,
       normalizedToIngredientId,
     };
   };
@@ -128,6 +120,13 @@
       id: fallbackIngredientId || ingredientId,
       label,
       icon,
+      metadata:
+        menuTraitsApi && typeof menuTraitsApi.normalizeIngredientMetadata === "function"
+          ? menuTraitsApi.normalizeIngredientMetadata(
+              ingredient,
+              fallbackIngredientId || ingredientId
+            )
+          : null,
     };
   };
 

@@ -7,6 +7,13 @@ const menuPath = path.join(projectRoot, 'data', 'menu.json');
 
 const errors = [];
 const warnings = [];
+const DELIVERY_ICON_MIN_SIZE = 16;
+const DELIVERY_ICON_MAX_SIZE = 64;
+const TESTIMONIALS_LIMIT = 9;
+const TESTIMONIALS_STARS_MIN = 1;
+const TESTIMONIALS_STARS_MAX = 5;
+const FOOTER_COLUMNS_COUNT = 3;
+const FOOTER_LINKS_LIMIT = 8;
 
 const readJson = (filePath, label) => {
   try {
@@ -67,6 +74,8 @@ if (home && menu) {
     'delivery',
     'reservation',
     'announcements',
+    'testimonials',
+    'footer',
     'sections',
   ];
 
@@ -189,20 +198,33 @@ if (home && menu) {
   if (isObject(home.delivery)) {
     assert(isNonEmptyString(home.delivery.title), 'delivery.title es requerido.');
     assert(isNonEmptyString(home.delivery.subtitle), 'delivery.subtitle es requerido.');
-    assert(isObject(home.delivery.links), 'delivery.links debe ser objeto.');
+    assert(isObject(home.delivery.platforms), 'delivery.platforms debe ser objeto.');
 
-    if (isObject(home.delivery.links)) {
+    if (isObject(home.delivery.platforms)) {
       ['pedidosya', 'ubereats', 'takeout', 'whatsapp'].forEach((key) => {
-        const value = home.delivery.links[key];
+        const platform = home.delivery.platforms[key];
+        assert(isObject(platform), `delivery.platforms.${key} debe ser objeto.`);
+        if (!isObject(platform)) return;
 
+        const value = platform.url;
         if (value === undefined || value === null || value === '') {
-          warnings.push(`delivery.links.${key} vacio. Ese boton se ocultara en UI.`);
-          return;
+          warnings.push(`delivery.platforms.${key}.url vacio. Ese boton se ocultara en UI.`);
+        } else if (!isValidLink(value)) {
+          errors.push(`delivery.platforms.${key}.url no es una URL/ruta valida.`);
         }
 
-        if (!isValidLink(value)) {
-          errors.push(`delivery.links.${key} no es una URL/ruta valida.`);
-        }
+        assert(
+          isNonEmptyString(platform.icon),
+          `delivery.platforms.${key}.icon es requerido y debe ser string.`
+        );
+
+        const iconSize = Number(platform.iconSize);
+        assert(
+          Number.isFinite(iconSize) &&
+            iconSize >= DELIVERY_ICON_MIN_SIZE &&
+            iconSize <= DELIVERY_ICON_MAX_SIZE,
+          `delivery.platforms.${key}.iconSize debe estar entre ${DELIVERY_ICON_MIN_SIZE} y ${DELIVERY_ICON_MAX_SIZE}.`
+        );
       });
     }
   } else {
@@ -252,8 +274,138 @@ if (home && menu) {
     errors.push('announcements debe ser un objeto.');
   }
 
+  if (isObject(home.testimonials)) {
+    assert(
+      typeof home.testimonials.enabled === 'boolean',
+      'testimonials.enabled debe ser boolean.'
+    );
+    assert(isNonEmptyString(home.testimonials.title), 'testimonials.title es requerido.');
+    assert(isNonEmptyString(home.testimonials.subtitle), 'testimonials.subtitle es requerido.');
+    assert(Array.isArray(home.testimonials.items), 'testimonials.items debe ser array.');
+
+    if (Array.isArray(home.testimonials.items)) {
+      assert(
+        home.testimonials.items.length <= TESTIMONIALS_LIMIT,
+        `testimonials.items no debe exceder ${TESTIMONIALS_LIMIT} items.`
+      );
+      assertWarning(
+        home.testimonials.items.length > 0,
+        'testimonials.items esta vacio. Se usara fallback automatico en runtime.'
+      );
+
+      home.testimonials.items.forEach((item, index) => {
+        assert(isObject(item), `testimonials.items[${index}] debe ser objeto.`);
+        if (!isObject(item)) return;
+
+        assert(
+          isNonEmptyString(item.name),
+          `testimonials.items[${index}].name es requerido.`
+        );
+        assert(
+          isNonEmptyString(item.role),
+          `testimonials.items[${index}].role es requerido.`
+        );
+        assert(
+          isNonEmptyString(item.text),
+          `testimonials.items[${index}].text es requerido.`
+        );
+
+        const starsValue = Number(item.stars);
+        assert(
+          Number.isInteger(starsValue) &&
+            starsValue >= TESTIMONIALS_STARS_MIN &&
+            starsValue <= TESTIMONIALS_STARS_MAX,
+          `testimonials.items[${index}].stars debe ser entero entre ${TESTIMONIALS_STARS_MIN} y ${TESTIMONIALS_STARS_MAX}.`
+        );
+      });
+    }
+  } else {
+    errors.push('testimonials debe ser un objeto.');
+  }
+
+  if (isObject(home.footer)) {
+    assert(typeof home.footer.enabled === 'boolean', 'footer.enabled debe ser boolean.');
+    assert(Array.isArray(home.footer.columns), 'footer.columns debe ser array.');
+    assert(isObject(home.footer.cta), 'footer.cta debe ser objeto.');
+    assert(isObject(home.footer.socials), 'footer.socials debe ser objeto.');
+
+    if (Array.isArray(home.footer.columns)) {
+      assert(
+        home.footer.columns.length === FOOTER_COLUMNS_COUNT,
+        `footer.columns debe contener exactamente ${FOOTER_COLUMNS_COUNT} columnas (Empresa/Socials/Contactanos).`
+      );
+
+      home.footer.columns.forEach((column, columnIndex) => {
+        assert(isObject(column), `footer.columns[${columnIndex}] debe ser objeto.`);
+        if (!isObject(column)) return;
+
+        assert(
+          isNonEmptyString(column.title),
+          `footer.columns[${columnIndex}].title es requerido.`
+        );
+        assert(
+          Array.isArray(column.links),
+          `footer.columns[${columnIndex}].links debe ser array.`
+        );
+
+        if (Array.isArray(column.links)) {
+          assert(
+            column.links.length <= FOOTER_LINKS_LIMIT,
+            `footer.columns[${columnIndex}].links no debe exceder ${FOOTER_LINKS_LIMIT} links.`
+          );
+          column.links.forEach((linkEntry, linkIndex) => {
+            assert(
+              isObject(linkEntry),
+              `footer.columns[${columnIndex}].links[${linkIndex}] debe ser objeto.`
+            );
+            if (!isObject(linkEntry)) return;
+
+            assert(
+              isNonEmptyString(linkEntry.label),
+              `footer.columns[${columnIndex}].links[${linkIndex}].label es requerido.`
+            );
+            if (isNonEmptyString(linkEntry.url)) {
+              assert(
+                isValidLink(linkEntry.url),
+                `footer.columns[${columnIndex}].links[${linkIndex}].url debe ser URL/ruta valida.`
+              );
+            } else {
+              warnings.push(
+                `footer.columns[${columnIndex}].links[${linkIndex}].url vacio. Ese link quedara inactivo.`
+              );
+            }
+          });
+        }
+      });
+    }
+
+    if (isObject(home.footer.cta)) {
+      assert(isNonEmptyString(home.footer.cta.label), 'footer.cta.label es requerido.');
+      assert(
+        isValidLink(home.footer.cta.url),
+        'footer.cta.url debe ser una URL/ruta valida.'
+      );
+    }
+
+    if (isObject(home.footer.socials)) {
+      ['instagram', 'tiktok', 'tripadvisor'].forEach((key) => {
+        const value = home.footer.socials[key];
+        if (value === undefined || value === null || value === '') {
+          warnings.push(`footer.socials.${key} vacio. Ese icono se ocultara en UI.`);
+          return;
+        }
+        assert(
+          isValidLink(value),
+          `footer.socials.${key} debe ser una URL/ruta valida.`
+        );
+      });
+    }
+  } else {
+    errors.push('footer debe ser un objeto.');
+  }
+
   if (isObject(home.sections)) {
-    ['hero', 'popular', 'events', 'delivery', 'reservation'].forEach((key) => {
+    ['navbar', 'hero', 'popular', 'events', 'delivery', 'reservation', 'testimonials', 'footer'].forEach((key) => {
       assert(typeof home.sections[key] === 'boolean', `sections.${key} debe ser boolean.`);
     });
 

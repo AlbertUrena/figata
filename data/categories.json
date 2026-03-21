@@ -5,121 +5,38 @@
     {
       "id": "entradas",
       "label": "Entradas",
-      "labelShort": "Entradas",
-      "labelLong": "Entradas para compartir",
-      "pillLabel": "Entradas",
-      "description": "Antipasti, focaccias y platos para abrir la experiencia Figata.",
-      "icon": "appetizer",
       "order": 1,
-      "enabled": true,
-      "showOnHome": true,
-      "legacyIds": [
-        "entrada"
-      ],
-      "subcategories": [
-        {
-          "id": "frias",
-          "label": "Frias",
-          "labelShort": "Frias",
-          "labelLong": "Entradas frias",
-          "pillLabel": "Frias",
-          "description": "Preparaciones frescas para comenzar.",
-          "icon": "snow",
-          "order": 1,
-          "enabled": true,
-          "showOnHome": false
-        },
-        {
-          "id": "calientes",
-          "label": "Calientes",
-          "labelShort": "Calientes",
-          "labelLong": "Entradas calientes",
-          "pillLabel": "Calientes",
-          "description": "Horneados y platos calientes para compartir.",
-          "icon": "flame",
-          "order": 2,
-          "enabled": true,
-          "showOnHome": false
-        }
-      ]
+      "visible": true
     },
     {
       "id": "pizza",
       "label": "Pizza Clasica",
-      "labelShort": "Clasica",
-      "labelLong": "Pizzas clasicas napolitanas",
-      "pillLabel": "Clasicas",
-      "description": "Recetas clasicas de pizza napolitana.",
-      "icon": "pizza-classic",
       "order": 2,
-      "enabled": true,
-      "showOnHome": true,
-      "subcategories": [
-        {
-          "id": "tradicionales",
-          "label": "Tradicionales",
-          "labelShort": "Tradicionales",
-          "labelLong": "Pizzas tradicionales",
-          "pillLabel": "Tradicionales",
-          "description": "Sabores clasicos y de la casa.",
-          "icon": "pizza-slice",
-          "order": 1,
-          "enabled": true,
-          "showOnHome": false
-        }
-      ]
+      "visible": true
     },
     {
       "id": "pizza_autor",
       "label": "Pizza de Autor",
-      "labelShort": "Autor",
-      "labelLong": "Pizzas de autor",
-      "pillLabel": "Autor",
-      "description": "Creaciones de la casa con combinaciones de autor.",
-      "icon": "pizza-signature",
       "order": 3,
-      "enabled": true,
-      "showOnHome": true,
-      "subcategories": [
-        {
-          "id": "especiales",
-          "label": "Especiales",
-          "labelShort": "Especiales",
-          "labelLong": "Pizzas especiales de autor",
-          "pillLabel": "Especiales",
-          "description": "Combinaciones intensas y premium.",
-          "icon": "spark",
-          "order": 1,
-          "enabled": true,
-          "showOnHome": false
-        }
-      ]
+      "visible": true
     },
     {
       "id": "postres",
       "label": "Postres",
-      "labelShort": "Postres",
-      "labelLong": "Postres artesanales",
-      "pillLabel": "Postres",
-      "description": "Cierre dulce para la experiencia Figata.",
-      "icon": "dessert",
       "order": 4,
-      "enabled": true,
-      "showOnHome": false,
-      "subcategories": []
+      "visible": true
+    },
+    {
+      "id": "bebidas",
+      "label": "Bebidas",
+      "order": 5,
+      "visible": true
     },
     {
       "id": "productos",
       "label": "Productos",
-      "labelShort": "Productos",
-      "labelLong": "Productos de la casa",
-      "pillLabel": "Productos",
-      "description": "Productos Figata para llevar y cocinar en casa.",
-      "icon": "products",
-      "order": 5,
-      "enabled": true,
-      "showOnHome": false,
-      "subcategories": []
+      "order": 6,
+      "visible": true
     }
   ]
 }

@@ -11,6 +11,11 @@
       "soldOutReason": ""
     },
     {
+      "itemId": "aperol_spritz",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
       "itemId": "bellezza",
       "available": true,
       "soldOutReason": ""
@@ -61,6 +66,11 @@
       "soldOutReason": ""
     },
     {
+      "itemId": "cuba_libre",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
       "itemId": "delicia_coco",
       "available": true,
       "soldOutReason": ""
@@ -82,6 +92,11 @@
     },
     {
       "itemId": "filetti",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "gin_tonic",
       "available": true,
       "soldOutReason": ""
     },
@@ -141,12 +156,22 @@
       "soldOutReason": ""
     },
     {
+      "itemId": "negroni",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
       "itemId": "pan_ciabatta",
       "available": true,
       "soldOutReason": ""
     },
     {
       "itemId": "parmesana",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "passion_spritz",
       "available": true,
       "soldOutReason": ""
     },
@@ -186,6 +211,11 @@
       "soldOutReason": ""
     },
     {
+      "itemId": "sangria",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
       "itemId": "soppressata",
       "available": true,
       "soldOutReason": ""
@@ -202,6 +232,11 @@
     },
     {
       "itemId": "tartufo_affogato",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "tequila_sour",
       "available": true,
       "soldOutReason": ""
     },

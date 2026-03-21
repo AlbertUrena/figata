@@ -4,6 +4,13 @@
 // REPO: GITHUB_REPO or GH_REPO
 // Production branch: GH_BRANCH or GITHUB_BRANCH (defaults to master)
 // Preview branch: CMS_PREVIEW_BRANCH (defaults to cms-preview)
+var ingredientsContract = require("../../shared/ingredients-contract.js");
+var menuTraits = require("../../shared/menu-traits.js");
+var menuAllergens = require("../../shared/menu-allergens.js");
+var menuSensory = require("../../shared/menu-sensory.js");
+var categoriesContract = require("../../shared/categories-contract.js");
+var restaurantContract = require("../../shared/restaurant-contract.js");
+var mediaContract = require("../../shared/media-contract.js");
 var RATE_LIMIT_WINDOW_MS = 30 * 1000;
 var publishRateLimitByUser = Object.create(null);
 
@@ -43,6 +50,76 @@ function normalizeJsonValue(value) {
   } catch (_error) {
     return null;
   }
+}
+
+function validateIngredientsPayload(payload, menuPayload) {
+  return ingredientsContract.validateIngredientsContract(payload, {
+    menuPayload: menuPayload,
+    normalizeAliases: true
+  });
+}
+
+function validateMenuPayload(payload, ingredientsPayload) {
+  var reports = [
+    menuTraits.validateMenuPayload(payload, ingredientsPayload),
+    menuAllergens.validateMenuAllergens(payload, ingredientsPayload),
+    menuSensory.validateMenuSensoryProfiles(payload)
+  ];
+  var merged = {
+    errors: [],
+    warnings: [],
+    itemIssuesById: {}
+  };
+  var seenErrors = {};
+  var seenWarnings = {};
+
+  reports.forEach(function (report) {
+    (report && report.errors ? report.errors : []).forEach(function (message) {
+      if (seenErrors[message]) return;
+      seenErrors[message] = true;
+      merged.errors.push(message);
+    });
+    (report && report.warnings ? report.warnings : []).forEach(function (message) {
+      if (seenWarnings[message]) return;
+      seenWarnings[message] = true;
+      merged.warnings.push(message);
+    });
+    Object.keys(report && report.itemIssuesById ? report.itemIssuesById : {}).forEach(function (itemId) {
+      var bucket = report.itemIssuesById[itemId] || {};
+      if (!merged.itemIssuesById[itemId]) {
+        merged.itemIssuesById[itemId] = {
+          errors: [],
+          warnings: []
+        };
+      }
+      (bucket.errors || []).forEach(function (message) {
+        if (!merged.itemIssuesById[itemId].errors.includes(message)) {
+          merged.itemIssuesById[itemId].errors.push(message);
+        }
+      });
+      (bucket.warnings || []).forEach(function (message) {
+        if (!merged.itemIssuesById[itemId].warnings.includes(message)) {
+          merged.itemIssuesById[itemId].warnings.push(message);
+        }
+      });
+    });
+  });
+
+  return merged;
+}
+
+function validateCategoriesPayload(payload, menuPayload) {
+  return categoriesContract.validateCategoriesContract(payload, {
+    menuPayload: menuPayload
+  });
+}
+
+function validateRestaurantPayload(payload) {
+  return restaurantContract.validateRestaurantContract(payload);
+}
+
+function validateMediaPayload(payload) {
+  return mediaContract.validateMediaContract(payload);
 }
 
 function getUserKey(user) {
@@ -272,13 +349,116 @@ exports.handler = async function (event, context) {
 
   var normalizedMenu = normalizeJsonValue(body.menu);
   var normalizedAvailability = normalizeJsonValue(body.availability);
-  if (!normalizedMenu || !normalizedAvailability) {
+  var hasHomePayload = typeof body.home !== "undefined";
+  var normalizedHome = hasHomePayload ? normalizeJsonValue(body.home) : null;
+  var hasIngredientsPayload = typeof body.ingredients !== "undefined";
+  var normalizedIngredients = hasIngredientsPayload ? normalizeJsonValue(body.ingredients) : null;
+  var hasCategoriesPayload = typeof body.categories !== "undefined";
+  var normalizedCategories = hasCategoriesPayload ? normalizeJsonValue(body.categories) : null;
+  var hasRestaurantPayload = typeof body.restaurant !== "undefined";
+  var normalizedRestaurant = hasRestaurantPayload ? normalizeJsonValue(body.restaurant) : null;
+  var hasMediaPayload = typeof body.media !== "undefined";
+  var normalizedMedia = hasMediaPayload ? normalizeJsonValue(body.media) : null;
+  if (
+    !normalizedMenu ||
+    !normalizedAvailability ||
+    (hasHomePayload && !normalizedHome) ||
+    (hasIngredientsPayload && !normalizedIngredients) ||
+    (hasCategoriesPayload && !normalizedCategories) ||
+    (hasRestaurantPayload && !normalizedRestaurant) ||
+    (hasMediaPayload && !normalizedMedia)
+  ) {
     return jsonResponse(400, { error: "Invalid payload" });
+  }
+
+  var ingredientsValidation = hasIngredientsPayload
+    ? validateIngredientsPayload(body.ingredients, body.menu)
+    : { errors: [], warnings: [] };
+  if (ingredientsValidation.errors.length) {
+    return jsonResponse(400, {
+      error: "Invalid ingredients payload",
+      details: ingredientsValidation.errors.slice(0, 30),
+      warnings: ingredientsValidation.warnings.slice(0, 20)
+    });
+  }
+  if (hasIngredientsPayload) {
+    normalizedIngredients = normalizeJsonValue(body.ingredients);
+    if (!normalizedIngredients) {
+      return jsonResponse(400, { error: "Invalid payload" });
+    }
+  }
+
+  var menuValidation = validateMenuPayload(
+    body.menu,
+    hasIngredientsPayload ? body.ingredients : null
+  );
+  if (menuValidation.errors.length) {
+    return jsonResponse(400, {
+      error: "Invalid menu payload",
+      details: menuValidation.errors.slice(0, 30),
+      warnings: menuValidation.warnings.slice(0, 20)
+    });
+  }
+
+  var categoriesValidation = hasCategoriesPayload
+    ? validateCategoriesPayload(body.categories, body.menu)
+    : { errors: [], warnings: [] };
+  if (categoriesValidation.errors.length) {
+    return jsonResponse(400, {
+      error: "Invalid categories payload",
+      details: categoriesValidation.errors.slice(0, 30),
+      warnings: categoriesValidation.warnings.slice(0, 20)
+    });
+  }
+  if (hasCategoriesPayload) {
+    normalizedCategories = normalizeJsonValue(body.categories);
+    if (!normalizedCategories) {
+      return jsonResponse(400, { error: "Invalid payload" });
+    }
+  }
+
+  var restaurantValidation = hasRestaurantPayload
+    ? validateRestaurantPayload(body.restaurant)
+    : { errors: [], warnings: [] };
+  if (restaurantValidation.errors.length) {
+    return jsonResponse(400, {
+      error: "Invalid restaurant payload",
+      details: restaurantValidation.errors.slice(0, 30),
+      warnings: restaurantValidation.warnings.slice(0, 20)
+    });
+  }
+  if (hasRestaurantPayload) {
+    normalizedRestaurant = normalizeJsonValue(body.restaurant);
+    if (!normalizedRestaurant) {
+      return jsonResponse(400, { error: "Invalid payload" });
+    }
+  }
+
+  var mediaValidation = hasMediaPayload
+    ? validateMediaPayload(body.media)
+    : { errors: [], warnings: [] };
+  if (mediaValidation.errors.length) {
+    return jsonResponse(400, {
+      error: "Invalid media payload",
+      details: mediaValidation.errors.slice(0, 30),
+      warnings: mediaValidation.warnings.slice(0, 20)
+    });
+  }
+  if (hasMediaPayload) {
+    normalizedMedia = normalizeJsonValue(body.media);
+    if (!normalizedMedia) {
+      return jsonResponse(400, { error: "Invalid payload" });
+    }
   }
 
   try {
     var menuPath = "data/menu.json";
     var availabilityPath = "data/availability.json";
+    var homePath = "data/home.json";
+    var ingredientsPath = "data/ingredients.json";
+    var categoriesPath = "data/categories.json";
+    var restaurantPath = "data/restaurant.json";
+    var mediaPath = "data/media.json";
 
     if (target === "preview" && targetBranch !== productionBranch) {
       await ensureBranchExists(
@@ -306,16 +486,89 @@ exports.handler = async function (event, context) {
       githubToken
     );
 
+    var homeRemote = null;
+    if (hasHomePayload) {
+      homeRemote = await readGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        homePath,
+        githubToken
+      );
+    }
+
+    var ingredientsRemote = null;
+    if (hasIngredientsPayload) {
+      ingredientsRemote = await readGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        ingredientsPath,
+        githubToken
+      );
+    }
+
+    var categoriesRemote = null;
+    if (hasCategoriesPayload) {
+      categoriesRemote = await readGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        categoriesPath,
+        githubToken
+      );
+    }
+
+    var restaurantRemote = null;
+    if (hasRestaurantPayload) {
+      restaurantRemote = await readGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        restaurantPath,
+        githubToken
+      );
+    }
+
+    var mediaRemote = null;
+    if (hasMediaPayload) {
+      mediaRemote = await readGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        mediaPath,
+        githubToken
+      );
+    }
+
     var menuChanged = menuRemote.normalized !== normalizedMenu;
     var availabilityChanged = availabilityRemote.normalized !== normalizedAvailability;
+    var homeChanged = hasHomePayload ? homeRemote.normalized !== normalizedHome : false;
+    var ingredientsChanged = hasIngredientsPayload
+      ? ingredientsRemote.normalized !== normalizedIngredients
+      : false;
+    var categoriesChanged = hasCategoriesPayload
+      ? categoriesRemote.normalized !== normalizedCategories
+      : false;
+    var restaurantChanged = hasRestaurantPayload
+      ? restaurantRemote.normalized !== normalizedRestaurant
+      : false;
+    var mediaChanged = hasMediaPayload ? mediaRemote.normalized !== normalizedMedia : false;
+    var validationWarnings = menuValidation.warnings
+      .concat(ingredientsValidation.warnings)
+      .concat(categoriesValidation.warnings)
+      .concat(restaurantValidation.warnings)
+      .concat(mediaValidation.warnings)
+      .slice(0, 20);
 
-    if (!menuChanged && !availabilityChanged) {
+    if (!menuChanged && !availabilityChanged && !homeChanged && !ingredientsChanged && !categoriesChanged && !restaurantChanged && !mediaChanged) {
       return jsonResponse(200, {
         success: true,
         skipped: true,
         reason: "no changes",
         target: target,
-        branch: targetBranch
+        branch: targetBranch,
+        validationWarnings: validationWarnings
       });
     }
 
@@ -347,6 +600,71 @@ exports.handler = async function (event, context) {
       ) || latestCommitSha;
     }
 
+    if (homeChanged) {
+      latestCommitSha = await writeGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        homePath,
+        githubToken,
+        "CMS: update home (" + target + ")",
+        body.home,
+        homeRemote.sha
+      ) || latestCommitSha;
+    }
+
+    if (ingredientsChanged) {
+      latestCommitSha = await writeGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        ingredientsPath,
+        githubToken,
+        "CMS: update ingredients (" + target + ")",
+        body.ingredients,
+        ingredientsRemote.sha
+      ) || latestCommitSha;
+    }
+
+    if (categoriesChanged) {
+      latestCommitSha = await writeGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        categoriesPath,
+        githubToken,
+        "CMS: update categories (" + target + ")",
+        body.categories,
+        categoriesRemote.sha
+      ) || latestCommitSha;
+    }
+
+    if (restaurantChanged) {
+      latestCommitSha = await writeGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        restaurantPath,
+        githubToken,
+        "CMS: update restaurant (" + target + ")",
+        body.restaurant,
+        restaurantRemote.sha
+      ) || latestCommitSha;
+    }
+
+    if (mediaChanged) {
+      latestCommitSha = await writeGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        mediaPath,
+        githubToken,
+        "CMS: update media (" + target + ")",
+        body.media,
+        mediaRemote.sha
+      ) || latestCommitSha;
+    }
+
     return jsonResponse(200, {
       success: true,
       skipped: false,
@@ -354,8 +672,14 @@ exports.handler = async function (event, context) {
       branch: targetBranch,
       changed: {
         menu: menuChanged,
-        availability: availabilityChanged
+        availability: availabilityChanged,
+        home: homeChanged,
+        ingredients: ingredientsChanged,
+        categories: categoriesChanged,
+        restaurant: restaurantChanged,
+        media: mediaChanged
       },
+      validationWarnings: validationWarnings,
       commit: latestCommitSha
     });
   } catch (error) {

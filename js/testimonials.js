@@ -12,80 +12,126 @@
     return;
   }
 
-  const testimonials = [
+  const TESTIMONIALS_LIMIT = 9;
+  const FALLBACK_TESTIMONIALS = [
     {
-      column: 0,
-      quote:
-        "We ordered for delivery, it was 10 out of 10 it’s the best pizza I have tried in Santo Domingo! Great ingredients, real Neapolitan pizza from wood oven! Also I was surprised to see the message in the pizza box, little details that makes the difference.",
+      text:
+        "We ordered for delivery, it was 10 out of 10. Great ingredients and real Neapolitan pizza from wood oven.",
       name: "Awilda Suero",
+      role: "Local Guide",
       avatarSrc: "/assets/reviews/awilda.png",
-      rating: 5,
+      stars: 5,
     },
     {
-      column: 0,
-      quote:
-        "Sus pizzas son excelentes, hechas con ingredientes de alta calidad, estilo napolitano auténtico, tienen una amplia selección de cervezas a elegir y probar. El local tiene un muy buen ambiente.",
+      text:
+        "Sus pizzas son excelentes, hechas con ingredientes de alta calidad y con muy buen ambiente en el local.",
       name: "Fabio Reyes",
+      role: "Cliente frecuente",
       avatarSrc: "/assets/reviews/fabio.png",
-      rating: 5,
+      stars: 5,
     },
     {
-      column: 0,
-      quote:
-        "La pizza es artesanal para los amantes de este tipo, es un lugar pequeño pero bien distribuido, si te gusta probar cervezas diferentes es el lugar de elección. Parqueo limitado",
+      text:
+        "La pizza artesanal es excelente. Si te gusta probar cervezas diferentes, este lugar vale la pena.",
       name: "Karla Villar",
+      role: "Food lover",
       avatarSrc: "/assets/reviews/karla.png",
-      rating: 4,
+      stars: 4,
     },
     {
-      column: 1,
-      quote:
-        "Tienen una variedad deliciosa e interesante de pizza y unas berengenas riquísimas. El café es muy rico y tienen variedad de cócteles.",
+      text:
+        "Tienen una variedad deliciosa de pizza, muy buen cafe y cocteles. Siempre regresamos.",
       name: "Liecel Franco",
+      role: "Cliente",
       avatarSrc: "/assets/reviews/liecel.png",
-      rating: 5,
+      stars: 5,
     },
     {
-      column: 1,
-      quote:
-        "Es la mejor pizza napolitana que he probado, textura y grosor perfecto, no era ni muy finita ni muy gordita la masa, era perfecta. Llena bastante. Tienen una gran variedad de cervezas y vinos. Probamos la sweet goat y la de burrata con pesto y prosciutto, excelentes las dos. Volvería una y mil veces. 😻🥰",
-      name: "Prysla Rodríguez",
+      text:
+        "La mejor pizza napolitana que he probado. Textura, sabor y servicio, todo excelente.",
+      name: "Prysla Rodriguez",
+      role: "Local Guide",
       avatarSrc: "/assets/reviews/prysla.png",
-      rating: 5,
+      stars: 5,
     },
     {
-      column: 1,
-      quote:
-        "Al abrir la puerta el rico olor a pizza te invita a continuar y tomar asiento, el servicio es excepcional y las pizzas espectaculares.",
-      name: "Angel Tejeda Piña",
+      text:
+        "Desde que abres la puerta el olor a pizza te gana. Servicio excelente y pizzas espectaculares.",
+      name: "Angel Tejeda Pina",
+      role: "Cliente",
       avatarSrc: "/assets/reviews/angel.png",
-      rating: 5,
+      stars: 5,
     },
     {
-      column: 2,
-      quote:
-        "Mi resturante favorito en Santo Domingo Este, las pizzas son buenisimas, excelente servicio y ambiente. El take out tambien funciona de maravilla. 10/10 en todo! Recomendadisimo.",
+      text:
+        "Mi restaurante favorito en Santo Domingo Este. Buenisimas pizzas, excelente servicio y ambiente.",
       name: "Massiel Beltre",
+      role: "Cliente frecuente",
       avatarSrc: "/assets/reviews/massiel.png",
-      rating: 5,
+      stars: 5,
     },
     {
-      column: 2,
-      quote:
-        "10/10 Un cóctel riquísimo, pizzas que wow, llenas de sabor con una auténtica masa que te transporta y el tiramisu DIOS MIO QUE BUENO!! He probado 3 pizzas y todas me han encantado. Los recomiendo 100%",
+      text:
+        "Cocteles riquisimos, pizzas llenas de sabor y un tiramisu increible. Muy recomendado.",
       name: "Vianneris Morillo",
+      role: "Foodie",
       avatarSrc: "/assets/reviews/vianneris.png",
-      rating: 5,
+      stars: 5,
     },
     {
-      column: 2,
-      quote:
-        "Their pizzas are awesome and very good value. They also have a great beer selection to accompany your pizzas. Staff is very attentive and has a great disposition, service was very good across all the times I’ve visited. Try their Sweet Goat and Figata pizzas.\n\nThey have espanded seating lately, but parking can still be an issue sometimes as the spot the restaurant is in has few slots available.",
+      text:
+        "Great pizzas, very good value and attentive staff. Sweet Goat and Figata are must-tries.",
       name: "Ricardo Restituyo",
+      role: "Local Guide",
       avatarSrc: "/assets/reviews/ricardo.png",
-      rating: 5,
+      stars: 5,
     },
   ];
+  const normalizeText = (value) =>
+    typeof value === "string" ? value.trim() : "";
+  const normalizeStars = (value, fallback = 5) => {
+    const numeric = Number(value);
+    const safeValue = Number.isFinite(numeric)
+      ? Math.round(numeric)
+      : fallback;
+    return Math.max(1, Math.min(5, safeValue));
+  };
+  const normalizeTestimonials = (items) => {
+    const sourceItems = Array.isArray(items) && items.length
+      ? items
+      : FALLBACK_TESTIMONIALS;
+    return sourceItems
+      .slice(0, TESTIMONIALS_LIMIT)
+      .map((item, index) => {
+        const safeItem = item && typeof item === "object" ? item : {};
+        const fallbackItem = FALLBACK_TESTIMONIALS[index] ||
+          FALLBACK_TESTIMONIALS[FALLBACK_TESTIMONIALS.length - 1] ||
+          {};
+        return {
+          column: index % 3,
+          text: normalizeText(safeItem.text || safeItem.quote || fallbackItem.text),
+          name: normalizeText(safeItem.name || fallbackItem.name || `Cliente ${index + 1}`),
+          role: normalizeText(safeItem.role || fallbackItem.role || "Cliente"),
+          avatarSrc: normalizeText(safeItem.avatarSrc || fallbackItem.avatarSrc || ""),
+          stars: normalizeStars(safeItem.stars, normalizeStars(fallbackItem.stars, 5)),
+        };
+      });
+  };
+  const loadTestimonialsFromHome = async () => {
+    const homeApi = window.FigataData?.home;
+    if (!homeApi?.getHomeConfig) {
+      return normalizeTestimonials(FALLBACK_TESTIMONIALS);
+    }
+
+    try {
+      const home = await homeApi.getHomeConfig();
+      return normalizeTestimonials(home?.testimonials?.items);
+    } catch (error) {
+      console.warn("[testimonials] No se pudo cargar testimonials desde home config.", error);
+      return normalizeTestimonials(FALLBACK_TESTIMONIALS);
+    }
+  };
+  let testimonials = normalizeTestimonials(FALLBACK_TESTIMONIALS);
 
   const getColumnCount = () => {
     const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
@@ -107,7 +153,7 @@
     }
 
     const safeRating = Number.isFinite(rating)
-      ? Math.max(0, Math.min(5, Math.round(rating)))
+      ? Math.max(1, Math.min(5, Math.round(rating)))
       : 5;
 
     container.setAttribute("aria-label", `${safeRating} out of 5 stars`);
@@ -142,10 +188,10 @@
       return null;
     }
 
-    text.textContent = item.quote;
+    text.textContent = item.text;
     name.textContent = item.name;
-    role.textContent = "Local Guide";
-    createStars(stars, item.rating);
+    role.textContent = item.role;
+    createStars(stars, item.stars);
 
     if (item.avatarSrc) {
       const image = document.createElement("img");
@@ -222,7 +268,12 @@
     { passive: true }
   );
 
-  render();
+  const init = async () => {
+    testimonials = await loadTestimonialsFromHome();
+    render();
+  };
+
+  void init();
 })();
 
 (() => {

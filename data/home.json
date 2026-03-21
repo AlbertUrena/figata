@@ -2,28 +2,30 @@
   "version": 1,
   "schema": "figata.home.v1",
   "hero": {
-    "title": "Pizza napolitana autentica",
-    "subtitle": "Horneada en horno de lena, con ingredientes seleccionados y maridajes de la casa.",
+    "title": "El nuevo estándar de las pizzas",
+    "subtitle": "Pizzas napoletanas al horno de leña, con masa madre centenaria y una carta curada de vinos y cervezas italianas.",
     "backgroundImage": "assets/home/seamless-bg.webp",
     "ctaPrimary": {
-      "label": "Ver menu",
-      "url": "#menu"
+      "label": "Menú",
+      "url": "/menu/"
     },
     "ctaSecondary": {
-      "label": "Reservar",
+      "label": "Nuestra selección de maridajes",
       "url": "#reservar"
     }
   },
   "popular": {
-    "title": "Las mas pedidas",
-    "subtitle": "Favoritas de nuestros clientes",
+    "title": "Intentamos no tener favoritos, pero...",
+    "subtitle": "Estas son las más pedidas por nuestros clientes",
     "featuredIds": [
+      "quattro_formaggi_truffle",
       "margherita",
-      "diavola",
-      "sweet_goat",
-      "figata",
+      "pan_ciabatta",
+      "tiramisu",
+      "focaccia_rellena",
       "margherita_sbagliata",
-      "vulcano"
+      "filetti",
+      "diavola"
     ],
     "limit": 8
   },
@@ -63,13 +65,35 @@
       "ubereats": "#",
       "takeout": "",
       "whatsapp": ""
+    },
+    "platforms": {
+      "pedidosya": {
+        "url": "#",
+        "icon": "assets/svg-icons/pedidosya.svg",
+        "iconSize": 40
+      },
+      "ubereats": {
+        "url": "#",
+        "icon": "assets/svg-icons/uber-eats.svg",
+        "iconSize": 32
+      },
+      "takeout": {
+        "url": "",
+        "icon": "assets/svg-icons/menu-icon.svg",
+        "iconSize": 26
+      },
+      "whatsapp": {
+        "url": "",
+        "icon": "assets/svg-icons/whatsapp.svg",
+        "iconSize": 26
+      }
     }
   },
   "reservation": {
     "enabled": true,
-    "title": "Reserva tu mesa",
+    "title": "WhatsApp",
     "url": "#reservar",
-    "ctaLabel": "Reservar ahora"
+    "ctaLabel": "Reservar"
   },
   "announcements": {
     "enabled": false,
@@ -83,6 +107,153 @@
     "events": true,
     "delivery": true,
     "reservation": true,
-    "announcements": true
+    "announcements": true,
+    "navbar": true,
+    "testimonials": true,
+    "footer": true
+  },
+  "navbar": {
+    "cta": {
+      "label": "Reservar",
+      "url": "#reservar",
+      "icon": "assets/svg-icons/whatsapp.svg",
+      "title": "WhatsApp"
+    },
+    "links": [
+      {
+        "label": "Menú",
+        "url": "/menu/"
+      },
+      {
+        "label": "Nosotros",
+        "url": "#nosotros"
+      },
+      {
+        "label": "Ubicación",
+        "url": "#ubicacion"
+      },
+      {
+        "label": "Contacto",
+        "url": "#contacto"
+      }
+    ]
+  },
+  "testimonials": {
+    "enabled": true,
+    "title": "Historias que nacen en nuestra mesa",
+    "subtitle": "Clientes que volvieron por la masa, el fuego y el ambiente de Figata.",
+    "items": [
+      {
+        "name": "Awilda Suero",
+        "role": "Local Guide",
+        "text": "We ordered for delivery, it was 10 out of 10. Great ingredients and real Neapolitan pizza from wood oven.",
+        "stars": 5
+      },
+      {
+        "name": "Fabio Reyes",
+        "role": "Cliente frecuente",
+        "text": "Sus pizzas son excelentes, hechas con ingredientes de alta calidad y con muy buen ambiente en el local.",
+        "stars": 5
+      },
+      {
+        "name": "Karla Villar",
+        "role": "Food lover",
+        "text": "La pizza artesanal es excelente. Si te gusta probar cervezas diferentes, este lugar vale la pena.",
+        "stars": 4
+      },
+      {
+        "name": "Liecel Franco",
+        "role": "Cliente",
+        "text": "Tienen una variedad deliciosa de pizza, muy buen cafe y cocteles. Siempre regresamos.",
+        "stars": 5
+      },
+      {
+        "name": "Prysla Rodriguez",
+        "role": "Local Guide",
+        "text": "La mejor pizza napolitana que he probado. Textura, sabor y servicio, todo excelente.",
+        "stars": 5
+      },
+      {
+        "name": "Angel Tejeda Pina",
+        "role": "Cliente",
+        "text": "Desde que abres la puerta el olor a pizza te gana. Servicio excelente y pizzas espectaculares.",
+        "stars": 5
+      },
+      {
+        "name": "Massiel Beltre",
+        "role": "Cliente frecuente",
+        "text": "Mi restaurante favorito en Santo Domingo Este. Buenisimas pizzas, excelente servicio y ambiente.",
+        "stars": 5
+      },
+      {
+        "name": "Vianneris Morillo",
+        "role": "Foodie",
+        "text": "Cocteles riquisimos, pizzas llenas de sabor y un tiramisu increible. Muy recomendado.",
+        "stars": 5
+      },
+      {
+        "name": "Ricardo Restituyo",
+        "role": "Local Guide",
+        "text": "Great pizzas, very good value and attentive staff. Sweet Goat and Figata are must-tries.",
+        "stars": 5
+      }
+    ]
+  },
+  "footer": {
+    "enabled": true,
+    "columns": [
+      {
+        "title": "Empresa",
+        "links": [
+          {
+            "label": "Menu",
+            "url": "/menu/"
+          },
+          {
+            "label": "Nosotros",
+            "url": "#nosotros"
+          },
+          {
+            "label": "FAQs",
+            "url": "#faqs"
+          },
+          {
+            "label": "Eventos",
+            "url": "#eventos"
+          }
+        ]
+      },
+      {
+        "title": "Socials",
+        "links": [
+          {
+            "label": "Instagram",
+            "url": ""
+          },
+          {
+            "label": "TikTok",
+            "url": ""
+          },
+          {
+            "label": "Trip Advisor",
+            "url": ""
+          }
+        ]
+      },
+      {
+        "title": "Contactanos",
+        "links": []
+      }
+    ],
+    "cta": {
+      "label": "Como llegar",
+      "url": "#ubicacion"
+    },
+    "socials": {
+      "instagram": "",
+      "tiktok": "",
+      "tripadvisor": ""
+    },
+    "note": ""
   }
 }

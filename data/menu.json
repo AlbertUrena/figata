@@ -1,5 +1,6 @@
 {
-  "version": 1,
+  "version": 5,
+  "schema": "figata.menu.v5",
   "currency": "DOP",
   "taxIncluded": false,
   "sections": [
@@ -13,7 +14,7 @@
           "slug": "berenjenas-parmesana",
           "category": "entradas",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Capas de berenjena con salsa de tomate, mozzarella fundida y parmigiano.",
           "descriptionLong": "",
           "price": 550,
           "ingredients": [
@@ -23,17 +24,9 @@
             "albahaca",
             "parmigiano_reggiano"
           ],
-          "tags": [
-            "vegetarian"
-          ],
-          "allergens": [],
-          "image": "assets/berenjenas-parmesana.png",
+          "image": "assets/menu/entradas/berenjenas-a-la-parmesana.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": true,
-          "vegan": false,
-          "available": true,
-          "spicy": false
+          "available": true
         },
         {
           "id": "focaccia_parmigiano",
@@ -41,7 +34,7 @@
           "slug": "focaccia-parmigiano",
           "category": "entradas",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Focaccia caliente con romero, aceite de oliva y parmigiano rallado.",
           "descriptionLong": "",
           "price": 350,
           "ingredients": [
@@ -49,16 +42,14 @@
             "aceite_de_oliva_evoo",
             "parmigiano_reggiano"
           ],
-          "tags": [
-            "vegetarian"
-          ],
-          "allergens": [],
-          "image": "assets/focaccia-parmigiano.png",
+          "image": "assets/menu/entradas/focaccia.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": true,
-          "vegan": false,
-          "available": true
+          "available": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "bruschetta_classica",
@@ -72,19 +63,17 @@
           "ingredients": [
             "pomodoro",
             "pesto_de_albahaca",
-            "aceite_de_oliva_evoo"
+            "aceite_de_oliva_evoo",
+            "albahaca"
           ],
-          "tags": [
-            "vegetarian"
-          ],
-          "allergens": [],
-          "image": "menu/bruschetta.webp",
+          "image": "assets/menu/entradas/bruschetta.webp",
           "featured": true,
-          "spicy_level": 0,
-          "vegetarian": true,
-          "vegan": false,
-          "available": true,
-          "reviews": "121 reseñas"
+          "reviews": "121 reseñas",
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "insalata_caprese",
@@ -92,7 +81,7 @@
           "slug": "insalata-caprese",
           "category": "entradas",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Mozzarella fresca con pomodoro, pesto de albahaca y aceite de oliva.",
           "descriptionLong": "",
           "price": 600,
           "ingredients": [
@@ -101,15 +90,8 @@
             "aceite_de_oliva_evoo",
             "pesto_de_albahaca"
           ],
-          "tags": [
-            "vegetarian"
-          ],
-          "allergens": [],
-          "image": "assets/insalata-caprese.png",
+          "image": "assets/menu/entradas/insalata-caprese.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": true,
-          "vegan": false,
           "available": true
         },
         {
@@ -118,7 +100,7 @@
           "slug": "carpaccio-bresaola",
           "category": "entradas",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Láminas de bresaola con tomate cherry y pesto de rúcula.",
           "descriptionLong": "",
           "price": 850,
           "ingredients": [
@@ -126,13 +108,8 @@
             "tomate_cherry",
             "pesto_de_rucula"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/carpaccio-bresaola.png",
+          "image": "assets/menu/entradas/carpaccio-di-bresaola.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
           "available": true
         },
         {
@@ -141,7 +118,7 @@
           "slug": "salsiccia-vino-miele",
           "category": "entradas",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Salchicha dorada con miel y romero, de perfil dulce y aromático.",
           "descriptionLong": "",
           "price": 500,
           "ingredients": [
@@ -149,13 +126,8 @@
             "miel",
             "romero"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/salsiccia-vino-miele.png",
+          "image": "assets/menu/entradas/salsiccia-vino-e-miele.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
           "available": true
         },
         {
@@ -164,7 +136,7 @@
           "slug": "burrata-prosciutto",
           "category": "entradas",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Burrata cremosa con prosciutto di Parma, tomate cherry y pesto.",
           "descriptionLong": "",
           "price": 900,
           "ingredients": [
@@ -173,13 +145,8 @@
             "tomate_cherry",
             "pesto_de_albahaca"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/burrata-prosciutto.png",
+          "image": "assets/menu/entradas/burrata-con-prosciutto.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
           "available": true
         },
         {
@@ -188,7 +155,7 @@
           "slug": "tagliere-misto",
           "category": "entradas",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Selección de quesos y embutidos italianos con pesto y mermelada de tomate.",
           "descriptionLong": "",
           "price": 850,
           "ingredients": [
@@ -198,13 +165,8 @@
             "pesto_de_albahaca",
             "mermelada_de_tomate"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/tagliere-misto.png",
+          "image": "assets/menu/entradas/tagliere-misto.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
           "available": true
         },
         {
@@ -213,7 +175,7 @@
           "slug": "focaccia-rellena",
           "category": "entradas",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Focaccia caliente rellena de mortadella, stracciatella y pesto.",
           "descriptionLong": "",
           "price": 750,
           "ingredients": [
@@ -221,14 +183,13 @@
             "stracciatella",
             "pesto_de_albahaca"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "menu/schiacciata-sandwich.webp",
-          "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
-          "available": true
+          "image": "assets/menu/entradas/focaccia-rellena.webp",
+          "featured": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         }
       ]
     },
@@ -250,17 +211,43 @@
             "pomodoro",
             "albahaca"
           ],
-          "tags": [
-            "vegetarian"
-          ],
-          "allergens": [],
-          "image": "menu/margherita.webp",
+          "image": "assets/menu/pizzas/clasica/margherita.webp",
           "featured": true,
-          "spicy_level": 0,
-          "vegetarian": true,
-          "vegan": false,
-          "available": true,
-          "reviews": "198 reseñas"
+          "reviews": "198 reseñas",
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          },
+          "sensory_profile": {
+            "summary": "Equilibrada y ligera, con tomate brillante, mozzarella cremosa y aroma fresco.",
+            "axes": {
+              "dulce": {
+                "value": 3
+              },
+              "salado": {
+                "value": 5
+              },
+              "acido": {
+                "value": 6
+              },
+              "cremosa": {
+                "value": 6
+              },
+              "crujiente": {
+                "value": 4
+              },
+              "ligero": {
+                "value": 8
+              },
+              "aromatico": {
+                "value": 7
+              },
+              "intensidad": {
+                "value": 4
+              }
+            }
+          }
         },
         {
           "id": "marinara",
@@ -268,7 +255,7 @@
           "slug": "marinara",
           "category": "pizza",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Clásica napolitana con pomodoro, ajo, orégano y aceite de oliva.",
           "descriptionLong": "",
           "price": 500,
           "ingredients": [
@@ -277,16 +264,43 @@
             "aceite_de_oliva_evoo",
             "oregano"
           ],
-          "tags": [
-            "vegetarian"
-          ],
-          "allergens": [],
-          "image": "assets/marinara.png",
+          "image": "assets/menu/pizzas/clasica/marinara.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": true,
-          "vegan": false,
-          "available": true
+          "available": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          },
+          "sensory_profile": {
+            "summary": "Más afilada y aromática, con acidez marcada, cuerpo ligero y final seco.",
+            "axes": {
+              "dulce": {
+                "value": 1
+              },
+              "salado": {
+                "value": 3
+              },
+              "acido": {
+                "value": 8
+              },
+              "cremosa": {
+                "value": 1
+              },
+              "crujiente": {
+                "value": 4
+              },
+              "ligero": {
+                "value": 9
+              },
+              "aromatico": {
+                "value": 8
+              },
+              "intensidad": {
+                "value": 5
+              }
+            }
+          }
         },
         {
           "id": "cacio_pepe",
@@ -294,7 +308,7 @@
           "slug": "cacio-pepe",
           "category": "pizza",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Mozzarella y pecorino con pimienta negra sobre base cremosa.",
           "descriptionLong": "",
           "price": 500,
           "ingredients": [
@@ -302,16 +316,14 @@
             "pecorino",
             "albahaca"
           ],
-          "tags": [
-            "vegetarian"
-          ],
-          "allergens": [],
-          "image": "assets/cacio-pepe.png",
+          "image": "assets/menu/pizzas/clasica/cacio-e-pepe.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": true,
-          "vegan": false,
-          "available": true
+          "available": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "margherita_fume",
@@ -319,7 +331,7 @@
           "slug": "margherita-fume",
           "category": "pizza",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Pomodoro, mozzarella y provola ahumada con albahaca fresca.",
           "descriptionLong": "",
           "price": 600,
           "ingredients": [
@@ -329,14 +341,14 @@
             "albahaca",
             "aceite_de_oliva_evoo"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/margherita-fume.png",
+          "image": "assets/menu/pizzas/clasica/margherita-fume.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
-          "available": true
+          "available": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "diavola",
@@ -352,18 +364,14 @@
             "pomodoro",
             "salamino_piccante"
           ],
-          "tags": [
-            "spicy"
-          ],
-          "allergens": [],
-          "image": "menu/diavola.webp",
+          "image": "assets/menu/pizzas/clasica/diavola.webp",
           "featured": true,
-          "spicy_level": 1,
-          "vegetarian": false,
-          "vegan": false,
-          "available": true,
-          "spicy": true,
-          "reviews": "166 reseñas"
+          "reviews": "166 reseñas",
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "filetti",
@@ -371,7 +379,7 @@
           "slug": "filetti",
           "category": "pizza",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Mozzarella con tomate cherry, ajo y albahaca sobre base ligera.",
           "descriptionLong": "",
           "price": 600,
           "ingredients": [
@@ -381,14 +389,13 @@
             "aceite_de_oliva_evoo",
             "albahaca"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/filetti.png",
-          "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
-          "available": true
+          "image": "assets/menu/pizzas/clasica/filetti.webp",
+          "featured": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "sweet_goat",
@@ -405,15 +412,14 @@
             "bacon",
             "miel"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/sweet-goat.png",
-          "featured": true,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
-          "available": true,
-          "reviews": "149 reseñas"
+          "image": "assets/menu/pizzas/clasica/sweet-goat.webp",
+          "featured": false,
+          "reviews": "149 reseñas",
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "mamma",
@@ -421,7 +427,7 @@
           "slug": "mamma",
           "category": "pizza",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Mozzarella con soppressata, mermelada de tomate y toque de menta.",
           "descriptionLong": "",
           "price": 650,
           "ingredients": [
@@ -430,14 +436,14 @@
             "mermelada_de_tomate",
             "menta"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/mamma.png",
+          "image": "assets/menu/pizzas/clasica/mamma.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
-          "available": true
+          "available": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "tonno",
@@ -445,7 +451,7 @@
           "slug": "tonno",
           "category": "pizza",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Mozzarella con atún, pomodoro y cebolla sobre masa napolitana.",
           "descriptionLong": "",
           "price": 650,
           "ingredients": [
@@ -454,14 +460,14 @@
             "atun",
             "cebolla"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/tonno.png",
+          "image": "assets/menu/pizzas/clasica/tonno.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
-          "available": true
+          "available": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "puta",
@@ -469,7 +475,7 @@
           "slug": "puta",
           "category": "pizza",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Pomodoro con pancetta, aceitunas, alcaparras y pecorino.",
           "descriptionLong": "",
           "price": 650,
           "ingredients": [
@@ -480,17 +486,14 @@
             "pecorino",
             "peperoncino"
           ],
-          "tags": [
-            "spicy"
-          ],
-          "allergens": [],
-          "image": "assets/puta.png",
+          "image": "assets/menu/pizzas/clasica/puta.webp",
           "featured": false,
-          "spicy_level": 1,
-          "vegetarian": false,
-          "vegan": false,
           "available": true,
-          "spicy": true
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "figata",
@@ -506,15 +509,14 @@
             "mortadella",
             "crema_de_trufa"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/figata.png",
-          "featured": true,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
-          "available": true,
-          "reviews": "184 reseñas"
+          "image": "assets/menu/pizzas/clasica/pizza-figata.webp",
+          "featured": false,
+          "reviews": "184 reseñas",
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "margherita_sbagliata",
@@ -530,15 +532,15 @@
             "san_marzano_dop",
             "pesto_de_albahaca"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "menu/margherita-sbagliata.webp",
+          "image": "assets/menu/pizzas/clasica/margherita-sbagliata.webp",
           "featured": true,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
           "available": true,
-          "reviews": "143 reseñas"
+          "reviews": "143 reseñas",
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         }
       ]
     },
@@ -552,7 +554,7 @@
           "slug": "macellaio",
           "category": "pizza_autor",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Mozzarella con salsiccia, pancetta y salamino picante.",
           "descriptionLong": "",
           "price": 800,
           "ingredients": [
@@ -562,14 +564,14 @@
             "pancetta",
             "salamino_piccante"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/macellaio.png",
+          "image": "assets/menu/pizzas/autor/macellaio.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
-          "available": true
+          "available": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "quattro_formaggi_truffle",
@@ -577,7 +579,7 @@
           "slug": "quattro-formaggi-truffle",
           "category": "pizza_autor",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Cuatro quesos italianos con crema de trufa aromática.",
           "descriptionLong": "",
           "price": 800,
           "ingredients": [
@@ -587,16 +589,14 @@
             "parmigiano_reggiano",
             "crema_de_trufa"
           ],
-          "tags": [
-            "vegetarian"
-          ],
-          "allergens": [],
-          "image": "menu/quattroformaggi.webp",
+          "image": "assets/menu/pizzas/autor/quattroformaggi.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": true,
-          "vegan": false,
-          "available": true
+          "available": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "boscaiola",
@@ -604,7 +604,7 @@
           "slug": "boscaiola",
           "category": "pizza_autor",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Mozzarella con salsiccia, porcini y pecorino trufado.",
           "descriptionLong": "",
           "price": 800,
           "ingredients": [
@@ -613,14 +613,14 @@
             "porcini",
             "pecorino_trufado"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/boscaiola.png",
+          "image": "assets/menu/pizzas/autor/boscaiola.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
-          "available": true
+          "available": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "calzone",
@@ -628,7 +628,7 @@
           "slug": "calzone",
           "category": "pizza_autor",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Pizza cerrada rellena de mozzarella, mortadella y porcini.",
           "descriptionLong": "",
           "price": 800,
           "ingredients": [
@@ -638,14 +638,14 @@
             "porcini",
             "parmigiano_reggiano"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/calzone.png",
+          "image": "assets/menu/pizzas/autor/calzone.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
-          "available": true
+          "available": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "corazon_burrata",
@@ -653,7 +653,7 @@
           "slug": "corazon-burrata",
           "category": "pizza_autor",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Mozzarella con prosciutto di Parma y burrata fresca al centro.",
           "descriptionLong": "",
           "price": 950,
           "ingredients": [
@@ -663,14 +663,14 @@
             "prosciutto_di_parma",
             "burrata_fresca"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/corazon-burrata.png",
+          "image": "assets/menu/pizzas/autor/corazon-de-burrata.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
-          "available": true
+          "available": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "fantasia_pistachos",
@@ -678,7 +678,7 @@
           "slug": "fantasia-pistachos",
           "category": "pizza_autor",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Mortadella con stracciatella, pesto de pistacho y pistachos.",
           "descriptionLong": "",
           "price": 950,
           "ingredients": [
@@ -688,14 +688,14 @@
             "mortadella",
             "pistachos"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/fantasia-pistachos.png",
+          "image": "assets/menu/pizzas/autor/fantasia-de-pistachos.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
-          "available": true
+          "available": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "vulcano",
@@ -713,18 +713,43 @@
             "gorgonzola",
             "chili_flakes"
           ],
-          "tags": [
-            "spicy"
-          ],
-          "allergens": [],
-          "image": "assets/vulcano.png",
-          "featured": true,
-          "spicy_level": 1,
-          "vegetarian": false,
-          "vegan": false,
-          "available": true,
-          "spicy": true,
-          "reviews": "171 reseñas"
+          "image": "assets/menu/pizzas/autor/vulcano.webp",
+          "featured": false,
+          "reviews": "171 reseñas",
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          },
+          "sensory_profile": {
+            "summary": "Picante y envolvente, con cremosidad marcada y una intensidad que se queda.",
+            "axes": {
+              "dulce": {
+                "value": 1
+              },
+              "salado": {
+                "value": 7
+              },
+              "acido": {
+                "value": 4
+              },
+              "cremosa": {
+                "value": 8
+              },
+              "crujiente": {
+                "value": 3
+              },
+              "ligero": {
+                "value": 1
+              },
+              "aromatico": {
+                "value": 8
+              },
+              "intensidad": {
+                "value": 10
+              }
+            }
+          }
         },
         {
           "id": "bellezza",
@@ -732,7 +757,7 @@
           "slug": "bellezza",
           "category": "pizza_autor",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Mozzarella con mortadella, porcini, aceitunas y parmigiano.",
           "descriptionLong": "",
           "price": 800,
           "ingredients": [
@@ -744,14 +769,13 @@
             "albahaca",
             "parmigiano_reggiano"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/bellezza.png",
+          "image": "assets/menu/pizzas/autor/bellezza.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
-          "available": true
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "passione_del_sud",
@@ -759,7 +783,7 @@
           "slug": "passione-del-sud",
           "category": "pizza_autor",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Pomodoro con nduja, salamino picante y stracciatella.",
           "descriptionLong": "",
           "price": 950,
           "ingredients": [
@@ -769,17 +793,14 @@
             "stracciatella",
             "pesto_de_albahaca"
           ],
-          "tags": [
-            "spicy"
-          ],
-          "allergens": [],
-          "image": "assets/passione-del-sud.png",
+          "image": "assets/menu/pizzas/autor/passione-del-sud.webp",
           "featured": false,
-          "spicy_level": 1,
-          "vegetarian": false,
-          "vegan": false,
           "available": true,
-          "spicy": true
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "soppressata",
@@ -787,7 +808,7 @@
           "slug": "soppressata",
           "category": "pizza_autor",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Mozzarella con soppressata, ricotta, cebolla y miel.",
           "descriptionLong": "",
           "price": 800,
           "ingredients": [
@@ -798,14 +819,14 @@
             "ricotta",
             "miel"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/soppressata.png",
+          "image": "assets/menu/pizzas/autor/soppressata.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
-          "available": true
+          "available": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "parmesana",
@@ -813,7 +834,7 @@
           "slug": "parmesana",
           "category": "pizza_autor",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Mozzarella con berenjena, salsa de tomate y parmigiano.",
           "descriptionLong": "",
           "price": 750,
           "ingredients": [
@@ -823,16 +844,14 @@
             "albahaca",
             "parmigiano_reggiano"
           ],
-          "tags": [
-            "vegetarian"
-          ],
-          "allergens": [],
-          "image": "assets/parmesana.png",
+          "image": "assets/menu/pizzas/autor/pizza-parmesana.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": true,
-          "vegan": false,
-          "available": true
+          "available": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "prosciutto_rucula",
@@ -840,7 +859,7 @@
           "slug": "prosciutto-rucula",
           "category": "pizza_autor",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Mozzarella con prosciutto di Parma y pesto de rúcula.",
           "descriptionLong": "",
           "price": 750,
           "ingredients": [
@@ -849,14 +868,14 @@
             "prosciutto_di_parma",
             "pesto_de_rucula"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/prosciutto-rucula.png",
+          "image": "assets/menu/pizzas/autor/prosciutto-y-rucula.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
-          "available": true
+          "available": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         }
       ]
     },
@@ -870,18 +889,18 @@
           "slug": "pizza-nutella",
           "category": "postres",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Masa caliente con Nutella cremosa para compartir.",
           "descriptionLong": "",
           "price": 350,
           "ingredients": [],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/pizza-nutella.png",
+          "image": "assets/menu/postres/pizza-nutella.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
-          "available": true
+          "available": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          }
         },
         {
           "id": "tiramisu",
@@ -893,15 +912,38 @@
           "descriptionLong": "Tiramisú artesanal de textura suave con notas de café y cacao, ideal para cerrar la experiencia Figata.",
           "price": 450,
           "ingredients": [],
-          "tags": [],
-          "allergens": [],
-          "image": "menu/tiramisu.webp",
+          "image": "assets/menu/postres/tiramisu.webp",
           "featured": true,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
-          "available": true,
-          "reviews": "132 reseñas"
+          "reviews": "132 reseñas",
+          "sensory_profile": {
+            "summary": "Dulce y cremoso, con café y cacao al frente y un cierre suave.",
+            "axes": {
+              "dulce": {
+                "value": 8
+              },
+              "salado": {
+                "value": 1
+              },
+              "acido": {
+                "value": 1
+              },
+              "cremosa": {
+                "value": 9
+              },
+              "crujiente": {
+                "value": 1
+              },
+              "ligero": {
+                "value": 3
+              },
+              "aromatico": {
+                "value": 8
+              },
+              "intensidad": {
+                "value": 6
+              }
+            }
+          }
         },
         {
           "id": "helado_artesanal",
@@ -909,18 +951,12 @@
           "slug": "helado-artesanal",
           "category": "postres",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Helado artesanal cremoso servido bien frío.",
           "descriptionLong": "",
           "price": 350,
           "ingredients": [],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/helado-artesanal.png",
-          "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
-          "available": true
+          "image": "assets/menu/postres/helado-artesanal.webp",
+          "featured": false
         },
         {
           "id": "delicia_coco",
@@ -928,17 +964,12 @@
           "slug": "delicia-coco",
           "category": "postres",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Postre suave de coco con textura ligera y fresca.",
           "descriptionLong": "",
           "price": 450,
           "ingredients": [],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/delicia-coco.png",
+          "image": "assets/menu/postres/delicia-de-coco.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
           "available": true
         },
         {
@@ -947,17 +978,145 @@
           "slug": "tartufo-affogato",
           "category": "postres",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Helado de chocolate con espresso caliente vertido al momento.",
           "descriptionLong": "",
           "price": 550,
           "ingredients": [],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/tartufo-affogato.png",
+          "image": "assets/menu/postres/tartufo-affogato.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "bebidas",
+      "label": "Bebidas",
+      "items": [
+        {
+          "id": "negroni",
+          "name": "Negroni",
+          "slug": "negroni",
+          "category": "bebidas",
+          "subcategory": "cocktails",
+          "descriptionShort": "Clásico italiano de perfil amargo y herbal, con un final seco y elegante.",
+          "descriptionLong": "Mezcla intensa y equilibrada, con notas herbales, amargas y cítricas. Servido en vaso corto sobre hielo para un trago serio, limpio y con mucha presencia.",
+          "price": 450,
+          "ingredients": [],
+          "image": "assets/menu/bebidas/negroni.webp",
+          "featured": false,
+          "available": true,
+          "sensory_profile": {
+            "summary": "Herbal, seco e intenso, con mucha presencia aromática y un paso firme.",
+            "axes": {
+              "dulce": {
+                "value": 3
+              },
+              "salado": {
+                "value": 1
+              },
+              "acido": {
+                "value": 3
+              },
+              "cremosa": {
+                "value": 1
+              },
+              "crujiente": {
+                "value": 1
+              },
+              "ligero": {
+                "value": 2
+              },
+              "aromatico": {
+                "value": 9
+              },
+              "intensidad": {
+                "value": 9
+              }
+            }
+          }
+        },
+        {
+          "id": "passion_spritz",
+          "name": "Passion Spritz",
+          "slug": "passion-spritz",
+          "category": "bebidas",
+          "subcategory": "cocktails",
+          "descriptionShort": "Spritz tropical y refrescante con notas cítricas y un perfil ligero.",
+          "descriptionLong": "Una versión vibrante y fresca, con burbujas, fruta y un toque cítrico que lo hace fácil de tomar. Ideal para abrir la mesa con algo alegre y refrescante.",
+          "price": 370,
+          "ingredients": [],
+          "image": "assets/menu/bebidas/passion-spritz.webp",
+          "featured": false,
+          "available": true
+        },
+        {
+          "id": "gin_tonic",
+          "name": "Gin Tonic",
+          "slug": "gin-tonic",
+          "category": "bebidas",
+          "subcategory": "cocktails",
+          "descriptionShort": "Refrescante y herbal, con burbujas finas y un perfil limpio.",
+          "descriptionLong": "Trago ligero y aromático, con notas botánicas y sensación fresca en boca. Servido con hielo y un perfil seco que funciona bien a cualquier hora.",
+          "price": 370,
+          "ingredients": [],
+          "image": "assets/menu/bebidas/gin-tonic.webp",
+          "featured": false,
+          "available": true
+        },
+        {
+          "id": "sangria",
+          "name": "Sangría",
+          "slug": "sangria",
+          "category": "bebidas",
+          "subcategory": "cocktails",
+          "descriptionShort": "Fresca, frutal y ligera, servida bien fría sobre hielo.",
+          "descriptionLong": "Una bebida relajada y fácil de disfrutar, con carácter frutal y un perfil refrescante. Pensada para acompañar la comida sin sentirse pesada.",
+          "price": 370,
+          "ingredients": [],
+          "image": "assets/menu/bebidas/sangria.webp",
+          "featured": false,
+          "available": true
+        },
+        {
+          "id": "aperol_spritz",
+          "name": "Aperol Spritz",
+          "slug": "aperol-spritz",
+          "category": "bebidas",
+          "subcategory": "cocktails",
+          "descriptionShort": "Aperitivo burbujeante con perfil cítrico, amargo y muy refrescante.",
+          "descriptionLong": "Ligero, brillante y de amargor suave, con notas de naranja y un final seco. Un clásico para arrancar con algo fresco y de estilo italiano.",
+          "price": 370,
+          "ingredients": [],
+          "image": "assets/menu/bebidas/aperol-spritz.webp",
+          "featured": false,
+          "available": true
+        },
+        {
+          "id": "tequila_sour",
+          "name": "Tequila Sour",
+          "slug": "tequila-sour",
+          "category": "bebidas",
+          "subcategory": "cocktails",
+          "descriptionShort": "Cítrico, sedoso y equilibrado, con espuma suave en la superficie.",
+          "descriptionLong": "Cocktail de textura redonda y perfil fresco, donde el lado cítrico se mezcla con una sensación suave y cremosa. Tiene presencia, pero se mantiene fácil de tomar.",
+          "price": 370,
+          "ingredients": [],
+          "image": "assets/menu/bebidas/tequila-sour.webp",
+          "featured": false,
+          "available": true
+        },
+        {
+          "id": "cuba_libre",
+          "name": "Cuba Libre",
+          "slug": "cuba-libre",
+          "category": "bebidas",
+          "subcategory": "cocktails",
+          "descriptionShort": "Clásico refrescante con notas de cola, cítricos y ron.",
+          "descriptionLong": "Simple, frío y directo, con un perfil dulce, especiado y muy fácil de reconocer. Servido sobre hielo para un trago familiar y siempre efectivo.",
+          "price": 370,
+          "ingredients": [],
+          "image": "assets/menu/bebidas/cuba-libre.webp",
+          "featured": false,
           "available": true
         }
       ]
@@ -972,20 +1131,15 @@
           "slug": "mermelada-della-mamma",
           "category": "productos",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Mermelada de tomate con toque fresco de menta.",
           "descriptionLong": "",
           "price": 250,
           "ingredients": [
             "mermelada_de_tomate",
             "menta"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/mermelada-della-mamma.png",
+          "image": "assets/menu/productos/producto-meremelada-della-mamma.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
           "available": true
         },
         {
@@ -994,19 +1148,14 @@
           "slug": "burrata-fresca-producto",
           "category": "productos",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Burrata cremosa y suave, ideal para compartir.",
           "descriptionLong": "",
           "price": 500,
           "ingredients": [
             "burrata_fresca"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/burrata-fresca-producto.png",
+          "image": "assets/menu/productos/producto-burrata.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
           "available": true
         },
         {
@@ -1015,7 +1164,7 @@
           "slug": "aceite-evoo-aromatizado",
           "category": "productos",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Aceite de oliva extra virgen infusionado con aromas italianos.",
           "descriptionLong": "",
           "price": 500,
           "ingredients": [
@@ -1024,13 +1173,8 @@
             "peperoncino",
             "porcini"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/aceite-evoo-aromatizado.png",
+          "image": "assets/menu/productos/aceite-evoo.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
           "available": true
         },
         {
@@ -1039,40 +1183,63 @@
           "slug": "pesto-artesanal",
           "category": "productos",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Pesto artesanal de rúcula o albahaca.",
           "descriptionLong": "",
           "price": 500,
           "ingredients": [
             "pesto_de_rucula",
             "pesto_de_albahaca"
           ],
-          "tags": [],
-          "allergens": [],
-          "image": "assets/pesto-artesanal.png",
+          "image": "assets/menu/productos/pesto.webp",
           "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
           "available": true
         },
         {
           "id": "pan_ciabatta",
-          "name": "Pan ciabatta de masa madre",
+          "name": "Sourdough Ciabatta",
           "slug": "pan-ciabatta",
           "category": "productos",
           "subcategory": "",
-          "descriptionShort": "",
+          "descriptionShort": "Pan ciabatta de masa madre con corteza crujiente.",
           "descriptionLong": "",
           "price": 200,
           "ingredients": [],
-          "tags": [],
-          "allergens": [],
-          "image": "menu/sourdough-ciabatta.webp",
-          "featured": false,
-          "spicy_level": 0,
-          "vegetarian": false,
-          "vegan": false,
-          "available": true
+          "image": "assets/menu/productos/sourdough-ciabatta.webp",
+          "featured": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          },
+          "sensory_profile": {
+            "summary": "Corteza crujiente, miga aireada y carácter de masa madre bien definido.",
+            "axes": {
+              "dulce": {
+                "value": 2
+              },
+              "salado": {
+                "value": 3
+              },
+              "acido": {
+                "value": 4
+              },
+              "cremosa": {
+                "value": 1
+              },
+              "crujiente": {
+                "value": 9
+              },
+              "ligero": {
+                "value": 6
+              },
+              "aromatico": {
+                "value": 6
+              },
+              "intensidad": {
+                "value": 4
+              }
+            }
+          }
         }
       ]
     }

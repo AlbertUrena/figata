@@ -10,16 +10,25 @@
   const links = document.querySelector(".navbar__links");
   const actions = document.querySelector(".navbar__actions");
 
-  if (!hero || !header || !navbar || !navInner) {
+  if (!header || !navbar || !navInner) {
     return;
   }
 
   const COLLAPSED_CLASS = "nav--collapsed";
+  const MOBILE_BREAKPOINT = 820;
+  const FORCE_COLLAPSED_MOBILE_ATTR = "data-nav-force-collapsed-mobile";
+  const MENU_ROUTE_VIEW_TRANSITION_ROOT_ATTR = "data-menu-route-vt";
   const THRESHOLD_OFFSET = 462;
+  const fallbackThresholdRaw =
+    root.getAttribute("data-nav-collapse-threshold") ||
+    document.body.getAttribute("data-nav-collapse-threshold");
+  const fallbackScrollThreshold = Number.parseFloat(fallbackThresholdRaw);
+  const hasFallbackScrollThreshold = Number.isFinite(fallbackScrollThreshold);
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   let sentinel = null;
   let observer = null;
   let resizeObserver = null;
+  let rootAttrObserver = null;
   let rafId = 0;
   let isCollapsed = root.classList.contains(COLLAPSED_CLASS);
   let prefersReducedMotion = motionQuery.matches;
@@ -125,6 +134,26 @@
     );
   };
 
+  // Routes without a hero can still reuse the same navbar transition by declaring
+  // a scroll threshold in markup. If none is declared, keep width vars in sync only.
+  if (!hero && !hasFallbackScrollThreshold) {
+    const syncStaticWidths = () => {
+      syncNavWidthVars();
+    };
+
+    syncStaticWidths();
+    window.addEventListener("resize", syncStaticWidths, { passive: true });
+    window.addEventListener("orientationchange", syncStaticWidths);
+
+    if (document.fonts && typeof document.fonts.ready?.then === "function") {
+      document.fonts.ready.then(() => {
+        syncStaticWidths();
+      });
+    }
+
+    return;
+  }
+
   const getNavbarHeight = () => {
     const cssValue = Number.parseFloat(
       getComputedStyle(root).getPropertyValue("--navbar-height")
@@ -162,16 +191,50 @@
     el.style.bottom = `${offset}px`;
   };
 
+  const isDetailViewActive = () =>
+    document.body?.getAttribute("data-menu-page-view") === "detail";
+
+  const isMenuRouteViewTransitionActive = () =>
+    root.getAttribute(MENU_ROUTE_VIEW_TRANSITION_ROOT_ATTR) === "active";
+
+  const shouldSnapMenuRouteCollapsed = () =>
+    isForcedMobileCollapse() || isMenuRouteViewTransitionActive();
+
   const setCollapsed = (collapsed) => {
     const next = Boolean(collapsed);
+    const shouldSnapCollapsed = next && shouldSnapMenuRouteCollapsed();
+
+    const snapProgress = (snapTarget) => {
+      target = snapTarget ? 1 : 0;
+      progress = target;
+      velocity = 0;
+
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+
+      root.style.setProperty("--nav-collapse", String(target));
+      root.style.setProperty("--nav-collapse-inv", String(1 - target));
+    };
 
     if (next === isCollapsed) {
+      if (shouldSnapCollapsed) {
+        snapProgress(true);
+      }
+
       return;
     }
 
     isCollapsed = next;
     syncNavWidthVars();
     root.classList.toggle(COLLAPSED_CLASS, next);
+
+    if (shouldSnapCollapsed) {
+      snapProgress(true);
+      return;
+    }
+
     animateTo(next);
   };
 
@@ -226,13 +289,36 @@
     if (!raf) raf = requestAnimationFrame(tick);
   }
 
+  const isMobileViewport = () =>
+    (window.innerWidth || root.clientWidth || 0) <= MOBILE_BREAKPOINT;
+
+  const isForcedMobileCollapse = () =>
+    isMobileViewport() &&
+    root.getAttribute(FORCE_COLLAPSED_MOBILE_ATTR) === "true";
+
   const shouldCollapse = () => {
-    if (!sentinel) {
-      return false;
+    if (isMenuRouteViewTransitionActive()) {
+      return true;
     }
 
-    const { top } = sentinel.getBoundingClientRect();
-    return top <= 0;
+    if (isForcedMobileCollapse()) {
+      return true;
+    }
+
+    if (hero) {
+      if (!sentinel) {
+        return false;
+      }
+
+      const { top } = sentinel.getBoundingClientRect();
+      return top <= 0;
+    }
+
+    if (hasFallbackScrollThreshold) {
+      return window.scrollY >= fallbackScrollThreshold;
+    }
+
+    return false;
   };
 
   const evaluate = () => {
@@ -252,7 +338,9 @@
 
   const refresh = () => {
     syncNavWidthVars();
-    placeSentinel();
+    if (hero) {
+      placeSentinel();
+    }
     scheduleEvaluate();
   };
 
@@ -265,6 +353,10 @@
   };
 
   const startIntersectionObserver = () => {
+    if (!hero) {
+      return false;
+    }
+
     if (!("IntersectionObserver" in window)) {
       return false;
     }
@@ -280,6 +372,24 @@
   refresh();
 
   startIntersectionObserver();
+
+  if ("MutationObserver" in window) {
+    rootAttrObserver = new MutationObserver(() => {
+      if (isMenuRouteViewTransitionActive()) {
+        evaluate();
+        return;
+      }
+
+      scheduleEvaluate();
+    });
+    rootAttrObserver.observe(root, {
+      attributes: true,
+      attributeFilter: [
+        FORCE_COLLAPSED_MOBILE_ATTR,
+        MENU_ROUTE_VIEW_TRANSITION_ROOT_ATTR,
+      ],
+    });
+  }
 
   window.addEventListener("scroll", handleScroll, { passive: true });
 
@@ -318,7 +428,9 @@
       refresh();
     });
 
-    resizeObserver.observe(hero);
+    if (hero) {
+      resizeObserver.observe(hero);
+    }
   }
 
   if (document.fonts && typeof document.fonts.ready?.then === "function") {

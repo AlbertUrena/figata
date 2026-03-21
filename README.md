@@ -13,8 +13,6 @@ Official website for Figata - pizza & wine.
 - Categorias: `data/categories.json`
 - Disponibilidad: `data/availability.json`
 - Ingredientes + iconos: `data/ingredients.json`
-- Alias de ingredientes: `data/ingredients-usage.json`
-- `data/menu-index.json` es solo referencia/tooling (no runtime en UI).
 
 ## Como agregar un item nuevo al menu
 1. Agrega el item dentro de su seccion en `data/menu.json` (`sections[].items[]`).
@@ -65,7 +63,7 @@ Referencia: `assets/menu/README.md`.
 - `hero`: titulo, subtitulo, imagen de fondo y CTAs.
 - `popular`: titulo/subtitulo, `featuredIds`, `limit`.
 - `eventsPreview`: toggle, titulo/subtitulo, `limit`, `eventIds`, `items`.
-- `delivery`: titulo/subtitulo y links externos.
+- `delivery`: titulo/subtitulo y `platforms` (`url`, `icon`, `iconSize`) por canal.
 - `reservation`: CTA de reservas (navbar y seccion controlada).
 - `announcements`: mensaje temporal, tipo y link.
 - `sections`: visibilidad de bloques (`hero`, `popular`, `events`, `delivery`, `reservation`, `announcements`).
@@ -81,10 +79,11 @@ Referencia: `assets/menu/README.md`.
 3. Completa `message` y, opcionalmente, `link`.
 4. Define `type` (`highlight`, `warning` o `info`).
 
-### Como cambiar links de delivery
-1. En `data/home.json`, edita `delivery.links`.
+### Como cambiar plataformas de delivery
+1. En `data/home.json`, edita `delivery.platforms`.
 2. Soporta `pedidosya`, `ubereats`, `takeout`, `whatsapp`.
-3. Si un link falta o es invalido, ese boton se oculta automaticamente.
+3. Cada plataforma acepta `url`, `icon` (path) y `iconSize` (16-64).
+4. Si un `url` falta o es invalido, ese boton se oculta automaticamente.
 
 ## Restaurante data-driven (`data/restaurant.json`)
 Centraliza los datos oficiales reutilizables para SEO + footer + contacto:
@@ -106,7 +105,7 @@ Consumo runtime:
 ## Fallbacks de runtime
 - Si `popular.featuredIds` esta vacio o invalido, se usa fallback automatico.
 - Si `hero.backgroundImage` falta, se usa imagen por defecto.
-- Si faltan links en `delivery.links`, se ocultan esos botones.
+- Si faltan links en `delivery.platforms.*.url`, se ocultan esos botones.
 
 ## Validacion
 Valida el contrato de `home.json` con:
@@ -164,4 +163,4 @@ Cada categoria define:
 1. Agrega el asset en `assets/Ingredients/`.
 2. Registra el icono en `data/ingredients.json` bajo `icons`.
 3. Asocia el ingrediente en `data/ingredients.json` bajo `ingredients` (`icon`, `label`/`name`, `aliases`).
-4. Si necesitas matching legacy, agrega mapeo en `data/ingredients-usage.json` bajo `ingredientAliasesToIcon`.
+4. Usa `aliases` en cada ingrediente para cubrir variantes legacy o nombres alternos.

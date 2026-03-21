@@ -1,269 +1,102 @@
 {
-  "generatedAt": "2026-03-04T18:23:35.792Z",
+  "generatedAt": "2026-03-11T02:59:31.877Z",
+  "schemaVersion": 2,
   "summary": {
     "errors": 0,
-    "warnings": 2,
+    "warnings": 1,
     "menuItems": 43,
     "mediaItems": 43,
     "missingMediaItems": 0,
     "unknownMediaItems": 0,
-    "missingVariants": 35,
+    "missingSource": 0,
     "brokenPaths": 0,
-    "duplicatedPaths": 8
+    "duplicatedPaths": 6
   },
   "details": {
     "errors": [],
     "warnings": [
-      "Variantes faltantes en media.items: 35",
-      "Rutas duplicadas potencialmente innecesarias: 8"
+      "Rutas duplicadas potencialmente innecesarias: 6"
     ],
     "missingMediaItems": [],
     "unknownMediaItems": [],
-    "missingVariants": [
-      {
-        "itemId": "berenjenas_parmesana",
-        "variant": "hover"
-      },
-      {
-        "itemId": "focaccia_parmigiano",
-        "variant": "hover"
-      },
-      {
-        "itemId": "insalata_caprese",
-        "variant": "hover"
-      },
-      {
-        "itemId": "carpaccio_bresaola",
-        "variant": "hover"
-      },
-      {
-        "itemId": "salsiccia_vino_miele",
-        "variant": "hover"
-      },
-      {
-        "itemId": "burrata_prosciutto",
-        "variant": "hover"
-      },
-      {
-        "itemId": "tagliere_misto",
-        "variant": "hover"
-      },
-      {
-        "itemId": "marinara",
-        "variant": "hover"
-      },
-      {
-        "itemId": "cacio_pepe",
-        "variant": "hover"
-      },
-      {
-        "itemId": "margherita_fume",
-        "variant": "hover"
-      },
-      {
-        "itemId": "filetti",
-        "variant": "hover"
-      },
-      {
-        "itemId": "sweet_goat",
-        "variant": "hover"
-      },
-      {
-        "itemId": "mamma",
-        "variant": "hover"
-      },
-      {
-        "itemId": "tonno",
-        "variant": "hover"
-      },
-      {
-        "itemId": "puta",
-        "variant": "hover"
-      },
-      {
-        "itemId": "figata",
-        "variant": "hover"
-      },
-      {
-        "itemId": "macellaio",
-        "variant": "hover"
-      },
-      {
-        "itemId": "boscaiola",
-        "variant": "hover"
-      },
-      {
-        "itemId": "calzone",
-        "variant": "hover"
-      },
-      {
-        "itemId": "corazon_burrata",
-        "variant": "hover"
-      },
-      {
-        "itemId": "fantasia_pistachos",
-        "variant": "hover"
-      },
-      {
-        "itemId": "vulcano",
-        "variant": "hover"
-      },
-      {
-        "itemId": "bellezza",
-        "variant": "hover"
-      },
-      {
-        "itemId": "passione_del_sud",
-        "variant": "hover"
-      },
-      {
-        "itemId": "soppressata",
-        "variant": "hover"
-      },
-      {
-        "itemId": "parmesana",
-        "variant": "hover"
-      },
-      {
-        "itemId": "prosciutto_rucula",
-        "variant": "hover"
-      },
-      {
-        "itemId": "pizza_nutella",
-        "variant": "hover"
-      },
-      {
-        "itemId": "helado_artesanal",
-        "variant": "hover"
-      },
-      {
-        "itemId": "delicia_coco",
-        "variant": "hover"
-      },
-      {
-        "itemId": "tartufo_affogato",
-        "variant": "hover"
-      },
-      {
-        "itemId": "mermelada_della_mamma",
-        "variant": "hover"
-      },
-      {
-        "itemId": "burrata_fresca_producto",
-        "variant": "hover"
-      },
-      {
-        "itemId": "aceite_evoo_aromatizado",
-        "variant": "hover"
-      },
-      {
-        "itemId": "pesto_artesanal",
-        "variant": "hover"
-      }
-    ],
+    "missingSource": [],
     "brokenPaths": [],
     "duplicatedPaths": [
       {
-        "path": "menu/bruschetta.webp",
+        "path": "assets/menu/entradas/bruschetta.webp",
         "uses": [
           {
             "itemId": "bruschetta_classica",
-            "variant": "card"
+            "variant": "source"
           },
           {
             "itemId": "bruschetta_classica",
-            "variant": "modal"
+            "variant": "overrides.modal"
           }
         ]
       },
       {
-        "path": "menu/schiacciata-sandwich.webp",
-        "uses": [
-          {
-            "itemId": "focaccia_rellena",
-            "variant": "card"
-          },
-          {
-            "itemId": "focaccia_rellena",
-            "variant": "modal"
-          }
-        ]
-      },
-      {
-        "path": "menu/margherita.webp",
+        "path": "assets/menu/pizzas/clasica/margherita.webp",
         "uses": [
           {
             "itemId": "margherita",
-            "variant": "card"
+            "variant": "source"
           },
           {
             "itemId": "margherita",
-            "variant": "modal"
+            "variant": "overrides.modal"
           }
         ]
       },
       {
-        "path": "menu/diavola.webp",
-        "uses": [
-          {
-            "itemId": "diavola",
-            "variant": "card"
-          },
-          {
-            "itemId": "diavola",
-            "variant": "modal"
-          }
-        ]
-      },
-      {
-        "path": "menu/margherita-sbagliata.webp",
+        "path": "assets/menu/pizzas/clasica/margherita-sbagliata.webp",
         "uses": [
           {
             "itemId": "margherita_sbagliata",
-            "variant": "card"
+            "variant": "source"
           },
           {
             "itemId": "margherita_sbagliata",
-            "variant": "modal"
+            "variant": "overrides.modal"
           }
         ]
       },
       {
-        "path": "menu/quattroformaggi.webp",
+        "path": "assets/menu/pizzas/autor/quattroformaggi.webp",
         "uses": [
           {
             "itemId": "quattro_formaggi_truffle",
-            "variant": "card"
+            "variant": "source"
           },
           {
             "itemId": "quattro_formaggi_truffle",
-            "variant": "modal"
+            "variant": "overrides.modal"
           }
         ]
       },
       {
-        "path": "menu/tiramisu.webp",
+        "path": "assets/menu/postres/tiramisu.webp",
         "uses": [
           {
             "itemId": "tiramisu",
-            "variant": "card"
+            "variant": "source"
           },
           {
             "itemId": "tiramisu",
-            "variant": "modal"
+            "variant": "overrides.modal"
           }
         ]
       },
       {
-        "path": "menu/sourdough-ciabatta.webp",
+        "path": "assets/menu/productos/sourdough-ciabatta.webp",
         "uses": [
           {
             "itemId": "pan_ciabatta",
-            "variant": "card"
+            "variant": "source"
           },
           {
             "itemId": "pan_ciabatta",
-            "variant": "modal"
+            "variant": "overrides.modal"
           }
         ]
       }
