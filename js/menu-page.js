@@ -179,6 +179,19 @@
   const detailSensoryGroups = document.getElementById('menu-detail-sensory-groups');
   const detailSensoryRadar = document.getElementById('menu-detail-sensory-radar');
   const detailSensorySummary = document.getElementById('menu-detail-sensory-summary');
+  const detailSensoryCompareButton = document.getElementById('menu-detail-sensory-compare');
+  const detailSensoryComparisonMeta = document.getElementById(
+    'menu-detail-sensory-comparison-meta'
+  );
+  const detailSensoryComparisonCurrentName = document.getElementById(
+    'menu-detail-sensory-comparison-current-name'
+  );
+  const detailSensoryComparisonComparedName = document.getElementById(
+    'menu-detail-sensory-comparison-compared-name'
+  );
+  const detailSensoryComparisonClearButton = document.getElementById(
+    'menu-detail-sensory-comparison-clear'
+  );
   const detailPairingsDivider = document.getElementById('menu-detail-pairings-divider');
   const detailPairingsSection = document.getElementById('menu-detail-pairings-section');
   const detailPairingCta = document.getElementById('menu-detail-pairing-cta');
@@ -223,6 +236,14 @@
   const accountToast = document.getElementById('menu-account-toast');
   const accountToastTitle = document.getElementById('menu-account-toast-title');
   const accountToastCopy = document.getElementById('menu-account-toast-copy');
+  const compareModal = document.getElementById('menu-compare-modal');
+  const compareDialog = document.getElementById('menu-compare-modal-dialog');
+  const compareCloseButton = document.getElementById('menu-compare-modal-close');
+  const compareModalBody = document.getElementById('menu-compare-modal-body');
+  const compareSearchRoot = document.getElementById('menu-compare-search');
+  const compareSearchInput = document.getElementById('menu-compare-search-input');
+  const compareSearchClearButton = document.getElementById('menu-compare-search-clear');
+  const compareResultsRoot = document.getElementById('menu-compare-results');
   const traitsApi = window.FigataMenuTraits;
   const ORGANOLEPTIC_PROFILE_IDS = new Set([
     'fresh',
@@ -408,9 +429,13 @@
     searchTransitioning: false,
     filterModalOpen: false,
     accountModalOpen: false,
+    compareModalOpen: false,
     draftFilters: createDefaultFilters(),
     appliedFilters: createDefaultFilters(),
     detailSensoryView: DEFAULT_DETAIL_SENSORY_VIEW,
+    detailItemId: '',
+    detailComparisonItemId: '',
+    compareSearchQuery: '',
     globalPriceMin: 0,
     globalPriceMax: 0,
   };
@@ -428,6 +453,8 @@
   let filterModalRestoreFocusNode = null;
   let accountModalCloseTimerId = 0;
   let accountModalRestoreFocusNode = null;
+  let compareModalCloseTimerId = 0;
+  let compareModalRestoreFocusNode = null;
   let accountRemovalToastTimerId = 0;
   let accountRemovalToastSnapshot = null;
   let accountCardViewTransitionActive = false;
@@ -462,6 +489,12 @@
   });
 
   const PIZZA_GROUP_ID = 'pizzas';
+  const COMPARE_ELIGIBLE_GROUP_IDS = new Set(['entradas', PIZZA_GROUP_ID]);
+  const COMPARE_ELIGIBLE_SOURCE_CATEGORY_IDS = new Set([
+    'entradas',
+    'pizza',
+    'pizza_autor',
+  ]);
 
   const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   const isMobileCardViewport = () => MOBILE_CARD_QUERY.matches;
@@ -2516,8 +2549,20 @@
     });
   };
 
+  const setCompareTriggerExpanded = (isOpen) => {
+    if (!(detailSensoryCompareButton instanceof HTMLButtonElement)) {
+      return;
+    }
+
+    detailSensoryCompareButton.setAttribute('aria-haspopup', 'dialog');
+    detailSensoryCompareButton.setAttribute('aria-controls', 'menu-compare-modal');
+    detailSensoryCompareButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  };
+
   const setFilterModalDocumentState = () => {
-    const hasOpenModal = Boolean(state.filterModalOpen || state.accountModalOpen);
+    const hasOpenModal = Boolean(
+      state.filterModalOpen || state.accountModalOpen || state.compareModalOpen
+    );
     document.documentElement.classList.toggle('menu-filters-open', hasOpenModal);
     document.body.classList.toggle('menu-filters-open', hasOpenModal);
   };
@@ -2538,6 +2583,15 @@
 
     window.clearTimeout(accountModalCloseTimerId);
     accountModalCloseTimerId = 0;
+  };
+
+  const clearCompareModalCloseTimer = () => {
+    if (!compareModalCloseTimerId) {
+      return;
+    }
+
+    window.clearTimeout(compareModalCloseTimerId);
+    compareModalCloseTimerId = 0;
   };
 
   const cancelFilterModalChromeFrame = () => {
@@ -2854,6 +2908,48 @@
         '.menu-page-detail__sensory-view-tab[role="tab"]'
       )
     ).filter((tab) => tab instanceof HTMLElement);
+  };
+
+  const isDetailSensoryComparisonActive = () =>
+    detailSensorySection instanceof HTMLElement &&
+    detailSensorySection.dataset.comparisonActive === 'true';
+
+  const setDetailSensoryComparisonMeta = ({
+    active = false,
+    currentLabel = '',
+    comparedLabel = '',
+  } = {}) => {
+    if (
+      !(detailSensoryComparisonMeta instanceof HTMLElement) ||
+      !(detailSensoryComparisonCurrentName instanceof HTMLElement) ||
+      !(detailSensoryComparisonComparedName instanceof HTMLElement)
+    ) {
+      return;
+    }
+
+    if (!active) {
+      detailSensoryComparisonCurrentName.textContent = '';
+      detailSensoryComparisonComparedName.textContent = '';
+      detailSensoryComparisonMeta.hidden = true;
+      return;
+    }
+
+    detailSensoryComparisonCurrentName.textContent = normalizeText(currentLabel);
+    detailSensoryComparisonComparedName.textContent = normalizeText(comparedLabel);
+    detailSensoryComparisonMeta.hidden = false;
+  };
+
+  const syncDetailSensoryCompareButton = ({
+    hasSensoryProfile = false,
+    hasComparison = false,
+  } = {}) => {
+    if (!(detailSensoryCompareButton instanceof HTMLButtonElement)) {
+      return;
+    }
+
+    detailSensoryCompareButton.hidden = !hasSensoryProfile;
+    detailSensoryCompareButton.disabled = !hasSensoryProfile;
+    detailSensoryCompareButton.textContent = hasComparison ? 'Cambiar' : 'Comparar';
   };
 
   const clearDetailSensoryRadarTooltipController = () => {
@@ -3208,7 +3304,9 @@
       return;
     }
 
-    const activeView = normalizeDetailSensoryView(state.detailSensoryView);
+    const comparisonActive = isDetailSensoryComparisonActive();
+    const requestedView = normalizeDetailSensoryView(state.detailSensoryView);
+    const activeView = comparisonActive ? 'radar' : requestedView;
     state.detailSensoryView = activeView;
     const activeIndex = Math.max(
       0,
@@ -3227,9 +3325,15 @@
     );
 
     tabs.forEach((tab, tabIndex) => {
+      const tabView = normalizeDetailSensoryView(tab.dataset.sensoryView);
+      const isDisabled = comparisonActive && tabView === 'bars';
       const isActive = tabIndex === activeIndex;
       tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
       tab.setAttribute('tabindex', isActive ? '0' : '-1');
+      tab.setAttribute('aria-disabled', isDisabled ? 'true' : 'false');
+      if (tab instanceof HTMLButtonElement) {
+        tab.disabled = isDisabled;
+      }
       tab.classList.toggle('is-active', isActive);
     });
 
@@ -3704,9 +3808,14 @@
 
     const activateTab = (index, { focus = false } = {}) => {
       const nextIndex = Math.max(0, Math.min(index, tabs.length - 1));
-      state.detailSensoryView = normalizeDetailSensoryView(
-        tabs[nextIndex].dataset.sensoryView
-      );
+      const nextView = normalizeDetailSensoryView(tabs[nextIndex].dataset.sensoryView);
+      if (isDetailSensoryComparisonActive() && nextView === 'bars') {
+        state.detailSensoryView = 'radar';
+        syncDetailSensoryViewState({ focus: false });
+        return;
+      }
+
+      state.detailSensoryView = nextView;
       syncDetailSensoryViewState({ focus });
     };
 
@@ -3778,6 +3887,7 @@
   const getFilterModalFocusableElements = () => getModalFocusableElements(filterDialog);
 
   const getAccountModalFocusableElements = () => getModalFocusableElements(accountDialog);
+  const getCompareModalFocusableElements = () => getModalFocusableElements(compareDialog);
   const setAccountTotalInfoOpen = (isOpen) => {
     if (!(accountTotalInfoToggle instanceof HTMLButtonElement)) {
       return;
@@ -3877,6 +3987,46 @@
     }, FILTER_MODAL_EXIT_MS);
   };
 
+  const finishCompareModalClose = ({ restoreFocus = true } = {}) => {
+    clearCompareModalCloseTimer();
+
+    if (!(compareModal instanceof HTMLElement)) {
+      return;
+    }
+
+    compareModal.hidden = true;
+    compareModal.removeAttribute('data-state');
+    setFilterModalDocumentState();
+    setCompareTriggerExpanded(false);
+
+    if (restoreFocus && compareModalRestoreFocusNode instanceof HTMLElement) {
+      compareModalRestoreFocusNode.focus();
+    }
+
+    compareModalRestoreFocusNode = null;
+  };
+
+  const closeCompareModal = ({ restoreFocus = true, immediate = false } = {}) => {
+    if (!(compareModal instanceof HTMLElement)) {
+      return;
+    }
+
+    clearCompareModalCloseTimer();
+    state.compareModalOpen = false;
+    setCompareTriggerExpanded(false);
+    emitBridgeState();
+
+    if (compareModal.hidden || immediate || reducedMotionQuery.matches) {
+      finishCompareModalClose({ restoreFocus });
+      return;
+    }
+
+    compareModal.setAttribute('data-state', 'closing');
+    compareModalCloseTimerId = window.setTimeout(() => {
+      finishCompareModalClose({ restoreFocus });
+    }, FILTER_MODAL_EXIT_MS);
+  };
+
   const openAccountModal = () => {
     if (!(accountModal instanceof HTMLElement) || !(accountDialog instanceof HTMLElement)) {
       return;
@@ -3889,6 +4039,10 @@
 
     if (state.filterModalOpen) {
       closeFilterModal({ restoreFocus: false, immediate: true });
+    }
+
+    if (state.compareModalOpen) {
+      closeCompareModal({ restoreFocus: false, immediate: true });
     }
 
     if (!accountModal.hidden && state.accountModalOpen) {
@@ -3945,6 +4099,10 @@
       closeAccountModal({ restoreFocus: false, immediate: true });
     }
 
+    if (state.compareModalOpen) {
+      closeCompareModal({ restoreFocus: false, immediate: true });
+    }
+
     loadDraftFiltersFromApplied();
     renderFilterModalShell();
 
@@ -3986,6 +4144,61 @@
     }, reducedMotionQuery.matches ? 0 : 70);
   };
 
+  const openCompareModal = () => {
+    if (!(compareModal instanceof HTMLElement) || !(compareDialog instanceof HTMLElement)) {
+      return;
+    }
+
+    clearCompareModalCloseTimer();
+
+    if (state.filterModalOpen) {
+      closeFilterModal({ restoreFocus: false, immediate: true });
+    }
+
+    if (state.accountModalOpen) {
+      closeAccountModal({ restoreFocus: false, immediate: true });
+    }
+
+    if (!compareModal.hidden && state.compareModalOpen) {
+      return;
+    }
+
+    compareModalRestoreFocusNode =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : detailSensoryCompareButton;
+    state.compareModalOpen = true;
+    compareModal.hidden = false;
+    setFilterModalDocumentState();
+    setCompareTriggerExpanded(true);
+    emitBridgeState();
+    compareModal.setAttribute('data-state', 'opening');
+
+    window.requestAnimationFrame(() => {
+      if (!(compareModal instanceof HTMLElement)) {
+        return;
+      }
+
+      compareModal.setAttribute('data-state', 'open');
+      window.FigataScrollIndicators?.refresh?.();
+    });
+
+    window.setTimeout(() => {
+      const focusTarget =
+        compareSearchInput instanceof HTMLInputElement
+          ? compareSearchInput
+          : compareCloseButton instanceof HTMLButtonElement
+            ? compareCloseButton
+            : getCompareModalFocusableElements()[0] || compareDialog;
+
+      window.FigataScrollIndicators?.refresh?.();
+
+      if (focusTarget instanceof HTMLElement) {
+        focusTarget.focus();
+      }
+    }, reducedMotionQuery.matches ? 0 : 70);
+  };
+
   const finishBridgeReady = () => {
     if (!bridgeReadyResolver) {
       return;
@@ -4011,6 +4224,7 @@
     isListViewVisible: !listView.hidden,
     isFilterModalOpen: Boolean(state.filterModalOpen),
     isAccountModalOpen: Boolean(state.accountModalOpen),
+    isCompareModalOpen: Boolean(state.compareModalOpen),
   });
 
   const emitBridgeState = () => {
@@ -4442,6 +4656,231 @@
         ? item.public_badges.flat.map((badge) => normalizeText(badge?.label)).join(' ')
         : '',
     ].join(' ');
+
+  const isItemEligibleForSensoryComparison = (item) => {
+    const sourceCategoryId = normalizeText(item?.category);
+    if (!COMPARE_ELIGIBLE_SOURCE_CATEGORY_IDS.has(sourceCategoryId)) {
+      return false;
+    }
+
+    if (!isObject(item?.sensory_profile)) {
+      return false;
+    }
+
+    return Boolean(buildDetailSensoryProfileModel(item.sensory_profile));
+  };
+
+  const resolveDetailComparisonItem = (currentItemId = '') => {
+    const normalizedCurrentItemId = normalizeText(currentItemId);
+    const normalizedComparisonItemId = normalizeText(state.detailComparisonItemId);
+    if (!normalizedComparisonItemId) {
+      return null;
+    }
+
+    if (normalizedComparisonItemId === normalizedCurrentItemId) {
+      state.detailComparisonItemId = '';
+      return null;
+    }
+
+    const comparisonItem = state.itemsById.get(normalizedComparisonItemId);
+    if (!comparisonItem || !isItemEligibleForSensoryComparison(comparisonItem)) {
+      state.detailComparisonItemId = '';
+      return null;
+    }
+
+    return comparisonItem;
+  };
+
+  const getSensoryComparisonCandidates = (currentItemId = '') => {
+    const normalizedCurrentItemId = normalizeText(currentItemId);
+    const uniqueCandidates = new Map();
+
+    state.categories.forEach((category) => {
+      const groupId = normalizeText(category?.id);
+      if (!COMPARE_ELIGIBLE_GROUP_IDS.has(groupId)) {
+        return;
+      }
+
+      const categoryItems = Array.isArray(category?.items) ? category.items : [];
+      categoryItems.forEach((item) => {
+        const itemId = normalizeText(item?.id);
+        if (!itemId || itemId === normalizedCurrentItemId || uniqueCandidates.has(itemId)) {
+          return;
+        }
+
+        if (!isItemEligibleForSensoryComparison(item)) {
+          return;
+        }
+
+        const searchText = normalizeSearchValue(getSearchableText(item, category));
+        uniqueCandidates.set(itemId, {
+          id: itemId,
+          title: normalizeText(item?.name || item?.id),
+          categoryLabel: normalizeText(category?.label || ''),
+          summary: normalizeText(item?.sensory_profile?.summary),
+          searchText,
+        });
+      });
+    });
+
+    return Array.from(uniqueCandidates.values()).sort((left, right) =>
+      left.title.localeCompare(right.title, 'es', { sensitivity: 'base' })
+    );
+  };
+
+  const syncCompareSearchControls = () => {
+    if (!(compareSearchRoot instanceof HTMLElement) || !(compareSearchInput instanceof HTMLInputElement)) {
+      return;
+    }
+
+    const hasValue = Boolean(normalizeText(compareSearchInput.value));
+    compareSearchRoot.dataset.helperVisible = hasValue ? 'false' : 'true';
+
+    if (compareSearchClearButton instanceof HTMLButtonElement) {
+      compareSearchClearButton.classList.toggle('is-visible', hasValue);
+      compareSearchClearButton.setAttribute('aria-hidden', hasValue ? 'false' : 'true');
+      compareSearchClearButton.tabIndex = hasValue ? 0 : -1;
+    }
+  };
+
+  const createCompareResultItemNode = (candidate, { isSelected = false } = {}) => {
+    const item = document.createElement('li');
+    item.className = 'menu-compare-modal__item-row';
+
+    const button = document.createElement('button');
+    button.className = 'menu-compare-modal__item';
+    button.type = 'button';
+    button.dataset.compareItemId = normalizeText(candidate?.id);
+    button.setAttribute(
+      'aria-label',
+      `Comparar con ${normalizeText(candidate?.title)}`
+    );
+    button.dataset.selected = isSelected ? 'true' : 'false';
+
+    const title = document.createElement('p');
+    title.className = 'menu-compare-modal__item-title';
+    title.textContent = normalizeText(candidate?.title);
+
+    const meta = document.createElement('p');
+    meta.className = 'menu-compare-modal__item-meta';
+    meta.textContent = normalizeText(candidate?.categoryLabel);
+
+    const summary = document.createElement('p');
+    summary.className = 'menu-compare-modal__item-summary';
+    summary.textContent =
+      normalizeText(candidate?.summary) || 'Perfil sensorial disponible';
+
+    button.append(title, meta, summary);
+    item.appendChild(button);
+    return item;
+  };
+
+  const renderCompareModalShell = () => {
+    if (!(compareResultsRoot instanceof HTMLElement)) {
+      return;
+    }
+
+    const currentItemId = normalizeText(state.detailItemId || getRouteItemId());
+    const currentItem = state.itemsById.get(currentItemId);
+    const currentTitle = normalizeText(currentItem?.name || detailTitle?.textContent || '');
+    const query = normalizeText(state.compareSearchQuery);
+    const normalizedQuery = normalizeSearchValue(query);
+    const selectedComparisonItemId = normalizeText(state.detailComparisonItemId);
+    const allCandidates = getSensoryComparisonCandidates(currentItemId);
+    const visibleCandidates = normalizedQuery
+      ? allCandidates.filter((candidate) => candidate.searchText.includes(normalizedQuery))
+      : allCandidates;
+
+    compareResultsRoot.replaceChildren();
+
+    if (!visibleCandidates.length) {
+      const emptyNode = document.createElement('p');
+      emptyNode.className = 'menu-compare-modal__empty';
+      emptyNode.textContent = normalizedQuery
+        ? `No hay coincidencias para "${query}" en entradas y pizzas con perfil sensorial.`
+        : 'No hay platos elegibles para comparar en este momento.';
+      compareResultsRoot.appendChild(emptyNode);
+      return;
+    }
+
+    const introNode = document.createElement('p');
+    introNode.className = 'menu-compare-modal__list-intro';
+    introNode.textContent = currentTitle
+      ? `Plato actual: ${currentTitle}`
+      : 'Selecciona un plato para comparar.';
+
+    const list = document.createElement('ul');
+    list.className = 'menu-compare-modal__list';
+    list.setAttribute('role', 'list');
+    visibleCandidates.forEach((candidate) => {
+      list.appendChild(
+        createCompareResultItemNode(candidate, {
+          isSelected: candidate.id === selectedComparisonItemId,
+        })
+      );
+    });
+
+    compareResultsRoot.append(introNode, list);
+  };
+
+  const renderDetailSensoryState = ({
+    itemId = '',
+    currentLabel = '',
+    sensoryProfile = null,
+  } = {}) => {
+    const normalizedItemId = normalizeText(itemId);
+    state.detailItemId = normalizedItemId;
+
+    const comparisonItem = resolveDetailComparisonItem(normalizedItemId);
+    const comparisonProfile = isObject(comparisonItem?.sensory_profile)
+      ? comparisonItem.sensory_profile
+      : null;
+    const comparisonLabel = normalizeText(comparisonItem?.name || comparisonItem?.id);
+    const hasSensoryProfile = renderDetailSensoryProfile(sensoryProfile, {
+      currentLabel: normalizeText(currentLabel),
+      comparisonProfile,
+      comparisonLabel,
+    });
+    const hasComparison = hasSensoryProfile && Boolean(comparisonProfile);
+
+    syncDetailSensoryCompareButton({
+      hasSensoryProfile,
+      hasComparison,
+    });
+
+    if (detailSensoryDivider instanceof HTMLElement) {
+      detailSensoryDivider.hidden = !hasSensoryProfile;
+    }
+
+    return {
+      hasSensoryProfile,
+      hasComparison,
+    };
+  };
+
+  const refreshCurrentDetailSensoryComparison = () => {
+    const currentItemId = normalizeText(state.detailItemId || getRouteItemId());
+    if (!currentItemId) {
+      return false;
+    }
+
+    const currentItem = state.itemsById.get(currentItemId);
+    if (!currentItem) {
+      return false;
+    }
+
+    const sensoryProfile = isObject(currentItem?.sensory_profile)
+      ? currentItem.sensory_profile
+      : null;
+
+    renderDetailSensoryState({
+      itemId: currentItemId,
+      currentLabel: normalizeText(currentItem?.name || currentItem?.id),
+      sensoryProfile,
+    });
+
+    return true;
+  };
 
   const itemMatchesFilters = (item, filters = state.appliedFilters) => {
     const pizzaType = normalizePizzaType(filters?.pizzaType);
@@ -4961,7 +5400,10 @@
       detailSensorySummary.hidden = true;
     }
 
+    setDetailSensoryComparisonMeta({ active: false });
+
     if (detailSensorySection instanceof HTMLElement) {
+      delete detailSensorySection.dataset.comparisonActive;
       detailSensorySection.hidden = true;
     }
   };
@@ -5733,14 +6175,30 @@
       scheduleTooltipHide();
     };
 
+    const comparisonActive = model?.comparison?.active === true;
+    const comparisonCurrentLabel = normalizeText(model?.comparison?.currentLabel || '');
+    const comparisonComparedLabel = normalizeText(model?.comparison?.comparedLabel || '');
     const radarSummary = model.axes
       .map((axis) => `${axis.label} ${axis.value} de ${model.scaleMax}`)
       .join(', ');
+    const comparisonSummary = comparisonActive
+      ? model.axes
+          .map((axis) => `${axis.label} ${axis.comparisonValue} de ${model.scaleMax}`)
+          .join(', ')
+      : '';
+
+    setDetailSensoryComparisonMeta({
+      active: comparisonActive,
+      currentLabel: comparisonCurrentLabel,
+      comparedLabel: comparisonComparedLabel,
+    });
 
     detailSensoryRadar.setAttribute('role', 'group');
     detailSensoryRadar.setAttribute(
       'aria-label',
-      `Perfil sensorial en radar. ${radarSummary}.`
+      comparisonActive
+        ? `Perfil sensorial comparativo en radar. ${comparisonCurrentLabel}: ${radarSummary}. ${comparisonComparedLabel}: ${comparisonSummary}.`
+        : `Perfil sensorial en radar. ${radarSummary}.`
     );
 
     const axisPoints = model.axes.map((axis, axisIndex) => {
@@ -5763,6 +6221,14 @@
         radius: outerRadius * (axis.value / model.scaleMax),
         angle,
       });
+      const comparisonPoint = comparisonActive
+        ? toDetailSensoryRadarPoint({
+            centerX,
+            centerY,
+            radius: outerRadius * ((Number(axis.comparisonValue) || 0) / model.scaleMax),
+            angle,
+          })
+        : null;
 
       return {
         ...axis,
@@ -5770,6 +6236,7 @@
         outerPoint,
         labelPoint,
         dataPoint,
+        comparisonPoint,
         iconPath: toAbsoluteAssetPath(DETAIL_SENSORY_RADAR_ICON_PATHS[axis.id] || ''),
       };
     });
@@ -5807,6 +6274,35 @@
     const areaPath = toDetailSensoryRadarPath(
       axisPoints.map((axis) => axis.dataPoint)
     );
+    const comparisonAreaPath = comparisonActive
+      ? toDetailSensoryRadarPath(
+          axisPoints
+            .map((axis) => axis.comparisonPoint)
+            .filter((point) => point && Number.isFinite(point.x) && Number.isFinite(point.y))
+        )
+      : '';
+    const comparisonGlow =
+      comparisonActive && comparisonAreaPath
+        ? createSvgNode('path', {
+            class: 'menu-page-detail__sensory-radar-glow menu-page-detail__sensory-radar-glow--compared',
+            d: comparisonAreaPath,
+          })
+        : null;
+    if (comparisonGlow) {
+      svg.appendChild(comparisonGlow);
+    }
+
+    const comparisonArea =
+      comparisonActive && comparisonAreaPath
+        ? createSvgNode('path', {
+            class: 'menu-page-detail__sensory-radar-area menu-page-detail__sensory-radar-area--compared',
+            d: comparisonAreaPath,
+          })
+        : null;
+    if (comparisonArea) {
+      svg.appendChild(comparisonArea);
+    }
+
     const glow = createSvgNode('path', {
       class: 'menu-page-detail__sensory-radar-glow',
       d: areaPath,
@@ -5929,6 +6425,25 @@
 
       area.setAttribute('d', nextAreaPath);
       glow.setAttribute('d', nextAreaPath);
+
+      if (comparisonActive && comparisonArea && comparisonGlow) {
+        const nextComparisonPath = toDetailSensoryRadarPath(
+          axisPoints.map((axis, axisIndex) => {
+            const axisProgress = clampUnit(axisProgressList[axisIndex] || 0);
+            return toDetailSensoryRadarPoint({
+              centerX,
+              centerY,
+              radius:
+                outerRadius *
+                ((Number(axis.comparisonValue) || 0) / model.scaleMax) *
+                axisProgress,
+              angle: axis.angle,
+            });
+          })
+        );
+        comparisonArea.setAttribute('d', nextComparisonPath);
+        comparisonGlow.setAttribute('d', nextComparisonPath);
+      }
     };
 
     const applyRadarFinalVisualState = () => {
@@ -5936,6 +6451,13 @@
       glow.setAttribute('d', areaPath);
       area.style.removeProperty('opacity');
       glow.style.removeProperty('opacity');
+
+      if (comparisonActive && comparisonArea && comparisonGlow) {
+        comparisonArea.setAttribute('d', comparisonAreaPath);
+        comparisonGlow.setAttribute('d', comparisonAreaPath);
+        comparisonArea.style.removeProperty('opacity');
+        comparisonGlow.style.removeProperty('opacity');
+      }
 
       radarIconNodes.forEach((icon) => {
         icon.style.opacity = '1';
@@ -5960,6 +6482,10 @@
         setRadarAreaFromProgress(axisPoints.map(() => 0));
         area.style.opacity = '0.2';
         glow.style.opacity = '0.18';
+        if (comparisonActive && comparisonArea && comparisonGlow) {
+          comparisonArea.style.opacity = '0.12';
+          comparisonGlow.style.opacity = '0.1';
+        }
         const revealedIconsByAxis = axisPoints.map(() => false);
 
         radarIconNodes.forEach((icon) => {
@@ -6033,6 +6559,10 @@
           const overallProgress = easeOutReveal(elapsed / revealDuration);
           area.style.opacity = String(0.2 + overallProgress * 0.8);
           glow.style.opacity = String(0.18 + overallProgress * 0.54);
+          if (comparisonActive && comparisonArea && comparisonGlow) {
+            comparisonArea.style.opacity = String(0.12 + overallProgress * 0.72);
+            comparisonGlow.style.opacity = String(0.1 + overallProgress * 0.48);
+          }
 
           if (elapsed < revealDuration + 24) {
             radarRevealFrameId = window.requestAnimationFrame(tickRadarReveal);
@@ -6058,7 +6588,10 @@
     return true;
   };
 
-  const renderDetailSensoryProfile = (profile) => {
+  const renderDetailSensoryProfile = (
+    profile,
+    { currentLabel = '', comparisonProfile = null, comparisonLabel = '' } = {}
+  ) => {
     if (
       !(detailSensorySection instanceof HTMLElement) ||
       !(detailSensoryViewTabsRoot instanceof HTMLElement) ||
@@ -6079,12 +6612,64 @@
       return false;
     }
 
+    let hasComparison = false;
+    if (isObject(comparisonProfile)) {
+      const comparedModel = buildDetailSensoryProfileModel(comparisonProfile);
+      if (comparedModel && comparedModel.axes.length === model.axes.length) {
+        const comparedValueByAxisId = new Map(
+          comparedModel.axes.map((axis) => [axis.id, axis.value])
+        );
+        model.axes = model.axes.map((axis) => {
+          const comparedValue = comparedValueByAxisId.get(axis.id);
+          if (comparedValue === null || comparedValue === undefined) {
+            return axis;
+          }
+
+          return {
+            ...axis,
+            comparisonValue: comparedValue,
+          };
+        });
+        model.groups = model.groups.map((group) => ({
+          ...group,
+          axes: group.axes.map((axis) => {
+            const comparedValue = comparedValueByAxisId.get(axis.id);
+            if (comparedValue === null || comparedValue === undefined) {
+              return axis;
+            }
+
+            return {
+              ...axis,
+              comparisonValue: comparedValue,
+            };
+          }),
+        }));
+        hasComparison = model.axes.every((axis) => Number.isFinite(axis.comparisonValue));
+      }
+    }
+
+    model.comparison = hasComparison
+      ? {
+          active: true,
+          currentLabel: normalizeText(currentLabel || detailTitle?.textContent || 'Actual'),
+          comparedLabel: normalizeText(comparisonLabel || 'Comparado'),
+        }
+      : {
+          active: false,
+          currentLabel: '',
+          comparedLabel: '',
+        };
+
     if (!renderDetailSensoryBars(model) || !renderDetailSensoryRadar(model)) {
       clearDetailSensoryProfile();
       return false;
     }
 
-    state.detailSensoryView = DEFAULT_DETAIL_SENSORY_VIEW;
+    if (detailSensorySection instanceof HTMLElement) {
+      detailSensorySection.dataset.comparisonActive = hasComparison ? 'true' : 'false';
+    }
+
+    state.detailSensoryView = hasComparison ? 'radar' : DEFAULT_DETAIL_SENSORY_VIEW;
     detailSensoryViewTabsRoot.hidden = false;
     detailSensorySummary.textContent = model.summary;
     detailSensorySummary.hidden = false;
@@ -8356,6 +8941,17 @@
       menuPageBody.removeAttribute('data-menu-detail-hero');
     }
 
+    if (state.compareModalOpen) {
+      closeCompareModal({ restoreFocus: false, immediate: true });
+    }
+
+    state.detailItemId = '';
+    state.compareSearchQuery = '';
+    if (compareSearchInput instanceof HTMLInputElement) {
+      compareSearchInput.value = '';
+      syncCompareSearchControls();
+    }
+
     detailView.setAttribute('data-detail-hero-mode', 'catalog');
     clearDetailEditorialCarousel();
     hideDetailInfoChipTooltip({ immediate: true });
@@ -8459,6 +9055,10 @@
       return;
     }
 
+    if (state.compareModalOpen) {
+      closeCompareModal({ restoreFocus: false, immediate: true });
+    }
+
     hideDetailInfoChipTooltip({ immediate: true });
 
     const detail = await toDetailViewModel(item);
@@ -8503,8 +9103,14 @@
       ? ''
       : detail.soldOutReason || 'Temporalmente no disponible.';
     detailSoldOutReason.hidden = detail.available;
-    const hasSensoryProfile = renderDetailSensoryProfile(detail.sensoryProfile);
-    detailSensoryDivider.hidden = !hasSensoryProfile;
+    const { hasSensoryProfile } = renderDetailSensoryState({
+      itemId: detail.id,
+      currentLabel: detail.title,
+      sensoryProfile: detail.sensoryProfile,
+    });
+    if (!hasSensoryProfile && state.compareModalOpen) {
+      closeCompareModal({ restoreFocus: false, immediate: true });
+    }
     syncDetailPairingsSection(detail.id);
     syncDetailHistorySection(detail.id);
     if (detailAddButton instanceof HTMLButtonElement) {
@@ -8877,6 +9483,84 @@
     });
   }
 
+  if (detailSensoryCompareButton instanceof HTMLButtonElement) {
+    detailSensoryCompareButton.addEventListener('click', (event) => {
+      event.preventDefault();
+
+      if (detailSensoryCompareButton.disabled) {
+        return;
+      }
+
+      if (state.compareModalOpen) {
+        closeCompareModal();
+        return;
+      }
+
+      state.compareSearchQuery = '';
+      if (compareSearchInput instanceof HTMLInputElement) {
+        compareSearchInput.value = '';
+      }
+      syncCompareSearchControls();
+      renderCompareModalShell();
+      openCompareModal();
+    });
+  }
+
+  if (compareSearchInput instanceof HTMLInputElement) {
+    compareSearchInput.addEventListener('input', () => {
+      state.compareSearchQuery = normalizeText(compareSearchInput.value);
+      syncCompareSearchControls();
+      renderCompareModalShell();
+    });
+
+    compareSearchInput.addEventListener('search', () => {
+      state.compareSearchQuery = normalizeText(compareSearchInput.value);
+      syncCompareSearchControls();
+      renderCompareModalShell();
+    });
+
+    compareSearchInput.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' || !compareSearchInput.value) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      compareSearchInput.value = '';
+      state.compareSearchQuery = '';
+      syncCompareSearchControls();
+      renderCompareModalShell();
+    });
+  }
+
+  if (compareSearchClearButton instanceof HTMLButtonElement) {
+    compareSearchClearButton.addEventListener('click', (event) => {
+      event.preventDefault();
+
+      if (!(compareSearchInput instanceof HTMLInputElement)) {
+        return;
+      }
+
+      compareSearchInput.value = '';
+      state.compareSearchQuery = '';
+      syncCompareSearchControls();
+      renderCompareModalShell();
+      compareSearchInput.focus();
+    });
+  }
+
+  if (compareSearchInput instanceof HTMLInputElement) {
+    syncCompareSearchControls();
+  }
+
+  if (detailSensoryComparisonClearButton instanceof HTMLButtonElement) {
+    detailSensoryComparisonClearButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      state.detailComparisonItemId = '';
+      refreshCurrentDetailSensoryComparison();
+    });
+  }
+
   document.addEventListener('click', (event) => {
     const target = event.target;
     if (!(target instanceof Element)) {
@@ -8897,6 +9581,39 @@
 
     openAccountModal();
   });
+
+  if (compareModal instanceof HTMLElement) {
+    compareModal.addEventListener('click', (event) => {
+      const target = event.target;
+
+      if (!(target instanceof Element)) {
+        return;
+      }
+
+      if (target.closest('[data-menu-compare-close]')) {
+        event.preventDefault();
+        closeCompareModal();
+        return;
+      }
+
+      const compareItemButton = target.closest('[data-compare-item-id]');
+      if (!(compareItemButton instanceof HTMLElement)) {
+        return;
+      }
+
+      event.preventDefault();
+      const comparisonItemId = normalizeText(compareItemButton.dataset.compareItemId);
+      const comparisonItem = state.itemsById.get(comparisonItemId);
+      if (!comparisonItem || !isItemEligibleForSensoryComparison(comparisonItem)) {
+        return;
+      }
+
+      state.detailComparisonItemId = comparisonItemId;
+      state.detailSensoryView = 'radar';
+      refreshCurrentDetailSensoryComparison();
+      closeCompareModal();
+    });
+  }
 
   if (filterClearButton instanceof HTMLButtonElement) {
     filterClearButton.addEventListener('click', (event) => {
@@ -9105,8 +9822,9 @@
   document.addEventListener('keydown', (event) => {
     const accountModalOpen = state.accountModalOpen;
     const filterModalOpen = state.filterModalOpen;
+    const compareModalOpen = state.compareModalOpen;
 
-    if (!accountModalOpen && !filterModalOpen) {
+    if (!accountModalOpen && !filterModalOpen && !compareModalOpen) {
       return;
     }
 
@@ -9121,7 +9839,9 @@
         return;
       }
 
-      if (accountModalOpen) {
+      if (compareModalOpen) {
+        closeCompareModal();
+      } else if (accountModalOpen) {
         closeAccountModal();
       } else {
         closeFilterModal();
@@ -9133,10 +9853,16 @@
       return;
     }
 
-    const activeDialog = accountModalOpen ? accountDialog : filterDialog;
-    const focusableNodes = accountModalOpen
-      ? getAccountModalFocusableElements()
-      : getFilterModalFocusableElements();
+    const activeDialog = compareModalOpen
+      ? compareDialog
+      : accountModalOpen
+        ? accountDialog
+        : filterDialog;
+    const focusableNodes = compareModalOpen
+      ? getCompareModalFocusableElements()
+      : accountModalOpen
+        ? getAccountModalFocusableElements()
+        : getFilterModalFocusableElements();
 
     if (!focusableNodes.length) {
       if (activeDialog instanceof HTMLElement) {
