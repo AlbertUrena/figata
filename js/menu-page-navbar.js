@@ -296,9 +296,8 @@
 
   const setMobileMenuOpen = (nextOpen, { restoreFocus = false } = {}) => {
     const isMobile = isMobileViewport();
-    const isListViewVisible = state.menuState?.isListViewVisible !== false;
     const detailNavHidden = header.dataset.menuDetailNav === 'hidden';
-    const mobileActionsInteractive = isMobile && !detailNavHidden && isListViewVisible;
+    const mobileActionsInteractive = isMobile && !detailNavHidden;
     const shouldOpen = Boolean(nextOpen) && mobileActionsInteractive;
     const navbarCurrentlyCollapsed = root.classList.contains('nav--collapsed');
     const wasMenuOpen = state.mobileMenuOpen;
@@ -1392,12 +1391,12 @@
       navbar.inert = !detailNavVisible;
     }
 
-    if (!detailNavVisible || !isMobile || !isListViewVisible || searchOpen) {
+    if (!detailNavVisible || !isMobile || searchOpen) {
       setMobileMenuOpen(false);
     } else {
       setMobileMenuOpen(state.mobileMenuOpen);
     }
-    const mobileActionsInteractive = isMobile && detailNavVisible && isListViewVisible;
+    const mobileActionsInteractive = isMobile && detailNavVisible;
 
     if (refs.mobileActions instanceof HTMLElement) {
       refs.mobileActions.inert = !mobileActionsInteractive;
@@ -1436,7 +1435,14 @@
 
     if (refs.mobileAccountButton instanceof HTMLButtonElement) {
       refs.mobileAccountButton.tabIndex = mobileActionsInteractive ? 0 : -1;
-      refs.mobileAccountButton.setAttribute('aria-disabled', 'true');
+      refs.mobileAccountButton.setAttribute(
+        'aria-disabled',
+        mobileActionsInteractive ? 'false' : 'true'
+      );
+      refs.mobileAccountButton.setAttribute(
+        'aria-expanded',
+        state.menuState?.isAccountModalOpen ? 'true' : 'false'
+      );
     }
 
     refs.chevronButton.hidden = isMobile;
@@ -1825,7 +1831,7 @@
 
     const mobileAccountButton = createMenuToolsButton(
       'mobile-account',
-      'Cuenta del restaurante (próximamente)',
+      'Cuenta del restaurante',
       'account'
     );
     mobileAccountButton.classList.add('navbar__mobile-action', 'navbar__mobile-action--account');
@@ -1937,6 +1943,17 @@
 
     mobileAccountButton.addEventListener('click', (event) => {
       event.preventDefault();
+      event.stopPropagation();
+
+      if (!isMobileViewport()) {
+        return;
+      }
+
+      if (state.mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+
+      window.FigataMenuPage?.toggleAccountModal?.();
     });
 
     mobileMenuButton.addEventListener('click', (event) => {

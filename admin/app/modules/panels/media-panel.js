@@ -861,6 +861,9 @@
     mediaDraft.items[itemId] = entry;
     ctx.setMediaDraftUpdatedAt("admin-app");
     ctx.persistDraftsToLocalStorage();
+    if (typeof ctx.saveDraftsToLocalFiles === "function") {
+      void ctx.saveDraftsToLocalFiles();
+    }
     ctx.updateDashboardMetrics();
     renderMediaEditor(ctx);
     ctx.setMediaEditorStatus("Cambios del \u00edtem guardados en el borrador.");
@@ -892,6 +895,9 @@
 
     ctx.setMediaDraftUpdatedAt("admin-app");
     ctx.persistDraftsToLocalStorage();
+    if (typeof ctx.saveDraftsToLocalFiles === "function") {
+      void ctx.saveDraftsToLocalFiles();
+    }
     renderMediaEditor(ctx);
     ctx.setMediaEditorStatus("Secciones globales guardadas en el borrador.");
   }
@@ -993,6 +999,9 @@
 
       if (action === "save-draft") {
         ctx.persistDraftsToLocalStorage();
+        if (typeof ctx.saveDraftsToLocalFiles === "function") {
+          void ctx.saveDraftsToLocalFiles();
+        }
         ctx.setMediaEditorStatus("Borrador de media guardado localmente.");
         return;
       }

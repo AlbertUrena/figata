@@ -1052,7 +1052,8 @@
       setPagesEditorStatus: setPagesEditorStatus,
       setActiveMediaSection: setActiveMediaSection,
       refreshMediaScrollAnchors: refreshMediaScrollAnchors,
-      updateMediaScrollSpy: updateMediaScrollSpy
+      updateMediaScrollSpy: updateMediaScrollSpy,
+      saveDraftsToLocalFiles: saveDraftsToLocalFiles
     };
   }
   function openMediaEditor(options) {

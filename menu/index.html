@@ -278,44 +278,72 @@
                 id="menu-detail-editorial-track"
                 aria-label="Galería editorial"
                 role="region"></div>
+            </div>
+            <div class="menu-page-detail__hero-overlay">
               <div
                 class="menu-page-detail__editorial-dots"
                 id="menu-detail-editorial-dots"
                 aria-label="Navegación de galería"
                 role="tablist"></div>
+              <p class="menu-page-detail__hero-badge" id="menu-detail-badge" hidden>
+                <img
+                  class="menu-page-detail__hero-badge-icon"
+                  id="menu-detail-badge-icon"
+                  src=""
+                  alt=""
+                  width="14"
+                  height="14"
+                  hidden>
+                <span class="menu-page-detail__hero-badge-label" id="menu-detail-badge-label"></span>
+              </p>
             </div>
             <img class="menu-page-detail__image" id="menu-detail-image" alt="">
           </div>
 
           <div class="menu-page-detail__content" id="menu-detail-panel">
             <div class="menu-page-detail__stack">
-              <div class="menu-page-detail__topline" id="menu-detail-topline" hidden>
-                <div class="menu-page-detail__meta preview-overlay__rating-row" id="menu-detail-meta" hidden>
-                  <div class="preview-overlay__stars" aria-hidden="true">
-                    <img class="preview-overlay__star" src="/assets/svg-icons/star.svg" alt="">
-                    <img class="preview-overlay__star" src="/assets/svg-icons/star.svg" alt="">
-                    <img class="preview-overlay__star" src="/assets/svg-icons/star.svg" alt="">
-                    <img class="preview-overlay__star" src="/assets/svg-icons/star.svg" alt="">
-                    <img class="preview-overlay__star" src="/assets/svg-icons/star.svg" alt="">
-                  </div>
-                  <p class="menu-page-detail__reviews preview-overlay__reviews" id="menu-detail-reviews" hidden></p>
-                </div>
-                <p class="menu-page-detail__hero-badge" id="menu-detail-badge" hidden>
-                  <img
-                    class="menu-page-detail__hero-badge-icon"
-                    id="menu-detail-badge-icon"
-                    src=""
-                    alt=""
-                    width="14"
-                    height="14"
-                    hidden>
-                  <span class="menu-page-detail__hero-badge-label" id="menu-detail-badge-label"></span>
-                </p>
-              </div>
-
               <div class="menu-page-detail__header preview-overlay__header">
                 <h2 class="menu-page-detail__title preview-overlay__title" id="menu-detail-title"></h2>
                 <p class="menu-page-detail__price preview-overlay__price mas-pedidas-card__price" id="menu-detail-price"></p>
+              </div>
+
+              <div class="menu-page-detail__info-chips" id="menu-detail-info-chips">
+                <button
+                  class="menu-page-detail__info-chip"
+                  id="menu-detail-chip-calories"
+                  type="button"
+                  data-menu-detail-chip-tooltip="calories"
+                  aria-expanded="false">
+                  <span class="menu-page-detail__info-chip-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" focusable="false" aria-hidden="true">
+                      <path d="M281.6 93.9L297.6 72.6C301.6 67.2 308 64 314.7 64C326.4 64 336 73.6 336 85.3L336 107.4C336 120.5 341.4 133.1 350.9 142.1L435.6 223C484.4 269.6 512 334.2 512 401.7C512 498 434 576 337.7 576L320 576C214 576 128 490 128 384L128 380.2C128 331.4 147.4 284.6 181.9 250.1L185.4 246.6C189.6 242.4 195.4 240 201.4 240C213.9 240 224 250.1 224 262.6L224 352C224 387.3 252.7 416 288 416C323.3 416 352 387.3 352 352L352 348.1C352 330.1 344.8 312.8 332.1 300.1L293.5 261.5C269.5 237.5 256 204.8 256 170.8C256 143.1 265 116 281.6 93.9z"></path>
+                    </svg>
+                  </span>
+                  <span class="menu-page-detail__info-chip-text" id="menu-detail-chip-calories-value">560 cals</span>
+                </button>
+
+                <button
+                  class="menu-page-detail__info-chip"
+                  id="menu-detail-chip-eta"
+                  type="button"
+                  data-menu-detail-chip-tooltip="eta"
+                  aria-expanded="false">
+                  <span class="menu-page-detail__info-chip-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" focusable="false" aria-hidden="true">
+                      <path d="M320 64C461.4 64 576 178.6 576 320C576 461.4 461.4 576 320 576C178.6 576 64 461.4 64 320C64 178.6 178.6 64 320 64zM296 184L296 320C296 328 300 335.5 306.7 340L402.7 404C413.7 411.4 428.6 408.4 436 397.3C443.4 386.2 440.4 371.4 429.3 364L344 307.2L344 184C344 170.7 333.3 160 320 160C306.7 160 296 170.7 296 184z"></path>
+                    </svg>
+                  </span>
+                  <span class="menu-page-detail__info-chip-text" id="menu-detail-chip-eta-value">15 mins</span>
+                </button>
+
+                <span class="menu-page-detail__info-chip" id="menu-detail-chip-rating">
+                  <span class="menu-page-detail__info-chip-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" focusable="false" aria-hidden="true">
+                      <path d="M341.5 45.1C337.4 37.1 329.1 32 320.1 32C311.1 32 302.8 37.1 298.7 45.1L225.1 189.3L65.2 214.7C56.3 216.1 48.9 222.4 46.1 231C43.3 239.6 45.6 249 51.9 255.4L166.3 369.9L141.1 529.8C139.7 538.7 143.4 547.7 150.7 553C158 558.3 167.6 559.1 175.7 555L320.1 481.6L464.4 555C472.4 559.1 482.1 558.3 489.4 553C496.7 547.7 500.4 538.8 499 529.8L473.7 369.9L588.1 255.4C594.5 249 596.7 239.6 593.9 231C591.1 222.4 583.8 216.1 574.8 214.7L415 189.3L341.5 45.1z"></path>
+                    </svg>
+                  </span>
+                  <span class="menu-page-detail__info-chip-text" id="menu-detail-chip-rating-value">4.6</span>
+                </span>
               </div>
 
               <p class="menu-page-detail__description preview-overlay__description" id="menu-detail-description"></p>
@@ -345,6 +373,19 @@
               hidden>
               <div class="menu-page-detail__section-heading menu-page-detail__section-heading--sensory">
                 <h3 class="menu-page-detail__section-title">Perfil sensorial</h3>
+                <p class="menu-page-detail__sensory-subtitle">
+                  Una lectura sensorial del plato: cómo se expresa en sabor, textura y aroma.
+                </p>
+              </div>
+
+              <div class="menu-page-detail__sensory-controls">
+                <button
+                  class="menu-page-detail__sensory-compare-button preview-overlay__button preview-overlay__button--primary is-available"
+                  id="menu-detail-sensory-compare"
+                  type="button">
+                  Comparar
+                </button>
+
                 <div
                   class="menu-page-detail__sensory-view-tabs"
                   id="menu-detail-sensory-view-tabs"
@@ -388,9 +429,6 @@
                     </button>
                   </div>
                 </div>
-                <p class="menu-page-detail__sensory-subtitle">
-                  Una lectura sensorial del plato: cómo se expresa en sabor, textura y aroma.
-                </p>
               </div>
 
               <div class="menu-page-detail__sensory-panels-stack" id="menu-detail-sensory-panels-stack">

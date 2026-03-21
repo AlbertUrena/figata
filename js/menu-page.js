@@ -68,6 +68,13 @@
   const ACCOUNT_CARD_LAYOUT_EPSILON_PX = 0.5;
   const ACCOUNT_CARD_EXIT_X_PX = -60;
   const ACCOUNT_CARD_EXIT_BLUR_PX = 3;
+  const ACCOUNT_EMPTY_STATE_SHIFT_Y_PX = 18;
+  const ACCOUNT_EMPTY_STATE_BLUR_PX = 4;
+  const ACCOUNT_EMPTY_STATE_SCALE = 0.985;
+  const ACCOUNT_EMPTY_STATE_EXIT_MS = 360;
+  const ACCOUNT_EMPTY_STATE_ENTER_MS = 380;
+  const ACCOUNT_EMPTY_STATE_EXIT_EASE = 'cubic-bezier(0.4, 0, 0.2, 1)';
+  const ACCOUNT_EMPTY_STATE_ENTER_EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
   const MENU_ROUTE_VIEW_TRANSITION_ROOT_ATTR = 'data-menu-route-vt';
   const MENU_ROUTE_VIEW_TRANSITION_ROOT_ACTIVE = 'active';
   const MENU_ROUTE_VIEW_TRANSITION_DIRECTION_ATTR = 'data-menu-route-vt-direction';
@@ -138,8 +145,6 @@
 
   const detailBackButton = document.getElementById('menu-detail-back');
   const detailStatusNode = document.getElementById('menu-detail-status');
-  const detailTopline = document.getElementById('menu-detail-topline');
-  const detailMeta = document.getElementById('menu-detail-meta');
   const detailBadge = document.getElementById('menu-detail-badge');
   const detailBadgeIcon = document.getElementById('menu-detail-badge-icon');
   const detailBadgeLabel = document.getElementById('menu-detail-badge-label');
@@ -149,8 +154,12 @@
   const detailEditorialTrack = document.getElementById('menu-detail-editorial-track');
   const detailEditorialDots = document.getElementById('menu-detail-editorial-dots');
   const detailImage = document.getElementById('menu-detail-image');
-  const detailReviews = document.getElementById('menu-detail-reviews');
   const detailTitle = document.getElementById('menu-detail-title');
+  const detailChipCalories = document.getElementById('menu-detail-chip-calories');
+  const detailChipCaloriesValue = document.getElementById('menu-detail-chip-calories-value');
+  const detailChipEta = document.getElementById('menu-detail-chip-eta');
+  const detailChipEtaValue = document.getElementById('menu-detail-chip-eta-value');
+  const detailChipRatingValue = document.getElementById('menu-detail-chip-rating-value');
   const detailDescription = document.getElementById('menu-detail-description');
   const detailPrice = document.getElementById('menu-detail-price');
   const detailSensoryDivider = document.getElementById('menu-detail-sensory-divider');
@@ -275,6 +284,7 @@
   });
   const DETAIL_SENSORY_TOOLTIP_AUTO_CLOSE_MS = 5000;
   const DETAIL_SENSORY_TOOLTIP_EXIT_MS = 620;
+  const DETAIL_HERO_BADGE_FADE_MS = 220;
   const DETAIL_SENSORY_VIEW_EXIT_MS = 180;
   const DETAIL_SENSORY_VIEW_ENTER_MS = 300;
   const DETAIL_SENSORY_VIEW_EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
@@ -298,6 +308,26 @@
     [DETAIL_HERO_BADGE_KIND.VEGAN]: '/assets/vegana.webp',
     [DETAIL_HERO_BADGE_KIND.VEGETARIAN]: '/assets/vegetariana.webp',
   });
+  const DETAIL_MVP_METRICS = Object.freeze({
+    calories: 560,
+    etaMinutes: 15,
+    rating: 4.6,
+  });
+  const DETAIL_INFO_CHIP_TOOLTIP_COPY = Object.freeze({
+    calories: Object.freeze({
+      title: 'Calorías estimadas',
+      description:
+        'Valor aproximado por porción. Puede variar según ingredientes, tamaño y preparación final.',
+    }),
+    eta: Object.freeze({
+      title: 'Tiempo estimado',
+      description:
+        'Tiempo aproximado de servicio desde que ordenas. Puede variar según horario y volumen de pedidos.',
+    }),
+  });
+  const DETAIL_INFO_CHIP_TOOLTIP_EXIT_MS = 120;
+  const DETAIL_INFO_CHIP_TOOLTIP_SWITCH_EXIT_MS = 84;
+  const DETAIL_INFO_CHIP_TOOLTIP_SCROLL_CLOSE_PX = 48;
   const DETAIL_V1_PAIRING_ITEM_IDS = new Set(['margherita']);
   const DETAIL_V1_HISTORY_ITEM_IDS = new Set(['margherita']);
   const ORGANOLEPTIC_PROFILE_ICON_IDS = Object.freeze({
@@ -411,6 +441,18 @@
   let searchHelperAnimationTimerId = 0;
   let searchHelperFrameId = 0;
   let detailEditorialDotsFrameId = 0;
+  let detailInfoChipTooltipNode = null;
+  let detailInfoChipTooltipTitleNode = null;
+  let detailInfoChipTooltipCopyNode = null;
+  let detailInfoChipTooltipAnchor = null;
+  let detailInfoChipTooltipQueuedAnchor = null;
+  let detailInfoChipTooltipHideTimerId = 0;
+  let detailInfoChipTooltipShowFrameId = 0;
+  let detailInfoChipTooltipScrollY = 0;
+  let detailInfoChipTooltipBound = false;
+  let detailHeroBadgeFadeTimerId = 0;
+  let detailHeroBadgeHasLabel = false;
+  let detailHeroBadgeFirstSlideOnly = false;
   let searchHelperWordIndex = 0;
   let searchHelperHasStarted = false;
   let searchHelperAnimating = false;
@@ -456,12 +498,14 @@
         scrollTop: 0,
         cards: new Map(),
         groupHeaders: new Map(),
+        emptyState: null,
       };
     }
 
     const bodyRect = accountModalBody.getBoundingClientRect();
     const cards = new Map();
     const groupHeaders = new Map();
+    let emptyState = null;
 
     accountModalBody
       .querySelectorAll('.menu-account-modal__item[data-account-item-id]')
@@ -510,11 +554,25 @@
         });
       });
 
+    const emptyNode = accountModalBody.querySelector(
+      '.menu-account-modal__empty.menu-page-search-empty'
+    );
+    if (emptyNode instanceof HTMLElement) {
+      const rect = emptyNode.getBoundingClientRect();
+      if (rect.width > 1 && rect.height > 1) {
+        emptyState = {
+          node: emptyNode,
+          rect,
+        };
+      }
+    }
+
     return {
       bodyRect,
       scrollTop: accountModalBody.scrollTop,
       cards,
       groupHeaders,
+      emptyState,
     };
   };
   const clearAccountCardAnimationLayer = () => {
@@ -680,6 +738,103 @@
 
     return waitForAccountCardAnimation(animation);
   };
+  const animateAccountEmptyStateEnter = (node) => {
+    if (!(node instanceof HTMLElement)) {
+      return Promise.resolve();
+    }
+
+    let animation = null;
+
+    try {
+      animation = node.animate(
+        [
+          {
+            opacity: 0,
+            transform: `translateY(${ACCOUNT_EMPTY_STATE_SHIFT_Y_PX}px) scale(${ACCOUNT_EMPTY_STATE_SCALE})`,
+            filter: `blur(${ACCOUNT_EMPTY_STATE_BLUR_PX}px)`,
+          },
+          {
+            opacity: 1,
+            transform: 'translateY(0) scale(1)',
+            filter: 'blur(0px)',
+          },
+        ],
+        {
+          duration: ACCOUNT_EMPTY_STATE_ENTER_MS,
+          easing: ACCOUNT_EMPTY_STATE_ENTER_EASE,
+          fill: 'both',
+        }
+      );
+    } catch (error) {
+      return Promise.resolve();
+    }
+
+    return waitForAccountCardAnimation(animation);
+  };
+  const animateAccountEmptyStateExitGhost = (layer, previousSnapshot, nextSnapshot) => {
+    if (!(layer instanceof HTMLElement)) {
+      return Promise.resolve();
+    }
+
+    const previousEntry = previousSnapshot.emptyState;
+    if (!previousEntry || !(previousEntry.node instanceof HTMLElement)) {
+      return Promise.resolve();
+    }
+
+    const bodyRect = nextSnapshot.bodyRect || previousSnapshot.bodyRect;
+    if (!bodyRect) {
+      return Promise.resolve();
+    }
+
+    const ghost = previousEntry.node.cloneNode(true);
+    if (!(ghost instanceof HTMLElement)) {
+      return Promise.resolve();
+    }
+
+    ghost.classList.add('menu-account-modal__empty--ghost');
+    ghost.setAttribute('aria-hidden', 'true');
+    ghost.style.top = `${nextSnapshot.scrollTop + (previousEntry.rect.top - bodyRect.top)}px`;
+    ghost.style.left = `${previousEntry.rect.left - bodyRect.left}px`;
+    ghost.style.width = `${previousEntry.rect.width}px`;
+    ghost.style.height = `${previousEntry.rect.height}px`;
+    ghost.style.minHeight = '0';
+    ghost.style.maxHeight = `${previousEntry.rect.height}px`;
+    layer.appendChild(ghost);
+
+    let animation = null;
+
+    try {
+      animation = ghost.animate(
+        [
+          {
+            opacity: 1,
+            transform: 'translateY(0) scale(1)',
+            filter: 'blur(0px)',
+          },
+          {
+            opacity: 0,
+            transform: `translateY(${-1 * ACCOUNT_EMPTY_STATE_SHIFT_Y_PX}px) scale(${ACCOUNT_EMPTY_STATE_SCALE})`,
+            filter: `blur(${ACCOUNT_EMPTY_STATE_BLUR_PX}px)`,
+          },
+        ],
+        {
+          duration: ACCOUNT_EMPTY_STATE_EXIT_MS,
+          easing: ACCOUNT_EMPTY_STATE_EXIT_EASE,
+          fill: 'both',
+        }
+      );
+    } catch (error) {
+      ghost.remove();
+      return Promise.resolve();
+    }
+
+    return waitForAccountCardAnimation(animation).finally(() => {
+      ghost.remove();
+      if (!layer.childElementCount) {
+        layer.remove();
+      }
+    });
+  };
   const animateAccountGroupHeaderEnter = (node) => {
     if (!(node instanceof HTMLElement)) {
       return Promise.resolve();
@@ -760,17 +915,34 @@
 
         const nextSnapshot = getAccountCardAnimationSnapshot();
         const animationTasks = [];
+        const needsExitCardGhost =
+          normalizedExitItemId && previousSnapshot.cards.has(normalizedExitItemId);
+        const needsExitEmptyGhost = Boolean(
+          previousSnapshot.emptyState && !nextSnapshot.emptyState
+        );
+        const animationLayer = (needsExitCardGhost || needsExitEmptyGhost)
+          ? createAccountCardAnimationLayer()
+          : null;
 
-        if (normalizedExitItemId && previousSnapshot.cards.has(normalizedExitItemId)) {
-          const layer = createAccountCardAnimationLayer();
+        if (needsExitCardGhost) {
           animationTasks.push(
             animateAccountCardExitGhost(
-              layer,
+              animationLayer,
               previousSnapshot,
               nextSnapshot,
               normalizedExitItemId
             )
           );
+        }
+
+        if (needsExitEmptyGhost) {
+          animationTasks.push(
+            animateAccountEmptyStateExitGhost(animationLayer, previousSnapshot, nextSnapshot)
+          );
+        }
+
+        if (!previousSnapshot.emptyState && nextSnapshot.emptyState) {
+          animationTasks.push(animateAccountEmptyStateEnter(nextSnapshot.emptyState.node));
         }
 
         nextSnapshot.cards.forEach((entry, itemId) => {
@@ -1267,7 +1439,12 @@
 
     const shell = document.createElement('span');
     shell.className = 'menu-account-modal__morph-shell';
-    if (
+    const explicitMorphAlign = normalizeText(node.getAttribute('data-account-morph-align'));
+    if (explicitMorphAlign === 'end') {
+      shell.classList.add('menu-account-modal__morph-shell--end');
+    } else if (explicitMorphAlign === 'center') {
+      shell.classList.add('menu-account-modal__morph-shell--center');
+    } else if (
       node instanceof HTMLParagraphElement ||
       node.classList.contains('menu-account-modal__amount')
     ) {
@@ -1385,6 +1562,7 @@
       : 'menu-account-modal__currency';
     currencyNode.textContent = parts.currency;
     amountNode.className = 'menu-account-modal__amount';
+    amountNode.setAttribute('data-account-morph-align', 'end');
     setAccountTextValue(amountNode, parts.amount, { animate });
     node.setAttribute('aria-label', `${parts.currency} ${parts.amount}`);
   };
@@ -1803,6 +1981,7 @@
     const quantityNode = document.createElement('span');
     quantityNode.className = 'menu-account-modal__stepper-qty';
     quantityNode.setAttribute('data-account-role', 'quantity');
+    quantityNode.setAttribute('data-account-morph-align', 'center');
     setAccountTextValue(quantityNode, String(entry.quantity), { animate: false });
 
     const increaseButton = document.createElement('button');
@@ -1821,6 +2000,7 @@
     const price = document.createElement('p');
     price.className = 'menu-account-modal__item-price';
     price.setAttribute('data-account-role', 'line-price');
+    price.setAttribute('data-account-morph-align', 'end');
     setAccountTextValue(price, formatAccountCardMoney(entry.linePrice), { animate: false });
     bottomRow.appendChild(price);
 
@@ -1864,9 +2044,15 @@
     }
 
     const quantityNode = card.querySelector('[data-account-role="quantity"]');
+    if (quantityNode instanceof HTMLElement) {
+      quantityNode.setAttribute('data-account-morph-align', 'center');
+    }
     setAccountTextValue(quantityNode, String(entry.quantity), { animate });
 
     const linePriceNode = card.querySelector('[data-account-role="line-price"]');
+    if (linePriceNode instanceof HTMLElement) {
+      linePriceNode.setAttribute('data-account-morph-align', 'end');
+    }
     setAccountTextValue(linePriceNode, formatAccountCardMoney(entry.linePrice), {
       animate,
     });
@@ -6135,6 +6321,385 @@
     });
   };
 
+  const clearDetailInfoChipTooltipHideTimer = () => {
+    if (!detailInfoChipTooltipHideTimerId) {
+      return;
+    }
+
+    window.clearTimeout(detailInfoChipTooltipHideTimerId);
+    detailInfoChipTooltipHideTimerId = 0;
+  };
+
+  const clearDetailInfoChipTooltipShowFrame = () => {
+    if (!detailInfoChipTooltipShowFrameId) {
+      return;
+    }
+
+    window.cancelAnimationFrame(detailInfoChipTooltipShowFrameId);
+    detailInfoChipTooltipShowFrameId = 0;
+  };
+
+  const setDetailInfoChipExpanded = (chip, expanded) => {
+    if (!(chip instanceof HTMLElement)) {
+      return;
+    }
+
+    chip.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    chip.classList.toggle('is-tooltip-active', expanded);
+
+    if (expanded && detailInfoChipTooltipNode?.id) {
+      chip.setAttribute('aria-describedby', detailInfoChipTooltipNode.id);
+      return;
+    }
+
+    chip.removeAttribute('aria-describedby');
+  };
+
+  const ensureDetailInfoChipTooltipNode = () => {
+    if (
+      detailInfoChipTooltipNode instanceof HTMLElement &&
+      detailInfoChipTooltipTitleNode instanceof HTMLElement &&
+      detailInfoChipTooltipCopyNode instanceof HTMLElement
+    ) {
+      return detailInfoChipTooltipNode;
+    }
+
+    const tooltip = document.createElement('div');
+    tooltip.className = 'menu-page-detail__chip-tooltip';
+    tooltip.id = 'menu-detail-chip-tooltip';
+    tooltip.setAttribute('role', 'tooltip');
+    tooltip.setAttribute('aria-hidden', 'true');
+    tooltip.hidden = true;
+
+    const title = document.createElement('p');
+    title.className = 'menu-page-detail__chip-tooltip-title';
+    const divider = document.createElement('div');
+    divider.className = 'menu-page-detail__chip-tooltip-divider';
+    divider.setAttribute('aria-hidden', 'true');
+    const copy = document.createElement('p');
+    copy.className = 'menu-page-detail__chip-tooltip-copy';
+
+    tooltip.append(title, divider, copy);
+    document.body.appendChild(tooltip);
+
+    detailInfoChipTooltipNode = tooltip;
+    detailInfoChipTooltipTitleNode = title;
+    detailInfoChipTooltipCopyNode = copy;
+
+    return tooltip;
+  };
+
+  const positionDetailInfoChipTooltip = () => {
+    if (
+      !(detailInfoChipTooltipNode instanceof HTMLElement) ||
+      !(detailInfoChipTooltipAnchor instanceof HTMLElement) ||
+      detailInfoChipTooltipNode.hidden
+    ) {
+      return;
+    }
+
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 390;
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 844;
+    const tooltipWidth = clampNumber(viewportWidth - 16, 184, 248);
+
+    detailInfoChipTooltipNode.style.width = `${tooltipWidth}px`;
+
+    const chipRect = detailInfoChipTooltipAnchor.getBoundingClientRect();
+    const tooltipHeight = detailInfoChipTooltipNode.offsetHeight || 92;
+
+    const desiredLeft = chipRect.left + chipRect.width / 2 - tooltipWidth / 2;
+    const left = clampNumber(desiredLeft, 8, viewportWidth - tooltipWidth - 8);
+
+    let top = chipRect.top - tooltipHeight - 12;
+    let isFlipped = false;
+
+    if (top < 8) {
+      top = chipRect.bottom + 12;
+      isFlipped = true;
+    }
+
+    top = clampNumber(top, 8, viewportHeight - tooltipHeight - 8);
+
+    const arrowX = clampNumber(
+      chipRect.left + chipRect.width / 2 - left,
+      14,
+      tooltipWidth - 14
+    );
+
+    detailInfoChipTooltipNode.style.left = `${left}px`;
+    detailInfoChipTooltipNode.style.top = `${top}px`;
+    detailInfoChipTooltipNode.style.setProperty(
+      '--menu-detail-chip-tooltip-arrow-x',
+      `${arrowX}px`
+    );
+    detailInfoChipTooltipNode.classList.toggle('is-flipped', isFlipped);
+  };
+
+  const hideDetailInfoChipTooltip = ({ immediate = false } = {}) => {
+    if (!(detailInfoChipTooltipNode instanceof HTMLElement)) {
+      return;
+    }
+
+    clearDetailInfoChipTooltipHideTimer();
+    clearDetailInfoChipTooltipShowFrame();
+
+    if (detailInfoChipTooltipAnchor instanceof HTMLElement) {
+      setDetailInfoChipExpanded(detailInfoChipTooltipAnchor, false);
+    }
+    detailInfoChipTooltipAnchor = null;
+
+    detailInfoChipTooltipNode.classList.remove('is-visible');
+    detailInfoChipTooltipNode.setAttribute('aria-hidden', 'true');
+
+    if (immediate) {
+      detailInfoChipTooltipQueuedAnchor = null;
+      detailInfoChipTooltipNode.hidden = true;
+      detailInfoChipTooltipNode.classList.remove('is-flipped');
+      return;
+    }
+
+    const hideDelay = detailInfoChipTooltipQueuedAnchor
+      ? DETAIL_INFO_CHIP_TOOLTIP_SWITCH_EXIT_MS
+      : DETAIL_INFO_CHIP_TOOLTIP_EXIT_MS;
+
+    detailInfoChipTooltipHideTimerId = window.setTimeout(() => {
+      detailInfoChipTooltipHideTimerId = 0;
+      detailInfoChipTooltipNode.hidden = true;
+      detailInfoChipTooltipNode.classList.remove('is-flipped');
+      const queuedChip = detailInfoChipTooltipQueuedAnchor;
+      detailInfoChipTooltipQueuedAnchor = null;
+
+      if (queuedChip instanceof HTMLElement && document.contains(queuedChip)) {
+        showDetailInfoChipTooltip(queuedChip);
+      }
+    }, hideDelay);
+  };
+
+  const showDetailInfoChipTooltip = (chip) => {
+    if (!(chip instanceof HTMLElement)) {
+      return;
+    }
+
+    const tooltipKey = normalizeText(chip.getAttribute('data-menu-detail-chip-tooltip'));
+    const copy = DETAIL_INFO_CHIP_TOOLTIP_COPY[tooltipKey];
+
+    if (!copy) {
+      return;
+    }
+
+    const tooltip = ensureDetailInfoChipTooltipNode();
+
+    if (detailInfoChipTooltipAnchor === chip && !tooltip.hidden) {
+      detailInfoChipTooltipQueuedAnchor = null;
+      hideDetailInfoChipTooltip();
+      return;
+    }
+
+    if (
+      detailInfoChipTooltipAnchor instanceof HTMLElement &&
+      detailInfoChipTooltipAnchor !== chip &&
+      !tooltip.hidden
+    ) {
+      detailInfoChipTooltipQueuedAnchor = chip;
+      hideDetailInfoChipTooltip();
+      return;
+    }
+
+    if (!tooltip.hidden && !tooltip.classList.contains('is-visible')) {
+      detailInfoChipTooltipQueuedAnchor = chip;
+      return;
+    }
+
+    detailInfoChipTooltipQueuedAnchor = null;
+
+    if (detailInfoChipTooltipAnchor instanceof HTMLElement) {
+      setDetailInfoChipExpanded(detailInfoChipTooltipAnchor, false);
+    }
+
+    detailInfoChipTooltipAnchor = chip;
+    detailInfoChipTooltipScrollY = window.scrollY || 0;
+
+    if (detailInfoChipTooltipTitleNode instanceof HTMLElement) {
+      detailInfoChipTooltipTitleNode.textContent = copy.title;
+    }
+    if (detailInfoChipTooltipCopyNode instanceof HTMLElement) {
+      detailInfoChipTooltipCopyNode.textContent = copy.description;
+    }
+
+    clearDetailInfoChipTooltipHideTimer();
+    clearDetailInfoChipTooltipShowFrame();
+
+    setDetailInfoChipExpanded(chip, true);
+    tooltip.hidden = false;
+    tooltip.setAttribute('aria-hidden', 'false');
+    tooltip.classList.remove('is-visible');
+    tooltip.classList.remove('is-flipped');
+    positionDetailInfoChipTooltip();
+
+    detailInfoChipTooltipShowFrameId = window.requestAnimationFrame(() => {
+      if (!(detailInfoChipTooltipNode instanceof HTMLElement)) {
+        return;
+      }
+
+      detailInfoChipTooltipNode.classList.add('is-visible');
+      detailInfoChipTooltipShowFrameId = 0;
+    });
+  };
+
+  const handleDetailInfoChipPointerDown = (event) => {
+    if (!(detailInfoChipTooltipAnchor instanceof HTMLElement)) {
+      return;
+    }
+
+    const target = event.target;
+
+    if (!(target instanceof Element)) {
+      hideDetailInfoChipTooltip();
+      return;
+    }
+
+    if (
+      detailInfoChipTooltipNode instanceof HTMLElement &&
+      detailInfoChipTooltipNode.contains(target)
+    ) {
+      return;
+    }
+
+    if (target.closest('[data-menu-detail-chip-tooltip]')) {
+      return;
+    }
+
+    hideDetailInfoChipTooltip();
+  };
+
+  const handleDetailInfoChipViewportChange = () => {
+    if (!(detailInfoChipTooltipAnchor instanceof HTMLElement)) {
+      return;
+    }
+
+    positionDetailInfoChipTooltip();
+  };
+
+  const handleDetailInfoChipViewportScroll = () => {
+    if (!(detailInfoChipTooltipAnchor instanceof HTMLElement)) {
+      return;
+    }
+
+    const currentScrollY = window.scrollY || 0;
+
+    if (
+      Math.abs(currentScrollY - detailInfoChipTooltipScrollY) >=
+      DETAIL_INFO_CHIP_TOOLTIP_SCROLL_CLOSE_PX
+    ) {
+      hideDetailInfoChipTooltip({ immediate: true });
+      return;
+    }
+
+    positionDetailInfoChipTooltip();
+  };
+
+  const handleDetailInfoChipKeydown = (event) => {
+    if (event.key !== 'Escape') {
+      return;
+    }
+
+    if (!(detailInfoChipTooltipAnchor instanceof HTMLElement)) {
+      return;
+    }
+
+    hideDetailInfoChipTooltip();
+  };
+
+  const bindDetailInfoChipTooltips = () => {
+    const chips = [detailChipCalories, detailChipEta].filter(
+      (chip) => chip instanceof HTMLButtonElement
+    );
+
+    if (!chips.length) {
+      return;
+    }
+
+    chips.forEach((chip) => {
+      chip.setAttribute('aria-expanded', 'false');
+      chip.addEventListener('click', (event) => {
+        event.preventDefault();
+        showDetailInfoChipTooltip(chip);
+      });
+    });
+
+    if (detailInfoChipTooltipBound) {
+      return;
+    }
+
+    document.addEventListener('pointerdown', handleDetailInfoChipPointerDown, true);
+    window.addEventListener('resize', handleDetailInfoChipViewportChange);
+    window.addEventListener('scroll', handleDetailInfoChipViewportScroll, true);
+    document.addEventListener('keydown', handleDetailInfoChipKeydown, true);
+
+    detailInfoChipTooltipBound = true;
+  };
+
+  const clearDetailHeroBadgeFadeTimer = () => {
+    if (!detailHeroBadgeFadeTimerId) {
+      return;
+    }
+
+    window.clearTimeout(detailHeroBadgeFadeTimerId);
+    detailHeroBadgeFadeTimerId = 0;
+  };
+
+  const setDetailHeroBadgeVisible = (shouldShow) => {
+    if (!(detailBadge instanceof HTMLElement)) {
+      return;
+    }
+
+    clearDetailHeroBadgeFadeTimer();
+
+    if (!shouldShow) {
+      detailBadge.classList.remove('is-visible');
+
+      if (detailBadge.hidden) {
+        return;
+      }
+
+      detailHeroBadgeFadeTimerId = window.setTimeout(() => {
+        detailHeroBadgeFadeTimerId = 0;
+        if (!detailBadge.classList.contains('is-visible')) {
+          detailBadge.hidden = true;
+        }
+      }, DETAIL_HERO_BADGE_FADE_MS);
+      return;
+    }
+
+    if (detailBadge.hidden) {
+      detailBadge.hidden = false;
+    }
+
+    window.requestAnimationFrame(() => {
+      detailBadge.classList.add('is-visible');
+    });
+  };
+
+  const syncDetailHeroBadgeVisibility = (activeIndex = 0) => {
+    if (!(detailBadge instanceof HTMLElement)) {
+      return;
+    }
+
+    if (!detailHeroBadgeHasLabel) {
+      clearDetailHeroBadgeFadeTimer();
+      detailBadge.classList.remove('is-visible');
+      detailBadge.hidden = true;
+      return;
+    }
+
+    if (!detailHeroBadgeFirstSlideOnly) {
+      setDetailHeroBadgeVisible(true);
+      return;
+    }
+
+    setDetailHeroBadgeVisible(activeIndex === 0);
+  };
+
   const clearDetailEditorialCarousel = () => {
     if (detailEditorialDotsFrameId) {
       window.cancelAnimationFrame(detailEditorialDotsFrameId);
@@ -6156,6 +6721,8 @@
     if (detailEditorialRoot instanceof HTMLElement) {
       detailEditorialRoot.hidden = true;
     }
+
+    syncDetailHeroBadgeVisibility(0);
   };
 
   const setDetailEditorialActiveDot = (activeIndex) => {
@@ -6285,6 +6852,7 @@
           });
           setDetailEditorialActiveDot(index);
           syncDetailEditorialVideoPlayback(index);
+          syncDetailHeroBadgeVisibility(index);
         });
         dotsFragment.appendChild(dot);
       });
@@ -6296,6 +6864,7 @@
     detailEditorialTrack.scrollLeft = 0;
     setDetailEditorialActiveDot(0);
     syncDetailEditorialVideoPlayback(0);
+    syncDetailHeroBadgeVisibility(0);
 
     detailEditorialTrack.onscroll = () => {
       if (detailEditorialDotsFrameId) {
@@ -6307,6 +6876,7 @@
         const activeIndex = getDetailEditorialActiveIndex();
         setDetailEditorialActiveDot(activeIndex);
         syncDetailEditorialVideoPlayback(activeIndex);
+        syncDetailHeroBadgeVisibility(activeIndex);
       });
     };
 
@@ -6371,6 +6941,17 @@
         normalizeText(item?.descriptionShort),
       price: formatDetailPrice(item),
       reviews: normalizeText(item?.reviews),
+      calories: item?.nutrition?.calories ?? item?.calories ?? item?.metrics?.calories,
+      etaMinutes:
+        item?.serviceEtaMinutes ??
+        item?.estimatedServeMinutes ??
+        item?.etaMinutes ??
+        item?.metrics?.etaMinutes,
+      rating:
+        item?.rating ??
+        item?.averageRating ??
+        item?.ratingAverage ??
+        item?.metrics?.rating,
       available: item?.available !== false,
       soldOutReason: normalizeText(item?.soldOutReason),
       badges,
@@ -6380,6 +6961,36 @@
       image: media.detail || media.card,
       imageAlt: media.alt,
       editorialSlides,
+    };
+  };
+
+  const normalizeMetricNumber = (value) => {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+
+    if (typeof value === 'string') {
+      const normalized = value.replace(',', '.').match(/-?\d+(\.\d+)?/);
+      const parsed = normalized ? Number(normalized[0]) : NaN;
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    return null;
+  };
+
+  const formatDetailMetrics = (detail) => {
+    const caloriesRaw = normalizeMetricNumber(detail?.calories);
+    const etaRaw = normalizeMetricNumber(detail?.etaMinutes);
+    const ratingRaw = normalizeMetricNumber(detail?.rating);
+
+    const calories = Math.max(1, Math.round(caloriesRaw ?? DETAIL_MVP_METRICS.calories));
+    const etaMinutes = Math.max(1, Math.round(etaRaw ?? DETAIL_MVP_METRICS.etaMinutes));
+    const rating = Math.max(1, Math.min(5, ratingRaw ?? DETAIL_MVP_METRICS.rating));
+
+    return {
+      calories: `${calories} cals`,
+      eta: `${etaMinutes} mins`,
+      rating: rating.toFixed(1),
     };
   };
 
@@ -7747,6 +8358,10 @@
 
     detailView.setAttribute('data-detail-hero-mode', 'catalog');
     clearDetailEditorialCarousel();
+    hideDetailInfoChipTooltip({ immediate: true });
+    detailHeroBadgeHasLabel = false;
+    detailHeroBadgeFirstSlideOnly = false;
+    syncDetailHeroBadgeVisibility(0);
 
     detailView.hidden = true;
     listView.hidden = false;
@@ -7783,6 +8398,8 @@
   };
 
   const goToMenuListView = async () => {
+    hideDetailInfoChipTooltip({ immediate: true });
+
     const detailHistoryState = toHistoryStateObject(window.history.state);
 
     if (detailHistoryState.fromMenuList === true) {
@@ -7810,16 +8427,18 @@
 
   const renderDetail = async (item) => {
     if (
-      !(detailTopline instanceof HTMLElement) ||
-      !(detailMeta instanceof HTMLElement) ||
       !(detailBadge instanceof HTMLElement) ||
       !(detailBadgeIcon instanceof HTMLImageElement) ||
       !(detailBadgeLabel instanceof HTMLElement) ||
       !(detailPanel instanceof HTMLElement) ||
       !(detailMedia instanceof HTMLElement) ||
       !(detailImage instanceof HTMLImageElement) ||
-      !(detailReviews instanceof HTMLElement) ||
       !(detailTitle instanceof HTMLElement) ||
+      !(detailChipCalories instanceof HTMLElement) ||
+      !(detailChipCaloriesValue instanceof HTMLElement) ||
+      !(detailChipEta instanceof HTMLElement) ||
+      !(detailChipEtaValue instanceof HTMLElement) ||
+      !(detailChipRatingValue instanceof HTMLElement) ||
       !(detailDescription instanceof HTMLElement) ||
       !(detailPrice instanceof HTMLElement) ||
       !(detailSensoryDivider instanceof HTMLElement) ||
@@ -7840,6 +8459,8 @@
       return;
     }
 
+    hideDetailInfoChipTooltip({ immediate: true });
+
     const detail = await toDetailViewModel(item);
     const featuredIds = await loadHomePopularFeaturedIds();
     const heroBadge = resolveDetailHeroBadge({
@@ -7849,12 +8470,23 @@
     });
     const heroBadgeLabel = normalizeText(heroBadge?.label);
     const heroBadgeIconPath = normalizeText(heroBadge?.icon);
+    const metrics = formatDetailMetrics(detail);
 
-    detailReviews.textContent = detail.reviews;
-    detailReviews.hidden = !detail.reviews;
-    detailMeta.hidden = !detail.reviews;
+    detailChipCaloriesValue.textContent = metrics.calories;
+    detailChipEtaValue.textContent = metrics.eta;
+    detailChipRatingValue.textContent = metrics.rating;
+    detailChipCalories.setAttribute(
+      'aria-label',
+      `${DETAIL_INFO_CHIP_TOOLTIP_COPY.calories.title}: ${metrics.calories}`
+    );
+    detailChipEta.setAttribute(
+      'aria-label',
+      `${DETAIL_INFO_CHIP_TOOLTIP_COPY.eta.title}: ${metrics.eta}`
+    );
+
     detailBadge.setAttribute('data-badge-kind', normalizeText(heroBadge?.kind));
     detailBadgeLabel.textContent = heroBadgeLabel;
+    detailHeroBadgeHasLabel = Boolean(heroBadgeLabel);
     if (heroBadgeIconPath) {
       detailBadgeIcon.src = heroBadgeIconPath;
       detailBadgeIcon.hidden = false;
@@ -7862,8 +8494,6 @@
       detailBadgeIcon.hidden = true;
       detailBadgeIcon.removeAttribute('src');
     }
-    detailBadge.hidden = !heroBadgeLabel;
-    detailTopline.hidden = !detail.reviews && !heroBadgeLabel;
 
     detailTitle.textContent = detail.title;
     detailDescription.textContent = detail.description;
@@ -7896,6 +8526,8 @@
       hasEditorialSlides &&
       DETAIL_EDITORIAL_HERO_QUERY.matches &&
       renderDetailEditorialCarousel(detail.editorialSlides);
+    detailHeroBadgeFirstSlideOnly = detailHeroBadgeHasLabel && shouldUseEditorialHero;
+    syncDetailHeroBadgeVisibility(0);
 
     detailView.setAttribute(
       'data-detail-hero-mode',
@@ -8134,6 +8766,7 @@
 
   bindFilterPizzaTabs();
   bindDetailSensoryViewTabs();
+  bindDetailInfoChipTooltips();
 
   const applySearchQuery = (
     value,

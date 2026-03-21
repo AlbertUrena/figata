@@ -298,6 +298,7 @@ Uses `shared/ingredients-contract.js`. Validation runs:
   - Auto-detects slides using `assets/menu/editorial/<item-id>-slide-<n>.webp` from known media paths (underscore/hyphen item id variants are both accepted)
   - Shows detected count, draft count, active runtime mode (`auto`, `persisted`, `fallback`)
   - Renders ordered slide previews and exposes a textarea (one path per line) bound to `overrides.gallery`
+- In local dev with `?devAuthBypass=1`, Media save actions also sync drafts to `data/*.json` via `POST /__local/save-drafts` so `/menu/` reflects changes after reload
 - Main panel sections are short and focused: `browser`, `homepage`, `brand`, `defaults`, `integrity`
 - Browser cards are grouped by menu category (same scanning pattern as Menu, adapted for Media)
 - Uses the shared scroll-spy pattern from `app.js`/`panels.js` instead of a panel-specific navigation system
