@@ -6,7 +6,7 @@
 
 ## Overview
 
-The public site is a static multi-route surface served by Netlify. It currently has:
+The public site is a static multi-route surface served by Netlify and mirrored to GitHub Pages for preview/mobile QA. It currently has:
 - Homepage: `index.html`
 - Full menu page: `menu/index.html` (`/menu/`)
 
@@ -18,7 +18,7 @@ There is no build step — the HTML, CSS, and JavaScript are deployed directly.
 | Styles | `styles.css` (~2,600 lines, 75KB) |
 | Scripts | 12 files in `js/` + shared runtime modules/assets in `shared/` + data loaders in `src/data/` |
 | Data | Fetches from `data/*.json` at runtime |
-| Hosting | Netlify with aggressive cache headers for static assets |
+| Hosting | Netlify runtime plus GitHub Pages static mirror for the public surface |
 
 ---
 
@@ -64,26 +64,27 @@ The page is structured as a single scrollable document. Major sections in `index
 Homepage (`index.html`) scripts are loaded with `defer` and execute in order after HTML parsing:
 
 ```
-1.  shared/figata-cover-transition.js — Shared transition engine
-2.  js/menu-route-transition.js — Navbar `/menu/` transition handoff (home only)
-3.  js/reload-cover.js          — Entry/reload cover transition
-4.  shared/public-navbar.js     — Captures canonical navbar markup for cross-route reuse
-5.  js/navbar-collapse.js       — Navbar collapse/expand animation controller
-6.  shared/menu-traits.js       — Trait/badge runtime helpers
-7.  shared/menu-allergens.js    — Allergen runtime helpers
-8.  shared/menu-sensory.js      — Structured sensory profile schema/normalizer
-9.  src/data/media.js           — Media data loader
-10. src/data/menu.js            — Menu data loader
-11. src/data/home.js            — Home data loader
-12. src/data/restaurant.js      — Restaurant data loader
-13. src/data/ingredients.js     — Ingredients data loader
-14. src/ui/ingredient-icon-row.js — Ingredient icon row component
-15. js/home-lazy-images.js      — Lazy image loading (IntersectionObserver)
-16. js/home-config.js           — Homepage section rendering (hero, delivery, footer, etc.)
-17. js/mas-pedidas.js           — Featured menu renderer + preview transition consumer
-18. js/testimonials.js          — Testimonials carousel
-19. js/events-tabs.js           — Events tabbed section
-20. shared/public-scroll-indicator.js — Native root-scroll progress meter
+1.  shared/public-paths.js      — Shared site-base helper for root + GitHub Pages subpath hosting
+2.  shared/figata-cover-transition.js — Shared transition engine
+3.  js/menu-route-transition.js — Navbar `/menu/` transition handoff (home only)
+4.  js/reload-cover.js          — Entry/reload cover transition
+5.  shared/public-navbar.js     — Captures canonical navbar markup for cross-route reuse
+6.  js/navbar-collapse.js       — Navbar collapse/expand animation controller
+7.  shared/menu-traits.js       — Trait/badge runtime helpers
+8.  shared/menu-allergens.js    — Allergen runtime helpers
+9.  shared/menu-sensory.js      — Structured sensory profile schema/normalizer
+10. src/data/media.js           — Media data loader
+11. src/data/menu.js            — Menu data loader
+12. src/data/home.js            — Home data loader
+13. src/data/restaurant.js      — Restaurant data loader
+14. src/data/ingredients.js     — Ingredients data loader
+15. src/ui/ingredient-icon-row.js — Ingredient icon row component
+16. js/home-lazy-images.js      — Lazy image loading (IntersectionObserver)
+17. js/home-config.js           — Homepage section rendering (hero, delivery, footer, etc.)
+18. js/mas-pedidas.js           — Featured menu renderer + preview transition consumer
+19. js/testimonials.js          — Testimonials carousel
+20. js/events-tabs.js           — Events tabbed section
+21. shared/public-scroll-indicator.js — Native root-scroll progress meter
 ```
 
 Additionally loaded (non-deferred):
@@ -92,20 +93,27 @@ Additionally loaded (non-deferred):
 Menu page (`menu/index.html`) loads:
 
 ```
-1. shared/public-navbar.js
-2. shared/figata-cover-transition.js
-3. js/reload-cover.js
-4. js/navbar-collapse.js
-5. shared/menu-traits.js
-6. shared/menu-allergens.js
-7. shared/menu-sensory.js
-8. src/data/media.js
-9. src/data/menu.js
-10. src/data/ingredients.js
-11. js/menu-page.js
-12. js/menu-page-navbar.js
-13. shared/public-scroll-indicator.js
+1. shared/public-paths.js
+2. shared/public-navbar.js
+3. shared/figata-cover-transition.js
+4. js/reload-cover.js
+5. js/navbar-collapse.js
+6. shared/menu-traits.js
+7. shared/menu-allergens.js
+8. shared/menu-sensory.js
+9. src/data/media.js
+10. src/data/menu.js
+11. src/data/ingredients.js
+12. js/menu-page.js
+13. js/menu-page-navbar.js
+14. shared/public-scroll-indicator.js
 ```
+
+### GitHub Pages Notes
+
+- `index.html` uses `<base href="./">` and `menu/index.html` uses `<base href="../">` so public assets and route links resolve correctly both at site root (`/`) and under the GitHub Pages project prefix (`/figata/`).
+- `shared/public-paths.js` is the canonical helper for converting site-relative URLs and stripping the GitHub Pages project prefix from `window.location.pathname`.
+- `404.html` redirects GitHub Pages deep-link misses back into the public menu shell so `/menu/:item` still works after direct navigation or refresh.
 
 ### Script Responsibilities
 

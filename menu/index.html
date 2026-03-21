@@ -2,6 +2,7 @@
 <html lang="es" class="menu-page-root" data-nav-collapse-threshold="184">
 <head>
   <meta charset="UTF-8">
+  <base href="../">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Menú | Figata Pizza &amp; Wine</title>
   <script>
@@ -25,11 +26,33 @@
       }
     })();
   </script>
+  <script>
+    (function () {
+      var params = new URL(window.location.href).searchParams;
+      var redirectedRoute = params.get("figata_route");
+
+      if (!redirectedRoute) {
+        return;
+      }
+
+      try {
+        var normalizedRoute = redirectedRoute.replace(/^\/+/, "");
+        var routeUrl = new URL(normalizedRoute, document.baseURI);
+        window.history.replaceState(
+          window.history.state || {},
+          "",
+          routeUrl.pathname + routeUrl.search + routeUrl.hash
+        );
+      } catch (_error) {
+        // Ignore malformed redirected route payloads.
+      }
+    })();
+  </script>
   <meta name="description" content="Explora el menú completo de Figata por categorías. Pizzas napolitanas, entradas, postres y más.">
-  <link rel="icon" type="image/png" href="/assets/favicon.png">
-  <link rel="stylesheet" href="/styles.css">
-  <link rel="stylesheet" href="/menu/menu-page.css">
-  <link rel="stylesheet" href="/shared/public-scroll-indicator.css">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="menu/menu-page.css">
+  <link rel="stylesheet" href="shared/public-scroll-indicator.css">
 </head>
 <body class="menu-page-body" data-menu-page-view="list">
   <div class="reload-transition-cover" aria-hidden="true">
@@ -79,22 +102,22 @@
   <header class="site-header" data-public-navbar-host>
     <nav class="navbar" aria-label="Navegación principal">
       <div class="navbar__inner">
-        <a class="navbar__brand" href="/#inicio" aria-label="Figata Pizza &amp; Wine">
-          <img class="navbar__brand-icon" src="/assets/svg-icons/logo-icon.svg" alt="" aria-hidden="true">
-          <img class="navbar__brand-text" src="/assets/svg-icons/logo-text.svg" alt="" aria-hidden="true">
+        <a class="navbar__brand" href="#inicio" aria-label="Figata Pizza &amp; Wine">
+          <img class="navbar__brand-icon" src="assets/svg-icons/logo-icon.svg" alt="" aria-hidden="true">
+          <img class="navbar__brand-text" src="assets/svg-icons/logo-text.svg" alt="" aria-hidden="true">
         </a>
 
         <ul class="navbar__links" role="list">
-          <li><a href="/menu/">Menú</a></li>
-          <li><a href="/#nosotros">Nosotros</a></li>
-          <li><a href="/#ubicacion">Ubicación</a></li>
-          <li><a href="/#contacto">Contacto</a></li>
+          <li><a href="menu/">Menú</a></li>
+          <li><a href="#nosotros">Nosotros</a></li>
+          <li><a href="#ubicacion">Ubicación</a></li>
+          <li><a href="#contacto">Contacto</a></li>
         </ul>
 
         <div class="navbar__actions">
-          <a class="cta-button btn-liquid-glass cta-button--nav" href="/#reservar" data-home-reservation-cta>
+          <a class="cta-button btn-liquid-glass cta-button--nav" href="#reservar" data-home-reservation-cta>
             <span>Reservar</span>
-            <img src="/assets/svg-icons/whatsapp.svg" alt="" aria-hidden="true">
+            <img src="assets/svg-icons/whatsapp.svg" alt="" aria-hidden="true">
           </a>
         </div>
       </div>
@@ -1189,24 +1212,25 @@
             focusable="false">
             <path d="M352 128C352 110.3 337.7 96 320 96C302.3 96 288 110.3 288 128L288 288L128 288C110.3 288 96 302.3 96 320C96 337.7 110.3 352 128 352L288 352L288 512C288 529.7 302.3 544 320 544C337.7 544 352 529.7 352 512L352 352L512 352C529.7 352 544 337.7 544 320C544 302.3 529.7 288 512 288L352 288L352 128z"></path>
           </svg>
-          <img class="mas-pedidas-card__button-icon" src="/assets/svg-icons/info.svg" alt="" aria-hidden="true">
+          <img class="mas-pedidas-card__button-icon" src="assets/svg-icons/info.svg" alt="" aria-hidden="true">
         </button>
       </div>
     </article>
   </template>
 
-  <script src="/shared/public-navbar.js" defer></script>
-  <script src="/shared/figata-cover-transition.js" defer></script>
-  <script src="/js/reload-cover.js" defer></script>
-  <script src="/js/navbar-collapse.js" defer></script>
-  <script src="/shared/menu-traits.js" defer></script>
-  <script src="/shared/menu-allergens.js" defer></script>
-  <script src="/shared/menu-sensory.js" defer></script>
-  <script src="/src/data/media.js" defer></script>
-  <script src="/src/data/menu.js" defer></script>
-  <script src="/src/data/ingredients.js" defer></script>
-  <script src="/js/menu-page.js" defer></script>
-  <script src="/js/menu-page-navbar.js" defer></script>
-  <script src="/shared/public-scroll-indicator.js" defer></script>
+  <script src="shared/public-paths.js" defer></script>
+  <script src="shared/public-navbar.js" defer></script>
+  <script src="shared/figata-cover-transition.js" defer></script>
+  <script src="js/reload-cover.js" defer></script>
+  <script src="js/navbar-collapse.js" defer></script>
+  <script src="shared/menu-traits.js" defer></script>
+  <script src="shared/menu-allergens.js" defer></script>
+  <script src="shared/menu-sensory.js" defer></script>
+  <script src="src/data/media.js" defer></script>
+  <script src="src/data/menu.js" defer></script>
+  <script src="src/data/ingredients.js" defer></script>
+  <script src="js/menu-page.js" defer></script>
+  <script src="js/menu-page-navbar.js" defer></script>
+  <script src="shared/public-scroll-indicator.js" defer></script>
 </body>
 </html>

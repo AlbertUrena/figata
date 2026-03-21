@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirigiendo…</title>
+  <script>
+    (function () {
+      var path = window.location.pathname || "/";
+      var search = window.location.search || "";
+      var hash = window.location.hash || "";
+      var segments = path.replace(/^\/+|\/+$/g, "").split("/").filter(Boolean);
+      var siteBase = "/";
+
+      if (
+        /github\.io$/i.test(window.location.hostname || "") &&
+        segments[0] === "figata"
+      ) {
+        siteBase = "/figata/";
+        segments.shift();
+      }
+
+      var sitePath = "/" + segments.join("/");
+      var targetPath = sitePath.indexOf("/menu/") === 0 ? "menu/" : "";
+      var redirectTarget =
+        siteBase +
+        targetPath +
+        "?figata_route=" +
+        encodeURIComponent(sitePath + search + hash);
+
+      window.location.replace(redirectTarget);
+    })();
+  </script>
+</head>
+<body></body>
+</html>

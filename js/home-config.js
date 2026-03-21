@@ -1,4 +1,5 @@
 (() => {
+  const publicPaths = window.FigataPublicPaths || null;
   const HIDDEN_CLASS = 'is-hidden-by-config';
   const DELIVERY_ICON_MIN_SIZE = 16;
   const DELIVERY_ICON_MAX_SIZE = 64;
@@ -76,11 +77,16 @@
     }
 
     element.hidden = false;
-    element.href = url;
+    const normalizedUrl =
+      publicPaths?.toSitePath && !/^https?:\/\//i.test(url) && !url.startsWith('#')
+        ? publicPaths.toSitePath(url)
+        : url;
+
+    element.href = normalizedUrl;
     element.removeAttribute('aria-disabled');
     element.classList.remove('is-static');
 
-    if (/^https?:\/\//i.test(url)) {
+    if (/^https?:\/\//i.test(normalizedUrl)) {
       element.target = '_blank';
       element.rel = 'noopener noreferrer';
     } else {
@@ -93,6 +99,9 @@
     const normalized = typeof value === 'string' ? value.trim() : '';
     if (!normalized) return '';
     if (/^https?:\/\//i.test(normalized)) return normalized;
+    if (publicPaths?.toSitePath) {
+      return publicPaths.toSitePath(normalized);
+    }
     if (normalized.startsWith('/')) return normalized;
     return `/${normalized.replace(/^\.\/?/, '')}`;
   };

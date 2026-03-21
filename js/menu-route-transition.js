@@ -1,4 +1,5 @@
 (() => {
+  const publicPaths = window.FigataPublicPaths || null;
   const MENU_PATHNAME = "/menu/";
   const SESSION_KEY = "figata:route-transition";
   const MENU_ROUTE_FLAG = "menu-enter";
@@ -28,7 +29,13 @@
 
   let isTransitionRunning = false;
 
-  const normalizePathname = (pathname) => pathname.replace(/\/+$/, "") || "/";
+  const normalizePathname = (pathname) => {
+    const strippedPath =
+      publicPaths?.stripSitePath
+        ? publicPaths.stripSitePath(pathname)
+        : pathname;
+    return strippedPath.replace(/\/+$/, "") || "/";
+  };
 
   const isMenuRouteTarget = (href) => {
     let targetUrl;

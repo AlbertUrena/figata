@@ -1,4 +1,5 @@
 (() => {
+  const publicPaths = window.FigataPublicPaths || null;
   const DAY_LABELS = {
     mon: 'Lun',
     tue: 'Mar',
@@ -77,7 +78,10 @@
     }
 
     element.hidden = false;
-    element.href = url;
+    element.href =
+      publicPaths?.toSitePath && !/^https?:\/\//i.test(url) && !url.startsWith('#')
+        ? publicPaths.toSitePath(url)
+        : url;
     element.removeAttribute('aria-disabled');
     element.classList.remove('is-static');
 
@@ -149,10 +153,14 @@
     const value = normalizeText(rawUrl);
 
     if (!value) {
-      return window.location.href;
+      return publicPaths?.baseUrl ? publicPaths.baseUrl.toString() : window.location.href;
     }
 
     try {
+      if (publicPaths?.toAbsoluteUrl) {
+        return publicPaths.toAbsoluteUrl(value);
+      }
+
       return new URL(value, window.location.href).toString();
     } catch (error) {
       return window.location.href;

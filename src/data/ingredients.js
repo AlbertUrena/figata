@@ -1,5 +1,8 @@
 (() => {
-  const ROOT_URL = new URL('/', window.location.origin);
+  const publicPaths = window.FigataPublicPaths || null;
+  const ROOT_URL = publicPaths?.baseUrl
+    ? new URL(publicPaths.baseUrl.toString())
+    : new URL(document.baseURI || '/', window.location.origin);
   const INGREDIENTS_URL = new URL('data/ingredients.json', ROOT_URL);
   const menuTraitsApi = window.FigataMenuTraits || null;
 

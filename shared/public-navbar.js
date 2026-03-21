@@ -1,5 +1,6 @@
 (() => {
   const STORAGE_KEY = 'figata.public-navbar.v1';
+  const publicPaths = window.FigataPublicPaths || null;
   let readyResolver = null;
 
   const readyPromise = new Promise((resolve) => {
@@ -16,11 +17,15 @@
   };
 
   const isHomeRoute = () => {
+    if (publicPaths?.isHomePath) {
+      return publicPaths.isHomePath(window.location.pathname || '/');
+    }
+
     const path = window.location.pathname || '/';
     return path === '/' || path === '/index.html';
   };
 
-  const toRootRelativeUrl = (value) => {
+  const toSiteUrl = (value) => {
     const raw = String(value || '').trim();
 
     if (!raw) {
@@ -31,12 +36,16 @@
       return raw;
     }
 
-    if (raw.startsWith('/')) {
+    if (raw.startsWith('#')) {
       return raw;
     }
 
-    if (raw.startsWith('#')) {
-      return `/${raw}`;
+    if (publicPaths?.toSitePath) {
+      return publicPaths.toSitePath(raw);
+    }
+
+    if (raw.startsWith('/')) {
+      return raw;
     }
 
     return `/${raw.replace(/^(\.\/)+/, '').replace(/^\/+/, '')}`;
@@ -62,7 +71,11 @@
       return '#';
     }
 
-    return isHomeRoute() ? href : toRootRelativeUrl(href);
+    if (isHomeRoute() || href.startsWith('#')) {
+      return href;
+    }
+
+    return toSiteUrl(href);
   };
 
   const applyNavbarConfig = (header, navbarConfig) => {
@@ -134,16 +147,19 @@
     const ctaIconNode = cta.querySelector('img');
 
     if (ctaIconNode && ctaIcon) {
-      ctaIconNode.setAttribute('src', toRootRelativeUrl(ctaIcon));
+      ctaIconNode.setAttribute('src', toSiteUrl(ctaIcon));
     }
   };
 
   const loadHomeNavbarConfig = async () => {
-    const response = await fetch('/data/home.json', { cache: 'no-cache' });
+    const response = await fetch(
+      publicPaths?.toAbsoluteUrl ? publicPaths.toAbsoluteUrl('data/home.json') : 'data/home.json',
+      { cache: 'no-cache' }
+    );
 
     if (!response.ok) {
       throw new Error(
-        `[public-navbar] No se pudo cargar /data/home.json (${response.status}).`
+        `[public-navbar] No se pudo cargar data/home.json (${response.status}).`
       );
     }
 
@@ -158,7 +174,7 @@
       return;
     }
 
-    node.setAttribute(attributeName, toRootRelativeUrl(value));
+    node.setAttribute(attributeName, toSiteUrl(value));
   };
 
   const normalizeMediaUrls = (header) => {
@@ -173,7 +189,7 @@
         return;
       }
 
-      image.setAttribute('src', toRootRelativeUrl(src));
+      image.setAttribute('src', toSiteUrl(src));
     });
 
     header.querySelectorAll('image[href], use[href]').forEach((svgNode) => {
@@ -226,7 +242,7 @@
         return;
       }
 
-      link.setAttribute('href', toRootRelativeUrl(href));
+      link.setAttribute('href', toSiteUrl(href));
     });
 
     normalizeMediaUrls(header);
@@ -241,11 +257,14 @@
   };
 
   const fetchHomeHeader = async () => {
-    const response = await fetch('/index.html', { cache: 'no-cache' });
+    const response = await fetch(
+      publicPaths?.toAbsoluteUrl ? publicPaths.toAbsoluteUrl('index.html') : 'index.html',
+      { cache: 'no-cache' }
+    );
 
     if (!response.ok) {
       throw new Error(
-        `[public-navbar] No se pudo cargar /index.html (${response.status}).`
+        `[public-navbar] No se pudo cargar index.html (${response.status}).`
       );
     }
 

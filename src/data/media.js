@@ -1,5 +1,8 @@
 (() => {
-  const ROOT_URL = new URL('/', window.location.origin);
+  const publicPaths = window.FigataPublicPaths || null;
+  const ROOT_URL = publicPaths?.baseUrl
+    ? new URL(publicPaths.baseUrl.toString())
+    : new URL(document.baseURI || '/', window.location.origin);
   const MEDIA_URL = new URL('data/media.json', ROOT_URL);
 
   const VARIANTS = new Set(['card', 'hover', 'modal']);
@@ -225,6 +228,10 @@
 
     if (/^(https?:|data:|blob:)/i.test(normalized)) {
       return normalized;
+    }
+
+    if (publicPaths?.toSitePath) {
+      return publicPaths.toSitePath(normalized);
     }
 
     return `/${normalized}`;
@@ -462,6 +469,10 @@
 
     if (!normalizedPath) {
       return '';
+    }
+
+    if (publicPaths?.toAbsoluteUrl) {
+      return publicPaths.toAbsoluteUrl(normalizedPath);
     }
 
     return new URL(normalizedPath, ROOT_URL).toString();

@@ -6,13 +6,14 @@
 
 ## Overview
 
-The Figata repository has **no build step** for production. The public site and admin panel are deployed as-is to Netlify. All tooling is for **local development**, **data validation**, and **analysis**.
+The Figata repository has **no compile/build step** for production code. The public site and admin panel run as static files, while deploy tooling packages the public site either for Netlify or for GitHub Pages. All tooling is for **local development**, **data validation**, **static packaging**, and **analysis**.
 
 | Aspect | Details |
 |--------|---------|
 | Dev server | `scripts/dev-server.js` (Node.js HTTP server) |
 | Validation | 5 validation scripts in `scripts/` |
 | Analysis | `check_admin_ui.js`, `dynamic_probe.js` |
+| GitHub Pages | `.github/workflows/github-pages.yml` packages the public site into a Pages artifact |
 | Package manager | npm (`package.json`) |
 | Runtime dependency | playwright (used for analysis/testing, not production) |
 

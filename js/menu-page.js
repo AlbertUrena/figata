@@ -1,4 +1,5 @@
 (() => {
+  const publicPaths = window.FigataPublicPaths || null;
   const PILL_MS = 390;
   const PILL_EASE = createBezierEasing(0.45, 0, 0.55, 1);
   const SEARCH_FADE_OUT_MS = 180;
@@ -82,7 +83,7 @@
   const MENU_ROUTE_VIEW_TRANSITION_BACK = 'back';
   const FILTER_MODAL_EXIT_MS = 520;
   const FILTER_MODAL_FOOTER_SHADOW_EPSILON = 2;
-  const SEARCH_EMPTY_ART_PATH = '/assets/home/no-result.webp';
+  const SEARCH_EMPTY_ART_PATH = 'assets/home/no-result.webp';
   const DETAIL_EDITORIAL_HERO_QUERY = window.matchMedia('(max-width: 767px)');
   const MOBILE_CARD_QUERY = window.matchMedia('(max-width: 1023px)');
   const MENU_GROUPS = [
@@ -260,14 +261,14 @@
   const DEFAULT_DETAIL_SENSORY_VIEW = 'radar';
   const DETAIL_SENSORY_RADAR_SVG_NS = 'http://www.w3.org/2000/svg';
   const DETAIL_SENSORY_RADAR_ICON_PATHS = Object.freeze({
-    dulce: '/assets/menu/editorial/iconos/dulce.webp',
-    salado: '/assets/menu/editorial/iconos/salado.webp',
-    acido: '/assets/menu/editorial/iconos/acido.webp',
-    cremosa: '/assets/menu/editorial/iconos/cremoso.webp',
-    crujiente: '/assets/menu/editorial/iconos/crujiente.webp',
-    ligero: '/assets/menu/editorial/iconos/ligero.webp',
-    aromatico: '/assets/menu/editorial/iconos/aromatico.webp',
-    intensidad: '/assets/menu/editorial/iconos/intenso.webp',
+    dulce: 'assets/menu/editorial/iconos/dulce.webp',
+    salado: 'assets/menu/editorial/iconos/salado.webp',
+    acido: 'assets/menu/editorial/iconos/acido.webp',
+    cremosa: 'assets/menu/editorial/iconos/cremoso.webp',
+    crujiente: 'assets/menu/editorial/iconos/crujiente.webp',
+    ligero: 'assets/menu/editorial/iconos/ligero.webp',
+    aromatico: 'assets/menu/editorial/iconos/aromatico.webp',
+    intensidad: 'assets/menu/editorial/iconos/intenso.webp',
   });
   const DETAIL_SENSORY_AXIS_TOOLTIP_COPY = Object.freeze({
     dulce: Object.freeze({
@@ -326,8 +327,8 @@
     [DETAIL_HERO_BADGE_KIND.FEATURED]: 'Top Seller',
   });
   const DETAIL_HERO_BADGE_ICON_BY_KIND = Object.freeze({
-    [DETAIL_HERO_BADGE_KIND.VEGAN]: '/assets/vegana.webp',
-    [DETAIL_HERO_BADGE_KIND.VEGETARIAN]: '/assets/vegetariana.webp',
+    [DETAIL_HERO_BADGE_KIND.VEGAN]: 'assets/vegana.webp',
+    [DETAIL_HERO_BADGE_KIND.VEGETARIAN]: 'assets/vegetariana.webp',
   });
   const DETAIL_MVP_METRICS = Object.freeze({
     calories: 560,
@@ -1953,7 +1954,7 @@
 
     const thumb = document.createElement('img');
     thumb.className = 'menu-account-modal__thumb';
-    thumb.src = entry.image || '/assets/menu/placeholders/card.svg';
+    thumb.src = entry.image || 'assets/menu/placeholders/card.svg';
     thumb.alt = entry.imageAlt;
     thumb.loading = 'lazy';
     thumb.decoding = 'async';
@@ -2051,7 +2052,7 @@
 
     const thumb = card.querySelector('.menu-account-modal__thumb');
     if (thumb instanceof HTMLImageElement) {
-      const nextSrc = entry.image || '/assets/menu/placeholders/card.svg';
+      const nextSrc = entry.image || 'assets/menu/placeholders/card.svg';
       if (thumb.currentSrc !== nextSrc && thumb.getAttribute('src') !== nextSrc) {
         thumb.src = nextSrc;
       }
@@ -2434,10 +2435,10 @@
       : DEFAULT_DETAIL_SENSORY_VIEW;
   };
   const DETAIL_ALLERGEN_ICONS = Object.freeze({
-    milk: '/assets/lacteos.webp',
-    nuts: '/assets/frutos-secos.webp',
-    fish: '/assets/pescado.webp',
-    gluten: '/assets/gluten.webp',
+    milk: 'assets/lacteos.webp',
+    nuts: 'assets/frutos-secos.webp',
+    fish: 'assets/pescado.webp',
+    gluten: 'assets/gluten.webp',
   });
 
   const toFilterPrice = (value) => {
@@ -4264,6 +4265,10 @@
       .replace(/^(\.\/)+/, '')
       .replace(/^(\.\.\/)+/, '');
 
+    if (publicPaths?.toSitePath) {
+      return publicPaths.toSitePath(cleaned);
+    }
+
     return `/${cleaned}`;
   };
 
@@ -4281,12 +4286,13 @@
 
   const MENU_ROUTE_PREFIX = '/menu/';
 
-  const toMenuListUrl = () => MENU_ROUTE_PREFIX;
+  const toMenuListUrl = () =>
+    publicPaths?.toSitePath ? publicPaths.toSitePath(MENU_ROUTE_PREFIX) : MENU_ROUTE_PREFIX;
 
   const toMenuDetailUrl = (itemId) => {
     const normalizedId = normalizeText(itemId);
     return normalizedId
-      ? `${MENU_ROUTE_PREFIX}${encodeURIComponent(normalizedId)}`
+      ? `${toMenuListUrl()}${encodeURIComponent(normalizedId)}`
       : toMenuListUrl();
   };
 
@@ -4295,10 +4301,13 @@
       return homePopularFeaturedIdsPromise;
     }
 
-    homePopularFeaturedIdsPromise = fetch('/data/home.json', { cache: 'no-cache' })
+    homePopularFeaturedIdsPromise = fetch(
+      publicPaths?.toAbsoluteUrl ? publicPaths.toAbsoluteUrl('data/home.json') : 'data/home.json',
+      { cache: 'no-cache' }
+    )
       .then((response) => {
         if (!response.ok) {
-          throw new Error(`No se pudo cargar /data/home.json (${response.status})`);
+          throw new Error(`No se pudo cargar data/home.json (${response.status})`);
         }
         return response.json();
       })
@@ -4374,7 +4383,9 @@
   });
 
   const getRouteItemIdFromPathname = (pathname = window.location.pathname) => {
-    const normalizedPath = normalizeText(pathname);
+    const normalizedPath = normalizeText(
+      publicPaths?.stripSitePath ? publicPaths.stripSitePath(pathname) : pathname
+    );
 
     if (!normalizedPath.startsWith(MENU_ROUTE_PREFIX)) {
       return '';

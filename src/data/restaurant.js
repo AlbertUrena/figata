@@ -1,5 +1,8 @@
 (() => {
-  const ROOT_URL = new URL('/', window.location.origin);
+  const publicPaths = window.FigataPublicPaths || null;
+  const ROOT_URL = publicPaths?.baseUrl
+    ? new URL(publicPaths.baseUrl.toString())
+    : new URL(document.baseURI || '/', window.location.origin);
   const RESTAURANT_URL = new URL('data/restaurant.json', ROOT_URL);
 
   const DAY_ORDER = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];

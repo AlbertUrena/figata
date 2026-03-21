@@ -6,7 +6,7 @@
 
 **Figata** is a restaurant website for an Italian pizza & wine restaurant in Santo Domingo, Dominican Republic. The project has two main systems:
 
-1. **Public website** — A static HTML/CSS/JS site served by Netlify. Customers see the menu, homepage, and restaurant info.
+1. **Public website** — A static HTML/CSS/JS site served at runtime by Netlify and also deployable to GitHub Pages for preview/mobile QA. Customers see the menu, homepage, and restaurant info.
 2. **Admin panel** — A custom single-page application at `/admin/app/` used by staff to manage menu items, ingredients, categories, homepage content, and publish changes.
 
 Both systems share a **data layer** (JSON files in `data/`) and are connected through a **publish pipeline** (Netlify serverless function that commits data changes via Git).
@@ -16,7 +16,7 @@ Both systems share a **data layer** (JSON files in `data/`) and are connected th
 | Language | Vanilla JavaScript (no TypeScript, no framework) |
 | Styling | Vanilla CSS |
 | Build | No build step for production; dev server via `npm run dev` |
-| Hosting | Netlify (static site + serverless functions) |
+| Hosting | Public site: Netlify + GitHub Pages; Admin/auth/publish: Netlify |
 | Auth | Netlify Identity (admin panel only) |
 | Tests | Validation scripts + menu traits/allergen smoke tests (`npm run validate:*`, `npm test`) |
 
@@ -27,6 +27,10 @@ Both systems share a **data layer** (JSON files in `data/`) and are connected th
 ```
 website-figata/
 ├── AGENTS.md                  ← You are here
+├── .github/
+│   └── workflows/
+│       └── github-pages.yml   ← GitHub Pages deploy workflow for the public site
+├── 404.html                   ← GitHub Pages fallback redirect for public deep links
 ├── index.html                 ← Public homepage (single-page, ~3,500 lines)
 ├── menu/
 │   ├── index.html             ← Public full menu page (`/menu/`)
@@ -68,6 +72,7 @@ website-figata/
 │   ├── menu-traits.js            Menu Traits V2 derivation + validation engine
 │   ├── menu-allergens.js         Menu allergen derivation + validation engine
 │   ├── menu-sensory.js           Structured sensory profile schema + validation engine
+│   ├── public-paths.js           Shared site-base/path helper for root + GitHub Pages subpath hosting
 │   ├── public-navbar.js          Canonical public navbar loader/cache bridge for multi-route pages
 │   ├── public-scroll-indicator.css Overlay root scrollbar hide + progress meter styles
 │   ├── public-scroll-indicator.js  Native-scroll progress meter runtime for public routes
@@ -187,7 +192,11 @@ npm test                       # smoke tests for Menu Traits V2 + Menu Allergens
 
 ### Deployment
 
-The site deploys automatically via Netlify on push to the main branch. No build step is required for the public site. The admin panel's publish function commits data changes back to the repository via the Netlify serverless function at `netlify/functions/publish.js`.
+The public site can deploy in two ways:
+- Netlify serves the full stack (static site + Netlify Identity + serverless publish function) when that environment is available.
+- GitHub Pages publishes the public site only through `.github/workflows/github-pages.yml` on push to `master`, packaging the static files into a Pages artifact and using `404.html` to recover deep public routes such as `/menu/:item`.
+
+The admin panel's publish function still depends on Netlify via `netlify/functions/publish.js`.
 
 ---
 
@@ -222,8 +231,10 @@ Admin modules must load **before** `app.js` in `admin/app/index.html`. Current o
 Shared runtime helpers used by traits/validation must load before their consumers:
 `shared/menu-traits.js` + `shared/menu-allergens.js` + `shared/menu-sensory.js` → contracts/data loaders → feature scripts.
 
+On public routes, `shared/public-paths.js` must load before other route scripts that resolve site-relative URLs or parse the current pathname.
+
 On `/menu/`, route scripts must load in this order:
-`shared/public-navbar.js` → `js/navbar-collapse.js` → `js/menu-page.js` → `js/menu-page-navbar.js`
+`shared/public-paths.js` → `shared/public-navbar.js` → `js/navbar-collapse.js` → `js/menu-page.js` → `js/menu-page-navbar.js`
 
 The shared public scroll indicator is optional and should be loaded after the route's primary public scripts so it can measure the final document scroll state without affecting route initialization:
 `shared/public-scroll-indicator.css` in the page `<head>` and `shared/public-scroll-indicator.js` near the end of the public script list.

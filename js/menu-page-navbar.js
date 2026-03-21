@@ -25,19 +25,19 @@
   const MOBILE_MENU_ENTRY_BY_KEY = {
     menu: {
       subtitle: 'Carta y favoritos',
-      thumbSrc: '/assets/navbar/menu-thumb.webp',
+      thumbSrc: 'assets/navbar/menu-thumb.webp',
     },
     nosotros: {
       subtitle: 'Nuestra historia real',
-      thumbSrc: '/assets/navbar/nosotros-thumb.webp',
+      thumbSrc: 'assets/navbar/nosotros-thumb.webp',
     },
     ubicacion: {
       subtitle: 'Cómo llegar rápido',
-      thumbSrc: '/assets/navbar/ubicacion-thumb.webp',
+      thumbSrc: 'assets/navbar/ubicacion-thumb.webp',
     },
     contacto: {
       subtitle: 'Reserva o escríbenos',
-      thumbSrc: '/assets/navbar/contacto-thumb.webp',
+      thumbSrc: 'assets/navbar/contacto-thumb.webp',
     },
   };
   const SEARCH_INPUT_ID = 'navbar-menu-sticky-search-input';

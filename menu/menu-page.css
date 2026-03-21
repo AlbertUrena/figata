@@ -4990,7 +4990,7 @@ html[data-account-card-vt="active"]::view-transition-new(menu-account-toast) {
         rgba(0, 0, 0, 0.24) 54%,
         rgba(0, 0, 0, 0.62) 100%
       ),
-      url("/assets/home/hero.webp");
+      url("../assets/home/hero.webp");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center 26%;
@@ -5068,7 +5068,7 @@ html[data-account-card-vt="active"]::view-transition-new(menu-account-toast) {
         rgba(0, 0, 0, 0.24) 54%,
         rgba(0, 0, 0, 0.62) 100%
       ),
-      url("/assets/home/hero.webp");
+      url("../assets/home/hero.webp");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center 26%;
