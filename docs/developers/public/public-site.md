@@ -152,7 +152,8 @@ Full menu page runtime controller for `/menu/`. Handles:
 - Preserving the existing navbar collapse threshold as stage 1
 - Activating a second sticky-menu transformation only after `.menu-page-controls` fully clears the fixed header
 - Swapping navbar links/CTA for compact menu tabs plus search/filter tools inside the same navbar shell
-- Supporting a reversible chevron override that returns to the collapsed normal navbar state
+- Supporting a reversible chevron override on desktop that returns to the collapsed normal navbar state
+- Omitting that chevron override on mobile so the sticky navbar can dedicate the left rail to brand/search space
 
 #### `js/restaurant-config.js` (11KB, ~390 lines)
 Restaurant information display. Fetches `data/restaurant.json` and renders:

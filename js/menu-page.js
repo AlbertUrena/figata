@@ -61,11 +61,13 @@
   const ACCOUNT_REMOVE_TOAST_DURATION_MS = 6000;
   const ACCOUNT_REMOVE_TOAST_TITLE = 'Ítem eliminado';
   const ACCOUNT_REMOVE_TOAST_COPY = 'Si fue un error, aún puedes deshacerlo';
-  const ACCOUNT_CARD_VIEW_TRANSITION_NAME_PREFIX = 'menu-account-card-';
   const ACCOUNT_CARD_VIEW_TRANSITION_MS = 360;
   const ACCOUNT_CARD_VIEW_TRANSITION_EASE = 'cubic-bezier(0, 0, 0.2, 1)';
-  const ACCOUNT_CARD_VIEW_TRANSITION_ROOT_ATTR = 'data-account-card-vt';
-  const ACCOUNT_CARD_VIEW_TRANSITION_ROOT_ACTIVE = 'active';
+  const ACCOUNT_CARD_LAYOUT_MOVE_MS = 620;
+  const ACCOUNT_CARD_LAYOUT_MOVE_EASE = 'cubic-bezier(0.16, 0.84, 0.24, 1)';
+  const ACCOUNT_CARD_LAYOUT_EPSILON_PX = 0.5;
+  const ACCOUNT_CARD_EXIT_X_PX = -60;
+  const ACCOUNT_CARD_EXIT_BLUR_PX = 3;
   const MENU_ROUTE_VIEW_TRANSITION_ROOT_ATTR = 'data-menu-route-vt';
   const MENU_ROUTE_VIEW_TRANSITION_ROOT_ACTIVE = 'active';
   const MENU_ROUTE_VIEW_TRANSITION_DIRECTION_ATTR = 'data-menu-route-vt-direction';
@@ -171,6 +173,8 @@
   const detailPairingsDivider = document.getElementById('menu-detail-pairings-divider');
   const detailPairingsSection = document.getElementById('menu-detail-pairings-section');
   const detailPairingCta = document.getElementById('menu-detail-pairing-cta');
+  const detailHistoryDivider = document.getElementById('menu-detail-history-divider');
+  const detailHistorySection = document.getElementById('menu-detail-history-section');
   const detailSpecGrid = document.getElementById('menu-detail-spec-grid');
   const detailSpecsDivider = document.getElementById('menu-detail-specs-divider');
   const detailTagsDivider = document.getElementById('menu-detail-tags-divider');
@@ -295,6 +299,7 @@
     [DETAIL_HERO_BADGE_KIND.VEGETARIAN]: '/assets/vegetariana.webp',
   });
   const DETAIL_V1_PAIRING_ITEM_IDS = new Set(['margherita']);
+  const DETAIL_V1_HISTORY_ITEM_IDS = new Set(['margherita']);
   const ORGANOLEPTIC_PROFILE_ICON_IDS = Object.freeze({
     fresh: 'albahaca',
     aromatic: 'romero',
@@ -395,7 +400,6 @@
   let accountModalRestoreFocusNode = null;
   let accountRemovalToastTimerId = 0;
   let accountRemovalToastSnapshot = null;
-  let accountCardViewTransitionStyleNode = null;
   let accountCardViewTransitionActive = false;
   let accountCardViewTransitionTask = Promise.resolve();
   let menuRouteViewTransitionTask = Promise.resolve();
@@ -428,70 +432,286 @@
     new Promise((resolve) => {
       window.setTimeout(resolve, ms);
     });
-  const supportsAccountCardViewTransition = () =>
-    typeof document.startViewTransition === 'function' &&
-    (
-      !window.CSS ||
-      typeof window.CSS.supports !== 'function' ||
-      window.CSS.supports('view-transition-name: menu-account-card-test')
-    );
-  const toAccountCardViewTransitionName = (itemId) => {
-    const token = normalizeText(itemId)
-      .toLowerCase()
-      .replace(/[^a-z0-9_-]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-    return `${ACCOUNT_CARD_VIEW_TRANSITION_NAME_PREFIX}${token || 'item'}`;
-  };
+  const supportsAccountCardLayoutAnimation = () =>
+    typeof Element !== 'undefined' &&
+    typeof Element.prototype.animate === 'function';
   const syncAccountCardViewTransitionIdentity = (card, itemId) => {
     if (!(card instanceof HTMLElement)) {
       return;
     }
 
-    const viewTransitionName = toAccountCardViewTransitionName(itemId);
-    card.dataset.accountCardVtName = viewTransitionName;
-    card.style.viewTransitionName = viewTransitionName;
-  };
-  const clearAccountCardViewTransitionRuntime = () => {
-    document.documentElement.removeAttribute(ACCOUNT_CARD_VIEW_TRANSITION_ROOT_ATTR);
+    const normalizedItemId = normalizeText(itemId);
+    if (normalizedItemId) {
+      card.dataset.accountCardVtName = normalizedItemId;
+    } else {
+      delete card.dataset.accountCardVtName;
+    }
 
-    if (!(accountCardViewTransitionStyleNode instanceof HTMLStyleElement)) {
+    card.style.removeProperty('view-transition-name');
+  };
+  const getAccountCardAnimationSnapshot = () => {
+    if (!(accountModalBody instanceof HTMLElement)) {
+      return {
+        bodyRect: null,
+        scrollTop: 0,
+        cards: new Map(),
+        groupHeaders: new Map(),
+      };
+    }
+
+    const bodyRect = accountModalBody.getBoundingClientRect();
+    const cards = new Map();
+    const groupHeaders = new Map();
+
+    accountModalBody
+      .querySelectorAll('.menu-account-modal__item[data-account-item-id]')
+      .forEach((node) => {
+        if (!(node instanceof HTMLElement)) {
+          return;
+        }
+
+        const itemId = normalizeText(node.getAttribute('data-account-item-id'));
+        if (!itemId) {
+          return;
+        }
+
+        const rect = node.getBoundingClientRect();
+        if (rect.width <= 1 || rect.height <= 1) {
+          return;
+        }
+
+        cards.set(itemId, {
+          node,
+          rect,
+        });
+      });
+
+    accountModalBody
+      .querySelectorAll('.menu-account-modal__group[data-account-group-id]')
+      .forEach((section) => {
+        if (!(section instanceof HTMLElement)) {
+          return;
+        }
+
+        const groupId = normalizeText(section.getAttribute('data-account-group-id'));
+        const header = section.querySelector('.menu-account-modal__group-header');
+        if (!groupId || !(header instanceof HTMLElement)) {
+          return;
+        }
+
+        const rect = header.getBoundingClientRect();
+        if (rect.width <= 1 || rect.height <= 1) {
+          return;
+        }
+
+        groupHeaders.set(groupId, {
+          node: header,
+          rect,
+        });
+      });
+
+    return {
+      bodyRect,
+      scrollTop: accountModalBody.scrollTop,
+      cards,
+      groupHeaders,
+    };
+  };
+  const clearAccountCardAnimationLayer = () => {
+    if (!(accountModalBody instanceof HTMLElement)) {
       return;
     }
 
-    accountCardViewTransitionStyleNode.remove();
-    accountCardViewTransitionStyleNode = null;
+    accountModalBody
+      .querySelectorAll('.menu-account-modal__animation-layer')
+      .forEach((node) => node.remove());
   };
-  const setAccountCardViewTransitionRuntimeStyles = (
-    { exitName = '', enterName = '' } = {}
+  const createAccountCardAnimationLayer = () => {
+    if (!(accountModalBody instanceof HTMLElement)) {
+      return null;
+    }
+
+    clearAccountCardAnimationLayer();
+
+    const layer = document.createElement('div');
+    layer.className = 'menu-account-modal__animation-layer';
+    layer.setAttribute('aria-hidden', 'true');
+    layer.style.height = `${Math.max(
+      accountModalBody.scrollHeight,
+      accountModalBody.scrollTop + accountModalBody.clientHeight
+    )}px`;
+    accountModalBody.appendChild(layer);
+    return layer;
+  };
+  const waitForAccountCardAnimation = (animation) => {
+    if (!animation || typeof animation !== 'object') {
+      return Promise.resolve();
+    }
+
+    return Promise.resolve(animation.finished).catch(() => {});
+  };
+  const animateAccountCardExitGhost = (
+    layer,
+    previousSnapshot,
+    nextSnapshot,
+    itemId
   ) => {
-    const rootSelector = `html[${ACCOUNT_CARD_VIEW_TRANSITION_ROOT_ATTR}="${ACCOUNT_CARD_VIEW_TRANSITION_ROOT_ACTIVE}"]`;
-    const cssRules = [];
+    if (!(layer instanceof HTMLElement)) {
+      return Promise.resolve();
+    }
 
-    if (exitName) {
-      cssRules.push(
-        `${rootSelector}::view-transition-old(${exitName}) { animation-name: menu-account-card-vt-exit-left; animation-duration: ${ACCOUNT_CARD_VIEW_TRANSITION_MS}ms; animation-timing-function: ${ACCOUNT_CARD_VIEW_TRANSITION_EASE}; animation-fill-mode: both; }`,
-        `${rootSelector}::view-transition-new(${exitName}) { animation: none; opacity: 0; }`
+    const previousEntry = previousSnapshot.cards.get(itemId);
+    if (!previousEntry || !(previousEntry.node instanceof HTMLElement)) {
+      return Promise.resolve();
+    }
+
+    const bodyRect = nextSnapshot.bodyRect || previousSnapshot.bodyRect;
+    if (!bodyRect) {
+      return Promise.resolve();
+    }
+
+    const ghost = previousEntry.node.cloneNode(true);
+    if (!(ghost instanceof HTMLElement)) {
+      return Promise.resolve();
+    }
+
+    syncAccountCardViewTransitionIdentity(ghost, '');
+    ghost.classList.add('menu-account-modal__item--ghost');
+    ghost.setAttribute('aria-hidden', 'true');
+    ghost.style.top = `${nextSnapshot.scrollTop + (previousEntry.rect.top - bodyRect.top)}px`;
+    ghost.style.left = `${previousEntry.rect.left - bodyRect.left}px`;
+    ghost.style.width = `${previousEntry.rect.width}px`;
+    ghost.style.height = `${previousEntry.rect.height}px`;
+    layer.appendChild(ghost);
+
+    let animation = null;
+
+    try {
+      animation = ghost.animate(
+        [
+          {
+            opacity: 1,
+            transform: 'translateX(0)',
+            filter: 'blur(0px)',
+          },
+          {
+            opacity: 0,
+            transform: `translateX(${ACCOUNT_CARD_EXIT_X_PX}px)`,
+            filter: `blur(${ACCOUNT_CARD_EXIT_BLUR_PX}px)`,
+          },
+        ],
+        {
+          duration: ACCOUNT_CARD_VIEW_TRANSITION_MS,
+          easing: ACCOUNT_CARD_VIEW_TRANSITION_EASE,
+          fill: 'both',
+        }
       );
+    } catch (error) {
+      ghost.remove();
+      return Promise.resolve();
     }
 
-    if (enterName) {
-      cssRules.push(
-        `${rootSelector}::view-transition-old(${enterName}) { animation: none; opacity: 0; }`,
-        `${rootSelector}::view-transition-new(${enterName}) { animation-name: menu-account-card-vt-enter-left; animation-duration: ${ACCOUNT_CARD_VIEW_TRANSITION_MS}ms; animation-timing-function: ${ACCOUNT_CARD_VIEW_TRANSITION_EASE}; animation-fill-mode: both; }`
+    return waitForAccountCardAnimation(animation).finally(() => {
+      ghost.remove();
+      if (!layer.childElementCount) {
+        layer.remove();
+      }
+    });
+  };
+  const animateAccountCardLayoutDelta = (node, dx, dy) => {
+    if (!(node instanceof HTMLElement)) {
+      return Promise.resolve();
+    }
+
+    let animation = null;
+
+    try {
+      animation = node.animate(
+        [
+          {
+            transform: `translate(${dx}px, ${dy}px)`,
+          },
+          {
+            transform: 'translate(0, 0)',
+          },
+        ],
+        {
+          duration: ACCOUNT_CARD_LAYOUT_MOVE_MS,
+          easing: ACCOUNT_CARD_LAYOUT_MOVE_EASE,
+          fill: 'both',
+        }
       );
+    } catch (error) {
+      return Promise.resolve();
     }
 
-    if (!cssRules.length) {
-      return;
+    return waitForAccountCardAnimation(animation);
+  };
+  const animateAccountCardEnter = (node) => {
+    if (!(node instanceof HTMLElement)) {
+      return Promise.resolve();
     }
 
-    if (!(accountCardViewTransitionStyleNode instanceof HTMLStyleElement)) {
-      accountCardViewTransitionStyleNode = document.createElement('style');
-      accountCardViewTransitionStyleNode.setAttribute('data-menu-account-card-vt', 'true');
-      document.head.appendChild(accountCardViewTransitionStyleNode);
+    let animation = null;
+
+    try {
+      animation = node.animate(
+        [
+          {
+            opacity: 0,
+            transform: `translateX(${ACCOUNT_CARD_EXIT_X_PX}px)`,
+            filter: `blur(${ACCOUNT_CARD_EXIT_BLUR_PX}px)`,
+          },
+          {
+            opacity: 1,
+            transform: 'translateX(0)',
+            filter: 'blur(0px)',
+          },
+        ],
+        {
+          duration: ACCOUNT_CARD_VIEW_TRANSITION_MS,
+          easing: ACCOUNT_CARD_VIEW_TRANSITION_EASE,
+          fill: 'both',
+        }
+      );
+    } catch (error) {
+      return Promise.resolve();
     }
 
-    accountCardViewTransitionStyleNode.textContent = cssRules.join('\n');
+    return waitForAccountCardAnimation(animation);
+  };
+  const animateAccountGroupHeaderEnter = (node) => {
+    if (!(node instanceof HTMLElement)) {
+      return Promise.resolve();
+    }
+
+    let animation = null;
+
+    try {
+      animation = node.animate(
+        [
+          {
+            opacity: 0,
+            transform: 'translateX(-24px)',
+            filter: 'blur(2px)',
+          },
+          {
+            opacity: 1,
+            transform: 'translateX(0)',
+            filter: 'blur(0px)',
+          },
+        ],
+        {
+          duration: ACCOUNT_CARD_VIEW_TRANSITION_MS,
+          easing: ACCOUNT_CARD_VIEW_TRANSITION_EASE,
+          fill: 'both',
+        }
+      );
+    } catch (error) {
+      return Promise.resolve();
+    }
+
+    return waitForAccountCardAnimation(animation);
   };
   const runAccountCardsViewTransition = (
     updateFn,
@@ -510,54 +730,96 @@
       accountModal instanceof HTMLElement &&
       !accountModal.hidden &&
       !reducedMotionQuery.matches &&
-      supportsAccountCardViewTransition();
+      supportsAccountCardLayoutAnimation();
 
     if (!canAnimate) {
       updateFn();
       return;
     }
 
-    const exitName = normalizedExitItemId
-      ? toAccountCardViewTransitionName(normalizedExitItemId)
-      : '';
-    const enterName = normalizedEnterItemId
-      ? toAccountCardViewTransitionName(normalizedEnterItemId)
-      : '';
     const runTransition = () => {
       const stillCanAnimate =
         state.accountModalOpen &&
         accountModal instanceof HTMLElement &&
         !accountModal.hidden &&
         !reducedMotionQuery.matches &&
-        supportsAccountCardViewTransition();
+        supportsAccountCardLayoutAnimation();
 
       if (!stillCanAnimate) {
         updateFn();
         return Promise.resolve();
       }
-
-      clearAccountCardViewTransitionRuntime();
-      document.documentElement.setAttribute(
-        ACCOUNT_CARD_VIEW_TRANSITION_ROOT_ATTR,
-        ACCOUNT_CARD_VIEW_TRANSITION_ROOT_ACTIVE
-      );
-      setAccountCardViewTransitionRuntimeStyles({ exitName, enterName });
       accountCardViewTransitionActive = true;
 
       try {
-        const transition = document.startViewTransition(() => {
-          updateFn();
+        const previousSnapshot = getAccountCardAnimationSnapshot();
+        updateFn();
+
+        // Force layout after the body has been re-rendered and scroll restored.
+        accountModalBody?.getBoundingClientRect?.();
+
+        const nextSnapshot = getAccountCardAnimationSnapshot();
+        const animationTasks = [];
+
+        if (normalizedExitItemId && previousSnapshot.cards.has(normalizedExitItemId)) {
+          const layer = createAccountCardAnimationLayer();
+          animationTasks.push(
+            animateAccountCardExitGhost(
+              layer,
+              previousSnapshot,
+              nextSnapshot,
+              normalizedExitItemId
+            )
+          );
+        }
+
+        nextSnapshot.cards.forEach((entry, itemId) => {
+          const previousEntry = previousSnapshot.cards.get(itemId);
+
+          if (previousEntry) {
+            const dx = previousEntry.rect.left - entry.rect.left;
+            const dy = previousEntry.rect.top - entry.rect.top;
+            if (
+              Math.abs(dx) > ACCOUNT_CARD_LAYOUT_EPSILON_PX ||
+              Math.abs(dy) > ACCOUNT_CARD_LAYOUT_EPSILON_PX
+            ) {
+              animationTasks.push(animateAccountCardLayoutDelta(entry.node, dx, dy));
+            }
+            return;
+          }
+
+          if (normalizedEnterItemId && itemId === normalizedEnterItemId) {
+            animationTasks.push(animateAccountCardEnter(entry.node));
+          }
         });
 
-        return Promise.resolve(transition?.finished)
-          .catch(() => {})
-          .finally(() => {
-            accountCardViewTransitionActive = false;
-            clearAccountCardViewTransitionRuntime();
-          });
+        nextSnapshot.groupHeaders.forEach((entry, groupId) => {
+          const previousEntry = previousSnapshot.groupHeaders.get(groupId);
+
+          if (previousEntry) {
+            const dx = previousEntry.rect.left - entry.rect.left;
+            const dy = previousEntry.rect.top - entry.rect.top;
+            if (
+              Math.abs(dx) > ACCOUNT_CARD_LAYOUT_EPSILON_PX ||
+              Math.abs(dy) > ACCOUNT_CARD_LAYOUT_EPSILON_PX
+            ) {
+              animationTasks.push(animateAccountCardLayoutDelta(entry.node, dx, dy));
+            }
+            return;
+          }
+
+          if (normalizedEnterItemId) {
+            animationTasks.push(animateAccountGroupHeaderEnter(entry.node));
+          }
+        });
+
+        return Promise.allSettled(animationTasks).finally(() => {
+          accountCardViewTransitionActive = false;
+          clearAccountCardAnimationLayer();
+        });
       } catch (error) {
         accountCardViewTransitionActive = false;
-        clearAccountCardViewTransitionRuntime();
+        clearAccountCardAnimationLayer();
         updateFn();
         return Promise.resolve();
       }
@@ -1389,7 +1651,7 @@
 
     const subtotal = document.createElement('p');
     subtotal.className = 'menu-account-modal__group-subtotal';
-    subtotal.textContent = formatAccountMoney(group.subtotal);
+    syncAccountMoneyValueNode(subtotal, group.subtotal, { animate: false });
 
     header.append(title, divider, subtotal);
     section.appendChild(header);
@@ -1400,8 +1662,49 @@
 
     return {
       section,
+      header,
+      title,
+      subtotal,
       items,
     };
+  };
+  const readAccountGroupNode = (section) => {
+    if (!(section instanceof HTMLElement)) {
+      return null;
+    }
+
+    const header = section.querySelector('.menu-account-modal__group-header');
+    const title = section.querySelector('.menu-account-modal__group-title');
+    const subtotal = section.querySelector('.menu-account-modal__group-subtotal');
+    const items = section.querySelector('.menu-account-modal__group-items');
+
+    if (
+      !(header instanceof HTMLElement) ||
+      !(title instanceof HTMLElement) ||
+      !(subtotal instanceof HTMLElement) ||
+      !(items instanceof HTMLElement)
+    ) {
+      return null;
+    }
+
+    return {
+      section,
+      header,
+      title,
+      subtotal,
+      items,
+    };
+  };
+  const syncAccountGroupNode = (groupNode, group, { animate = false } = {}) => {
+    if (!groupNode || !group) {
+      return;
+    }
+
+    groupNode.section.setAttribute('data-account-group-id', group.id);
+    if (groupNode.title.textContent !== group.label) {
+      groupNode.title.textContent = group.label;
+    }
+    syncAccountMoneyValueNode(groupNode.subtotal, group.subtotal, { animate });
   };
   const createAccountEmptyStateNode = () => {
     const node = document.createElement('section');
@@ -1609,6 +1912,7 @@
     list.className = 'menu-account-modal__list';
 
     const existingCardsById = new Map();
+    const existingGroupsById = new Map();
     accountModalBody
       .querySelectorAll('.menu-account-modal__item[data-account-item-id]')
       .forEach((node) => {
@@ -1618,9 +1922,25 @@
           existingCardsById.set(itemId, node);
         }
       });
+    accountModalBody
+      .querySelectorAll('.menu-account-modal__group[data-account-group-id]')
+      .forEach((section) => {
+        const groupId = normalizeText(section.getAttribute('data-account-group-id'));
+        const groupNode = readAccountGroupNode(section);
+        if (groupId && groupNode) {
+          existingGroupsById.set(groupId, groupNode);
+        }
+      });
 
     groups.forEach((group) => {
-      const groupNode = createAccountGroupNode(group);
+      let groupNode = existingGroupsById.get(group.id);
+      if (groupNode) {
+        syncAccountGroupNode(groupNode, group, { animate });
+        groupNode.items.replaceChildren();
+        existingGroupsById.delete(group.id);
+      } else {
+        groupNode = createAccountGroupNode(group);
+      }
 
       group.items.forEach((entry) => {
         let card = existingCardsById.get(entry.id);
@@ -1636,6 +1956,10 @@
       });
 
       list.appendChild(groupNode.section);
+    });
+
+    existingGroupsById.forEach((groupNode) => {
+      groupNode.section.remove();
     });
 
     existingCardsById.forEach((node) => {
@@ -5602,6 +5926,21 @@
     return shouldShowPairings;
   };
 
+  const syncDetailHistorySection = (itemId) => {
+    const normalizedItemId = normalizeText(itemId);
+    const shouldShowHistory = DETAIL_V1_HISTORY_ITEM_IDS.has(normalizedItemId);
+
+    if (detailHistorySection instanceof HTMLElement) {
+      detailHistorySection.hidden = !shouldShowHistory;
+    }
+
+    if (detailHistoryDivider instanceof HTMLElement) {
+      detailHistoryDivider.hidden = !shouldShowHistory;
+    }
+
+    return shouldShowHistory;
+  };
+
   const resolveItemMedia = (item) => {
     const fallback = toAbsoluteAssetPath(item?.image);
     const fallbackAlt = normalizeText(item?.name || item?.id);
@@ -5612,6 +5951,7 @@
         hover: '',
         detail: fallback,
         gallery: [],
+        editorialSlides: [],
         alt: fallbackAlt,
       };
     }
@@ -5619,6 +5959,9 @@
     const card = toAbsoluteAssetPath(mediaApi.get(item.id, 'card'));
     const hover = toAbsoluteAssetPath(mediaApi.get(item.id, 'hover'));
     const detail = toAbsoluteAssetPath(mediaApi.get(item.id, 'modal'));
+    const editorialSlides = Array.isArray(mediaApi.getEditorialSlides?.(item.id))
+      ? mediaApi.getEditorialSlides(item.id)
+      : [];
     const gallery = Array.isArray(mediaApi.getGallery?.(item.id))
       ? mediaApi
           .getGallery(item.id)
@@ -5641,27 +5984,156 @@
       hover: hover && hover !== resolvedCard && !isMenuPlaceholderPath(hover) ? hover : '',
       detail: resolvedDetail,
       gallery,
+      editorialSlides,
       alt: alt || fallbackAlt,
     };
   };
 
-  const buildDetailEditorialSlides = (paths = [], fallbackAlt = '') =>
-    (Array.isArray(paths) ? paths : [])
-      .map((path, index) => {
-        const src = toAbsoluteAssetPath(path);
+  const inferEditorialVideoSourceType = (path) => {
+    const normalizedPath = normalizeText(path).toLowerCase();
 
+    if (/\.webm(\?|#|$)/.test(normalizedPath)) {
+      return 'video/webm';
+    }
+
+    if (/\.mp4(\?|#|$)/.test(normalizedPath)) {
+      return 'video/mp4';
+    }
+
+    return '';
+  };
+
+  const normalizeDetailEditorialVideoSource = (source, seenSources) => {
+    if (typeof source === 'string') {
+      const src = toAbsoluteAssetPath(source);
+      if (!src || seenSources.has(src)) {
+        return null;
+      }
+
+      seenSources.add(src);
+      const inferredType = inferEditorialVideoSourceType(src);
+      return inferredType ? { src, type: inferredType } : { src };
+    }
+
+    if (!isObject(source)) {
+      return null;
+    }
+
+    const src = toAbsoluteAssetPath(source.src || source.path);
+    if (!src || seenSources.has(src)) {
+      return null;
+    }
+
+    seenSources.add(src);
+    const normalizedTypeRaw = normalizeText(source.type || source.mimeType).toLowerCase();
+    const normalizedType =
+      normalizedTypeRaw === 'video/webm' || normalizedTypeRaw === 'webm'
+        ? 'video/webm'
+        : normalizedTypeRaw === 'video/mp4' || normalizedTypeRaw === 'mp4'
+          ? 'video/mp4'
+          : inferEditorialVideoSourceType(src);
+
+    return normalizedType ? { src, type: normalizedType } : { src };
+  };
+
+  const buildDetailEditorialSlides = (entries = [], fallbackAlt = '') =>
+    (Array.isArray(entries) ? entries : [])
+      .map((entry, index) => {
+        const slideAlt =
+          normalizeText(isObject(entry) ? entry.alt : '') ||
+          (fallbackAlt
+            ? `${fallbackAlt} - slide editorial ${index + 1}`
+            : `Slide editorial ${index + 1}`);
+
+        if (typeof entry === 'string') {
+          const src = toAbsoluteAssetPath(entry);
+          if (!src) {
+            return null;
+          }
+
+          return {
+            type: 'image',
+            src,
+            alt: slideAlt,
+          };
+        }
+
+        if (!isObject(entry)) {
+          return null;
+        }
+
+        const slideType = normalizeText(entry.type).toLowerCase() === 'video'
+          ? 'video'
+          : 'image';
+
+        if (slideType === 'video') {
+          const seenSources = new Set();
+          let sources = (Array.isArray(entry.sources) ? entry.sources : [])
+            .map((source) => normalizeDetailEditorialVideoSource(source, seenSources))
+            .filter(Boolean);
+
+          if (!sources.length) {
+            sources = [
+              { src: entry.webm, type: 'video/webm' },
+              { src: entry.mp4, type: 'video/mp4' },
+              { src: entry.src || entry.path, type: entry.mimeType },
+            ]
+              .map((source) => normalizeDetailEditorialVideoSource(source, seenSources))
+              .filter(Boolean);
+          }
+
+          if (!sources.length) {
+            return null;
+          }
+
+          return {
+            type: 'video',
+            alt: slideAlt,
+            poster: toAbsoluteAssetPath(entry.poster),
+            sources,
+          };
+        }
+
+        const src = toAbsoluteAssetPath(entry.src || entry.path || entry.image);
         if (!src) {
           return null;
         }
 
         return {
+          type: 'image',
           src,
-          alt: fallbackAlt
-            ? `${fallbackAlt} - slide editorial ${index + 1}`
-            : `Slide editorial ${index + 1}`,
+          alt: slideAlt,
         };
       })
       .filter(Boolean);
+
+  const syncDetailEditorialVideoPlayback = (activeIndex) => {
+    if (!(detailEditorialTrack instanceof HTMLElement)) {
+      return;
+    }
+
+    const panes = Array.from(
+      detailEditorialTrack.querySelectorAll('.menu-page-detail__editorial-slide')
+    ).filter((pane) => pane instanceof HTMLElement);
+
+    panes.forEach((pane, paneIndex) => {
+      const video = pane.querySelector('.menu-page-detail__editorial-video');
+
+      if (!(video instanceof HTMLVideoElement)) {
+        return;
+      }
+
+      if (paneIndex !== activeIndex) {
+        video.pause();
+        return;
+      }
+
+      const playPromise = video.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {});
+      }
+    });
+  };
 
   const clearDetailEditorialCarousel = () => {
     if (detailEditorialDotsFrameId) {
@@ -5671,6 +6143,7 @@
 
     if (detailEditorialTrack instanceof HTMLElement) {
       detailEditorialTrack.onscroll = null;
+      syncDetailEditorialVideoPlayback(-1);
       detailEditorialTrack.scrollLeft = 0;
       detailEditorialTrack.replaceChildren();
     }
@@ -5738,14 +6211,53 @@
       const pane = document.createElement('figure');
       pane.className = 'menu-page-detail__editorial-slide';
 
-      const image = document.createElement('img');
-      image.className = 'menu-page-detail__editorial-image';
-      image.src = slide.src;
-      image.alt = normalizeText(slide.alt);
-      image.decoding = 'async';
-      image.loading = index === 0 ? 'eager' : 'lazy';
-      image.setAttribute('fetchpriority', index === 0 ? 'high' : 'auto');
-      pane.appendChild(image);
+      if (slide.type === 'video') {
+        const video = document.createElement('video');
+        video.className = 'menu-page-detail__editorial-video';
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        video.preload = 'metadata';
+        video.setAttribute('muted', '');
+        video.setAttribute('loop', '');
+        video.setAttribute('playsinline', '');
+        video.setAttribute('preload', 'metadata');
+
+        const normalizedPoster = toAbsoluteAssetPath(slide.poster);
+        if (normalizedPoster) {
+          video.poster = normalizedPoster;
+        }
+
+        const normalizedAlt = normalizeText(slide.alt);
+        if (normalizedAlt) {
+          video.setAttribute('aria-label', normalizedAlt);
+        }
+
+        const sources = Array.isArray(slide.sources) ? slide.sources : [];
+        sources.forEach((source) => {
+          if (!source?.src) {
+            return;
+          }
+
+          const sourceNode = document.createElement('source');
+          sourceNode.src = source.src;
+          if (source.type) {
+            sourceNode.type = source.type;
+          }
+          video.appendChild(sourceNode);
+        });
+
+        pane.appendChild(video);
+      } else {
+        const image = document.createElement('img');
+        image.className = 'menu-page-detail__editorial-image';
+        image.src = slide.src;
+        image.alt = normalizeText(slide.alt);
+        image.decoding = 'async';
+        image.loading = index === 0 ? 'eager' : 'lazy';
+        image.setAttribute('fetchpriority', index === 0 ? 'high' : 'auto');
+        pane.appendChild(image);
+      }
 
       trackFragment.appendChild(pane);
     });
@@ -5772,6 +6284,7 @@
             behavior: reducedMotionQuery.matches ? 'auto' : 'smooth',
           });
           setDetailEditorialActiveDot(index);
+          syncDetailEditorialVideoPlayback(index);
         });
         dotsFragment.appendChild(dot);
       });
@@ -5782,6 +6295,7 @@
 
     detailEditorialTrack.scrollLeft = 0;
     setDetailEditorialActiveDot(0);
+    syncDetailEditorialVideoPlayback(0);
 
     detailEditorialTrack.onscroll = () => {
       if (detailEditorialDotsFrameId) {
@@ -5790,7 +6304,9 @@
 
       detailEditorialDotsFrameId = window.requestAnimationFrame(() => {
         detailEditorialDotsFrameId = 0;
-        setDetailEditorialActiveDot(getDetailEditorialActiveIndex());
+        const activeIndex = getDetailEditorialActiveIndex();
+        setDetailEditorialActiveDot(activeIndex);
+        syncDetailEditorialVideoPlayback(activeIndex);
       });
     };
 
@@ -5820,25 +6336,30 @@
   const toDetailViewModel = async (item) => {
     const media = resolveItemMedia(item);
     const editorialAltBase = normalizeText(media.alt || item?.name || item?.id);
-    let editorialGallery = Array.isArray(media.gallery) ? media.gallery.slice() : [];
+    let editorialSlides = buildDetailEditorialSlides(media.editorialSlides, editorialAltBase);
 
-    if (!editorialGallery.length && mediaApi?.getEditorialGallery) {
-      try {
-        const detectedGallery = await mediaApi.getEditorialGallery(item?.id);
-        if (Array.isArray(detectedGallery) && detectedGallery.length) {
-          editorialGallery = detectedGallery
-            .map((path) => toAbsoluteAssetPath(path))
-            .filter(Boolean);
+    if (!editorialSlides.length) {
+      let editorialGallery = Array.isArray(media.gallery) ? media.gallery.slice() : [];
+
+      if (!editorialGallery.length && mediaApi?.getEditorialGallery) {
+        try {
+          const detectedGallery = await mediaApi.getEditorialGallery(item?.id);
+          if (Array.isArray(detectedGallery) && detectedGallery.length) {
+            editorialGallery = detectedGallery
+              .map((path) => toAbsoluteAssetPath(path))
+              .filter(Boolean);
+          }
+        } catch (error) {
+          console.warn(
+            '[menu-page] No se pudo resolver la galería editorial para el detalle.',
+            error
+          );
         }
-      } catch (error) {
-        console.warn(
-          '[menu-page] No se pudo resolver la galería editorial para el detalle.',
-          error
-        );
       }
+
+      editorialSlides = buildDetailEditorialSlides(editorialGallery, editorialAltBase);
     }
 
-    const editorialSlides = buildDetailEditorialSlides(editorialGallery, editorialAltBase);
     const badges = Array.isArray(item?.public_badges?.flat)
       ? item.public_badges.flat
       : [];
@@ -7355,6 +7876,7 @@
     const hasSensoryProfile = renderDetailSensoryProfile(detail.sensoryProfile);
     detailSensoryDivider.hidden = !hasSensoryProfile;
     syncDetailPairingsSection(detail.id);
+    syncDetailHistorySection(detail.id);
     if (detailAddButton instanceof HTMLButtonElement) {
       const isAvailable = detail.available !== false;
       detailAddButton.textContent = isAvailable ? 'Añadir' : 'No disponible';

@@ -34,6 +34,188 @@
     return normalized.startsWith('/') ? normalized.slice(1) : normalized;
   };
 
+  const inferVideoSourceType = (path) => {
+    const normalizedPath = normalizeAssetPath(path).toLowerCase();
+
+    if (normalizedPath.endsWith('.webm')) {
+      return 'video/webm';
+    }
+
+    if (normalizedPath.endsWith('.mp4')) {
+      return 'video/mp4';
+    }
+
+    return '';
+  };
+
+  const normalizeVideoSourceType = (value, fallbackPath = '') => {
+    const normalized = normalizeText(value).toLowerCase();
+
+    if (normalized === 'video/webm' || normalized === 'webm') {
+      return 'video/webm';
+    }
+
+    if (normalized === 'video/mp4' || normalized === 'mp4') {
+      return 'video/mp4';
+    }
+
+    return inferVideoSourceType(fallbackPath);
+  };
+
+  const normalizeEditorialVideoSources = (rawSources) => {
+    const sources = [];
+    const seenSources = new Set();
+
+    const pushSource = (path, type) => {
+      const src = normalizeAssetPath(path);
+
+      if (!src || seenSources.has(src)) {
+        return;
+      }
+
+      const normalizedType = normalizeVideoSourceType(type, src);
+      const source = normalizedType ? { src, type: normalizedType } : { src };
+      sources.push(source);
+      seenSources.add(src);
+    };
+
+    if (Array.isArray(rawSources)) {
+      rawSources.forEach((rawSource) => {
+        if (typeof rawSource === 'string') {
+          pushSource(rawSource, '');
+          return;
+        }
+
+        if (!rawSource || typeof rawSource !== 'object') {
+          return;
+        }
+
+        pushSource(rawSource.src || rawSource.path, rawSource.type || rawSource.mimeType);
+      });
+      return sources;
+    }
+
+    if (rawSources && typeof rawSources === 'object') {
+      pushSource(rawSources.webm, 'video/webm');
+      pushSource(rawSources.mp4, 'video/mp4');
+      pushSource(rawSources.src || rawSources.path, rawSources.type || rawSources.mimeType);
+      return sources;
+    }
+
+    if (typeof rawSources === 'string') {
+      pushSource(rawSources, '');
+    }
+
+    return sources;
+  };
+
+  const normalizeEditorialSlides = (value) => {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    return value
+      .map((rawSlide) => {
+        if (typeof rawSlide === 'string') {
+          const src = normalizeAssetPath(rawSlide);
+          if (!src) {
+            return null;
+          }
+          return {
+            type: 'image',
+            src,
+          };
+        }
+
+        if (!rawSlide || typeof rawSlide !== 'object') {
+          return null;
+        }
+
+        const rawType = normalizeText(rawSlide.type).toLowerCase();
+        const slideType = rawType === 'video' ? 'video' : 'image';
+
+        if (slideType === 'video') {
+          let sources = normalizeEditorialVideoSources(rawSlide.sources);
+
+          if (!sources.length) {
+            sources = normalizeEditorialVideoSources([
+              { src: rawSlide.webm, type: 'video/webm' },
+              { src: rawSlide.mp4, type: 'video/mp4' },
+              { src: rawSlide.src || rawSlide.path, type: rawSlide.mimeType },
+            ]);
+          }
+
+          if (!sources.length) {
+            return null;
+          }
+
+          return {
+            type: 'video',
+            sources,
+            poster: normalizeAssetPath(rawSlide.poster),
+            alt: normalizeText(rawSlide.alt),
+          };
+        }
+
+        const src = normalizeAssetPath(rawSlide.src || rawSlide.path || rawSlide.image);
+        if (!src) {
+          return null;
+        }
+
+        return {
+          type: 'image',
+          src,
+          alt: normalizeText(rawSlide.alt),
+        };
+      })
+      .filter(Boolean);
+  };
+
+  const cloneEditorialSlide = (slide) => {
+    if (!slide || typeof slide !== 'object') {
+      return null;
+    }
+
+    if (slide.type === 'video') {
+      const sources = Array.isArray(slide.sources)
+        ? slide.sources
+            .map((source) => {
+              const src = normalizeAssetPath(source?.src);
+
+              if (!src) {
+                return null;
+              }
+
+              const type = normalizeVideoSourceType(source?.type, src);
+              return type ? { src, type } : { src };
+            })
+            .filter(Boolean)
+        : [];
+
+      if (!sources.length) {
+        return null;
+      }
+
+      return {
+        type: 'video',
+        sources,
+        poster: normalizeAssetPath(slide.poster),
+        alt: normalizeText(slide.alt),
+      };
+    }
+
+    const src = normalizeAssetPath(slide.src);
+    if (!src) {
+      return null;
+    }
+
+    return {
+      type: 'image',
+      src,
+      alt: normalizeText(slide.alt),
+    };
+  };
+
   const toAbsoluteAssetPath = (value) => {
     const normalized = normalizeAssetPath(value);
 
@@ -107,6 +289,7 @@
       let hover = '';
       let modal = '';
       let gallery = [];
+      let editorialSlides = [];
       let alt = '';
       let dominantColor = '';
 
@@ -117,6 +300,10 @@
         hover = normalizeAssetPath(overrides.hover) || sourcePath;
         modal = normalizeAssetPath(overrides.modal) || sourcePath;
         gallery = normalizeStringArray(overrides.gallery).map(normalizeAssetPath).filter(Boolean);
+        editorialSlides = normalizeEditorialSlides(overrides.editorialSlides);
+        if (!editorialSlides.length) {
+          editorialSlides = normalizeEditorialSlides(rawEntry.editorialSlides);
+        }
         alt = normalizeText(rawEntry.alt);
         dominantColor = normalizeText(rawEntry.dominantColor);
       } else {
@@ -124,6 +311,7 @@
         hover = normalizeAssetPath(rawEntry.hover);
         modal = normalizeAssetPath(rawEntry.modal);
         gallery = normalizeStringArray(rawEntry.gallery).map(normalizeAssetPath).filter(Boolean);
+        editorialSlides = normalizeEditorialSlides(rawEntry.editorialSlides);
         alt = normalizeText(rawEntry.alt);
         dominantColor = normalizeText(rawEntry.dominantColor);
       }
@@ -133,6 +321,7 @@
         hover,
         modal,
         gallery,
+        editorialSlides,
         alt,
         dominantColor,
         version,
@@ -236,6 +425,17 @@
     }
 
     return item.gallery.slice();
+  };
+
+  const resolveEditorialSlides = (store, itemId) => {
+    const normalizedId = normalizeId(itemId);
+    const item = store.items.get(normalizedId);
+
+    if (!item || !Array.isArray(item.editorialSlides)) {
+      return [];
+    }
+
+    return item.editorialSlides.map(cloneEditorialSlide).filter(Boolean);
   };
 
   const getEditorialIdVariants = (itemId) => {
@@ -431,6 +631,11 @@
     return resolveGallery(store, itemId);
   };
 
+  const getEditorialSlides = (itemId) => {
+    const store = ensureStore();
+    return resolveEditorialSlides(store, itemId);
+  };
+
   const getEditorialGallery = async (itemId) => {
     let store;
 
@@ -487,6 +692,7 @@
         hover: entry.hover,
         modal: entry.modal,
         gallery: entry.gallery.slice(),
+        editorialSlides: resolveEditorialSlides(store, itemId),
         alt: entry.alt,
         dominantColor: entry.dominantColor,
         version: entry.version,
@@ -510,6 +716,7 @@
     get,
     getAlt,
     getGallery,
+    getEditorialSlides,
     getEditorialGallery,
     getMissingMediaIds,
     getConfigSnapshot,

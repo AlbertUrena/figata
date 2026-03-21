@@ -285,7 +285,7 @@ Business information: name, phone, address, hours.
 
 ### `data/media.json` — Media Assets Mapping
 
-Maps visual assets (images) to entities, evolving from a flat schema to a `source + overrides` model. It also holds global site assets.
+Maps visual assets (images and optional editorial videos) to entities, evolving from a flat schema to a `source + overrides` model. It also holds global site assets.
 
 ```
 {
@@ -334,13 +334,19 @@ Maps visual assets (images) to entities, evolving from a flat schema to a `sourc
 The system uses `source` by default, but falls back to the `overrides` dictionary to specify distinct visual intents (not merely resolutions) for contexts like card or modal.
 **Validated by:** `shared/media-contract.js`, `scripts/validate_media_json.js`
 
-#### Editorial Detail Slides (`overrides.gallery`)
+#### Editorial Detail Slides (`overrides.editorialSlides` + `overrides.gallery`)
 
-- `items[<itemId>].overrides.gallery` is the persisted list used for item detail editorial slides.
+- `items[<itemId>].overrides.editorialSlides` is an optional typed list for mixed editorial media in detail view.
+- Supported slide types:
+  - `image`: `{ "type": "image", "src": "assets/menu/editorial/<id>-slide-0.webp" }`
+  - `video`: `{ "type": "video", "poster": "...", "sources": [{ "src": "...webm", "type": "video/webm" }, { "src": "...mp4", "type": "video/mp4" }] }`
+- Use only real sources; if mp4 fallback is not available yet, keep only the valid webm source.
+- `items[<itemId>].overrides.gallery` remains supported as the legacy image-only list.
 - Runtime priority in `/menu/<item-id>` detail view:
-  1. `media.items[itemId].overrides.gallery` (if non-empty)
-  2. Auto-detected assets by naming convention
-  3. Catalog image fallback (`modal`/`card`)
+  1. `media.items[itemId].overrides.editorialSlides` (if non-empty)
+  2. `media.items[itemId].overrides.gallery` (if non-empty)
+  3. Auto-detected assets by naming convention
+  4. Catalog image fallback (`modal`/`card`)
 - Auto-detection convention (progressive, no required JSON edit):
   - Folder: `assets/menu/editorial/`
   - Pattern: `<item-id>-slide-<n>.webp` (also accepts underscore/hyphen equivalent; e.g. `aperol_spritz` ↔ `aperol-spritz`)

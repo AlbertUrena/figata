@@ -197,12 +197,12 @@
   const isMenuRouteViewTransitionActive = () =>
     root.getAttribute(MENU_ROUTE_VIEW_TRANSITION_ROOT_ATTR) === "active";
 
+  const shouldSnapMenuRouteCollapsed = () =>
+    isForcedMobileCollapse() || isMenuRouteViewTransitionActive();
+
   const setCollapsed = (collapsed) => {
     const next = Boolean(collapsed);
-    const shouldSnapCollapsed =
-      next &&
-      isForcedMobileCollapse() &&
-      (!isDetailViewActive() || isMenuRouteViewTransitionActive());
+    const shouldSnapCollapsed = next && shouldSnapMenuRouteCollapsed();
 
     const snapProgress = (snapTarget) => {
       target = snapTarget ? 1 : 0;
@@ -297,6 +297,10 @@
     root.getAttribute(FORCE_COLLAPSED_MOBILE_ATTR) === "true";
 
   const shouldCollapse = () => {
+    if (isMenuRouteViewTransitionActive()) {
+      return true;
+    }
+
     if (isForcedMobileCollapse()) {
       return true;
     }
@@ -380,7 +384,10 @@
     });
     rootAttrObserver.observe(root, {
       attributes: true,
-      attributeFilter: [FORCE_COLLAPSED_MOBILE_ATTR],
+      attributeFilter: [
+        FORCE_COLLAPSED_MOBILE_ATTR,
+        MENU_ROUTE_VIEW_TRANSITION_ROOT_ATTR,
+      ],
     });
   }
 

@@ -120,7 +120,31 @@
         "card": "",
         "hover": "assets/menu/pizzas/clasica/margherita-hover.webp",
         "modal": "assets/menu/pizzas/clasica/margherita.webp",
-        "gallery": []
+        "gallery": [],
+        "editorialSlides": [
+          {
+            "type": "image",
+            "src": "assets/menu/editorial/margherita-slide-0.webp"
+          },
+          {
+            "type": "video",
+            "poster": "assets/menu/editorial/margherita-video-slide-1-poster.webp",
+            "sources": [
+              {
+                "src": "assets/menu/editorial/margherita-video-slide-1.webm",
+                "type": "video/webm"
+              }
+            ]
+          },
+          {
+            "type": "image",
+            "src": "assets/menu/editorial/margherita-slide-1.webp"
+          },
+          {
+            "type": "image",
+            "src": "assets/menu/editorial/margherita-slide-2.webp"
+          }
+        ]
       },
       "dominantColor": "",
       "version": 2
@@ -600,7 +624,41 @@
         "card": "",
         "hover": "assets/menu/productos/sourdough-ciabatta-hover.webp",
         "modal": "assets/menu/productos/sourdough-ciabatta.webp",
-        "gallery": []
+        "gallery": [],
+        "editorialSlides": [
+          {
+            "type": "image",
+            "src": "assets/menu/editorial/ciabatta-slide-0.webp"
+          },
+          {
+            "type": "video",
+            "poster": "assets/menu/editorial/ciabatta-video-slide-1-poster.webp",
+            "sources": [
+              {
+                "src": "assets/menu/editorial/ciabatta-video-slide-1.webm",
+                "type": "video/webm"
+              }
+            ]
+          },
+          {
+            "type": "video",
+            "poster": "assets/menu/editorial/ciabatta-video-slide-2-poster.webp",
+            "sources": [
+              {
+                "src": "assets/menu/editorial/ciabatta-video-slide-2.webm",
+                "type": "video/webm"
+              }
+            ]
+          },
+          {
+            "type": "image",
+            "src": "assets/menu/editorial/ciabatta-slide-3.webp"
+          },
+          {
+            "type": "image",
+            "src": "assets/menu/editorial/ciabatta-slide-4.webp"
+          }
+        ]
       },
       "dominantColor": "",
       "version": 2

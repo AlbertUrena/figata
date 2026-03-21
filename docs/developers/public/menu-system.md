@@ -104,9 +104,10 @@ The route is item-driven but uses a fixed top-level navigation grouping:
 
 - The sticky layer lives inside the shared navbar mounted by `shared/public-navbar.js`; there is no second route-local navbar.
 - `js/menu-page.js` exposes `window.FigataMenuPage` so the sticky layer can reuse the active category state, scroll navigation, and search query.
-- The sticky chevron toggles between:
+- On desktop, the sticky chevron toggles between:
   - compact sticky-menu mode
   - collapsed normal navbar mode
+- On mobile, the chevron is omitted so the available left-side navbar width stays dedicated to the brand, sticky tabs, and expanded search shell.
 - The manual override resets once `.menu-page-controls` re-enters the viewport below the fixed header.
 
 ### Card Parity with “Más pedidas”

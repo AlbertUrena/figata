@@ -48,6 +48,29 @@
   const FORCE_COLLAPSED_MOBILE_ATTR = 'data-nav-force-collapsed-mobile';
   const DETAIL_NAV_REVEAL_SCROLL_Y = 125;
   const BURGER_ANIMATION_MS = 240;
+  const MOBILE_SEARCH_OPEN_GAP_PX = 14;
+  const MOBILE_SEARCH_OPEN_MIN_WIDTH = 184;
+  const MOBILE_SEARCH_OPEN_MAX_WIDTH = 252;
+  const STICKY_THRESHOLD_RELEASE_BUFFER_PX = 18;
+  const STICKY_SEARCH_HELPER_WORDS = Object.freeze([
+    'ingredientes',
+    'alérgenos',
+    'platos',
+    'bebidas',
+  ]);
+  const STICKY_SEARCH_HELPER_INITIAL_DELAY_MS = 1200;
+  const STICKY_SEARCH_HELPER_RESTART_DELAY_MS = 800;
+  const STICKY_SEARCH_HELPER_IDLE_DELAY_MS = 2140;
+  const STICKY_SEARCH_HELPER_OUT_DURATION_MS = 240;
+  const STICKY_SEARCH_HELPER_IN_DURATION_MS = 350;
+  const STICKY_SEARCH_HELPER_IN_DELAY_MS = 60;
+  const STICKY_SEARCH_HELPER_OUT_STAGGER_MS = 12;
+  const STICKY_SEARCH_HELPER_IN_STAGGER_MS = 16;
+  const STICKY_SEARCH_HELPER_OUT_Y_PX = -18;
+  const STICKY_SEARCH_HELPER_IN_Y_PX = 16;
+  const STICKY_SEARCH_HELPER_BLUR_PX = 6;
+  const STICKY_SEARCH_HELPER_OUT_EASE = 'cubic-bezier(0.4, 0, 1, 1)';
+  const STICKY_SEARCH_HELPER_IN_EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
   const BURGER_LINE_GEOMETRY = Object.freeze({
     top: Object.freeze({
       closed: Object.freeze({ x1: 7, y1: 15, x2: 58, y2: 15 }),
@@ -90,6 +113,8 @@
     mobileMenuOpen: false,
     mobileMenuCloseCommitTimerId: 0,
     mobileMenuForceCollapsed: false,
+    mobileSearchWidthSyncFrameId: 0,
+    mobileSearchLastAppliedWidth: 0,
     burgerAnimationFrameId: 0,
     burgerAnimationProgress: 0,
   };
@@ -104,6 +129,8 @@
     tabsPill: null,
     tabsButtons: [],
     compactSearchShell: null,
+    compactSearchHelper: null,
+    compactSearchHelperWord: null,
     searchTool: null,
     compactSearchInput: null,
     compactSearchClear: null,
@@ -115,8 +142,11 @@
     mobileSearchTool: null,
     mobileSearchPanel: null,
     mobileSearchButton: null,
+    mobileSearchHelper: null,
+    mobileSearchHelperWord: null,
     mobileSearchInput: null,
     mobileSearchClear: null,
+    mobileFilterButton: null,
     mobileAccountButton: null,
     mobileMenuButton: null,
     mobileMenuPanel: null,
@@ -557,6 +587,327 @@
     });
   };
 
+  const stickySearchHelperControllers = [];
+
+  const createStickySearchHelperChar = (character) => {
+    const char = document.createElement('span');
+    char.className = 'navbar__sticky-search-helper-char';
+    char.textContent = character === ' ' ? '\u00A0' : character;
+    return char;
+  };
+
+  const setStickySearchHelperCharState = (char, { opacity, blurPx, translateYPx }) => {
+    char.style.opacity = String(opacity);
+    char.style.filter = `blur(${blurPx}px)`;
+    char.style.transform = `translateY(${translateYPx}px)`;
+  };
+
+  const createStickySearchHelperLayer = (word, initialState = null) => {
+    const layer = document.createElement('span');
+    layer.className = 'navbar__sticky-search-helper-layer';
+
+    Array.from(word).forEach((character) => {
+      const char = createStickySearchHelperChar(character);
+
+      if (initialState) {
+        setStickySearchHelperCharState(char, initialState);
+      }
+
+      layer.appendChild(char);
+    });
+
+    return layer;
+  };
+
+  const createStickySearchHelperController = ({ root, input, word }) => {
+    if (
+      !(root instanceof HTMLElement) ||
+      !(input instanceof HTMLInputElement) ||
+      !(word instanceof HTMLElement)
+    ) {
+      return null;
+    }
+
+    let wordIndex = 0;
+    let hasStarted = false;
+    let animating = false;
+    let timerId = 0;
+    let animationTimerId = 0;
+    let frameId = 0;
+
+    const clearTimers = () => {
+      if (timerId) {
+        window.clearTimeout(timerId);
+        timerId = 0;
+      }
+
+      if (animationTimerId) {
+        window.clearTimeout(animationTimerId);
+        animationTimerId = 0;
+      }
+
+      if (frameId) {
+        window.cancelAnimationFrame(frameId);
+        frameId = 0;
+      }
+    };
+
+    const renderWord = (nextWord = STICKY_SEARCH_HELPER_WORDS[0]) => {
+      word.replaceChildren(createStickySearchHelperLayer(nextWord));
+    };
+
+    const syncWidth = () => {
+      if (!STICKY_SEARCH_HELPER_WORDS.length || !(document.body instanceof HTMLBodyElement)) {
+        return;
+      }
+
+      const computedStyles = window.getComputedStyle(word);
+      const measure = document.createElement('span');
+      measure.className = 'navbar__sticky-search-helper-layer';
+      measure.style.position = 'fixed';
+      measure.style.top = '0';
+      measure.style.left = '-9999px';
+      measure.style.visibility = 'hidden';
+      measure.style.pointerEvents = 'none';
+      measure.style.whiteSpace = 'nowrap';
+      measure.style.font = computedStyles.font;
+      measure.style.fontFamily = computedStyles.fontFamily;
+      measure.style.fontSize = computedStyles.fontSize;
+      measure.style.fontWeight = computedStyles.fontWeight;
+      measure.style.letterSpacing = computedStyles.letterSpacing;
+      document.body.appendChild(measure);
+
+      let maxWidth = 0;
+
+      STICKY_SEARCH_HELPER_WORDS.forEach((helperWord) => {
+        measure.textContent = helperWord;
+        maxWidth = Math.max(maxWidth, Math.ceil(measure.getBoundingClientRect().width));
+      });
+
+      measure.remove();
+
+      if (maxWidth > 0) {
+        word.style.width = `${maxWidth}px`;
+      }
+    };
+
+    const shouldShow = () =>
+      root.getAttribute('aria-hidden') !== 'true' &&
+      !root.inert &&
+      !input.value;
+
+    const canAnimate = () =>
+      shouldShow() &&
+      STICKY_SEARCH_HELPER_WORDS.length > 1 &&
+      !reducedMotionQuery.matches;
+
+    const animateChars = (
+      chars,
+      {
+        durationMs,
+        staggerMs,
+        delayMs = 0,
+        easing,
+        targetOpacity,
+        targetBlurPx,
+        targetTranslateYPx,
+      }
+    ) => {
+      chars.forEach((char, index) => {
+        char.style.transitionProperty = 'transform, opacity, filter';
+        char.style.transitionDuration = `${durationMs}ms`;
+        char.style.transitionTimingFunction = easing;
+        char.style.transitionDelay = `${delayMs + index * staggerMs}ms`;
+        setStickySearchHelperCharState(char, {
+          opacity: targetOpacity,
+          blurPx: targetBlurPx,
+          translateYPx: targetTranslateYPx,
+        });
+      });
+    };
+
+    const resetCharTransitions = (chars) => {
+      chars.forEach((char) => {
+        char.style.transitionProperty = 'none';
+        char.style.transitionDuration = '0ms';
+        char.style.transitionDelay = '0ms';
+        char.style.transitionTimingFunction = 'linear';
+      });
+    };
+
+    const getRenderedWord = () => {
+      if (word.childElementCount !== 1) {
+        return '';
+      }
+
+      return normalizeText(word.textContent);
+    };
+
+    const scheduleCycle = (delayMs = STICKY_SEARCH_HELPER_IDLE_DELAY_MS) => {
+      if (!canAnimate() || animating) {
+        return;
+      }
+
+      if (timerId) {
+        window.clearTimeout(timerId);
+      }
+
+      timerId = window.setTimeout(() => {
+        timerId = 0;
+
+        if (!canAnimate() || !word.isConnected) {
+          return;
+        }
+
+        const currentWord =
+          STICKY_SEARCH_HELPER_WORDS[wordIndex] || STICKY_SEARCH_HELPER_WORDS[0];
+        const nextIndex = (wordIndex + 1) % STICKY_SEARCH_HELPER_WORDS.length;
+        const nextWord = STICKY_SEARCH_HELPER_WORDS[nextIndex];
+        const outgoingLayer = createStickySearchHelperLayer(currentWord, {
+          opacity: 1,
+          blurPx: 0,
+          translateYPx: 0,
+        });
+        const incomingLayer = createStickySearchHelperLayer(nextWord, {
+          opacity: 0,
+          blurPx: STICKY_SEARCH_HELPER_BLUR_PX,
+          translateYPx: STICKY_SEARCH_HELPER_IN_Y_PX,
+        });
+        const outgoingChars = Array.from(outgoingLayer.children);
+        const incomingChars = Array.from(incomingLayer.children);
+
+        wordIndex = nextIndex;
+        animating = true;
+        resetCharTransitions(outgoingChars);
+        resetCharTransitions(incomingChars);
+        word.replaceChildren(outgoingLayer, incomingLayer);
+        void word.offsetWidth;
+
+        frameId = window.requestAnimationFrame(() => {
+          frameId = 0;
+
+          if (!word.contains(outgoingLayer) || !word.contains(incomingLayer)) {
+            return;
+          }
+
+          animateChars(outgoingChars, {
+            durationMs: STICKY_SEARCH_HELPER_OUT_DURATION_MS,
+            staggerMs: STICKY_SEARCH_HELPER_OUT_STAGGER_MS,
+            easing: STICKY_SEARCH_HELPER_OUT_EASE,
+            targetOpacity: 0,
+            targetBlurPx: STICKY_SEARCH_HELPER_BLUR_PX,
+            targetTranslateYPx: STICKY_SEARCH_HELPER_OUT_Y_PX,
+          });
+
+          animateChars(incomingChars, {
+            durationMs: STICKY_SEARCH_HELPER_IN_DURATION_MS,
+            staggerMs: STICKY_SEARCH_HELPER_IN_STAGGER_MS,
+            delayMs: STICKY_SEARCH_HELPER_IN_DELAY_MS,
+            easing: STICKY_SEARCH_HELPER_IN_EASE,
+            targetOpacity: 1,
+            targetBlurPx: 0,
+            targetTranslateYPx: 0,
+          });
+        });
+
+        const totalOutMs =
+          STICKY_SEARCH_HELPER_OUT_DURATION_MS +
+          Math.max(0, outgoingChars.length - 1) * STICKY_SEARCH_HELPER_OUT_STAGGER_MS;
+        const totalInMs =
+          STICKY_SEARCH_HELPER_IN_DELAY_MS +
+          STICKY_SEARCH_HELPER_IN_DURATION_MS +
+          Math.max(0, incomingChars.length - 1) * STICKY_SEARCH_HELPER_IN_STAGGER_MS;
+
+        animationTimerId = window.setTimeout(() => {
+          animationTimerId = 0;
+          animating = false;
+          renderWord(nextWord);
+          scheduleCycle();
+        }, Math.max(totalOutMs, totalInMs) + 40);
+      }, delayMs);
+    };
+
+    const syncState = () => {
+      const visible = shouldShow();
+      root.dataset.helperVisible = visible ? 'true' : 'false';
+
+      if (!visible) {
+        clearTimers();
+        animating = false;
+        return;
+      }
+
+      const currentWord =
+        STICKY_SEARCH_HELPER_WORDS[wordIndex] || STICKY_SEARCH_HELPER_WORDS[0];
+
+      if (!animating && getRenderedWord() !== currentWord) {
+        renderWord(currentWord);
+      }
+
+      if (reducedMotionQuery.matches) {
+        clearTimers();
+        animating = false;
+        return;
+      }
+
+      if (!hasStarted) {
+        hasStarted = true;
+        scheduleCycle(STICKY_SEARCH_HELPER_INITIAL_DELAY_MS);
+        return;
+      }
+
+      if (!animating && !timerId) {
+        scheduleCycle(STICKY_SEARCH_HELPER_RESTART_DELAY_MS);
+      }
+    };
+
+    renderWord();
+
+    return {
+      clearTimers,
+      syncState,
+      syncWidth,
+    };
+  };
+
+  const syncStickySearchHelpers = ({ syncWidth = false } = {}) => {
+    stickySearchHelperControllers.forEach((controller) => {
+      if (syncWidth) {
+        controller.syncWidth();
+      }
+
+      controller.syncState();
+    });
+  };
+
+  const setupStickySearchHelpers = () => {
+    stickySearchHelperControllers.forEach((controller) => {
+      controller.clearTimers();
+    });
+    stickySearchHelperControllers.length = 0;
+
+    [
+      {
+        root: refs.compactSearchShell,
+        input: refs.compactSearchInput,
+        word: refs.compactSearchHelperWord,
+      },
+      {
+        root: refs.mobileSearchPanel,
+        input: refs.mobileSearchInput,
+        word: refs.mobileSearchHelperWord,
+      },
+    ].forEach((config) => {
+      const controller = createStickySearchHelperController(config);
+
+      if (controller) {
+        stickySearchHelperControllers.push(controller);
+      }
+    });
+
+    syncStickySearchHelpers({ syncWidth: true });
+  };
+
   const ensureSentinel = () => {
     if (refs.sentinel instanceof HTMLElement && refs.sentinel.isConnected) {
       return refs.sentinel;
@@ -573,8 +924,13 @@
 
   const measureControlsThreshold = () => {
     const sentinel = ensureSentinel();
-    state.controlsPastThreshold =
-      sentinel.getBoundingClientRect().top <= getHeaderBottom();
+    const sentinelTop = sentinel.getBoundingClientRect().top;
+    const headerBottom = getHeaderBottom();
+    const releaseThreshold = headerBottom + STICKY_THRESHOLD_RELEASE_BUFFER_PX;
+
+    state.controlsPastThreshold = state.controlsPastThreshold
+      ? sentinelTop <= releaseThreshold
+      : sentinelTop <= headerBottom;
   };
 
   const isStickyEligible = () =>
@@ -603,6 +959,78 @@
   const updateCompactSearchControls = () => {
     updateSearchControlsFor(refs.compactSearchInput, refs.compactSearchClear);
     updateSearchControlsFor(refs.mobileSearchInput, refs.mobileSearchClear);
+    syncStickySearchHelpers();
+  };
+
+  const syncMobileSearchToolWidth = ({ mobileSearchOpen = false, force = false } = {}) => {
+    if (state.mobileSearchWidthSyncFrameId) {
+      window.cancelAnimationFrame(state.mobileSearchWidthSyncFrameId);
+      state.mobileSearchWidthSyncFrameId = 0;
+    }
+
+    if (!(refs.mobileSearchTool instanceof HTMLElement)) {
+      return;
+    }
+
+    if (!isMobileViewport() || !mobileSearchOpen || !(brand instanceof HTMLElement)) {
+      refs.mobileSearchTool.style.removeProperty('--mobile-search-open-width');
+      state.mobileSearchLastAppliedWidth = 0;
+      return;
+    }
+
+    const widthAnchor = brand.querySelector('.navbar__brand-icon') || brand;
+    const brandRect = widthAnchor.getBoundingClientRect();
+    const searchRect = refs.mobileSearchTool.getBoundingClientRect();
+
+    if (!brandRect.width || !searchRect.right) {
+      refs.mobileSearchTool.style.removeProperty('--mobile-search-open-width');
+      state.mobileSearchLastAppliedWidth = 0;
+      return;
+    }
+
+    const applyWidthFromGeometry = () => {
+      const nextBrandRect = widthAnchor.getBoundingClientRect();
+      const nextSearchRect = refs.mobileSearchTool.getBoundingClientRect();
+
+      if (!nextBrandRect.width || !nextSearchRect.right) {
+        return;
+      }
+
+      const targetWidth = Math.round(
+        Math.max(
+          MOBILE_SEARCH_OPEN_MIN_WIDTH,
+          Math.min(
+            MOBILE_SEARCH_OPEN_MAX_WIDTH,
+            nextSearchRect.right - nextBrandRect.right - MOBILE_SEARCH_OPEN_GAP_PX
+          )
+        )
+      );
+
+      if (!force && state.mobileSearchLastAppliedWidth === targetWidth) {
+        return;
+      }
+
+      refs.mobileSearchTool.style.setProperty('--mobile-search-open-width', `${targetWidth}px`);
+      state.mobileSearchLastAppliedWidth = targetWidth;
+    };
+
+    applyWidthFromGeometry();
+
+    if (!force) {
+      return;
+    }
+
+    state.mobileSearchWidthSyncFrameId = window.requestAnimationFrame(() => {
+      state.mobileSearchWidthSyncFrameId = window.requestAnimationFrame(() => {
+        state.mobileSearchWidthSyncFrameId = 0;
+
+        if (!state.stickySearchOpen || !isMobileViewport()) {
+          return;
+        }
+
+        applyWidthFromGeometry();
+      });
+    });
   };
 
   const syncCompactSearchValue = () => {
@@ -716,6 +1144,10 @@
   const syncTabsViewportState = ({ revealActive = false, immediate = false } = {}) => {
     setTabsOverflowState();
 
+    if (isMobileViewport() && state.stickySearchOpen) {
+      return;
+    }
+
     if (revealActive) {
       ensureActiveCompactTabVisibility({ immediate });
       setTabsOverflowState();
@@ -775,6 +1207,10 @@
       !(refs.tabsTrack instanceof HTMLElement) ||
       !refs.tabsButtons.length
     ) {
+      return;
+    }
+
+    if (isMobileViewport() && state.stickySearchOpen) {
       return;
     }
 
@@ -941,6 +1377,11 @@
         : 0;
     }
 
+    syncMobileSearchToolWidth({
+      mobileSearchOpen,
+      force: mobileSearchOpen && mobileSearchOpen !== state.lastStickySearchOpen,
+    });
+
     header.dataset.menuStickyAvailability = stickyEligible ? 'visible' : 'hidden';
     header.dataset.menuStickyMode = stickyActive ? 'sticky' : 'default';
     header.dataset.menuStickySearch = searchOpen ? 'open' : 'closed';
@@ -980,11 +1421,26 @@
       refs.mobileSearchTool.inert = !mobileSearchVisible;
     }
 
+    if (refs.mobileFilterButton instanceof HTMLButtonElement) {
+      refs.mobileFilterButton.disabled = !mobileSearchOpen;
+      refs.mobileFilterButton.tabIndex = mobileSearchOpen ? 0 : -1;
+      refs.mobileFilterButton.setAttribute(
+        'aria-hidden',
+        mobileSearchOpen ? 'false' : 'true'
+      );
+      refs.mobileFilterButton.setAttribute(
+        'aria-expanded',
+        state.menuState?.isFilterModalOpen ? 'true' : 'false'
+      );
+    }
+
     if (refs.mobileAccountButton instanceof HTMLButtonElement) {
       refs.mobileAccountButton.tabIndex = mobileActionsInteractive ? 0 : -1;
       refs.mobileAccountButton.setAttribute('aria-disabled', 'true');
     }
 
+    refs.chevronButton.hidden = isMobile;
+    refs.chevronButton.setAttribute('aria-hidden', isMobile ? 'true' : 'false');
     refs.chevronButton.setAttribute(
       'aria-label',
       stickyActive
@@ -992,7 +1448,7 @@
         : 'Mostrar navegación compacta del menú'
     );
     refs.chevronButton.setAttribute('aria-pressed', stickyActive ? 'true' : 'false');
-    refs.chevronButton.tabIndex = stickyEligible ? 0 : -1;
+    refs.chevronButton.tabIndex = !isMobile && stickyEligible ? 0 : -1;
 
     if (refs.searchButton instanceof HTMLButtonElement) {
       refs.searchButton.disabled = !stickyActive;
@@ -1027,7 +1483,7 @@
     }
 
     if (!stickyActive && (activeInsideSticky || activeInsideCompactSearch)) {
-      if (stickyEligible && refs.chevronButton instanceof HTMLButtonElement) {
+      if (!isMobile && stickyEligible && refs.chevronButton instanceof HTMLButtonElement) {
         refs.chevronButton.focus();
       } else if (activeElement instanceof HTMLElement) {
         activeElement.blur();
@@ -1124,6 +1580,7 @@
       });
     }
 
+    syncStickySearchHelpers();
     state.wasStickyActive = stickyActive;
     state.lastStickySearchOpen = searchOpen;
   };
@@ -1163,6 +1620,7 @@
       observeThreshold();
       scheduleSync();
       positionCompactPill();
+      syncStickySearchHelpers({ syncWidth: true });
       scheduleTabsViewportSync({
         revealActive: true,
         immediate: true,
@@ -1172,6 +1630,7 @@
       observeThreshold();
       scheduleSync();
       positionCompactPill();
+      syncStickySearchHelpers({ syncWidth: true });
       scheduleTabsViewportSync({
         revealActive: true,
         immediate: true,
@@ -1192,6 +1651,7 @@
         observeThreshold();
         scheduleSync();
         positionCompactPill();
+        syncStickySearchHelpers({ syncWidth: true });
         scheduleTabsViewportSync({
           revealActive: true,
           immediate: true,
@@ -1212,6 +1672,10 @@
     }
 
     observeThreshold();
+  };
+
+  const handleReducedMotionChange = () => {
+    syncStickySearchHelpers();
   };
 
   const createMenuToolsButton = (modifier, label, iconType) => {
@@ -1285,14 +1749,20 @@
     searchShell.className = 'navbar__menu-search-panel';
     searchShell.setAttribute('for', SEARCH_INPUT_ID);
     searchShell.innerHTML = `
-      <input
-        class="navbar__menu-search-input"
-        id="${SEARCH_INPUT_ID}"
-        type="search"
-        placeholder="Buscar en el menu"
-        autocomplete="off"
-        spellcheck="false"
-        enterkeyhint="search">
+      <span class="navbar__sticky-search-input-shell">
+        <span class="navbar__sticky-search-helper" aria-hidden="true">
+          <span class="navbar__sticky-search-helper-prefix">Busca por</span>
+          <span class="navbar__sticky-search-helper-word"></span>
+        </span>
+        <input
+          class="navbar__menu-search-input"
+          id="${SEARCH_INPUT_ID}"
+          type="search"
+          aria-label="Buscar en el menú"
+          autocomplete="off"
+          spellcheck="false"
+          enterkeyhint="search">
+      </span>
       <button
         class="navbar__menu-search-clear"
         type="button"
@@ -1326,21 +1796,28 @@
     mobileSearchPanel.className = 'navbar__mobile-search-panel';
     mobileSearchPanel.setAttribute('for', MOBILE_SEARCH_INPUT_ID);
     mobileSearchPanel.innerHTML = `
-      <input
-        class="navbar__mobile-search-input"
-        id="${MOBILE_SEARCH_INPUT_ID}"
-        type="search"
-        placeholder="Buscar menú"
-        autocomplete="off"
-        spellcheck="false"
-        enterkeyhint="search">
+      <span class="navbar__sticky-search-input-shell">
+        <span class="navbar__sticky-search-helper" aria-hidden="true">
+          <span class="navbar__sticky-search-helper-prefix">Busca por</span>
+          <span class="navbar__sticky-search-helper-word"></span>
+        </span>
+        <input
+          class="navbar__mobile-search-input"
+          id="${MOBILE_SEARCH_INPUT_ID}"
+          type="search"
+          aria-label="Buscar en el menú"
+          autocomplete="off"
+          spellcheck="false"
+          enterkeyhint="search">
+      </span>
       <button
-        class="navbar__mobile-search-clear"
+        class="navbar__mobile-search-filter"
         type="button"
-        aria-label="Limpiar búsqueda"
-        aria-hidden="true"
+        aria-label="Filtros del menú"
+        aria-controls="menu-filter-modal"
+        aria-expanded="false"
         tabindex="-1">
-        ${iconMarkup('clear')}
+        ${iconMarkup('filter')}
       </button>
     `;
     mobileSearchTool.appendChild(mobileSearchPanel);
@@ -1379,14 +1856,20 @@
     refs.mobileSearchTool = mobileSearchTool;
     refs.mobileSearchPanel = mobileSearchPanel;
     refs.mobileSearchButton = mobileSearchButton;
+    refs.mobileSearchHelper = mobileSearchPanel.querySelector('.navbar__sticky-search-helper');
+    refs.mobileSearchHelperWord = mobileSearchPanel.querySelector('.navbar__sticky-search-helper-word');
     refs.mobileSearchInput = mobileSearchPanel.querySelector('.navbar__mobile-search-input');
     refs.mobileSearchClear = mobileSearchPanel.querySelector('.navbar__mobile-search-clear');
+    refs.mobileFilterButton = mobileSearchPanel.querySelector('.navbar__mobile-search-filter');
     refs.mobileAccountButton = mobileAccountButton;
     refs.mobileMenuButton = mobileMenuButton;
     refs.mobileMenuPanel = mobileMenuPanel;
     refs.compactSearchShell = searchShell;
+    refs.compactSearchHelper = searchShell.querySelector('.navbar__sticky-search-helper');
+    refs.compactSearchHelperWord = searchShell.querySelector('.navbar__sticky-search-helper-word');
     refs.compactSearchInput = searchShell.querySelector('.navbar__menu-search-input');
     refs.compactSearchClear = searchShell.querySelector('.navbar__menu-search-clear');
+    setupStickySearchHelpers();
     buildMobileMenuLinks();
     setMobileMenuOpen(false);
     refs.tabsScroll.addEventListener('scroll', () => {
@@ -1438,6 +1921,19 @@
       state.shouldFocusCompactSearch = state.stickySearchOpen;
       applyUiState();
     });
+
+    if (refs.mobileFilterButton instanceof HTMLButtonElement) {
+      refs.mobileFilterButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (!state.stickySearchOpen || !isMobileViewport()) {
+          return;
+        }
+
+        window.FigataMenuPage?.toggleFilterModal?.();
+      });
+    }
 
     mobileAccountButton.addEventListener('click', (event) => {
       event.preventDefault();
@@ -1544,6 +2040,14 @@
           applyUiState();
         }
       });
+
+      refs.compactSearchInput.addEventListener('focus', () => {
+        syncStickySearchHelpers();
+      });
+
+      refs.compactSearchInput.addEventListener('blur', () => {
+        syncStickySearchHelpers();
+      });
     }
 
     if (refs.compactSearchClear instanceof HTMLButtonElement) {
@@ -1583,6 +2087,14 @@
           refs.mobileSearchButton?.focus();
           applyUiState();
         }
+      });
+
+      refs.mobileSearchInput.addEventListener('focus', () => {
+        syncStickySearchHelpers();
+      });
+
+      refs.mobileSearchInput.addEventListener('blur', () => {
+        syncStickySearchHelpers();
       });
     }
 
@@ -1625,6 +2137,12 @@
       state.menuState = await waitForMenuState();
       buildChrome();
       bindObservers();
+
+      if (typeof reducedMotionQuery.addEventListener === 'function') {
+        reducedMotionQuery.addEventListener('change', handleReducedMotionChange);
+      } else if (typeof reducedMotionQuery.addListener === 'function') {
+        reducedMotionQuery.addListener(handleReducedMotionChange);
+      }
 
       window.addEventListener('figata:menu-page-state-change', (event) => {
         handleMenuStateChange(event.detail);
