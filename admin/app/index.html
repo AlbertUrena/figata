@@ -396,10 +396,8 @@
                 <section class="menu-item-editor__form card" aria-label="Formulario de item">
                   <nav class="item-tabs" aria-label="Item tabs">
                     <button class="item-tab is-active" data-tab="basic" type="button">Basico</button>
-                    <button class="item-tab" data-tab="descriptions" type="button">Descripciones</button>
-                    <button class="item-tab" data-tab="ingredients" type="button">Ingredientes</button>
+                    <button class="item-tab" data-tab="editorial" type="button">Editorial</button>
                     <button class="item-tab" data-tab="traits" type="button">Traits</button>
-                    <button class="item-tab" data-tab="allergens" type="button">Alergenos</button>
                     <button class="item-tab" data-tab="media" type="button">Media</button>
                     <button class="item-tab" data-tab="availability" type="button">Disponibilidad</button>
                   </nav>
@@ -409,11 +407,6 @@
                       <label class="field">
                         <span>ID</span>
                         <input id="item-field-id" type="text" readonly />
-                      </label>
-
-                      <label class="field">
-                        <span>Nombre</span>
-                        <input id="item-field-name" type="text" />
                       </label>
 
                       <label class="field">
@@ -435,37 +428,253 @@
                         <span>Subcategoria</span>
                         <select id="item-field-subcategory"></select>
                       </label>
-
-                      <label class="field">
-                        <span>Precio</span>
-                        <input id="item-field-price" type="number" min="0" step="1" />
-                      </label>
-
-                      <p id="item-price-preview" class="inline-help">DOP 0</p>
-
-                      <div id="item-field-featured-toggle-mount"></div>
                     </section>
 
-                    <section class="item-tab-panel" data-tab-panel="descriptions">
-                      <label class="field">
-                        <span>Descripcion corta</span>
-                        <textarea id="item-field-description-short" rows="3"></textarea>
-                      </label>
+                    <section class="item-tab-panel" data-tab-panel="editorial">
+                      <section class="traits-panel-section">
+                        <header class="traits-panel-section__header">
+                          <h4>Header del detalle</h4>
+                          <p>
+                            Configura lo principal que ve el comensal al abrir el detalle del plato.
+                          </p>
+                        </header>
 
-                      <label class="field">
-                        <span>Descripcion larga</span>
-                        <textarea id="item-field-description-long" rows="7"></textarea>
-                      </label>
-                    </section>
+                        <div class="traits-override-grid">
+                          <label class="field">
+                            <span>Titulo visible</span>
+                            <input id="item-field-name" type="text" />
+                          </label>
 
-                    <section class="item-tab-panel" data-tab-panel="ingredients">
-                      <label class="field">
-                        <span>Buscar ingrediente</span>
-                        <input id="ingredient-search-input" type="search" placeholder="Ej: mozzarella" />
-                      </label>
-                      <div id="ingredient-search-results" class="token-search-results"></div>
-                      <ul id="ingredient-chip-list" class="chip-list chip-list--draggable"></ul>
-                      <p class="inline-help">Arrastra para cambiar el orden de ingredientes.</p>
+                          <label class="field">
+                            <span>Precio visible</span>
+                            <input id="item-field-price" type="number" min="0" step="1" />
+                          </label>
+
+                          <label class="field">
+                            <span>Badge del hero</span>
+                            <select id="item-field-hero-badge-override">
+                              <option value="auto">Auto (dieta + featured)</option>
+                              <option value="vegan">Forzar Vegana</option>
+                              <option value="vegetarian">Forzar Vegetariana</option>
+                              <option value="featured">Forzar Top Seller</option>
+                              <option value="none">Sin badge</option>
+                            </select>
+                          </label>
+
+                          <label class="field">
+                            <span>Chip: calorias</span>
+                            <input id="item-field-metric-calories" type="number" min="1" step="1" placeholder="Ej: 560" />
+                          </label>
+
+                          <label class="field">
+                            <span>Chip: tiempo estimado (min)</span>
+                            <input id="item-field-metric-eta" type="number" min="1" step="1" placeholder="Ej: 15" />
+                          </label>
+
+                          <label class="field">
+                            <span>Chip: rating</span>
+                            <input id="item-field-metric-rating" type="number" min="1" max="5" step="0.1" placeholder="Ej: 4.6" />
+                          </label>
+                        </div>
+
+                        <p id="item-price-preview" class="inline-help">DOP 0</p>
+                        <div id="item-field-featured-toggle-mount"></div>
+                        <p class="inline-help">
+                          <strong>Featured</strong> también controla el badge <strong>Top Seller</strong> cuando el modo está en Auto.
+                        </p>
+                      </section>
+
+                      <section class="traits-panel-section">
+                        <header class="traits-panel-section__header">
+                          <h4>Resumen visible</h4>
+                          <p>
+                            Texto principal del detalle y soporte editorial de lectura rápida.
+                          </p>
+                        </header>
+
+                        <label class="field">
+                          <span>Descripcion corta</span>
+                          <textarea id="item-field-description-short" rows="3"></textarea>
+                        </label>
+
+                        <label class="field">
+                          <span>Descripcion larga</span>
+                          <textarea id="item-field-description-long" rows="7"></textarea>
+                        </label>
+
+                        <label class="field">
+                          <span>item.reviews</span>
+                          <input id="item-field-reviews" type="text" placeholder="Ej: 198 reseñas" />
+                        </label>
+                      </section>
+
+                      <section class="traits-panel-section">
+                        <header class="traits-panel-section__header">
+                          <h4>Ingredientes y alergenos visibles</h4>
+                          <p>
+                            Este bloque alimenta directamente la ficha culinaria del detalle.
+                          </p>
+                        </header>
+
+                        <label class="field">
+                          <span>Buscar ingrediente</span>
+                          <input id="ingredient-search-input" type="search" placeholder="Ej: mozzarella" />
+                        </label>
+                        <div id="ingredient-search-results" class="token-search-results"></div>
+                        <ul id="ingredient-chip-list" class="chip-list chip-list--draggable"></ul>
+                        <p class="inline-help">Arrastra para cambiar el orden de ingredientes.</p>
+
+                        <div class="traits-panel-grid">
+                          <div class="traits-panel-card">
+                            <span class="traits-panel-card__label">Alérgenos automáticos</span>
+                            <div id="item-derived-allergens" class="traits-pill-list"></div>
+                          </div>
+
+                          <div class="traits-panel-card">
+                            <span class="traits-panel-card__label">Resultado final</span>
+                            <div id="item-resolved-allergens" class="traits-pill-list"></div>
+                            <p id="item-unattributed-allergens" class="inline-help"></p>
+                          </div>
+                        </div>
+
+                        <div class="field">
+                          <span>Fuentes por alérgeno</span>
+                          <div id="item-allergen-sources" class="allergen-source-list"></div>
+                        </div>
+
+                        <details class="advanced-box">
+                          <summary>Excepciones avanzadas de alergenos</summary>
+
+                          <div class="allergen-override-grid">
+                            <div class="allergen-override-column">
+                              <label class="field">
+                                <span>Override add</span>
+                                <input id="allergen-override-add-search-input" type="search" placeholder="Ej: gluten" />
+                              </label>
+                              <div id="allergen-override-add-search-results" class="token-search-results"></div>
+                              <ul id="allergen-override-add-chip-list" class="chip-list"></ul>
+                              <p class="inline-help">
+                                Agrega alérgenos finales cuando la fuente real no está modelada aún en ingredients.
+                              </p>
+                            </div>
+
+                            <div class="allergen-override-column">
+                              <label class="field">
+                                <span>Override remove</span>
+                                <input id="allergen-override-remove-search-input" type="search" placeholder="Ej: milk" />
+                              </label>
+                              <div id="allergen-override-remove-search-results" class="token-search-results"></div>
+                              <ul id="allergen-override-remove-chip-list" class="chip-list"></ul>
+                              <p class="inline-help">
+                                Remueve casos excepcionales del resultado automático sin tocar el catálogo base.
+                              </p>
+                            </div>
+                          </div>
+                        </details>
+                      </section>
+
+                      <section class="traits-panel-section">
+                        <header class="traits-panel-section__header">
+                          <h4>Perfil sensorial</h4>
+                          <p>
+                            Controla la sección sensorial visible: intro, ejes y resumen/callout.
+                          </p>
+                        </header>
+
+                        <label class="field">
+                          <span>Subtitulo / intro de la sección</span>
+                          <textarea id="item-field-sensory-intro" rows="2" placeholder="Ej: Una lectura sensorial del plato..."></textarea>
+                        </label>
+
+                        <label class="field">
+                          <span>Resumen / callout</span>
+                          <textarea id="item-field-sensory-summary" rows="3" placeholder="Ej: Equilibrada y ligera..."></textarea>
+                        </label>
+
+                        <div class="traits-override-grid">
+                          <label class="field"><span>Dulce (1-10)</span><input id="item-field-sensory-axis-dulce" type="number" min="1" max="10" step="1" /></label>
+                          <label class="field"><span>Salado (1-10)</span><input id="item-field-sensory-axis-salado" type="number" min="1" max="10" step="1" /></label>
+                          <label class="field"><span>Acido (1-10)</span><input id="item-field-sensory-axis-acido" type="number" min="1" max="10" step="1" /></label>
+                          <label class="field"><span>Cremosa (1-10)</span><input id="item-field-sensory-axis-cremosa" type="number" min="1" max="10" step="1" /></label>
+                          <label class="field"><span>Crujiente (1-10)</span><input id="item-field-sensory-axis-crujiente" type="number" min="1" max="10" step="1" /></label>
+                          <label class="field"><span>Ligero (1-10)</span><input id="item-field-sensory-axis-ligero" type="number" min="1" max="10" step="1" /></label>
+                          <label class="field"><span>Aromatico (1-10)</span><input id="item-field-sensory-axis-aromatico" type="number" min="1" max="10" step="1" /></label>
+                          <label class="field"><span>Intensidad (1-10)</span><input id="item-field-sensory-axis-intensidad" type="number" min="1" max="10" step="1" /></label>
+                        </div>
+
+                        <label class="field">
+                          <span>Comparar (detalle)</span>
+                          <select id="item-field-compare-mode">
+                            <option value="auto">Auto por reglas del sistema</option>
+                            <option value="enabled">Forzar visible</option>
+                            <option value="disabled">Ocultar comparar</option>
+                          </select>
+                        </label>
+                      </section>
+
+                      <section class="traits-panel-section">
+                        <header class="traits-panel-section__header">
+                          <h4>Maridajes recomendados</h4>
+                          <p>
+                            Bloque editorial del detalle. Por ahora se gestiona una recomendación principal.
+                          </p>
+                        </header>
+
+                        <label class="field">
+                          <span>Mostrar maridaje</span>
+                          <select id="item-field-pairing-enabled">
+                            <option value="no">No</option>
+                            <option value="yes">Si</option>
+                          </select>
+                        </label>
+
+                        <div class="traits-override-grid">
+                          <label class="field">
+                            <span>Nombre</span>
+                            <input id="item-field-pairing-name" type="text" placeholder="Ej: Chianti" />
+                          </label>
+
+                          <label class="field">
+                            <span>Meta</span>
+                            <input id="item-field-pairing-meta" type="text" placeholder="Ej: Toscana · Tinto" />
+                          </label>
+                        </div>
+
+                        <label class="field">
+                          <span>Descripcion</span>
+                          <textarea id="item-field-pairing-description" rows="3"></textarea>
+                        </label>
+
+                        <div class="traits-override-grid">
+                          <label class="field">
+                            <span>CTA label</span>
+                            <input id="item-field-pairing-cta-label" type="text" placeholder="Ej: Añadir copa" />
+                          </label>
+                          <label class="field">
+                            <span>CTA target (itemId/url)</span>
+                            <input id="item-field-pairing-cta-target" type="text" placeholder="Ej: chianti o https://..." />
+                          </label>
+                        </div>
+                      </section>
+
+                      <section class="traits-panel-section">
+                        <header class="traits-panel-section__header">
+                          <h4>Historia detrás</h4>
+                          <p>
+                            Contenido editorial largo del detalle del plato.
+                          </p>
+                        </header>
+
+                        <label class="field">
+                          <span>Titulo</span>
+                          <input id="item-field-history-title" type="text" placeholder="Ej: La historia detrás" />
+                        </label>
+
+                        <label class="field">
+                          <span>Cuerpo (texto/markdown simple)</span>
+                          <textarea id="item-field-history-body" rows="8"></textarea>
+                        </label>
+                      </section>
                     </section>
 
                     <section class="item-tab-panel" data-tab-panel="traits">
@@ -577,83 +786,7 @@
                           <p id="item-legacy-summary" class="inline-help">
                             Este item no tiene campos legacy detectados.
                           </p>
-
-                          <label class="field">
-                            <span>item.reviews</span>
-                            <input id="item-field-reviews" type="text" />
-                          </label>
                         </details>
-                      </section>
-                    </section>
-
-                    <section class="item-tab-panel" data-tab-panel="allergens">
-                      <section class="traits-panel-section">
-                        <header class="traits-panel-section__header">
-                          <h4>Derivación automática</h4>
-                          <p>
-                            El source of truth vive en <code>ingredients[*].allergens</code>. El item calcula su lista
-                            final por unión desde sus ingredientes y solo aplica overrides cuando hace falta una excepción.
-                          </p>
-                        </header>
-
-                        <div class="traits-panel-grid">
-                          <div class="traits-panel-card">
-                            <span class="traits-panel-card__label">Alérgenos automáticos</span>
-                            <div id="item-derived-allergens" class="traits-pill-list"></div>
-                          </div>
-
-                          <div class="traits-panel-card">
-                            <span class="traits-panel-card__label">Resultado final</span>
-                            <div id="item-resolved-allergens" class="traits-pill-list"></div>
-                            <p id="item-unattributed-allergens" class="inline-help"></p>
-                          </div>
-                        </div>
-                      </section>
-
-                      <section class="traits-panel-section">
-                        <header class="traits-panel-section__header">
-                          <h4>Fuentes por alérgeno</h4>
-                          <p>
-                            Aquí ves qué ingredientes están aportando cada alérgeno detectado automáticamente.
-                          </p>
-                        </header>
-                        <div id="item-allergen-sources" class="allergen-source-list"></div>
-                      </section>
-
-                      <section class="traits-panel-section">
-                        <header class="traits-panel-section__header">
-                          <h4>Overrides editoriales</h4>
-                          <p>
-                            Usa overrides solo como excepción. <code>gluten</code> por base implícita no modelada es una
-                            solución transitoria y controlada, no el modelo final ideal.
-                          </p>
-                        </header>
-
-                        <div class="allergen-override-grid">
-                          <div class="allergen-override-column">
-                            <label class="field">
-                              <span>Override add</span>
-                              <input id="allergen-override-add-search-input" type="search" placeholder="Ej: gluten" />
-                            </label>
-                            <div id="allergen-override-add-search-results" class="token-search-results"></div>
-                            <ul id="allergen-override-add-chip-list" class="chip-list"></ul>
-                            <p class="inline-help">
-                              Agrega alérgenos finales cuando la fuente real no está modelada aún en ingredients.
-                            </p>
-                          </div>
-
-                          <div class="allergen-override-column">
-                            <label class="field">
-                              <span>Override remove</span>
-                              <input id="allergen-override-remove-search-input" type="search" placeholder="Ej: milk" />
-                            </label>
-                            <div id="allergen-override-remove-search-results" class="token-search-results"></div>
-                            <ul id="allergen-override-remove-chip-list" class="chip-list"></ul>
-                            <p class="inline-help">
-                              Remueve casos excepcionales del resultado automático sin tocar el catálogo base.
-                            </p>
-                          </div>
-                        </div>
                       </section>
                     </section>
 

@@ -42,6 +42,18 @@
   var INGREDIENT_CATEGORY_BY_ID = C.INGREDIENT_CATEGORY_BY_ID;
   var INGREDIENT_CATEGORY_BY_ICON = C.INGREDIENT_CATEGORY_BY_ICON;
   var INGREDIENT_CATEGORY_KEYWORDS = C.INGREDIENT_CATEGORY_KEYWORDS;
+  var ITEM_HERO_BADGE_OVERRIDE_VALUES = ["vegan", "vegetarian", "featured", "none"];
+  var ITEM_COMPARE_MODE_VALUES = ["enabled", "disabled"];
+  var ITEM_SENSORY_AXIS_FIELDS = [
+    { axisId: "dulce", elementKey: "itemFieldSensoryAxisDulce" },
+    { axisId: "salado", elementKey: "itemFieldSensoryAxisSalado" },
+    { axisId: "acido", elementKey: "itemFieldSensoryAxisAcido" },
+    { axisId: "cremosa", elementKey: "itemFieldSensoryAxisCremosa" },
+    { axisId: "crujiente", elementKey: "itemFieldSensoryAxisCrujiente" },
+    { axisId: "ligero", elementKey: "itemFieldSensoryAxisLigero" },
+    { axisId: "aromatico", elementKey: "itemFieldSensoryAxisAromatico" },
+    { axisId: "intensidad", elementKey: "itemFieldSensoryAxisIntensidad" }
+  ];
 
   var state = {
     data: null,
@@ -351,9 +363,32 @@
     itemFieldPrice: document.getElementById("item-field-price"),
     itemPricePreview: document.getElementById("item-price-preview"),
     itemFieldFeatured: document.getElementById("item-field-featured"),
+    itemFieldHeroBadgeOverride: document.getElementById("item-field-hero-badge-override"),
+    itemFieldMetricCalories: document.getElementById("item-field-metric-calories"),
+    itemFieldMetricEta: document.getElementById("item-field-metric-eta"),
+    itemFieldMetricRating: document.getElementById("item-field-metric-rating"),
 
     itemFieldDescriptionShort: document.getElementById("item-field-description-short"),
     itemFieldDescriptionLong: document.getElementById("item-field-description-long"),
+    itemFieldSensoryIntro: document.getElementById("item-field-sensory-intro"),
+    itemFieldSensorySummary: document.getElementById("item-field-sensory-summary"),
+    itemFieldSensoryAxisDulce: document.getElementById("item-field-sensory-axis-dulce"),
+    itemFieldSensoryAxisSalado: document.getElementById("item-field-sensory-axis-salado"),
+    itemFieldSensoryAxisAcido: document.getElementById("item-field-sensory-axis-acido"),
+    itemFieldSensoryAxisCremosa: document.getElementById("item-field-sensory-axis-cremosa"),
+    itemFieldSensoryAxisCrujiente: document.getElementById("item-field-sensory-axis-crujiente"),
+    itemFieldSensoryAxisLigero: document.getElementById("item-field-sensory-axis-ligero"),
+    itemFieldSensoryAxisAromatico: document.getElementById("item-field-sensory-axis-aromatico"),
+    itemFieldSensoryAxisIntensidad: document.getElementById("item-field-sensory-axis-intensidad"),
+    itemFieldCompareMode: document.getElementById("item-field-compare-mode"),
+    itemFieldPairingEnabled: document.getElementById("item-field-pairing-enabled"),
+    itemFieldPairingName: document.getElementById("item-field-pairing-name"),
+    itemFieldPairingMeta: document.getElementById("item-field-pairing-meta"),
+    itemFieldPairingDescription: document.getElementById("item-field-pairing-description"),
+    itemFieldPairingCtaLabel: document.getElementById("item-field-pairing-cta-label"),
+    itemFieldPairingCtaTarget: document.getElementById("item-field-pairing-cta-target"),
+    itemFieldHistoryTitle: document.getElementById("item-field-history-title"),
+    itemFieldHistoryBody: document.getElementById("item-field-history-body"),
 
     ingredientSearchInput: document.getElementById("ingredient-search-input"),
     ingredientSearchResults: document.getElementById("ingredient-search-results"),
@@ -4271,6 +4306,407 @@
     }
   }
 
+  function isPlainObject(value) {
+    return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+  }
+
+  function toFiniteNumber(value) {
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return value;
+    }
+
+    if (typeof value === "string") {
+      var normalized = value.replace(",", ".").trim();
+      if (!normalized) return null;
+      var parsed = Number(normalized);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    return null;
+  }
+
+  function readItemNumberInput(inputElement, options) {
+    if (!inputElement) return null;
+
+    var parsed = toFiniteNumber(inputElement.value);
+    if (parsed === null) return null;
+
+    if (options && options.integer) {
+      parsed = Math.round(parsed);
+    }
+
+    if (options && Number.isFinite(Number(options.min))) {
+      parsed = Math.max(Number(options.min), parsed);
+    }
+
+    if (options && Number.isFinite(Number(options.max))) {
+      parsed = Math.min(Number(options.max), parsed);
+    }
+
+    if (options && Number.isFinite(Number(options.precision))) {
+      var precision = Math.max(0, Math.round(Number(options.precision)));
+      parsed = Number(parsed.toFixed(precision));
+    }
+
+    return parsed;
+  }
+
+  function writeItemNumberInput(inputElement, value, options) {
+    if (!inputElement) return;
+
+    var parsed = toFiniteNumber(value);
+    if (parsed === null) {
+      inputElement.value = "";
+      return;
+    }
+
+    if (options && options.integer) {
+      parsed = Math.round(parsed);
+    }
+
+    if (options && Number.isFinite(Number(options.min))) {
+      parsed = Math.max(Number(options.min), parsed);
+    }
+
+    if (options && Number.isFinite(Number(options.max))) {
+      parsed = Math.min(Number(options.max), parsed);
+    }
+
+    if (options && Number.isFinite(Number(options.precision))) {
+      var precision = Math.max(0, Math.round(Number(options.precision)));
+      inputElement.value = String(Number(parsed.toFixed(precision)));
+      return;
+    }
+
+    inputElement.value = String(parsed);
+  }
+
+  function resolveDraftMetricValue(draft, metricId) {
+    if (!draft) return null;
+
+    if (metricId === "calories") {
+      var caloriesFromNutrition = toFiniteNumber(draft && draft.nutrition && draft.nutrition.calories);
+      if (caloriesFromNutrition !== null) return caloriesFromNutrition;
+      var caloriesFromItem = toFiniteNumber(draft.calories);
+      if (caloriesFromItem !== null) return caloriesFromItem;
+      return toFiniteNumber(draft && draft.metrics && draft.metrics.calories);
+    }
+
+    if (metricId === "etaMinutes") {
+      var etaFromService = toFiniteNumber(draft.serviceEtaMinutes);
+      if (etaFromService !== null) return etaFromService;
+      var etaFromEstimated = toFiniteNumber(draft.estimatedServeMinutes);
+      if (etaFromEstimated !== null) return etaFromEstimated;
+      var etaFromItem = toFiniteNumber(draft.etaMinutes);
+      if (etaFromItem !== null) return etaFromItem;
+      return toFiniteNumber(draft && draft.metrics && draft.metrics.etaMinutes);
+    }
+
+    if (metricId === "rating") {
+      var ratingFromMain = toFiniteNumber(draft.rating);
+      if (ratingFromMain !== null) return ratingFromMain;
+      var ratingFromAverage = toFiniteNumber(draft.averageRating);
+      if (ratingFromAverage !== null) return ratingFromAverage;
+      var ratingFromLegacyAverage = toFiniteNumber(draft.ratingAverage);
+      if (ratingFromLegacyAverage !== null) return ratingFromLegacyAverage;
+      return toFiniteNumber(draft && draft.metrics && draft.metrics.rating);
+    }
+
+    return null;
+  }
+
+  function syncDraftMetricsFromForm(draft) {
+    if (!draft) return;
+
+    var calories = readItemNumberInput(elements.itemFieldMetricCalories, {
+      integer: true,
+      min: 1
+    });
+    var etaMinutes = readItemNumberInput(elements.itemFieldMetricEta, {
+      integer: true,
+      min: 1
+    });
+    var rating = readItemNumberInput(elements.itemFieldMetricRating, {
+      min: 1,
+      max: 5,
+      precision: 1
+    });
+
+    var nextMetrics = isPlainObject(draft.metrics) ? deepClone(draft.metrics) : {};
+    if (calories === null) delete nextMetrics.calories;
+    else nextMetrics.calories = calories;
+
+    if (etaMinutes === null) delete nextMetrics.etaMinutes;
+    else nextMetrics.etaMinutes = etaMinutes;
+
+    if (rating === null) delete nextMetrics.rating;
+    else nextMetrics.rating = rating;
+
+    if (Object.keys(nextMetrics).length) {
+      draft.metrics = nextMetrics;
+    } else {
+      delete draft.metrics;
+    }
+  }
+
+  function resolveDraftDetailEditorial(draft) {
+    if (!isPlainObject(draft) || !isPlainObject(draft.detail_editorial)) {
+      return {};
+    }
+
+    return draft.detail_editorial;
+  }
+
+  function syncDraftDetailEditorialFromForm(draft) {
+    if (!draft) return;
+
+    var currentDetailEditorial = isPlainObject(draft.detail_editorial)
+      ? deepClone(draft.detail_editorial)
+      : {};
+
+    var heroBadgeValue = normalizeText(
+      elements.itemFieldHeroBadgeOverride && elements.itemFieldHeroBadgeOverride.value
+    ).toLowerCase();
+    if (ITEM_HERO_BADGE_OVERRIDE_VALUES.includes(heroBadgeValue)) {
+      currentDetailEditorial.hero_badge = heroBadgeValue;
+    } else {
+      delete currentDetailEditorial.hero_badge;
+    }
+
+    var compareModeValue = normalizeText(
+      elements.itemFieldCompareMode && elements.itemFieldCompareMode.value
+    ).toLowerCase();
+    if (ITEM_COMPARE_MODE_VALUES.includes(compareModeValue)) {
+      currentDetailEditorial.compare_mode = compareModeValue;
+    } else {
+      delete currentDetailEditorial.compare_mode;
+    }
+
+    var sensoryIntro = normalizeText(
+      elements.itemFieldSensoryIntro && elements.itemFieldSensoryIntro.value
+    );
+    if (sensoryIntro) {
+      currentDetailEditorial.sensory_intro = sensoryIntro;
+    } else {
+      delete currentDetailEditorial.sensory_intro;
+    }
+
+    var pairingEnabled = elements.itemFieldPairingEnabled
+      ? elements.itemFieldPairingEnabled.value === "yes"
+      : false;
+    var pairingName = normalizeText(
+      elements.itemFieldPairingName && elements.itemFieldPairingName.value
+    );
+    var pairingMeta = normalizeText(
+      elements.itemFieldPairingMeta && elements.itemFieldPairingMeta.value
+    );
+    var pairingDescription = normalizeText(
+      elements.itemFieldPairingDescription && elements.itemFieldPairingDescription.value
+    );
+    var pairingCtaLabel = normalizeText(
+      elements.itemFieldPairingCtaLabel && elements.itemFieldPairingCtaLabel.value
+    );
+    var pairingCtaTarget = normalizeText(
+      elements.itemFieldPairingCtaTarget && elements.itemFieldPairingCtaTarget.value
+    );
+    var hasPairingData = pairingEnabled ||
+      pairingName ||
+      pairingMeta ||
+      pairingDescription ||
+      pairingCtaLabel ||
+      pairingCtaTarget;
+
+    if (hasPairingData) {
+      var nextPairing = isPlainObject(currentDetailEditorial.pairing)
+        ? deepClone(currentDetailEditorial.pairing)
+        : {};
+
+      nextPairing.enabled = Boolean(pairingEnabled);
+
+      if (pairingName) nextPairing.name = pairingName;
+      else delete nextPairing.name;
+
+      if (pairingMeta) nextPairing.meta = pairingMeta;
+      else delete nextPairing.meta;
+
+      if (pairingDescription) nextPairing.description = pairingDescription;
+      else delete nextPairing.description;
+
+      if (pairingCtaLabel) nextPairing.cta_label = pairingCtaLabel;
+      else delete nextPairing.cta_label;
+
+      if (pairingCtaTarget) nextPairing.cta_target = pairingCtaTarget;
+      else delete nextPairing.cta_target;
+
+      currentDetailEditorial.pairing = nextPairing;
+    } else {
+      delete currentDetailEditorial.pairing;
+    }
+
+    var historyTitle = normalizeText(
+      elements.itemFieldHistoryTitle && elements.itemFieldHistoryTitle.value
+    );
+    var historyBody = normalizeText(
+      elements.itemFieldHistoryBody && elements.itemFieldHistoryBody.value
+    );
+    if (historyTitle || historyBody) {
+      var nextHistory = isPlainObject(currentDetailEditorial.history)
+        ? deepClone(currentDetailEditorial.history)
+        : {};
+
+      if (historyTitle) nextHistory.title = historyTitle;
+      else delete nextHistory.title;
+
+      if (historyBody) nextHistory.body = historyBody;
+      else delete nextHistory.body;
+
+      currentDetailEditorial.history = nextHistory;
+    } else {
+      delete currentDetailEditorial.history;
+    }
+
+    if (Object.keys(currentDetailEditorial).length) {
+      draft.detail_editorial = currentDetailEditorial;
+    } else {
+      delete draft.detail_editorial;
+    }
+  }
+
+  function syncDraftSensoryProfileFromForm(draft) {
+    if (!draft) return;
+
+    var currentProfile = isPlainObject(draft.sensory_profile)
+      ? deepClone(draft.sensory_profile)
+      : {};
+
+    var summary = normalizeText(
+      elements.itemFieldSensorySummary && elements.itemFieldSensorySummary.value
+    );
+    currentProfile.summary = summary;
+
+    var existingAxes = isPlainObject(currentProfile.axes) ? currentProfile.axes : {};
+    var nextAxes = {};
+    var hasAnyAxisValue = false;
+
+    ITEM_SENSORY_AXIS_FIELDS.forEach(function (entry) {
+      var axisValue = readItemNumberInput(elements[entry.elementKey], {
+        integer: true,
+        min: 1,
+        max: 10
+      });
+      var nextAxisEntry = isPlainObject(existingAxes[entry.axisId])
+        ? deepClone(existingAxes[entry.axisId])
+        : {};
+      nextAxisEntry.value = axisValue;
+      if (Object.prototype.hasOwnProperty.call(nextAxisEntry, "explanation")) {
+        var normalizedExplanation = normalizeText(nextAxisEntry.explanation);
+        if (normalizedExplanation) {
+          nextAxisEntry.explanation = normalizedExplanation;
+        } else {
+          delete nextAxisEntry.explanation;
+        }
+      }
+      nextAxes[entry.axisId] = nextAxisEntry;
+      if (axisValue !== null) {
+        hasAnyAxisValue = true;
+      }
+    });
+
+    currentProfile.axes = nextAxes;
+
+    if (!summary && !hasAnyAxisValue) {
+      delete draft.sensory_profile;
+      return;
+    }
+
+    if (
+      window.FigataMenuSensory &&
+      typeof window.FigataMenuSensory.sanitizeSensoryProfile === "function"
+    ) {
+      var sanitizedProfile = window.FigataMenuSensory.sanitizeSensoryProfile(currentProfile, {
+        keepEmpty: true,
+        preserveUnknown: true
+      });
+      if (sanitizedProfile) {
+        draft.sensory_profile = sanitizedProfile;
+        return;
+      }
+    }
+
+    draft.sensory_profile = currentProfile;
+  }
+
+  function populateEditorialFieldsFromDraft(draft) {
+    var detailEditorial = resolveDraftDetailEditorial(draft);
+
+    var heroBadgeValue = normalizeText(detailEditorial.hero_badge).toLowerCase();
+    elements.itemFieldHeroBadgeOverride.value = ITEM_HERO_BADGE_OVERRIDE_VALUES.includes(heroBadgeValue)
+      ? heroBadgeValue
+      : "auto";
+
+    writeItemNumberInput(
+      elements.itemFieldMetricCalories,
+      resolveDraftMetricValue(draft, "calories"),
+      { integer: true, min: 1 }
+    );
+    writeItemNumberInput(
+      elements.itemFieldMetricEta,
+      resolveDraftMetricValue(draft, "etaMinutes"),
+      { integer: true, min: 1 }
+    );
+    writeItemNumberInput(
+      elements.itemFieldMetricRating,
+      resolveDraftMetricValue(draft, "rating"),
+      { min: 1, max: 5, precision: 1 }
+    );
+
+    elements.itemFieldSensoryIntro.value = detailEditorial.sensory_intro || "";
+    elements.itemFieldSensorySummary.value =
+      (draft && draft.sensory_profile && draft.sensory_profile.summary) || "";
+
+    ITEM_SENSORY_AXIS_FIELDS.forEach(function (entry) {
+      var axisValue =
+        draft &&
+        draft.sensory_profile &&
+        draft.sensory_profile.axes &&
+        draft.sensory_profile.axes[entry.axisId]
+          ? draft.sensory_profile.axes[entry.axisId].value
+          : null;
+      writeItemNumberInput(elements[entry.elementKey], axisValue, {
+        integer: true,
+        min: 1,
+        max: 10
+      });
+    });
+
+    var compareModeValue = normalizeText(detailEditorial.compare_mode).toLowerCase();
+    elements.itemFieldCompareMode.value = ITEM_COMPARE_MODE_VALUES.includes(compareModeValue)
+      ? compareModeValue
+      : "auto";
+
+    var pairing = isPlainObject(detailEditorial.pairing) ? detailEditorial.pairing : {};
+    var pairingHasText = Boolean(
+      pairing.name ||
+      pairing.meta ||
+      pairing.description ||
+      pairing.cta_label ||
+      pairing.cta_target
+    );
+    elements.itemFieldPairingEnabled.value =
+      pairing.enabled === true || (pairing.enabled !== false && pairingHasText)
+        ? "yes"
+        : "no";
+    elements.itemFieldPairingName.value = pairing.name || "";
+    elements.itemFieldPairingMeta.value = pairing.meta || "";
+    elements.itemFieldPairingDescription.value = pairing.description || "";
+    elements.itemFieldPairingCtaLabel.value = pairing.cta_label || "";
+    elements.itemFieldPairingCtaTarget.value = pairing.cta_target || "";
+
+    var history = isPlainObject(detailEditorial.history) ? detailEditorial.history : {};
+    elements.itemFieldHistoryTitle.value = history.title || "";
+    elements.itemFieldHistoryBody.value = history.body || "";
+  }
+
   function syncDraftFromForm() {
     var draft = state.itemEditor.draft;
     if (!draft) return;
@@ -4327,6 +4763,10 @@
     } else {
       draft.reviews = reviewsValue;
     }
+
+    syncDraftMetricsFromForm(draft);
+    syncDraftDetailEditorialFromForm(draft);
+    syncDraftSensoryProfileFromForm(draft);
 
     state.itemEditor.availability.available = getToggleChecked(elements.itemAvailabilityToggle);
     state.itemEditor.availability.soldOutReason = elements.itemAvailabilityReason.value.trim();
@@ -4396,6 +4836,7 @@
     elements.itemAvailabilityReason.value = state.itemEditor.availability.soldOutReason;
     applyItemTraitOverrideControls(draft);
     elements.itemFieldReviews.value = draft.reviews || "";
+    populateEditorialFieldsFromDraft(draft);
 
     setActiveItemTab("basic");
     renderIngredientChips();
@@ -4460,6 +4901,7 @@
     elements.itemAvailabilityReason.value = "";
     applyItemTraitOverrideControls(draft);
     elements.itemFieldReviews.value = "";
+    populateEditorialFieldsFromDraft(draft);
 
     setActiveItemTab("basic");
     renderIngredientChips();
@@ -4605,6 +5047,134 @@
       draft.trait_overrides.dietary.vegetarian === false
     ) {
       errors.push("Override inválido: Vegan=true requiere Vegetarian=true.");
+    }
+
+    if (
+      typeof draft.metrics !== "undefined" &&
+      draft.metrics !== null &&
+      (!isPlainObject(draft.metrics))
+    ) {
+      errors.push("metrics debe ser objeto cuando existe.");
+    }
+
+    if (isPlainObject(draft.metrics)) {
+      if (Object.prototype.hasOwnProperty.call(draft.metrics, "calories")) {
+        var metricCalories = toFiniteNumber(draft.metrics.calories);
+        if (metricCalories === null || Math.round(metricCalories) < 1) {
+          errors.push("metrics.calories debe ser entero >= 1.");
+        }
+      }
+      if (Object.prototype.hasOwnProperty.call(draft.metrics, "etaMinutes")) {
+        var metricEta = toFiniteNumber(draft.metrics.etaMinutes);
+        if (metricEta === null || Math.round(metricEta) < 1) {
+          errors.push("metrics.etaMinutes debe ser entero >= 1.");
+        }
+      }
+      if (Object.prototype.hasOwnProperty.call(draft.metrics, "rating")) {
+        var metricRating = toFiniteNumber(draft.metrics.rating);
+        if (metricRating === null || metricRating < 1 || metricRating > 5) {
+          errors.push("metrics.rating debe estar entre 1.0 y 5.0.");
+        }
+      }
+    }
+
+    if (
+      typeof draft.detail_editorial !== "undefined" &&
+      draft.detail_editorial !== null &&
+      (!isPlainObject(draft.detail_editorial))
+    ) {
+      errors.push("detail_editorial debe ser objeto cuando existe.");
+    }
+
+    if (isPlainObject(draft.detail_editorial)) {
+      if (Object.prototype.hasOwnProperty.call(draft.detail_editorial, "hero_badge")) {
+        var heroBadgeValue = normalizeText(draft.detail_editorial.hero_badge).toLowerCase();
+        if (heroBadgeValue && !ITEM_HERO_BADGE_OVERRIDE_VALUES.includes(heroBadgeValue)) {
+          errors.push("detail_editorial.hero_badge debe ser vegan, vegetarian, featured o none.");
+        }
+      }
+
+      if (Object.prototype.hasOwnProperty.call(draft.detail_editorial, "compare_mode")) {
+        var compareModeValue = normalizeText(draft.detail_editorial.compare_mode).toLowerCase();
+        if (compareModeValue && !ITEM_COMPARE_MODE_VALUES.includes(compareModeValue)) {
+          errors.push("detail_editorial.compare_mode debe ser enabled o disabled.");
+        }
+      }
+
+      if (
+        Object.prototype.hasOwnProperty.call(draft.detail_editorial, "pairing") &&
+        draft.detail_editorial.pairing !== null &&
+        !isPlainObject(draft.detail_editorial.pairing)
+      ) {
+        errors.push("detail_editorial.pairing debe ser objeto cuando existe.");
+      }
+
+      if (isPlainObject(draft.detail_editorial.pairing)) {
+        if (
+          Object.prototype.hasOwnProperty.call(draft.detail_editorial.pairing, "enabled") &&
+          typeof draft.detail_editorial.pairing.enabled !== "boolean"
+        ) {
+          errors.push("detail_editorial.pairing.enabled debe ser boolean.");
+        }
+      }
+
+      if (
+        Object.prototype.hasOwnProperty.call(draft.detail_editorial, "history") &&
+        draft.detail_editorial.history !== null &&
+        !isPlainObject(draft.detail_editorial.history)
+      ) {
+        errors.push("detail_editorial.history debe ser objeto cuando existe.");
+      }
+    }
+
+    if (
+      typeof draft.sensory_profile !== "undefined" &&
+      draft.sensory_profile !== null &&
+      !isPlainObject(draft.sensory_profile)
+    ) {
+      errors.push("sensory_profile debe ser objeto cuando existe.");
+    }
+
+    if (isPlainObject(draft.sensory_profile)) {
+      var sensoryApi = window.FigataMenuSensory;
+      if (
+        sensoryApi &&
+        typeof sensoryApi.sanitizeSensoryProfile === "function" &&
+        typeof sensoryApi.isCompleteSensoryProfile === "function"
+      ) {
+        var normalizedSensory = sensoryApi.sanitizeSensoryProfile(draft.sensory_profile, {
+          keepEmpty: true,
+          preserveUnknown: true
+        });
+        if (!sensoryApi.isCompleteSensoryProfile(normalizedSensory)) {
+          errors.push("sensory_profile debe incluir summary y los 8 ejes completos (1-10).");
+        }
+      } else {
+        var sensorySummary = normalizeText(draft.sensory_profile.summary);
+        if (!sensorySummary) {
+          errors.push("sensory_profile.summary es obligatorio cuando existe sensory_profile.");
+        }
+        if (!isPlainObject(draft.sensory_profile.axes)) {
+          errors.push("sensory_profile.axes debe ser objeto.");
+        } else {
+          ITEM_SENSORY_AXIS_FIELDS.forEach(function (entry) {
+            var axisEntry = draft.sensory_profile.axes[entry.axisId];
+            if (!isPlainObject(axisEntry)) {
+              errors.push("sensory_profile.axes." + entry.axisId + " debe ser objeto.");
+              return;
+            }
+            var axisValue = toFiniteNumber(axisEntry.value);
+            if (
+              axisValue === null ||
+              Math.round(axisValue) !== axisValue ||
+              axisValue < 1 ||
+              axisValue > 10
+            ) {
+              errors.push("sensory_profile.axes." + entry.axisId + ".value debe ser entero entre 1 y 10.");
+            }
+          });
+        }
+      }
     }
 
     return errors;
@@ -9970,8 +10540,31 @@
       elements.itemFieldSlug,
       elements.itemFieldSubcategory,
       elements.itemFieldPrice,
+      elements.itemFieldHeroBadgeOverride,
+      elements.itemFieldMetricCalories,
+      elements.itemFieldMetricEta,
+      elements.itemFieldMetricRating,
       elements.itemFieldDescriptionShort,
       elements.itemFieldDescriptionLong,
+      elements.itemFieldSensoryIntro,
+      elements.itemFieldSensorySummary,
+      elements.itemFieldSensoryAxisDulce,
+      elements.itemFieldSensoryAxisSalado,
+      elements.itemFieldSensoryAxisAcido,
+      elements.itemFieldSensoryAxisCremosa,
+      elements.itemFieldSensoryAxisCrujiente,
+      elements.itemFieldSensoryAxisLigero,
+      elements.itemFieldSensoryAxisAromatico,
+      elements.itemFieldSensoryAxisIntensidad,
+      elements.itemFieldCompareMode,
+      elements.itemFieldPairingEnabled,
+      elements.itemFieldPairingName,
+      elements.itemFieldPairingMeta,
+      elements.itemFieldPairingDescription,
+      elements.itemFieldPairingCtaLabel,
+      elements.itemFieldPairingCtaTarget,
+      elements.itemFieldHistoryTitle,
+      elements.itemFieldHistoryBody,
       elements.itemFieldImage,
       elements.itemAvailabilityReason,
       elements.itemFieldReviews

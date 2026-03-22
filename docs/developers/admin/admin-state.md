@@ -129,7 +129,7 @@ Item editor sub-state.
 |----------|------|---------|
 | `isOpen` | `boolean` | Whether the item editor panel is showing |
 | `isNew` | `boolean` | True if creating a new item (vs editing existing) |
-| `activeTab` | `string` | Active tab ID (`"basic"`, `"descriptions"`, `"ingredients"`, `"traits"`, `"allergens"`, `"media"`, `"availability"`) |
+| `activeTab` | `string` | Active tab ID (`"basic"`, `"editorial"`, `"traits"`, `"media"`, `"availability"`) |
 | `sourceSectionId` | `string` | Section ID of the item being edited |
 | `sourceItemIndex` | `number` | Index within the section's items array (-1 for new) |
 | `draft` | `object | null` | Working copy of the item being edited |

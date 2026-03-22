@@ -294,7 +294,9 @@ Each editor follows a common pattern:
 
 ### Panel: Item Editor
 - **Purpose:** Create/edit a single menu item with tabbed form
-- **Tabs:** Basic info, descriptions, ingredients, derived traits + `trait_overrides`, derived allergens + `allergen_overrides`, media, availability
+- **Tabs:** Basic, Editorial, Traits, Media, Availability
+- **Editorial scope:** All detail-visible content (title, price, hero badge override, header chips, descriptions, ingredients/allergens block, sensory block, compare mode, pairing block, history block, featured toggle)
+- **Data shape touched:** `descriptionShort`, `descriptionLong`, `reviews`, `ingredients`, `allergen_overrides`, `sensory_profile`, `metrics`, `detail_editorial`
 - **Key functions:** `openItemEditor()`, `saveItemEditorDraft()`, `deleteItem()`
 
 ### Panel: Homepage Editor

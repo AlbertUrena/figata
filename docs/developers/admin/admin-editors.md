@@ -95,17 +95,15 @@ state.data.menu → ensureMenuDraft() → state.drafts.menu
 
 ### Tabs
 
-The item editor has 6 tabs:
+The item editor has 5 tabs:
 
 | Tab ID | Name | Fields |
 |--------|------|--------|
-| `basic` | Basic Info | ID, name, slug, category, subcategory, price, featured flag |
-| `descriptions` | Description | Short description, long description |
-| `ingredients` | Ingredients | Ingredient search + reorderable ingredient chip list |
+| `basic` | Basic Info | ID, slug, category, subcategory |
+| `editorial` | Editorial | Detail-visible fields: title, price, hero badge override, metrics chips, short/long description, reviews, ingredients, derived/resolved allergens + overrides, sensory intro/summary/axes, compare mode, pairing block, history block, featured toggle |
 | `traits` | Traits | Derived dietary/content/experience state + editorial `trait_overrides` |
 | `media` | Media | Image picker (card, hover, modal variants) |
 | `availability` | Availability | Available toggle, sold-out reason |
-| `allergens` | Allergens | Derived allergen view (`automatic`, `sources`, `resolved`) + editorial `allergen_overrides` |
 
 ### State
 
@@ -115,7 +113,12 @@ The item editor state is stored in `state.itemEditor`:
 - `ingredients` — selected ingredient IDs
 - `availability` — `{ available, soldOutReason }`
 
-### Allergens tab
+Editorial fields are persisted on the menu item under:
+- `metrics` (`calories`, `etaMinutes`, `rating`)
+- `detail_editorial` (`hero_badge`, `compare_mode`, `sensory_intro`, `pairing`, `history`)
+- `sensory_profile` (`summary` + 8 required axes when present)
+
+### Allergens in Editorial
 
 - `ingredient.allergens` is the source of truth
 - The item editor shows:
