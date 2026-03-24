@@ -637,7 +637,7 @@ html.nav--collapsed .site-header[data-menu-sticky-mode="sticky"][data-menu-stick
   color: #f0efed;
   caret-color: #c28e5c;
   font: inherit;
-  font-size: 0.88rem;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   outline: none;
@@ -3237,7 +3237,7 @@ html.page-reload-transition main {
   }
 
   .navbar--menu-route .navbar__mobile-search-input {
-    font-size: 0.84rem;
+    font-size: 1rem;
     padding-right: 10px;
   }
 

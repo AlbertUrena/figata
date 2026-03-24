@@ -117,6 +117,8 @@
     mobileSearchLastAppliedWidth: 0,
     burgerAnimationFrameId: 0,
     burgerAnimationProgress: 0,
+    stickySearchFocusTimerId: 0,
+    stickySearchFocusCleanup: null,
   };
 
   const refs = {
@@ -941,6 +943,143 @@
 
   const isStickyActive = () => isStickyEligible() && !state.suppressAutoSticky;
 
+  const parseTransitionTimeToMs = (value) => {
+    const raw = normalizeText(value);
+
+    if (!raw) {
+      return 0;
+    }
+
+    if (raw.endsWith('ms')) {
+      const parsed = Number(raw.slice(0, -2));
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    if (raw.endsWith('s')) {
+      const parsed = Number(raw.slice(0, -1));
+      return Number.isFinite(parsed) ? parsed * 1000 : 0;
+    }
+
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const getMaxTransitionMs = (node) => {
+    if (!(node instanceof HTMLElement) && !(node instanceof HTMLInputElement)) {
+      return 0;
+    }
+
+    const computed = window.getComputedStyle(node);
+    const durations = computed.transitionDuration
+      .split(',')
+      .map((value) => parseTransitionTimeToMs(value));
+    const delays = computed.transitionDelay
+      .split(',')
+      .map((value) => parseTransitionTimeToMs(value));
+    const totalTransitions = Math.max(durations.length, delays.length, 1);
+    let maxValue = 0;
+
+    for (let index = 0; index < totalTransitions; index += 1) {
+      const duration = durations[index] ?? durations[durations.length - 1] ?? 0;
+      const delay = delays[index] ?? delays[delays.length - 1] ?? 0;
+      maxValue = Math.max(maxValue, duration + delay);
+    }
+
+    return maxValue;
+  };
+
+  const clearPendingStickySearchFocus = () => {
+    if (state.stickySearchFocusTimerId) {
+      window.clearTimeout(state.stickySearchFocusTimerId);
+      state.stickySearchFocusTimerId = 0;
+    }
+
+    if (typeof state.stickySearchFocusCleanup === 'function') {
+      state.stickySearchFocusCleanup();
+    }
+
+    state.stickySearchFocusCleanup = null;
+  };
+
+  const focusStickySearchInput = (targetInput) => {
+    if (!(targetInput instanceof HTMLInputElement)) {
+      return;
+    }
+
+    try {
+      targetInput.focus({ preventScroll: true });
+    } catch {
+      targetInput.focus();
+    }
+    targetInput.select();
+  };
+
+  const scheduleStickySearchFocusCommit = ({ targetInput, revealRoot }) => {
+    if (!(targetInput instanceof HTMLInputElement)) {
+      return;
+    }
+
+    const commitFocus = () => {
+      if (!state.stickySearchOpen || !targetInput.isConnected) {
+        return;
+      }
+
+      focusStickySearchInput(targetInput);
+    };
+
+    const shouldWaitForReveal =
+      !reducedMotionQuery.matches &&
+      ((revealRoot instanceof HTMLElement && getMaxTransitionMs(revealRoot) > 0) ||
+        getMaxTransitionMs(targetInput) > 0);
+
+    if (!shouldWaitForReveal) {
+      commitFocus();
+      return;
+    }
+
+    clearPendingStickySearchFocus();
+
+    const waitMs = Math.min(
+      1000,
+      Math.round(
+        Math.max(
+          getMaxTransitionMs(revealRoot),
+          getMaxTransitionMs(targetInput)
+        ) + 32
+      )
+    );
+
+    const cleanup = () => {
+      if (revealRoot instanceof HTMLElement) {
+        revealRoot.removeEventListener('transitionend', onTransitionEnd);
+      }
+      targetInput.removeEventListener('transitionend', onTransitionEnd);
+    };
+
+    const onTransitionEnd = (event) => {
+      if (
+        event.target !== targetInput &&
+        (!(revealRoot instanceof HTMLElement) || event.target !== revealRoot)
+      ) {
+        return;
+      }
+
+      clearPendingStickySearchFocus();
+      commitFocus();
+    };
+
+    if (revealRoot instanceof HTMLElement) {
+      revealRoot.addEventListener('transitionend', onTransitionEnd);
+    }
+    targetInput.addEventListener('transitionend', onTransitionEnd);
+
+    state.stickySearchFocusCleanup = cleanup;
+    state.stickySearchFocusTimerId = window.setTimeout(() => {
+      clearPendingStickySearchFocus();
+      commitFocus();
+    }, waitMs);
+  };
+
   const updateSearchControlsFor = (input, clearButton) => {
     if (
       !(input instanceof HTMLInputElement) ||
@@ -1574,16 +1713,23 @@
       refs.ctaButton.tabIndex = hideCta ? -1 : 0;
     }
 
+    if (!searchOpen) {
+      clearPendingStickySearchFocus();
+    }
+
     if (searchOpen && state.shouldFocusCompactSearch) {
       state.shouldFocusCompactSearch = false;
-      window.requestAnimationFrame(() => {
-        const targetInput =
-          isMobile && refs.mobileSearchInput instanceof HTMLInputElement
-            ? refs.mobileSearchInput
-            : refs.compactSearchInput;
-        targetInput?.focus();
-        targetInput?.select();
-      });
+      const targetInput =
+        isMobile && refs.mobileSearchInput instanceof HTMLInputElement
+          ? refs.mobileSearchInput
+          : refs.compactSearchInput;
+      const revealRoot =
+        isMobile && refs.mobileSearchPanel instanceof HTMLElement
+          ? refs.mobileSearchPanel
+          : refs.compactSearchShell;
+
+      focusStickySearchInput(targetInput);
+      scheduleStickySearchFocusCommit({ targetInput, revealRoot });
     }
 
     syncStickySearchHelpers();

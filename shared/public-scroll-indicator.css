@@ -15,9 +15,8 @@ body::-webkit-scrollbar {
 
 .public-scroll-indicator {
   position: fixed;
-  inset: 10vh max(0px, env(safe-area-inset-right)) auto auto;
+  inset: 0 max(0px, env(safe-area-inset-right)) 0 auto;
   width: 0.26em;
-  height: 80vh;
   z-index: 18;
   pointer-events: none;
   opacity: 0;
@@ -77,9 +76,7 @@ body.menu-filters-open .public-scroll-indicator:not(.public-scroll-indicator--co
 
 @media (max-width: 767px) {
   .public-scroll-indicator {
-    inset: 14vh max(0px, env(safe-area-inset-right)) auto auto;
     width: 0.23em;
-    height: 72vh;
   }
 
   .public-scroll-indicator--contained {
