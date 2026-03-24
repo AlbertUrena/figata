@@ -1963,6 +1963,14 @@
           enterkeyhint="search">
       </span>
       <button
+        class="navbar__mobile-search-clear"
+        type="button"
+        aria-label="Limpiar búsqueda"
+        aria-hidden="true"
+        tabindex="-1">
+        ${iconMarkup('clear')}
+      </button>
+      <button
         class="navbar__mobile-search-filter"
         type="button"
         aria-label="Filtros del menú"
@@ -2223,6 +2231,16 @@
         refs.compactSearchInput.value = '';
         updateCompactSearchControls();
         window.FigataMenuPage?.setSearchQuery?.('');
+        if (isMobileViewport()) {
+          if (
+            document.activeElement === refs.compactSearchInput &&
+            typeof refs.compactSearchInput.blur === 'function'
+          ) {
+            refs.compactSearchInput.blur();
+          }
+          return;
+        }
+
         refs.compactSearchInput.focus();
       });
     }
@@ -2271,7 +2289,12 @@
         refs.mobileSearchInput.value = '';
         updateCompactSearchControls();
         window.FigataMenuPage?.setSearchQuery?.('');
-        refs.mobileSearchInput.focus();
+        if (
+          document.activeElement === refs.mobileSearchInput &&
+          typeof refs.mobileSearchInput.blur === 'function'
+        ) {
+          refs.mobileSearchInput.blur();
+        }
       });
     }
 

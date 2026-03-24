@@ -11315,7 +11315,9 @@
 
       searchInput.value = '';
       applySearchQuery('');
-      searchInput.focus();
+      if (document.activeElement === searchInput && typeof searchInput.blur === 'function') {
+        searchInput.blur();
+      }
     });
   }
 
@@ -11394,7 +11396,12 @@
       state.compareSearchQuery = '';
       syncCompareSearchControls();
       renderCompareModalShell();
-      compareSearchInput.focus();
+      if (
+        document.activeElement === compareSearchInput &&
+        typeof compareSearchInput.blur === 'function'
+      ) {
+        compareSearchInput.blur();
+      }
     });
   }
 
