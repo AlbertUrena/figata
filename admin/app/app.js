@@ -44,6 +44,21 @@
   var INGREDIENT_CATEGORY_KEYWORDS = C.INGREDIENT_CATEGORY_KEYWORDS;
   var ITEM_HERO_BADGE_OVERRIDE_VALUES = ["vegan", "vegetarian", "featured", "none"];
   var ITEM_COMPARE_MODE_VALUES = ["enabled", "disabled"];
+  var ITEM_EDITOR_PREVIEW_SYNC_DEBOUNCE_MS = 130;
+  var ITEM_EDITOR_PREVIEW_MESSAGE_READY = "figata-admin-preview:ready";
+  var ITEM_EDITOR_PREVIEW_MESSAGE_UPDATE = "figata-admin-preview:update-detail";
+  var ITEM_EDITOR_PREVIEW_MESSAGE_SCROLL = "figata-admin-preview:scroll-to-section";
+  var ITEM_EDITOR_PREVIEW_MESSAGE_NAVIGATE_EDITOR = "figata-admin-preview:navigate-editor";
+  var ITEM_EDITOR_PREVIEW_TAB_BY_SECTION = {
+    "hero-media": "media",
+    "header": "editorial",
+    "summary": "editorial",
+    "ingredients": "editorial",
+    "allergens": "editorial",
+    "sensory": "editorial",
+    "pairings": "editorial",
+    "story": "editorial"
+  };
   var ITEM_SENSORY_AXIS_FIELDS = [
     { axisId: "dulce", elementKey: "itemFieldSensoryAxisDulce" },
     { axisId: "salado", elementKey: "itemFieldSensoryAxisSalado" },
@@ -54,6 +69,41 @@
     { axisId: "aromatico", elementKey: "itemFieldSensoryAxisAromatico" },
     { axisId: "intensidad", elementKey: "itemFieldSensoryAxisIntensidad" }
   ];
+  var ITEM_EDITOR_PREVIEW_SECTION_BY_FIELD_ID = {
+    "item-field-name": "header",
+    "item-field-price": "header",
+    "item-field-hero-badge-override": "header",
+    "item-field-metric-calories": "header",
+    "item-field-metric-eta": "header",
+    "item-field-metric-rating": "header",
+    "item-field-featured": "header",
+    "item-availability-toggle": "header",
+    "item-field-description": "header",
+    "item-field-reviews": "summary",
+    "ingredient-search-input": "ingredients",
+    "allergen-override-add-search-input": "allergens",
+    "allergen-override-remove-search-input": "allergens",
+    "item-field-sensory-summary": "sensory",
+    "item-field-sensory-axis-dulce": "sensory",
+    "item-field-sensory-axis-salado": "sensory",
+    "item-field-sensory-axis-acido": "sensory",
+    "item-field-sensory-axis-cremosa": "sensory",
+    "item-field-sensory-axis-crujiente": "sensory",
+    "item-field-sensory-axis-ligero": "sensory",
+    "item-field-sensory-axis-aromatico": "sensory",
+    "item-field-sensory-axis-intensidad": "sensory",
+    "item-field-compare-mode": "sensory",
+    "item-field-pairing-enabled": "pairings",
+    "item-field-pairing-name": "pairings",
+    "item-field-pairing-meta": "pairings",
+    "item-field-pairing-description": "pairings",
+    "item-field-pairing-cta-label": "pairings",
+    "item-field-pairing-cta-target": "pairings",
+    "item-field-history-title": "story",
+    "item-field-history-body": "story",
+    "item-field-image": "hero-media",
+    "item-media-picker": "hero-media"
+  };
 
   var state = {
     data: null,
@@ -107,6 +157,7 @@
       "menu-browser": null,
       "home-editor": null,
       "pages-editor": null,
+      "modal-editor": null,
       "ingredients-editor": null,
       "categories-editor": null,
       "restaurant-editor": null,
@@ -135,10 +186,20 @@
     mediaActiveSectionId: "",
     mediaAnchorTargets: [],
     mediaScrollSpyFrame: 0,
+    modalEditor: {
+      activeSubpanelId: "account",
+      previewBridge: {
+        frameSrc: "",
+        frameLoaded: false,
+        bridgeReady: false,
+        syncTimer: 0,
+        pendingPayload: null
+      }
+    },
     itemEditor: {
       isOpen: false,
       isNew: false,
-      activeTab: "basic",
+      activeTab: "editorial",
       sourceSectionId: "",
       sourceItemIndex: -1,
       draft: null,
@@ -146,6 +207,13 @@
       availability: {
         available: true,
         soldOutReason: ""
+      },
+      previewBridge: {
+        frameSrc: "",
+        frameLoaded: false,
+        bridgeReady: false,
+        syncTimer: 0,
+        pendingPayload: null
       }
     },
     ingredientsEditor: {
@@ -189,6 +257,7 @@
     menuItemPanel: document.getElementById("menu-item-panel"),
     homeEditorPanel: document.getElementById("home-editor-panel"),
     pagesEditorPanel: document.getElementById("pages-editor-panel"),
+    modalEditorPanel: document.getElementById("modal-editor-panel"),
     ingredientsEditorPanel: document.getElementById("ingredients-editor-panel"),
     categoriesEditorPanel: document.getElementById("categories-editor-panel"),
     restaurantEditorPanel: document.getElementById("restaurant-editor-panel"),
@@ -206,6 +275,7 @@
     sidebarNavMenu: document.getElementById("sidebar-nav-menu"),
     sidebarNavHomepage: document.getElementById("sidebar-nav-homepage"),
     sidebarNavPages: document.getElementById("sidebar-nav-pages"),
+    sidebarNavModal: document.getElementById("sidebar-nav-modal"),
     sidebarNavIngredients: document.getElementById("sidebar-nav-ingredients"),
     sidebarNavCategories: document.getElementById("sidebar-nav-categories"),
     sidebarNavRestaurant: document.getElementById("sidebar-nav-restaurant"),
@@ -235,6 +305,7 @@
     openMenuBrowserButton: document.getElementById("open-menu-browser-button"),
     openHomepageEditorButton: document.getElementById("open-homepage-editor-button"),
     openPagesEditorButton: document.getElementById("open-pages-editor-button"),
+    openModalEditorButton: document.getElementById("open-modal-editor-button"),
     openIngredientsEditorButton: document.getElementById("open-ingredients-editor-button"),
     openCategoriesEditorButton: document.getElementById("open-categories-editor-button"),
     openRestaurantEditorButton: document.getElementById("open-restaurant-editor-button"),
@@ -368,9 +439,7 @@
     itemFieldMetricEta: document.getElementById("item-field-metric-eta"),
     itemFieldMetricRating: document.getElementById("item-field-metric-rating"),
 
-    itemFieldDescriptionShort: document.getElementById("item-field-description-short"),
-    itemFieldDescriptionLong: document.getElementById("item-field-description-long"),
-    itemFieldSensoryIntro: document.getElementById("item-field-sensory-intro"),
+    itemFieldDescription: document.getElementById("item-field-description"),
     itemFieldSensorySummary: document.getElementById("item-field-sensory-summary"),
     itemFieldSensoryAxisDulce: document.getElementById("item-field-sensory-axis-dulce"),
     itemFieldSensoryAxisSalado: document.getElementById("item-field-sensory-axis-salado"),
@@ -426,17 +495,10 @@
     itemFieldExperienceTagsMode: document.getElementById("item-field-experience-tags-mode"),
     itemExperienceTagsEditor: document.getElementById("item-experience-tags-editor"),
     itemFieldReviews: document.getElementById("item-field-reviews"),
+    itemEditorMobilePreviewFrame: document.getElementById("item-editor-mobile-preview-frame"),
+    itemEditorMobilePreviewLoading: document.getElementById("item-editor-mobile-preview-loading"),
 
-    topbar: document.querySelector(".topbar"),
-
-    previewCardImage: document.getElementById("preview-card-image"),
-    previewCardName: document.getElementById("preview-card-name"),
-    previewCardShort: document.getElementById("preview-card-short"),
-    previewCardBadges: document.getElementById("preview-card-badges"),
-    previewModalImage: document.getElementById("preview-modal-image"),
-    previewModalName: document.getElementById("preview-modal-name"),
-    previewModalLong: document.getElementById("preview-modal-long"),
-    previewModalPrice: document.getElementById("preview-modal-price")
+    topbar: document.querySelector(".topbar")
   };
 
   var dragState = {
@@ -446,6 +508,7 @@
     categoryOrderIndex: null,
     categoryOrderDropIndex: null
   };
+  var itemEditorPreviewBridgeBound = false;
 
   // --- Utilities (from modules/utils.js) ---
   var U = window.FigataAdmin.utils;
@@ -512,6 +575,12 @@
     statusElement.textContent = message || "";
   }
 
+  function setModalEditorStatus(message) {
+    var statusElement = document.getElementById("modal-editor-status");
+    if (!statusElement) return;
+    statusElement.textContent = message || "";
+  }
+
   function setCurrentEditorStatus(message) {
     if (state.currentPanel === "home-editor") {
       setHomeEditorStatus(message);
@@ -535,6 +604,10 @@
     }
     if (state.currentPanel === "pages-editor") {
       setPagesEditorStatus(message);
+      return;
+    }
+    if (state.currentPanel === "modal-editor") {
+      setModalEditorStatus(message);
       return;
     }
     setItemEditorStatus(message);
@@ -717,6 +790,18 @@
         production: document.getElementById("media-publish-production-button")
       };
     }
+    if (panel === "pages-editor") {
+      return {
+        preview: document.getElementById("pages-publish-preview-button"),
+        production: document.getElementById("pages-publish-production-button")
+      };
+    }
+    if (panel === "modal-editor") {
+      return {
+        preview: document.getElementById("modal-publish-preview-button"),
+        production: document.getElementById("modal-publish-production-button")
+      };
+    }
     return null;
   }
 
@@ -726,7 +811,9 @@
       getPublishButtonSet("home-editor"),
       getPublishButtonSet("ingredients-editor"),
       getPublishButtonSet("restaurant-editor"),
-      getPublishButtonSet("media-editor")
+      getPublishButtonSet("media-editor"),
+      getPublishButtonSet("pages-editor"),
+      getPublishButtonSet("modal-editor")
     ].filter(function (buttonSet) {
       return buttonSet && (buttonSet.preview || buttonSet.production);
     });
@@ -966,6 +1053,7 @@
         sidebarNavMenu: elements.sidebarNavMenu,
         sidebarNavHomepage: elements.sidebarNavHomepage,
         sidebarNavPages: elements.sidebarNavPages,
+        sidebarNavModal: elements.sidebarNavModal,
         sidebarNavIngredients: elements.sidebarNavIngredients,
         sidebarNavCategories: elements.sidebarNavCategories,
         sidebarNavRestaurant: elements.sidebarNavRestaurant,
@@ -1045,6 +1133,7 @@
       setIngredientsEditorStatus: setIngredientsEditorStatus,
       setCategoriesEditorStatus: setCategoriesEditorStatus,
       setPagesEditorStatus: setPagesEditorStatus,
+      setModalEditorStatus: setModalEditorStatus,
       refreshRestaurantScrollAnchors: refreshRestaurantScrollAnchors,
       updateRestaurantScrollSpy: updateRestaurantScrollSpy,
       persistDraftsToLocalStorage: persistDraftsToLocalStorage,
@@ -1085,6 +1174,7 @@
       setIngredientsEditorStatus: setIngredientsEditorStatus,
       setCategoriesEditorStatus: setCategoriesEditorStatus,
       setPagesEditorStatus: setPagesEditorStatus,
+      setModalEditorStatus: setModalEditorStatus,
       setActiveMediaSection: setActiveMediaSection,
       refreshMediaScrollAnchors: refreshMediaScrollAnchors,
       updateMediaScrollSpy: updateMediaScrollSpy,
@@ -1103,8 +1193,10 @@
       state: state,
       views: views,
       ensureDataLoaded: ensureDataLoaded,
+      ensureHomeDraft: ensureHomeDraft,
       setActivePanel: setActivePanel,
       navigateToRoute: navigateToRoute,
+      persistDraftsToLocalStorage: persistDraftsToLocalStorage,
       setMenuBrowserStatus: setMenuBrowserStatus,
       setItemEditorStatus: setItemEditorStatus,
       setHomeEditorStatus: setHomeEditorStatus,
@@ -1113,15 +1205,51 @@
       setRestaurantEditorStatus: setRestaurantEditorStatus,
       setMediaEditorStatus: setMediaEditorStatus,
       setPagesEditorStatus: setPagesEditorStatus,
+      setModalEditorStatus: setModalEditorStatus,
       renderSidebarPagesAccordion: renderSidebarPagesAccordion,
       setActivePagesSection: setActivePagesSection,
       refreshPagesScrollAnchors: refreshPagesScrollAnchors,
-      updatePagesScrollSpy: updatePagesScrollSpy
+      updatePagesScrollSpy: updatePagesScrollSpy,
+      saveDraftsToLocalFiles: saveDraftsToLocalFiles,
+      publishChanges: publishChanges,
+      exportCurrentDrafts: exportCurrentDrafts
     };
   }
   function openPagesEditor(options) {
     if (!PAGES) return;
     return PAGES.open(_pagesCtx(), options);
+  }
+
+  // --- Modal Editor (delegated to modules/panels/modal-panel.js) ---
+  var MODAL = window.FigataAdmin.modalPanel;
+  function _modalCtx() {
+    return {
+      state: state,
+      views: views,
+      ensureDataLoaded: ensureDataLoaded,
+      ensureHomeDraft: ensureHomeDraft,
+      ensureMenuDraft: ensureMenuDraft,
+      getAllMenuItems: getAllMenuItems,
+      setActivePanel: setActivePanel,
+      navigateToRoute: navigateToRoute,
+      persistDraftsToLocalStorage: persistDraftsToLocalStorage,
+      setMenuBrowserStatus: setMenuBrowserStatus,
+      setItemEditorStatus: setItemEditorStatus,
+      setHomeEditorStatus: setHomeEditorStatus,
+      setIngredientsEditorStatus: setIngredientsEditorStatus,
+      setCategoriesEditorStatus: setCategoriesEditorStatus,
+      setRestaurantEditorStatus: setRestaurantEditorStatus,
+      setMediaEditorStatus: setMediaEditorStatus,
+      setPagesEditorStatus: setPagesEditorStatus,
+      setModalEditorStatus: setModalEditorStatus,
+      saveDraftsToLocalFiles: saveDraftsToLocalFiles,
+      publishChanges: publishChanges,
+      exportCurrentDrafts: exportCurrentDrafts
+    };
+  }
+  function openModalEditor(options) {
+    if (!MODAL) return;
+    return MODAL.open(_modalCtx(), options);
   }
 
   function hashHasAuthToken() {
@@ -2412,6 +2540,48 @@
     if (!home.footer || typeof home.footer !== "object") {
       home.footer = {};
     }
+    if (!home.menu_page || typeof home.menu_page !== "object") {
+      home.menu_page = {};
+    }
+    if (!home.menu_detail_editorial || typeof home.menu_detail_editorial !== "object") {
+      home.menu_detail_editorial = {};
+    }
+
+    function ensureHomeObjectPath(path) {
+      var segments = String(path || "").split(".").filter(Boolean);
+      if (!segments.length) return home;
+      var cursor = home;
+      segments.forEach(function (segment) {
+        if (!cursor[segment] || typeof cursor[segment] !== "object" || Array.isArray(cursor[segment])) {
+          cursor[segment] = {};
+        }
+        cursor = cursor[segment];
+      });
+      return cursor;
+    }
+
+    function ensureHomeStringPath(path, fallback) {
+      var segments = String(path || "").split(".").filter(Boolean);
+      if (!segments.length) return;
+      var leaf = segments.pop();
+      var parent = ensureHomeObjectPath(segments.join("."));
+      if (typeof parent[leaf] !== "string") {
+        parent[leaf] = String(fallback || "");
+      } else {
+        parent[leaf] = String(parent[leaf]).trim();
+      }
+    }
+
+    function ensureHomeStringArrayPath(path, fallbackList) {
+      var segments = String(path || "").split(".").filter(Boolean);
+      if (!segments.length) return;
+      var leaf = segments.pop();
+      var parent = ensureHomeObjectPath(segments.join("."));
+      var source = Array.isArray(parent[leaf]) ? parent[leaf] : (Array.isArray(fallbackList) ? fallbackList : []);
+      parent[leaf] = source.map(function (entry) {
+        return String(entry || "").trim();
+      }).filter(Boolean);
+    }
 
     home.hero.title = String(home.hero.title || "Pizza napolitana autentica").trim();
     home.hero.subtitle = String(
@@ -2583,6 +2753,168 @@
     home.footer.cta.url = String(home.footer.cta.url || HOME_FOOTER_DEFAULT_CTA.url).trim();
     home.footer.socials = normalizeHomeFooterSocials(home.footer.socials);
     home.footer.note = String(home.footer.note || "").trim();
+    ensureHomeStringPath("menu_page.hero.title", "Nuestra selecci\u00f3n");
+    ensureHomeStringPath(
+      "menu_page.hero.subtitle",
+      "Una carta pensada para compartir, descubrir sabores y volver a pedir tus favoritos."
+    );
+    ensureHomeStringPath("menu_page.search.placeholder", "");
+    ensureHomeStringPath("menu_page.search.helper_prefix", "Busca por");
+    ensureHomeStringArrayPath(
+      "menu_page.search.helper_words",
+      ["ingredientes", "al\u00e9rgenos", "platos", "bebidas"]
+    );
+    ensureHomeStringPath("menu_page.search.empty_state.title", "No encontramos resultados");
+    ensureHomeStringPath("menu_page.search.empty_state.description", "No vimos coincidencias en el men\u00fa.");
+    ensureHomeStringPath(
+      "menu_page.search.empty_state.description_with_query",
+      "No vimos coincidencias para \"{query}\" en el men\u00fa."
+    );
+    ensureHomeStringPath(
+      "menu_page.search.empty_state.hint",
+      "Prueba con otro t\u00e9rmino o revisa la ortograf\u00eda."
+    );
+    ensureHomeStringPath("menu_page.account_modal.title", "Tu cuenta");
+    ensureHomeStringPath("menu_page.account_modal.empty_state.title", "\u00a1A\u00fan no has a\u00f1adido nada!");
+    ensureHomeStringPath(
+      "menu_page.account_modal.empty_state.description",
+      "Explora el men\u00fa y cada plato o bebida que a\u00f1adas aparecer\u00e1 aqu\u00ed con su total estimado"
+    );
+    ensureHomeStringPath("menu_page.account_modal.labels.subtotal", "Subtotal");
+    ensureHomeStringPath("menu_page.account_modal.labels.itbis", "ITBIS (18%)");
+    ensureHomeStringPath("menu_page.account_modal.labels.legal_tip", "Propina legal (10%)");
+    ensureHomeStringPath("menu_page.account_modal.labels.total", "Total");
+    ensureHomeStringPath("menu_page.account_modal.total_tooltip.title", "Total estimado");
+    ensureHomeStringPath(
+      "menu_page.account_modal.total_tooltip.description",
+      "Este monto es una referencia de tu cuenta e incluye ITBIS y propina legal. El total final puede variar al momento de ordenar."
+    );
+    ensureHomeStringPath("menu_page.account_modal.remove_toast.title", "\u00cdtem eliminado");
+    ensureHomeStringPath("menu_page.account_modal.remove_toast.description", "Si fue un error, a\u00fan puedes deshacerlo");
+    ensureHomeStringPath("menu_page.filter_modal.title", "Filtrar");
+    ensureHomeStringPath("menu_page.filter_modal.sections.allergens.title", "Al\u00e9rgenos");
+    ensureHomeStringPath(
+      "menu_page.filter_modal.sections.allergens.description",
+      "Selecciona lo que prefieres evitar."
+    );
+    ensureHomeStringPath("menu_page.filter_modal.sections.pizza_type.title", "Tipo de pizza");
+    ensureHomeStringPath("menu_page.filter_modal.sections.pizza_type.tabs.all", "Todas");
+    ensureHomeStringPath("menu_page.filter_modal.sections.pizza_type.tabs.clasica", "Cl\u00e1sicas");
+    ensureHomeStringPath("menu_page.filter_modal.sections.pizza_type.tabs.autor", "De autor");
+    ensureHomeStringPath("menu_page.filter_modal.sections.price_range.title", "Rango de precio");
+    ensureHomeStringPath(
+      "menu_page.filter_modal.sections.price_range.description",
+      "Vista preliminar del reparto de precios actual en la carta completa."
+    );
+    ensureHomeStringPath("menu_page.filter_modal.sections.price_range.min_label", "M\u00ednimo");
+    ensureHomeStringPath("menu_page.filter_modal.sections.price_range.max_label", "M\u00e1ximo");
+    ensureHomeStringPath("menu_page.filter_modal.sections.dietary.title", "Dieta");
+    ensureHomeStringPath(
+      "menu_page.filter_modal.sections.dietary.vegetarian_title",
+      "Vegetariana"
+    );
+    ensureHomeStringPath(
+      "menu_page.filter_modal.sections.dietary.vegetarian_description",
+      "Sin carne, llena de sabor"
+    );
+    ensureHomeStringPath("menu_page.filter_modal.sections.dietary.vegan_title", "Vegana");
+    ensureHomeStringPath(
+      "menu_page.filter_modal.sections.dietary.vegan_description",
+      "100% vegetal y ligera"
+    );
+    ensureHomeStringPath(
+      "menu_page.filter_modal.sections.organoleptic.title",
+      "Perfil organol\u00e9ptico"
+    );
+    ensureHomeStringPath(
+      "menu_page.filter_modal.sections.organoleptic.description",
+      "Perfiles que resumen c\u00f3mo se siente cada plato al probarlo."
+    );
+    ensureHomeStringPath("menu_page.filter_modal.actions.clear_label", "Limpiar");
+    ensureHomeStringPath("menu_page.filter_modal.actions.apply_prefix", "Mostrar");
+    ensureHomeStringPath("menu_page.filter_modal.actions.apply_suffix", "platos");
+    ensureHomeStringPath("menu_page.states.loading", "Cargando men\u00fa...");
+    ensureHomeStringPath("menu_page.states.no_categories", "No hay categor\u00edas disponibles en este momento.");
+    ensureHomeStringPath("menu_page.states.load_error", "No se pudo cargar el men\u00fa.");
+    ensureHomeStringPath("menu_page.category_empty_messages.entradas", "No hay entradas disponibles en este momento.");
+    ensureHomeStringPath("menu_page.category_empty_messages.pizzas", "No hay pizzas disponibles en este momento.");
+    ensureHomeStringPath("menu_page.category_empty_messages.postres", "No hay postres disponibles en este momento.");
+    ensureHomeStringPath("menu_page.category_empty_messages.bebidas", "Nuestra selecci\u00f3n de bebidas estar\u00e1 disponible pronto.");
+    ensureHomeStringPath("menu_page.category_empty_messages.productos", "No hay productos disponibles en este momento.");
+
+    ensureHomeStringPath("menu_detail_editorial.sensory.section_title", "Perfil sensorial");
+    ensureHomeStringPath("menu_detail_editorial.sensory.subtitle", "Una lectura sensorial del plato: c\u00f3mo se expresa en sabor, textura y aroma.");
+    ensureHomeStringPath("menu_detail_editorial.sensory.compare_button_label", "Comparar");
+    ensureHomeStringPath("menu_detail_editorial.sensory.compare_button_label_active", "Cambiar");
+    ensureHomeStringPath("menu_detail_editorial.sensory.tabs.radar_label", "Radar");
+    ensureHomeStringPath("menu_detail_editorial.sensory.tabs.bars_label", "Barras");
+    ensureHomeStringPath("menu_detail_editorial.sensory.comparison_clear_label", "Quitar");
+    ensureHomeStringPath("menu_detail_editorial.compare_modal.title", "Comparar");
+    ensureHomeStringPath(
+      "menu_detail_editorial.compare_modal.description",
+      "Selecciona otro plato para comparar su perfil sensorial con el actual."
+    );
+    ensureHomeStringPath("menu_detail_editorial.compare_modal.search_placeholder", "");
+    ensureHomeStringPath("menu_detail_editorial.compare_modal.search_helper_prefix", "Busca por");
+    ensureHomeStringPath("menu_detail_editorial.compare_modal.search_helper_word", "plato");
+    ensureHomeStringPath("menu_detail_editorial.compare_modal.empty_state.title", "Sin resultados");
+    ensureHomeStringPath(
+      "menu_detail_editorial.compare_modal.empty_state.description",
+      "No hay platos elegibles para comparar en este momento."
+    );
+    ensureHomeStringPath(
+      "menu_detail_editorial.compare_modal.empty_state.description_with_query",
+      "No hay coincidencias para \"{query}\" en entradas y pizzas con perfil sensorial."
+    );
+    ensureHomeStringPath("menu_detail_editorial.compare_modal.current_item_prefix", "Plato actual:");
+    ensureHomeStringPath("menu_detail_editorial.compare_modal.current_item_fallback", "Selecciona un plato para comparar.");
+    ensureHomeStringPath("menu_detail_editorial.compare_modal.candidate_summary_fallback", "Perfil sensorial disponible");
+    ensureHomeStringPath("menu_detail_editorial.pairings.section_title", "Maridajes recomendados");
+    ensureHomeStringPath(
+      "menu_detail_editorial.pairings.section_subtitle",
+      "Selecci\u00f3n del sommelier de Figata para elevar cada bocado."
+    );
+    ensureHomeStringPath("menu_detail_editorial.pairings.cta_fallback_label", "A\u00f1adir maridaje");
+    ensureHomeStringPath("menu_detail_editorial.story.section_title", "La historia detr\u00e1s");
+    ensureHomeStringPath("menu_detail_editorial.info_chips.calories.title", "Calor\u00edas estimadas");
+    ensureHomeStringPath(
+      "menu_detail_editorial.info_chips.calories.description",
+      "Valor aproximado por porci\u00f3n. Puede variar seg\u00fan ingredientes, tama\u00f1o y preparaci\u00f3n final."
+    );
+    ensureHomeStringPath("menu_detail_editorial.info_chips.eta.title", "Tiempo estimado");
+    ensureHomeStringPath(
+      "menu_detail_editorial.info_chips.eta.description",
+      "Tiempo aproximado de servicio desde que ordenas. Puede variar seg\u00fan horario y volumen de pedidos."
+    );
+    ensureHomeStringPath("menu_detail_editorial.sensory_axis_tooltips.dulce.title", "Dulzor");
+    ensureHomeStringPath("menu_detail_editorial.sensory_axis_tooltips.dulce.description", "Qu\u00e9 tan presentes son las notas dulces.");
+    ensureHomeStringPath("menu_detail_editorial.sensory_axis_tooltips.salado.title", "Salinidad");
+    ensureHomeStringPath("menu_detail_editorial.sensory_axis_tooltips.salado.description", "Nivel de sal y saz\u00f3n dominante.");
+    ensureHomeStringPath("menu_detail_editorial.sensory_axis_tooltips.acido.title", "Acidez");
+    ensureHomeStringPath("menu_detail_editorial.sensory_axis_tooltips.acido.description", "Frescura c\u00edtrica o sensaci\u00f3n \u00e1cida en boca.");
+    ensureHomeStringPath("menu_detail_editorial.sensory_axis_tooltips.cremosa.title", "Cremosidad");
+    ensureHomeStringPath("menu_detail_editorial.sensory_axis_tooltips.cremosa.description", "Textura suave, untuosa y envolvente.");
+    ensureHomeStringPath("menu_detail_editorial.sensory_axis_tooltips.crujiente.title", "Crujiente");
+    ensureHomeStringPath("menu_detail_editorial.sensory_axis_tooltips.crujiente.description", "Grado de crocancia al morder.");
+    ensureHomeStringPath("menu_detail_editorial.sensory_axis_tooltips.ligero.title", "Ligereza");
+    ensureHomeStringPath("menu_detail_editorial.sensory_axis_tooltips.ligero.description", "Qu\u00e9 tan liviano se siente el plato.");
+    ensureHomeStringPath("menu_detail_editorial.sensory_axis_tooltips.aromatico.title", "Aromas");
+    ensureHomeStringPath("menu_detail_editorial.sensory_axis_tooltips.aromatico.description", "Intensidad y riqueza arom\u00e1tica al servir.");
+    ensureHomeStringPath("menu_detail_editorial.sensory_axis_tooltips.intensidad.title", "Intensidad");
+    ensureHomeStringPath("menu_detail_editorial.sensory_axis_tooltips.intensidad.description", "Fuerza global del sabor en cada bocado.");
+
+    ensureHomeStringPath(
+      "menu_detail_editorial.sensory_subtitle",
+      "Una lectura sensorial del plato: c\u00f3mo se expresa en sabor, textura y aroma."
+    );
+    var sensorySubtitleLegacy = String(home.menu_detail_editorial.sensory_subtitle || "").trim();
+    var sensorySubtitleNested = String(
+      home.menu_detail_editorial.sensory &&
+      home.menu_detail_editorial.sensory.subtitle || ""
+    ).trim();
+    var normalizedSensorySubtitle = sensorySubtitleNested || sensorySubtitleLegacy || "Una lectura sensorial del plato: c\u00f3mo se expresa en sabor, textura y aroma.";
+    home.menu_detail_editorial.sensory_subtitle = normalizedSensorySubtitle;
+    home.menu_detail_editorial.sensory.subtitle = normalizedSensorySubtitle;
 
     if (typeof home.sections.navbar !== "boolean") {
       home.sections.navbar = typeof home.sections.reservation === "boolean"
@@ -2858,6 +3190,7 @@
       setRestaurantEditorStatus("");
       setMediaEditorStatus("");
       setPagesEditorStatus("");
+      setModalEditorStatus("");
       showItemEditorErrors([]);
       applyRoute();
     } catch (error) {
@@ -2932,6 +3265,7 @@
     setRestaurantEditorStatus("");
     setMediaEditorStatus("");
     setPagesEditorStatus("");
+    setModalEditorStatus("");
     showItemEditorErrors([]);
   }
 
@@ -3860,8 +4194,15 @@
     }
   }
 
+  function resolveItemDescriptionText(item) {
+    return String(
+      (item && (item.description || item.descriptionLong || item.descriptionShort)) ||
+      ""
+    ).replace(/\s+/g, " ").trim();
+  }
+
   function getItemCardDescription(item) {
-    var source = (item.descriptionShort || item.descriptionLong || "").replace(/\s+/g, " ").trim();
+    var source = resolveItemDescriptionText(item);
     if (!source) {
       return "Sin descripcion por ahora.";
     }
@@ -4047,8 +4388,7 @@
       slug: itemId.replace(/_/g, "-"),
       category: categoryId,
       subcategory: subcategoryId,
-      descriptionShort: "",
-      descriptionLong: "",
+      description: "",
       price: 0,
       ingredients: [],
       image: MENU_PLACEHOLDER_IMAGE,
@@ -4126,6 +4466,11 @@
       var panelTab = panel.getAttribute("data-tab-panel");
       panel.classList.toggle("is-active", panelTab === tabId);
     });
+
+    var previewSectionFromTab = resolvePreviewSectionFromTab(tabId);
+    if (previewSectionFromTab) {
+      scrollItemEditorPreviewToSection(previewSectionFromTab);
+    }
   }
 
   function renderIngredientChips() {
@@ -4180,34 +4525,368 @@
     }
   }
 
+  function getAdminSiteBasePath() {
+    var pathname = String((window.location && window.location.pathname) || "");
+    var markerIndex = pathname.indexOf("/admin/app/");
+    if (markerIndex < 0) {
+      markerIndex = pathname.indexOf("/admin/app");
+    }
+    if (markerIndex < 0) {
+      return "";
+    }
+    return pathname.slice(0, markerIndex);
+  }
+
+  function buildItemEditorPreviewUrl(itemId) {
+    var normalizedId = normalizeText(itemId);
+    var basePath = getAdminSiteBasePath();
+    var detailPath = (basePath || "") + "/menu/";
+    if (normalizedId) {
+      detailPath += encodeURIComponent(normalizedId);
+    }
+    return detailPath + "?adminPreview=1";
+  }
+
+  function setItemEditorPreviewLoading(isLoading) {
+    if (!elements.itemEditorMobilePreviewLoading) return;
+    elements.itemEditorMobilePreviewLoading.classList.toggle("is-hidden", !isLoading);
+  }
+
+  function resetItemEditorPreviewBridgeState() {
+    var bridgeState = state.itemEditor.previewBridge;
+    if (!bridgeState) return;
+    bridgeState.frameLoaded = false;
+    bridgeState.bridgeReady = false;
+    bridgeState.pendingPayload = null;
+    if (bridgeState.syncTimer) {
+      window.clearTimeout(bridgeState.syncTimer);
+      bridgeState.syncTimer = 0;
+    }
+  }
+
+  function openItemEditorPreviewFrame(itemId) {
+    var frame = elements.itemEditorMobilePreviewFrame;
+    if (!frame) return;
+    var nextUrl = buildItemEditorPreviewUrl(itemId);
+    var bridgeState = state.itemEditor.previewBridge;
+    if (bridgeState.frameSrc === nextUrl && frame.getAttribute("src") === nextUrl) {
+      return;
+    }
+    resetItemEditorPreviewBridgeState();
+    bridgeState.frameSrc = nextUrl;
+    setItemEditorPreviewLoading(true);
+    frame.setAttribute("src", nextUrl);
+  }
+
+  function buildItemEditorialPreviewHomePayload() {
+    var homeSource =
+      (state.drafts && state.drafts.home) ||
+      ((state.data && state.data.home) || {});
+    var featuredIds =
+      homeSource &&
+      homeSource.popular &&
+      Array.isArray(homeSource.popular.featuredIds)
+        ? homeSource.popular.featuredIds.slice()
+        : [];
+
+    return {
+      popular: {
+        featuredIds: featuredIds
+      },
+      menu_page: isPlainObject(homeSource.menu_page) ? deepClone(homeSource.menu_page) : {},
+      menu_detail_editorial: isPlainObject(homeSource.menu_detail_editorial)
+        ? deepClone(homeSource.menu_detail_editorial)
+        : {}
+    };
+  }
+
+  function buildItemEditorialPreviewItemPayload() {
+    var draft = state.itemEditor.draft;
+    if (!draft) return null;
+
+    var previewItem = deepClone(draft);
+    previewItem.id = normalizeText(previewItem.id || "");
+    if (!previewItem.id) {
+      return null;
+    }
+
+    previewItem.name = normalizeText(previewItem.name || previewItem.id) || previewItem.id;
+    previewItem.ingredients = state.itemEditor.ingredients.slice();
+    previewItem.available = state.itemEditor.availability.available !== false;
+    previewItem.soldOutReason = normalizeText(state.itemEditor.availability.soldOutReason);
+    previewItem.image = resolveMenuMediaPath(previewItem.image, true) || MENU_PLACEHOLDER_IMAGE;
+
+    var traitReport = getItemTraitReport(previewItem);
+    if (traitReport && traitReport.public_badges) {
+      previewItem.public_badges = deepClone(traitReport.public_badges);
+    }
+
+    var allergenReport = getItemAllergenReport(previewItem);
+    if (allergenReport && allergenReport.resolved && Array.isArray(allergenReport.resolved.ids)) {
+      previewItem.allergens = allergenReport.resolved.ids.slice();
+    }
+
+    return previewItem;
+  }
+
+  function createItemEditorPreviewUpdatePayload() {
+    var previewItem = buildItemEditorialPreviewItemPayload();
+    if (!previewItem) {
+      return null;
+    }
+    return {
+      type: ITEM_EDITOR_PREVIEW_MESSAGE_UPDATE,
+      payload: {
+        item: previewItem,
+        home: buildItemEditorialPreviewHomePayload()
+      }
+    };
+  }
+
+  function postMessageToItemEditorPreview(message) {
+    var frame = elements.itemEditorMobilePreviewFrame;
+    if (!frame || !frame.contentWindow || !message) {
+      return false;
+    }
+
+    try {
+      frame.contentWindow.postMessage(message, window.location.origin);
+      return true;
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  function flushItemEditorPreviewSync() {
+    var bridgeState = state.itemEditor.previewBridge;
+    if (!bridgeState || !state.itemEditor.isOpen) {
+      return;
+    }
+
+    if (!bridgeState.pendingPayload) {
+      bridgeState.pendingPayload = createItemEditorPreviewUpdatePayload();
+    }
+
+    if (!bridgeState.pendingPayload || !bridgeState.bridgeReady) {
+      return;
+    }
+
+    if (postMessageToItemEditorPreview(bridgeState.pendingPayload)) {
+      bridgeState.pendingPayload = null;
+    }
+  }
+
+  function scheduleItemEditorPreviewSync(options) {
+    options = options || {};
+    var bridgeState = state.itemEditor.previewBridge;
+    if (!bridgeState || !state.itemEditor.isOpen) {
+      return;
+    }
+
+    var payload = createItemEditorPreviewUpdatePayload();
+    if (!payload) {
+      return;
+    }
+
+    bridgeState.pendingPayload = payload;
+
+    if (bridgeState.syncTimer) {
+      window.clearTimeout(bridgeState.syncTimer);
+      bridgeState.syncTimer = 0;
+    }
+
+    if (options.immediate) {
+      flushItemEditorPreviewSync();
+      return;
+    }
+
+    bridgeState.syncTimer = window.setTimeout(function () {
+      bridgeState.syncTimer = 0;
+      flushItemEditorPreviewSync();
+    }, ITEM_EDITOR_PREVIEW_SYNC_DEBOUNCE_MS);
+  }
+
+  function resolvePreviewSectionFromTab(tabId) {
+    var normalizedTab = normalizeText(tabId || "").toLowerCase();
+    if (normalizedTab === "media") return "hero-media";
+    if (normalizedTab === "editorial") return "header";
+    if (normalizedTab === "traits") return "sensory";
+    if (normalizedTab === "availability") return "header";
+    return "";
+  }
+
+  function resolveItemEditorPreviewSectionFromNode(node) {
+    if (!(node instanceof HTMLElement)) {
+      return "";
+    }
+
+    var tabNode = node.closest(".item-tab[data-tab]");
+    if (tabNode) {
+      return resolvePreviewSectionFromTab(tabNode.getAttribute("data-tab"));
+    }
+
+    var sectionNode = node.closest("[data-item-preview-section]");
+    if (sectionNode) {
+      return normalizeText(sectionNode.getAttribute("data-item-preview-section")).toLowerCase();
+    }
+
+    var fieldNode = node.closest("[id]");
+    var fieldId = fieldNode ? normalizeText(fieldNode.id).toLowerCase() : "";
+    if (fieldId && ITEM_EDITOR_PREVIEW_SECTION_BY_FIELD_ID[fieldId]) {
+      return ITEM_EDITOR_PREVIEW_SECTION_BY_FIELD_ID[fieldId];
+    }
+
+    if (node.closest("[data-add-ingredient],[data-remove-ingredient]")) {
+      return "ingredients";
+    }
+    if (node.closest("[data-add-allergen-override],[data-remove-allergen-override]")) {
+      return "allergens";
+    }
+    return "";
+  }
+
+  function scrollItemEditorPreviewToSection(sectionId) {
+    var normalizedSection = normalizeText(sectionId).toLowerCase();
+    if (!normalizedSection || !state.itemEditor.isOpen) {
+      return;
+    }
+
+    var bridgeState = state.itemEditor.previewBridge;
+    if (!bridgeState || !bridgeState.bridgeReady) {
+      return;
+    }
+
+    postMessageToItemEditorPreview({
+      type: ITEM_EDITOR_PREVIEW_MESSAGE_SCROLL,
+      payload: {
+        section: normalizedSection
+      }
+    });
+  }
+
+  function resolveItemEditorTabFromPreviewSection(sectionId) {
+    var normalizedSection = normalizeText(sectionId).toLowerCase();
+    return ITEM_EDITOR_PREVIEW_TAB_BY_SECTION[normalizedSection] || "editorial";
+  }
+
+  function resolveItemEditorSectionNode(sectionId) {
+    if (!views.menuItemPanel) return null;
+    var normalizedSection = normalizeText(sectionId).toLowerCase();
+    if (!normalizedSection) return null;
+    var selector = "[data-item-preview-section=\"" + normalizedSection + "\"]";
+    var exactMatch = views.menuItemPanel.querySelector(selector);
+    if (exactMatch) return exactMatch;
+    if (normalizedSection === "summary") {
+      return views.menuItemPanel.querySelector("[data-item-preview-section=\"header\"]");
+    }
+    return null;
+  }
+
+  function scrollEditorToPreviewLinkedSection(sectionId) {
+    var normalizedSection = normalizeText(sectionId).toLowerCase();
+    if (!normalizedSection || !state.itemEditor.isOpen || state.currentPanel !== "menu-item") {
+      return;
+    }
+
+    var tabId = resolveItemEditorTabFromPreviewSection(normalizedSection);
+    if (tabId && state.itemEditor.activeTab !== tabId) {
+      setActiveItemTab(tabId);
+    }
+
+    window.requestAnimationFrame(function () {
+      var targetNode = resolveItemEditorSectionNode(normalizedSection);
+      if (!(targetNode instanceof HTMLElement)) return;
+      targetNode.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
+      targetNode.classList.remove("is-preview-linked-target");
+      // Force reflow so repeated clicks retrigger the highlight transition.
+      void targetNode.offsetWidth;
+      targetNode.classList.add("is-preview-linked-target");
+      window.setTimeout(function () {
+        targetNode.classList.remove("is-preview-linked-target");
+      }, 850);
+    });
+  }
+
+  function handleItemEditorPreviewBridgeMessage(event) {
+    if (!event || event.origin !== window.location.origin) {
+      return;
+    }
+
+    var frame = elements.itemEditorMobilePreviewFrame;
+    if (!frame || event.source !== frame.contentWindow) {
+      return;
+    }
+
+    var data = event.data;
+    if (!isPlainObject(data)) {
+      return;
+    }
+
+    var messageType = normalizeText(data.type);
+
+    if (messageType === ITEM_EDITOR_PREVIEW_MESSAGE_NAVIGATE_EDITOR) {
+      var requestedSection = normalizeText(data && data.payload && data.payload.section);
+      if (requestedSection) {
+        scrollEditorToPreviewLinkedSection(requestedSection);
+      }
+      return;
+    }
+
+    if (messageType !== ITEM_EDITOR_PREVIEW_MESSAGE_READY) {
+      return;
+    }
+
+    var bridgeState = state.itemEditor.previewBridge;
+    bridgeState.bridgeReady = true;
+    bridgeState.frameLoaded = true;
+    setItemEditorPreviewLoading(false);
+    scheduleItemEditorPreviewSync({ immediate: true });
+  }
+
+  function bindItemEditorPreviewBridge() {
+    var frame = elements.itemEditorMobilePreviewFrame;
+    if (frame && frame.getAttribute("data-preview-bridge-bound") !== "true") {
+      frame.setAttribute("data-preview-bridge-bound", "true");
+      frame.addEventListener("load", function () {
+        state.itemEditor.previewBridge.frameLoaded = true;
+      });
+    }
+
+    if (itemEditorPreviewBridgeBound) {
+      return;
+    }
+
+    window.addEventListener("message", handleItemEditorPreviewBridgeMessage);
+    itemEditorPreviewBridgeBound = true;
+  }
+
+  function bindItemEditorPreviewFocusBridge() {
+    if (!views.menuItemPanel) return;
+    if (views.menuItemPanel.getAttribute("data-preview-focus-bridge-bound") === "true") {
+      return;
+    }
+
+    views.menuItemPanel.setAttribute("data-preview-focus-bridge-bound", "true");
+
+    var forwardFocusToPreview = function (event) {
+      if (state.currentPanel !== "menu-item") return;
+      var target = event.target;
+      var sectionId = resolveItemEditorPreviewSectionFromNode(target);
+      if (!sectionId) return;
+      scrollItemEditorPreviewToSection(sectionId);
+    };
+
+    views.menuItemPanel.addEventListener("focusin", forwardFocusToPreview);
+    views.menuItemPanel.addEventListener("click", forwardFocusToPreview);
+  }
+
   function renderItemPreview() {
     var draft = state.itemEditor.draft;
     if (!draft) return;
 
     var normalizedImagePath = resolveMenuMediaPath(draft.image, true) || MENU_PLACEHOLDER_IMAGE;
-
-    setImageElementSourceWithFallback(elements.previewCardImage, normalizedImagePath, MENU_PLACEHOLDER_IMAGE);
-    elements.previewCardImage.alt = draft.name || draft.id;
-    elements.previewCardName.textContent = draft.name || draft.id || "-";
-    elements.previewCardShort.textContent = draft.descriptionShort || "Sin descripcion corta";
-
-    var badges = getItemBadges(draft);
-    elements.previewCardBadges.innerHTML = badges.map(function (badge) {
-      return "<span class=\"" + badge.className + "\">" + escapeHtml(badge.label) + "</span>";
-    }).join("");
-    renderItemTraitDetails();
-    renderItemAllergenDetails();
-
-    setImageElementSourceWithFallback(elements.previewModalImage, normalizedImagePath, MENU_PLACEHOLDER_IMAGE);
-    elements.previewModalImage.alt = draft.name || draft.id;
-    elements.previewModalName.textContent = draft.name || draft.id || "-";
-    elements.previewModalLong.textContent =
-      draft.descriptionLong || draft.descriptionShort || "Sin descripcion larga";
-
     var currency = (state.drafts.menu && state.drafts.menu.currency) || "DOP";
     var price = Number(draft.price) || 0;
-    elements.previewModalPrice.textContent = currency + " " + price.toFixed(0);
-
     elements.itemPricePreview.textContent = currency + " " + price.toFixed(0);
 
     setImageElementSourceWithFallback(elements.itemMediaPreview, normalizedImagePath, MENU_PLACEHOLDER_IMAGE);
@@ -4227,6 +4906,10 @@
       elements.itemMediaStatus.classList.toggle("media-status--missing", Boolean(isMissing));
       elements.itemMediaStatus.classList.toggle("media-status--ok", !isMissing);
     }
+
+    renderItemTraitDetails();
+    renderItemAllergenDetails();
+    scheduleItemEditorPreviewSync();
   }
 
   function readTriStateSelectValue(selectElement) {
@@ -4482,15 +5165,6 @@
       delete currentDetailEditorial.compare_mode;
     }
 
-    var sensoryIntro = normalizeText(
-      elements.itemFieldSensoryIntro && elements.itemFieldSensoryIntro.value
-    );
-    if (sensoryIntro) {
-      currentDetailEditorial.sensory_intro = sensoryIntro;
-    } else {
-      delete currentDetailEditorial.sensory_intro;
-    }
-
     var pairingEnabled = elements.itemFieldPairingEnabled
       ? elements.itemFieldPairingEnabled.value === "yes"
       : false;
@@ -4517,8 +5191,14 @@
       pairingCtaTarget;
 
     if (hasPairingData) {
-      var nextPairing = isPlainObject(currentDetailEditorial.pairing)
-        ? deepClone(currentDetailEditorial.pairing)
+      var pairingSource =
+        isPlainObject(currentDetailEditorial.pairings)
+          ? currentDetailEditorial.pairings
+          : isPlainObject(currentDetailEditorial.pairing)
+            ? currentDetailEditorial.pairing
+            : null;
+      var nextPairing = pairingSource
+        ? deepClone(pairingSource)
         : {};
 
       nextPairing.enabled = Boolean(pairingEnabled);
@@ -4538,8 +5218,10 @@
       if (pairingCtaTarget) nextPairing.cta_target = pairingCtaTarget;
       else delete nextPairing.cta_target;
 
-      currentDetailEditorial.pairing = nextPairing;
+      currentDetailEditorial.pairings = nextPairing;
+      delete currentDetailEditorial.pairing;
     } else {
+      delete currentDetailEditorial.pairings;
       delete currentDetailEditorial.pairing;
     }
 
@@ -4550,18 +5232,26 @@
       elements.itemFieldHistoryBody && elements.itemFieldHistoryBody.value
     );
     if (historyTitle || historyBody) {
-      var nextHistory = isPlainObject(currentDetailEditorial.history)
-        ? deepClone(currentDetailEditorial.history)
+      var storySource =
+        isPlainObject(currentDetailEditorial.story)
+          ? currentDetailEditorial.story
+          : isPlainObject(currentDetailEditorial.history)
+            ? currentDetailEditorial.history
+            : null;
+      var nextStory = storySource
+        ? deepClone(storySource)
         : {};
 
-      if (historyTitle) nextHistory.title = historyTitle;
-      else delete nextHistory.title;
+      if (historyTitle) nextStory.title = historyTitle;
+      else delete nextStory.title;
 
-      if (historyBody) nextHistory.body = historyBody;
-      else delete nextHistory.body;
+      if (historyBody) nextStory.body = historyBody;
+      else delete nextStory.body;
 
-      currentDetailEditorial.history = nextHistory;
+      currentDetailEditorial.story = nextStory;
+      delete currentDetailEditorial.history;
     } else {
+      delete currentDetailEditorial.story;
       delete currentDetailEditorial.history;
     }
 
@@ -4660,7 +5350,6 @@
       { min: 1, max: 5, precision: 1 }
     );
 
-    elements.itemFieldSensoryIntro.value = detailEditorial.sensory_intro || "";
     elements.itemFieldSensorySummary.value =
       (draft && draft.sensory_profile && draft.sensory_profile.summary) || "";
 
@@ -4684,7 +5373,17 @@
       ? compareModeValue
       : "auto";
 
-    var pairing = isPlainObject(detailEditorial.pairing) ? detailEditorial.pairing : {};
+    var pairing = {};
+    if (Array.isArray(detailEditorial.pairings)) {
+      pairing = detailEditorial.pairings.find(function (entry) {
+        return isPlainObject(entry);
+      }) || {};
+    } else if (isPlainObject(detailEditorial.pairings)) {
+      pairing = detailEditorial.pairings;
+    } else if (isPlainObject(detailEditorial.pairing)) {
+      pairing = detailEditorial.pairing;
+    }
+
     var pairingHasText = Boolean(
       pairing.name ||
       pairing.meta ||
@@ -4702,9 +5401,13 @@
     elements.itemFieldPairingCtaLabel.value = pairing.cta_label || "";
     elements.itemFieldPairingCtaTarget.value = pairing.cta_target || "";
 
-    var history = isPlainObject(detailEditorial.history) ? detailEditorial.history : {};
-    elements.itemFieldHistoryTitle.value = history.title || "";
-    elements.itemFieldHistoryBody.value = history.body || "";
+    var story = isPlainObject(detailEditorial.story)
+      ? detailEditorial.story
+      : isPlainObject(detailEditorial.history)
+        ? detailEditorial.history
+        : {};
+    elements.itemFieldHistoryTitle.value = story.title || "";
+    elements.itemFieldHistoryBody.value = story.body || "";
   }
 
   function syncDraftFromForm() {
@@ -4717,8 +5420,9 @@
     draft.subcategory = elements.itemFieldSubcategory.value;
     draft.price = Math.max(0, Math.round(Number(elements.itemFieldPrice.value || 0)));
     draft.featured = getToggleChecked(elements.itemFieldFeatured);
-    draft.descriptionShort = elements.itemFieldDescriptionShort.value.trim();
-    draft.descriptionLong = elements.itemFieldDescriptionLong.value.trim();
+    draft.description = elements.itemFieldDescription.value.trim();
+    delete draft.descriptionShort;
+    delete draft.descriptionLong;
     draft.ingredients = state.itemEditor.ingredients.slice();
     var normalizedImagePath = resolveMenuMediaPath(elements.itemFieldImage.value, true) || MENU_PLACEHOLDER_IMAGE;
     draft.image = normalizedImagePath;
@@ -4813,6 +5517,7 @@
       available: availabilityEntry ? Boolean(availabilityEntry.available) : fallbackAvailable,
       soldOutReason: availabilityEntry ? (availabilityEntry.soldOutReason || "") : ""
     };
+    openItemEditorPreviewFrame(draft.id);
 
     elements.itemEditorTitle.textContent =
       (state.itemEditor.isNew ? "Nuevo item" : "Editar item") + ": " + (draft.name || draft.id);
@@ -4827,8 +5532,7 @@
     elements.itemFieldPrice.value = Number(draft.price || 0);
     setToggleChecked(elements.itemFieldFeatured, Boolean(draft.featured));
 
-    elements.itemFieldDescriptionShort.value = draft.descriptionShort || "";
-    elements.itemFieldDescriptionLong.value = draft.descriptionLong || "";
+    elements.itemFieldDescription.value = resolveItemDescriptionText(draft);
 
     elements.itemFieldImage.value = draft.image || "";
 
@@ -4838,7 +5542,7 @@
     elements.itemFieldReviews.value = draft.reviews || "";
     populateEditorialFieldsFromDraft(draft);
 
-    setActiveItemTab("basic");
+    setActiveItemTab("editorial");
     renderIngredientChips();
 
     elements.ingredientSearchInput.value = "";
@@ -4880,6 +5584,7 @@
       available: true,
       soldOutReason: ""
     };
+    openItemEditorPreviewFrame(draft.id);
 
     elements.itemEditorTitle.textContent = "Nuevo item: " + draft.id;
 
@@ -4893,8 +5598,7 @@
     elements.itemFieldPrice.value = "0";
     setToggleChecked(elements.itemFieldFeatured, false);
 
-    elements.itemFieldDescriptionShort.value = "";
-    elements.itemFieldDescriptionLong.value = "";
+    elements.itemFieldDescription.value = "";
     elements.itemFieldImage.value = draft.image;
 
     setToggleChecked(elements.itemAvailabilityToggle, true);
@@ -4903,7 +5607,7 @@
     elements.itemFieldReviews.value = "";
     populateEditorialFieldsFromDraft(draft);
 
-    setActiveItemTab("basic");
+    setActiveItemTab("editorial");
     renderIngredientChips();
 
     elements.ingredientSearchInput.value = "";
@@ -5101,7 +5805,24 @@
         }
       }
 
-      if (
+      var editorialPairing = null;
+      if (Array.isArray(draft.detail_editorial.pairings)) {
+        editorialPairing = draft.detail_editorial.pairings.find(function (entry) {
+          return isPlainObject(entry);
+        }) || null;
+      } else if (isPlainObject(draft.detail_editorial.pairings)) {
+        editorialPairing = draft.detail_editorial.pairings;
+      } else if (
+        Object.prototype.hasOwnProperty.call(draft.detail_editorial, "pairings") &&
+        draft.detail_editorial.pairings !== null
+      ) {
+        errors.push("detail_editorial.pairings debe ser objeto o array cuando existe.");
+      }
+
+      if (!editorialPairing && isPlainObject(draft.detail_editorial.pairing)) {
+        editorialPairing = draft.detail_editorial.pairing;
+      } else if (
+        !editorialPairing &&
         Object.prototype.hasOwnProperty.call(draft.detail_editorial, "pairing") &&
         draft.detail_editorial.pairing !== null &&
         !isPlainObject(draft.detail_editorial.pairing)
@@ -5109,16 +5830,29 @@
         errors.push("detail_editorial.pairing debe ser objeto cuando existe.");
       }
 
-      if (isPlainObject(draft.detail_editorial.pairing)) {
+      if (isPlainObject(editorialPairing)) {
         if (
-          Object.prototype.hasOwnProperty.call(draft.detail_editorial.pairing, "enabled") &&
-          typeof draft.detail_editorial.pairing.enabled !== "boolean"
+          Object.prototype.hasOwnProperty.call(editorialPairing, "enabled") &&
+          typeof editorialPairing.enabled !== "boolean"
         ) {
-          errors.push("detail_editorial.pairing.enabled debe ser boolean.");
+          errors.push("detail_editorial.pairings.enabled debe ser boolean.");
         }
       }
 
-      if (
+      var editorialStory = null;
+      if (isPlainObject(draft.detail_editorial.story)) {
+        editorialStory = draft.detail_editorial.story;
+      } else if (
+        Object.prototype.hasOwnProperty.call(draft.detail_editorial, "story") &&
+        draft.detail_editorial.story !== null
+      ) {
+        errors.push("detail_editorial.story debe ser objeto cuando existe.");
+      }
+
+      if (!editorialStory && isPlainObject(draft.detail_editorial.history)) {
+        editorialStory = draft.detail_editorial.history;
+      } else if (
+        !editorialStory &&
         Object.prototype.hasOwnProperty.call(draft.detail_editorial, "history") &&
         draft.detail_editorial.history !== null &&
         !isPlainObject(draft.detail_editorial.history)
@@ -5355,7 +6089,8 @@
       setHomeEditorStatus: setHomeEditorStatus,
       setIngredientsEditorStatus: setIngredientsEditorStatus,
       setCategoriesEditorStatus: setCategoriesEditorStatus,
-      setPagesEditorStatus: setPagesEditorStatus
+      setPagesEditorStatus: setPagesEditorStatus,
+      setModalEditorStatus: setModalEditorStatus
     };
   }
   function updateDashboardMetrics() { return DB.updateDashboardMetrics(_dbCtx()); }
@@ -5373,6 +6108,13 @@
       return;
     }
 
+    state.itemEditor.isOpen = false;
+    if (state.itemEditor.previewBridge && state.itemEditor.previewBridge.syncTimer) {
+      window.clearTimeout(state.itemEditor.previewBridge.syncTimer);
+      state.itemEditor.previewBridge.syncTimer = 0;
+      state.itemEditor.previewBridge.pendingPayload = null;
+    }
+
     setActivePanel("menu-browser");
     renderMenuBrowser();
     renderSidebarMenuAccordion();
@@ -5380,6 +6122,7 @@
     setIngredientsEditorStatus("");
     setCategoriesEditorStatus("");
     setPagesEditorStatus("");
+    setModalEditorStatus("");
   }
 
   function openCategoriesEditor(options) {
@@ -5412,6 +6155,7 @@
       setCategoriesEditorStatus("");
     }
     setPagesEditorStatus("");
+    setModalEditorStatus("");
     showItemEditorErrors([]);
   }
 
@@ -7102,6 +7846,7 @@
     setIngredientsEditorStatus("");
     setCategoriesEditorStatus("");
     setPagesEditorStatus("");
+    setModalEditorStatus("");
   }
 
   function createIngredientsEditorDraft(ingredientId, sourceEntry) {
@@ -9232,6 +9977,7 @@
     setIngredientsEditorStatus("");
     setCategoriesEditorStatus("");
     setPagesEditorStatus("");
+    setModalEditorStatus("");
     showItemEditorErrors([]);
     renderIngredientsEditor();
   }
@@ -9868,6 +10614,17 @@
       return { name: "pages" };
     }
 
+    if (parts[0] === "modal" && parts[1]) {
+      return {
+        name: "modal-subpanel",
+        subpanelId: decodeURIComponent(parts.slice(1).join("/"))
+      };
+    }
+
+    if (parts[0] === "modal") {
+      return { name: "modal" };
+    }
+
     if (parts[0] === "menu") {
       return { name: "menu" };
     }
@@ -10076,6 +10833,27 @@
       return;
     }
 
+    if (route.name === "modal") {
+      if (!state.hasDataLoaded) {
+        ensureDataLoaded(false);
+        return;
+      }
+      openModalEditor({ skipRoute: true });
+      return;
+    }
+
+    if (route.name === "modal-subpanel") {
+      if (!state.hasDataLoaded) {
+        ensureDataLoaded(false);
+        return;
+      }
+      openModalEditor({
+        skipRoute: true,
+        subpanelId: String(route.subpanelId || "").trim().toLowerCase()
+      });
+      return;
+    }
+
     if (route.name === "homepage-section") {
       if (!state.hasDataLoaded) {
         ensureDataLoaded(false);
@@ -10202,6 +10980,13 @@
       elements.sidebarNavPages.addEventListener("click", function () {
         clearPanelPostNavigationActions();
         navigateToRoute("/pages");
+      });
+    }
+
+    if (elements.sidebarNavModal) {
+      elements.sidebarNavModal.addEventListener("click", function () {
+        clearPanelPostNavigationActions();
+        navigateToRoute("/modal");
       });
     }
 
@@ -10438,6 +11223,12 @@
       });
     }
 
+    if (elements.openModalEditorButton) {
+      elements.openModalEditorButton.addEventListener("click", function () {
+        openModalEditor({ skipRoute: false });
+      });
+    }
+
     if (elements.openIngredientsEditorButton) {
       elements.openIngredientsEditorButton.addEventListener("click", function () {
         openIngredientsEditor({ skipRoute: false });
@@ -10516,6 +11307,9 @@
   }
 
   function bindItemEditorEvents() {
+    bindItemEditorPreviewBridge();
+    bindItemEditorPreviewFocusBridge();
+
     elements.itemTabs.forEach(function (tabButton) {
       tabButton.addEventListener("click", function () {
         var tabId = tabButton.getAttribute("data-tab");
@@ -10544,9 +11338,7 @@
       elements.itemFieldMetricCalories,
       elements.itemFieldMetricEta,
       elements.itemFieldMetricRating,
-      elements.itemFieldDescriptionShort,
-      elements.itemFieldDescriptionLong,
-      elements.itemFieldSensoryIntro,
+      elements.itemFieldDescription,
       elements.itemFieldSensorySummary,
       elements.itemFieldSensoryAxisDulce,
       elements.itemFieldSensoryAxisSalado,
@@ -11690,6 +12482,12 @@
     }
   }
 
+  function bindModalEditorEvents() {
+    if (MODAL && typeof MODAL.bindEvents === "function") {
+      MODAL.bindEvents(_modalCtx());
+    }
+  }
+
   function bindEvents() {
     mountItemEditorToggles();
     syncUxTimingCssVars();
@@ -11735,6 +12533,7 @@
     bindIngredientsEditorEvents();
     bindCategoriesEditorEvents();
     bindPagesEditorEvents();
+    bindModalEditorEvents();
     bindRestaurantEditorEvents();
     bindMediaEditorEvents();
 
@@ -11873,7 +12672,7 @@
       state.itemEditor = {
         isOpen: false,
         isNew: false,
-        activeTab: "basic",
+        activeTab: "editorial",
         sourceSectionId: "",
         sourceItemIndex: -1,
         draft: null,
@@ -11919,6 +12718,7 @@
       setRestaurantEditorStatus("");
       setMediaEditorStatus("");
       setPagesEditorStatus("");
+      setModalEditorStatus("");
       showItemEditorErrors([]);
       setDraftsBanner(false);
       updateDashboardMetrics();

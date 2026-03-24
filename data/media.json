@@ -1,7 +1,7 @@
 {
   "version": 2,
   "schema": "figata.media.v2",
-  "updatedAt": "2026-03-10T18:11:27.161Z",
+  "updatedAt": "2026-03-21T18:18:48.803Z",
   "updatedBy": "admin-app",
   "notes": "Mapa oficial de media por item. Si una variante falta, el frontend aplica fallback controlado.",
   "items": {

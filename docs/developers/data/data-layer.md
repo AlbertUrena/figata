@@ -43,8 +43,9 @@ The primary menu data file. Contains all items grouped by section (category).
           "slug": "berenjenas-parmesana", // URL-safe identifier
           "category": "entradas",        // parent section id
           "subcategory": "",             // optional grouping within section
-          "descriptionShort": "",        // card view description
-          "descriptionLong": "",         // modal/detail description
+          "description": "",             // canonical description (catalog + detail)
+          "descriptionShort": "",        // legacy fallback only
+          "descriptionLong": "",         // legacy fallback only
           "price": 550,                  // integer, in DOP
           "ingredients": ["berenjena", "salsa_de_tomate", ...],  // refs to ingredients.json
           "image": "assets/menu/entradas/berenjenas-a-la-parmesana.webp",  // primary image path
@@ -70,6 +71,28 @@ The primary menu data file. Contains all items grouped by section (category).
               "intensidad": { "value": 5 }
             }
           },
+          "metrics": {                   // optional detail header chips
+            "calories": 560,
+            "etaMinutes": 15,
+            "rating": 4.6
+          },
+          "detail_editorial": {          // optional detail-page editorial layer
+            "hero_badge": "vegetarian", // vegan|vegetarian|featured|none
+            "compare_mode": "enabled",  // enabled|disabled (auto by omission)
+            "sensory_intro": "Una lectura sensorial del plato...", // legacy fallback only
+            "pairings": {
+              "enabled": true,
+              "name": "Chianti",
+              "meta": "Toscana · Tinto",
+              "description": "La acidez del tomate se equilibra con el vino.",
+              "cta_label": "Añadir copa",
+              "cta_target": "chianti"
+            },
+            "story": {
+              "title": "La historia detrás",
+              "body": "Texto largo editorial del plato."
+            }
+          },
           "available": true,             // runtime availability (also in availability.json)
           "reviews": "121 reseñas"       // optional social proof text
         }
@@ -88,6 +111,9 @@ The primary menu data file. Contains all items grouped by section (category).
 - `items[].allergen_overrides` is the persisted exception surface for derived allergens
 - `items[].trait_overrides` is the only persisted editorial override surface for derived item traits
 - `items[].sensory_profile` is the structured detail-view sensory layer; it coexists with `experience_tags` and does not replace filters/chips
+- `items[].metrics` and `items[].detail_editorial` are the editable detail-page presentation layer used by the public menu detail UI
+- `items[].detail_editorial.sensory_intro` is legacy compatibility only; the global owner for that section subtitle moved to `home.menu_detail_editorial.sensory_subtitle`
+- `items[].description` is the canonical item description for both catalog/list and detail pages; runtime keeps temporary read fallback from `descriptionLong`/`descriptionShort` during migration
 
 #### Structured Sensory Profile (`items[].sensory_profile`)
 
@@ -226,6 +252,86 @@ Controls all dynamic sections of the public homepage.
     "featuredIds": ["margherita", "diavola", ...],   // menu item ids
     "limit": 8
   },
+  "menu_page": {
+    "hero": { "title": "...", "subtitle": "..." },
+    "search": {
+      "placeholder": "",
+      "helper_prefix": "Busca por",
+      "helper_words": ["ingredientes", "alérgenos", "platos", "bebidas"],
+      "empty_state": {
+        "title": "No encontramos resultados",
+        "description": "No vimos coincidencias en el menú.",
+        "description_with_query": "No vimos coincidencias para \"{query}\" en el menú.",
+        "hint": "Prueba con otro término o revisa la ortografía."
+      }
+    },
+    "account_modal": {
+      "title": "Tu cuenta",
+      "empty_state": { "title": "...", "description": "..." },
+      "labels": {
+        "subtotal": "Subtotal",
+        "itbis": "ITBIS (18%)",
+        "legal_tip": "Propina legal (10%)",
+        "total": "Total"
+      },
+      "total_tooltip": { "title": "Total estimado", "description": "..." },
+      "remove_toast": { "title": "Ítem eliminado", "description": "..." }
+    },
+    "states": { "loading": "...", "no_categories": "...", "load_error": "..." },
+    "category_empty_messages": {
+      "entradas": "...",
+      "pizzas": "...",
+      "postres": "...",
+      "bebidas": "...",
+      "productos": "..."
+    }
+  },
+  "menu_detail_editorial": {
+    "sensory_subtitle": "Una lectura sensorial del plato: cómo se expresa en sabor, textura y aroma.",
+    "sensory": {
+      "section_title": "Perfil sensorial",
+      "subtitle": "...",
+      "compare_button_label": "Comparar",
+      "compare_button_label_active": "Cambiar",
+      "tabs": { "radar_label": "Radar", "bars_label": "Barras" },
+      "comparison_clear_label": "Quitar"
+    },
+    "compare_modal": {
+      "title": "Comparar",
+      "description": "...",
+      "search_placeholder": "",
+      "search_helper_prefix": "Busca por",
+      "search_helper_word": "plato",
+      "empty_state": {
+        "title": "Sin resultados",
+        "description": "...",
+        "description_with_query": "..."
+      },
+      "current_item_prefix": "Plato actual:",
+      "current_item_fallback": "...",
+      "candidate_summary_fallback": "Perfil sensorial disponible"
+    },
+    "pairings": {
+      "section_title": "Maridajes recomendados",
+      "section_subtitle": "...",
+      "cta_fallback_label": "Añadir maridaje"
+    },
+    "story": { "section_title": "La historia detrás" },
+    "info_chips": {
+      "calories": { "title": "...", "description": "..." },
+      "eta": { "title": "...", "description": "..." }
+    },
+    "sensory_axis_tooltips": {
+      "dulce": { "title": "...", "description": "..." },
+      "salado": { "title": "...", "description": "..." },
+      "acido": { "title": "...", "description": "..." },
+      "cremosa": { "title": "...", "description": "..." },
+      "crujiente": { "title": "...", "description": "..." },
+      "ligero": { "title": "...", "description": "..." },
+      "aromatico": { "title": "...", "description": "..." },
+      "intensidad": { "title": "...", "description": "..." }
+    }
+  },
   "events": { ... },
   "testimonials": {
     "items": [
@@ -244,6 +350,12 @@ Controls all dynamic sections of the public homepage.
 ```
 
 **Read by:** `js/home-config.js` (public site) and admin home editor
+
+The public menu catalog/detail route (`/menu/`) reads both global blocks:
+- `home.menu_page.*` (catalog/listing copy owner, edited in `Pages > Menú`)
+- `home.menu_detail_editorial.*` (detail-page global copy owner, edited in `Pages > Editorial`)
+
+For compatibility during migration, `home.menu_detail_editorial.sensory_subtitle` stays mirrored with `home.menu_detail_editorial.sensory.subtitle`, and detail items can still fallback to legacy per-item `detail_editorial.sensory_intro` when needed.
 
 **Validated by:** `scripts/validate_home_json.js`
 

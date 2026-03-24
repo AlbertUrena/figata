@@ -225,8 +225,8 @@ The `toCardViewModel(item, media)` function transforms raw data into a display-r
   id,              // Menu item ID
   slug,            // URL-safe slug
   title,           // item.name
-  description,     // item.descriptionShort
-  previewDescription, // item.descriptionLong || item.descriptionShort
+  description,     // item.description (fallback: descriptionLong/descriptionShort)
+  previewDescription, // same canonical description
   ingredients,     // Array of ingredient IDs
   reviews,         // Review count text
   price,           // item.priceFormatted (e.g., "RD$750")

@@ -2,13 +2,11 @@
   "name": "",
   "tagline": "",
   "description": "",
-
   "contact": {
     "phone": "",
     "whatsapp": "",
     "email": ""
   },
-
   "location": {
     "address": "",
     "city": "",
@@ -19,7 +17,6 @@
     "latitude": null,
     "longitude": null
   },
-
   "hours": {
     "monday": "",
     "tuesday": "",
@@ -30,20 +27,17 @@
     "sunday": "",
     "notes": ""
   },
-
   "social": {
     "instagram": "",
     "tiktok": "",
     "facebook": "",
     "tripadvisor": ""
   },
-
   "links": {
     "reservationUrl": "",
     "deliveryUrl": "",
     "menuPdf": ""
   },
-
   "branding": {
     "logo": "",
     "logoAlt": "",
@@ -51,13 +45,11 @@
     "primaryColor": "",
     "secondaryColor": ""
   },
-
   "seo": {
     "cuisine": "",
     "priceRange": "",
     "canonicalUrl": ""
   },
-
   "meta": {
     "currency": "",
     "timezone": "",

@@ -11,7 +11,7 @@
 - [Homepage Editor](#homepage-editor) — functions, sections, drag-and-drop
 - [Ingredients Editor](#ingredients-editor) — functions, two-tab structure, validation
 - [Categories Editor](#categories-editor) — functions, reorder, validation
-- [Pages Editor](#pages-editor) — scaffold for unique site pages
+- [Pages Editor](#pages-editor) — global page-level copy editor
 - [Restaurant Editor](#restaurant-editor) — business metadata form
 - [Media Editor](#media-editor) — per-item media variants and globals
 - [Draft Lifecycle](#draft-lifecycle-all-editors) — persistence keys, ensure/save/publish flow
@@ -40,7 +40,7 @@ The admin panel has **eight native editor subsystems**, implemented in `app.js` 
 | Homepage Editor | `openHomePageEditor()` | `renderHomeEditor()` | `bindHomeEditorEvents()` | ~1,700 |
 | Ingredients Editor | `openIngredientsEditor()` | `renderIngredientsEditor()` | `bindIngredientsEditorEvents()` | ~2,300 |
 | Categories Editor | `openCategoriesEditor()` | `renderCategoriesEditor()` | `bindCategoriesEditorEvents()` | ~600 |
-| Pages Editor | `openPagesEditor()` | `window.FigataAdmin.pagesPanel.render()` | `window.FigataAdmin.pagesPanel.bindEvents()` | ~260 |
+| Pages Editor | `openPagesEditor()` | `window.FigataAdmin.pagesPanel.render()` | `window.FigataAdmin.pagesPanel.bindEvents()` | ~320 |
 | Restaurant Editor | `openRestaurantEditor()` | `window.FigataAdmin.restaurantPanel.render()` | `window.FigataAdmin.restaurantPanel.bindEvents()` | ~320 |
 | Media Editor | `openMediaEditor()` | `window.FigataAdmin.mediaPanel.render()` | `window.FigataAdmin.mediaPanel.bindEvents()` | ~350 |
 
@@ -100,7 +100,7 @@ The item editor has 5 tabs:
 | Tab ID | Name | Fields |
 |--------|------|--------|
 | `basic` | Basic Info | ID, slug, category, subcategory |
-| `editorial` | Editorial | Detail-visible fields: title, price, hero badge override, metrics chips, short/long description, reviews, ingredients, derived/resolved allergens + overrides, sensory intro/summary/axes, compare mode, pairing block, history block, featured toggle |
+| `editorial` | Editorial | Detail-visible fields: title, price, hero badge override, metrics chips, canonical description (`item.description`), reviews, ingredients, derived/resolved allergens + overrides, sensory summary/axes, compare mode, pairing block, history block, featured toggle |
 | `traits` | Traits | Derived dietary/content/experience state + editorial `trait_overrides` |
 | `media` | Media | Image picker (card, hover, modal variants) |
 | `availability` | Availability | Available toggle, sold-out reason |
@@ -115,8 +115,11 @@ The item editor state is stored in `state.itemEditor`:
 
 Editorial fields are persisted on the menu item under:
 - `metrics` (`calories`, `etaMinutes`, `rating`)
-- `detail_editorial` (`hero_badge`, `compare_mode`, `sensory_intro`, `pairing`, `history`)
+- `detail_editorial` (`hero_badge`, `compare_mode`, `pairings`, `story`)
 - `sensory_profile` (`summary` + 8 required axes when present)
+
+Global copy for the detail sensory section subtitle is persisted in:
+- `home.menu_detail_editorial.sensory_subtitle` (edited in Pages > Editorial, not per item)
 
 ### Allergens in Editorial
 
@@ -250,14 +253,25 @@ Uses `shared/ingredients-contract.js`. Validation runs:
 | Function | Purpose |
 |----------|---------|
 | `openPagesEditor(options)` | Open the native Pages panel and sync `#/pages` |
-| `pagesPanel.render(ctx)` | Render the scaffold sections for unique site pages |
-| `pagesPanel.bindEvents(ctx)` | Attach lightweight focus/navigation events |
+| `pagesPanel.render(ctx)` | Render editable sections for route-level global copy in `home.json` |
+| `pagesPanel.bindEvents(ctx)` | Attach delegated input/change/focus handlers and persist local drafts |
 
 ### Notes
 
-- Does **not** edit drafts yet; this panel is scaffold-only in the current phase
-- Exposes section metadata so the shared sidebar accordion can render `menu`, `nosotros`, `ubicacion`, `contacto`, `eventos`, and `faqs`
+- Exposes section metadata so the shared sidebar accordion can render `menu`, `editorial`, `nosotros`, `ubicacion`, `contacto`, `eventos`, and `faqs`
 - Uses the shared scroll-spy pattern from `app.js`/`panels.js` (same model as Restaurant/Media)
+- `Pages > Menú` now edits real global catalog/listing copy under `home.menu_page.*`, including:
+  - hero title/subtitle
+  - search copy (placeholder/helper/empty-state)
+  - account modal global labels, empty-state, total tooltip, remove toast
+  - status/empty copy by category
+- `Pages > Editorial` now edits real global detail copy under `home.menu_detail_editorial.*`, including:
+  - sensory section/global compare copy
+  - compare modal copy
+  - pairings/story section titles/subtitles
+  - info-chip tooltips and sensory-axis tooltip copy
+- Compatibility: sensory subtitle stays mirrored with `home.menu_detail_editorial.sensory_subtitle` while the new owner path is `home.menu_detail_editorial.sensory.subtitle`
+- The item-level `detail_editorial.sensory_intro` field remains legacy compatibility only and is no longer editable in Item Editor
 
 ---
 

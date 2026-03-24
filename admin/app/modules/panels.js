@@ -110,6 +110,7 @@
       ctx.views.menuItemPanel,
       ctx.views.homeEditorPanel,
       ctx.views.pagesEditorPanel,
+      ctx.views.modalEditorPanel,
       ctx.views.ingredientsEditorPanel,
       ctx.views.categoriesEditorPanel,
       ctx.views.restaurantEditorPanel,
@@ -127,6 +128,8 @@
       if (ctx.views.homeEditorPanel) ctx.views.homeEditorPanel.classList.remove("is-hidden");
     } else if (panel === "pages-editor") {
       if (ctx.views.pagesEditorPanel) ctx.views.pagesEditorPanel.classList.remove("is-hidden");
+    } else if (panel === "modal-editor") {
+      if (ctx.views.modalEditorPanel) ctx.views.modalEditorPanel.classList.remove("is-hidden");
     } else if (panel === "ingredients-editor") {
       if (ctx.views.ingredientsEditorPanel) ctx.views.ingredientsEditorPanel.classList.remove("is-hidden");
     } else if (panel === "categories-editor") {
@@ -142,12 +145,13 @@
     var isMenuPanel = panel === "menu-browser" || panel === "menu-item";
     var isHomePanel = panel === "home-editor";
     var isPagesPanel = panel === "pages-editor";
+    var isModalPanel = panel === "modal-editor";
     var isIngredientsPanel = panel === "ingredients-editor";
     var isCategoriesPanel = panel === "categories-editor";
     var isRestaurantPanel = panel === "restaurant-editor";
     var isMediaPanel = panel === "media-editor";
     if (ctx.elements.topbar) {
-      ctx.elements.topbar.classList.toggle("is-hidden", isMenuPanel || isHomePanel || isPagesPanel || isIngredientsPanel || isCategoriesPanel || isRestaurantPanel || isMediaPanel);
+      ctx.elements.topbar.classList.toggle("is-hidden", isMenuPanel || isHomePanel || isPagesPanel || isModalPanel || isIngredientsPanel || isCategoriesPanel || isRestaurantPanel || isMediaPanel);
     }
 
     ctx.state.visiblePanel = panel;
@@ -163,6 +167,7 @@
     var isMenuPanel = panel === "menu-browser" || panel === "menu-item";
     var isHomePanel = panel === "home-editor";
     var isPagesPanel = panel === "pages-editor";
+    var isModalPanel = panel === "modal-editor";
     var isIngredientsPanel = panel === "ingredients-editor";
     var isCategoriesPanel = panel === "categories-editor";
     var isRestaurantPanel = panel === "restaurant-editor";
@@ -174,6 +179,9 @@
     }
     if (ctx.elements.sidebarNavPages) {
       ctx.elements.sidebarNavPages.classList.toggle("is-active", isPagesPanel);
+    }
+    if (ctx.elements.sidebarNavModal) {
+      ctx.elements.sidebarNavModal.classList.toggle("is-active", isModalPanel);
     }
     if (ctx.elements.sidebarNavIngredients) {
       ctx.elements.sidebarNavIngredients.classList.toggle("is-active", isIngredientsPanel);

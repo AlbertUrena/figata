@@ -38,24 +38,21 @@
       (hiddenCategoriesCount ? (" · " + hiddenCategoriesCount + " hidden") : "") +
       (categoriesAlertsCount ? (" · " + categoriesAlertsCount + " alertas") : "");
 
-    var menuItemIds = new Set(ctx.getAllMenuItems().map(function (entry) {
-      return entry.item.id;
-    }));
-
-    var availabilityItems = (ctx.state.drafts.availability && ctx.state.drafts.availability.items) || [];
-    var matchingAvailability = availabilityItems.filter(function (availabilityEntry) {
-      return menuItemIds.has(availabilityEntry.itemId);
-    });
-    var availableCount = matchingAvailability.filter(function (availabilityEntry) {
-      return Boolean(availabilityEntry.available);
-    }).length;
-
-    ctx.elements.metricAvailability.textContent =
-      availableCount + " / " + matchingAvailability.length + " disponibles";
-
     ctx.ensureHomeDraft();
     ctx.ensureIngredientsDraft();
     var homeData = ctx.state.drafts.home || {};
+    var configuredModalsCount = 0;
+    if (homeData.menu_page && homeData.menu_page.account_modal) {
+      configuredModalsCount += 1;
+    }
+    if (homeData.menu_page && homeData.menu_page.filter_modal) {
+      configuredModalsCount += 1;
+    }
+    if (homeData.menu_detail_editorial && homeData.menu_detail_editorial.compare_modal) {
+      configuredModalsCount += 1;
+    }
+    ctx.elements.metricAvailability.textContent = configuredModalsCount + " modales";
+
     var featuredCount =
       homeData.popular && Array.isArray(homeData.popular.featuredIds)
         ? homeData.popular.featuredIds.length

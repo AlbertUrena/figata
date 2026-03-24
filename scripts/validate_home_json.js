@@ -63,6 +63,12 @@ const assertWarning = (condition, message) => {
   }
 };
 
+const assertStringIfDefined = (value, message) => {
+  if (value !== undefined && value !== null && typeof value !== 'string') {
+    errors.push(message);
+  }
+};
+
 const home = readJson(homePath, 'data/home.json');
 const menu = readJson(menuPath, 'data/menu.json');
 
@@ -70,6 +76,8 @@ if (home && menu) {
   const requiredTopLevel = [
     'hero',
     'popular',
+    'menu_page',
+    'menu_detail_editorial',
     'eventsPreview',
     'delivery',
     'reservation',
@@ -193,6 +201,295 @@ if (home && menu) {
     }
   } else {
     errors.push('eventsPreview debe ser un objeto.');
+  }
+
+  if ('menu_page' in home) {
+    assert(isObject(home.menu_page), 'menu_page debe ser un objeto cuando existe.');
+    if (isObject(home.menu_page)) {
+      assert(isObject(home.menu_page.hero), 'menu_page.hero debe ser objeto.');
+      if (isObject(home.menu_page.hero)) {
+        assertStringIfDefined(home.menu_page.hero.title, 'menu_page.hero.title debe ser string.');
+        assertStringIfDefined(home.menu_page.hero.subtitle, 'menu_page.hero.subtitle debe ser string.');
+      }
+
+      assert(isObject(home.menu_page.search), 'menu_page.search debe ser objeto.');
+      if (isObject(home.menu_page.search)) {
+        assertStringIfDefined(home.menu_page.search.placeholder, 'menu_page.search.placeholder debe ser string.');
+        assertStringIfDefined(home.menu_page.search.helper_prefix, 'menu_page.search.helper_prefix debe ser string.');
+        if ('helper_words' in home.menu_page.search) {
+          assert(Array.isArray(home.menu_page.search.helper_words), 'menu_page.search.helper_words debe ser array.');
+          if (Array.isArray(home.menu_page.search.helper_words)) {
+            home.menu_page.search.helper_words.forEach((word, index) => {
+              assert(
+                typeof word === 'string',
+                `menu_page.search.helper_words[${index}] debe ser string.`
+              );
+            });
+          }
+        }
+        assert(isObject(home.menu_page.search.empty_state), 'menu_page.search.empty_state debe ser objeto.');
+        if (isObject(home.menu_page.search.empty_state)) {
+          assertStringIfDefined(
+            home.menu_page.search.empty_state.title,
+            'menu_page.search.empty_state.title debe ser string.'
+          );
+          assertStringIfDefined(
+            home.menu_page.search.empty_state.description,
+            'menu_page.search.empty_state.description debe ser string.'
+          );
+          assertStringIfDefined(
+            home.menu_page.search.empty_state.description_with_query,
+            'menu_page.search.empty_state.description_with_query debe ser string.'
+          );
+          assertStringIfDefined(
+            home.menu_page.search.empty_state.hint,
+            'menu_page.search.empty_state.hint debe ser string.'
+          );
+        }
+      }
+
+      assert(isObject(home.menu_page.account_modal), 'menu_page.account_modal debe ser objeto.');
+      if (isObject(home.menu_page.account_modal)) {
+        assertStringIfDefined(home.menu_page.account_modal.title, 'menu_page.account_modal.title debe ser string.');
+        assert(isObject(home.menu_page.account_modal.empty_state), 'menu_page.account_modal.empty_state debe ser objeto.');
+        if (isObject(home.menu_page.account_modal.empty_state)) {
+          assertStringIfDefined(
+            home.menu_page.account_modal.empty_state.title,
+            'menu_page.account_modal.empty_state.title debe ser string.'
+          );
+          assertStringIfDefined(
+            home.menu_page.account_modal.empty_state.description,
+            'menu_page.account_modal.empty_state.description debe ser string.'
+          );
+        }
+        assert(isObject(home.menu_page.account_modal.labels), 'menu_page.account_modal.labels debe ser objeto.');
+        if (isObject(home.menu_page.account_modal.labels)) {
+          ['subtotal', 'itbis', 'legal_tip', 'total'].forEach((labelKey) => {
+            assertStringIfDefined(
+              home.menu_page.account_modal.labels[labelKey],
+              `menu_page.account_modal.labels.${labelKey} debe ser string.`
+            );
+          });
+        }
+        assert(isObject(home.menu_page.account_modal.total_tooltip), 'menu_page.account_modal.total_tooltip debe ser objeto.');
+        if (isObject(home.menu_page.account_modal.total_tooltip)) {
+          assertStringIfDefined(
+            home.menu_page.account_modal.total_tooltip.title,
+            'menu_page.account_modal.total_tooltip.title debe ser string.'
+          );
+          assertStringIfDefined(
+            home.menu_page.account_modal.total_tooltip.description,
+            'menu_page.account_modal.total_tooltip.description debe ser string.'
+          );
+        }
+        assert(isObject(home.menu_page.account_modal.remove_toast), 'menu_page.account_modal.remove_toast debe ser objeto.');
+        if (isObject(home.menu_page.account_modal.remove_toast)) {
+          assertStringIfDefined(
+            home.menu_page.account_modal.remove_toast.title,
+            'menu_page.account_modal.remove_toast.title debe ser string.'
+          );
+          assertStringIfDefined(
+            home.menu_page.account_modal.remove_toast.description,
+            'menu_page.account_modal.remove_toast.description debe ser string.'
+          );
+        }
+      }
+
+      if ('filter_modal' in home.menu_page) {
+        assert(isObject(home.menu_page.filter_modal), 'menu_page.filter_modal debe ser objeto.');
+        if (isObject(home.menu_page.filter_modal)) {
+          assertStringIfDefined(
+            home.menu_page.filter_modal.title,
+            'menu_page.filter_modal.title debe ser string.'
+          );
+          assert(
+            isObject(home.menu_page.filter_modal.sections),
+            'menu_page.filter_modal.sections debe ser objeto.'
+          );
+          if (isObject(home.menu_page.filter_modal.sections)) {
+            assert(
+              isObject(home.menu_page.filter_modal.sections.allergens),
+              'menu_page.filter_modal.sections.allergens debe ser objeto.'
+            );
+            if (isObject(home.menu_page.filter_modal.sections.allergens)) {
+              assertStringIfDefined(
+                home.menu_page.filter_modal.sections.allergens.title,
+                'menu_page.filter_modal.sections.allergens.title debe ser string.'
+              );
+              assertStringIfDefined(
+                home.menu_page.filter_modal.sections.allergens.description,
+                'menu_page.filter_modal.sections.allergens.description debe ser string.'
+              );
+            }
+
+            assert(
+              isObject(home.menu_page.filter_modal.sections.pizza_type),
+              'menu_page.filter_modal.sections.pizza_type debe ser objeto.'
+            );
+            if (isObject(home.menu_page.filter_modal.sections.pizza_type)) {
+              assertStringIfDefined(
+                home.menu_page.filter_modal.sections.pizza_type.title,
+                'menu_page.filter_modal.sections.pizza_type.title debe ser string.'
+              );
+              assert(
+                isObject(home.menu_page.filter_modal.sections.pizza_type.tabs),
+                'menu_page.filter_modal.sections.pizza_type.tabs debe ser objeto.'
+              );
+              if (isObject(home.menu_page.filter_modal.sections.pizza_type.tabs)) {
+                ['all', 'clasica', 'autor'].forEach((tabKey) => {
+                  assertStringIfDefined(
+                    home.menu_page.filter_modal.sections.pizza_type.tabs[tabKey],
+                    `menu_page.filter_modal.sections.pizza_type.tabs.${tabKey} debe ser string.`
+                  );
+                });
+              }
+            }
+
+            assert(
+              isObject(home.menu_page.filter_modal.sections.price_range),
+              'menu_page.filter_modal.sections.price_range debe ser objeto.'
+            );
+            if (isObject(home.menu_page.filter_modal.sections.price_range)) {
+              ['title', 'description', 'min_label', 'max_label'].forEach((key) => {
+                assertStringIfDefined(
+                  home.menu_page.filter_modal.sections.price_range[key],
+                  `menu_page.filter_modal.sections.price_range.${key} debe ser string.`
+                );
+              });
+            }
+
+            assert(
+              isObject(home.menu_page.filter_modal.sections.dietary),
+              'menu_page.filter_modal.sections.dietary debe ser objeto.'
+            );
+            if (isObject(home.menu_page.filter_modal.sections.dietary)) {
+              [
+                'title',
+                'vegetarian_title',
+                'vegetarian_description',
+                'vegan_title',
+                'vegan_description',
+              ].forEach((key) => {
+                assertStringIfDefined(
+                  home.menu_page.filter_modal.sections.dietary[key],
+                  `menu_page.filter_modal.sections.dietary.${key} debe ser string.`
+                );
+              });
+            }
+
+            assert(
+              isObject(home.menu_page.filter_modal.sections.organoleptic),
+              'menu_page.filter_modal.sections.organoleptic debe ser objeto.'
+            );
+            if (isObject(home.menu_page.filter_modal.sections.organoleptic)) {
+              assertStringIfDefined(
+                home.menu_page.filter_modal.sections.organoleptic.title,
+                'menu_page.filter_modal.sections.organoleptic.title debe ser string.'
+              );
+              assertStringIfDefined(
+                home.menu_page.filter_modal.sections.organoleptic.description,
+                'menu_page.filter_modal.sections.organoleptic.description debe ser string.'
+              );
+            }
+          }
+
+          assert(
+            isObject(home.menu_page.filter_modal.actions),
+            'menu_page.filter_modal.actions debe ser objeto.'
+          );
+          if (isObject(home.menu_page.filter_modal.actions)) {
+            ['clear_label', 'apply_prefix', 'apply_suffix'].forEach((key) => {
+              assertStringIfDefined(
+                home.menu_page.filter_modal.actions[key],
+                `menu_page.filter_modal.actions.${key} debe ser string.`
+              );
+            });
+          }
+        }
+      }
+
+      assert(isObject(home.menu_page.states), 'menu_page.states debe ser objeto.');
+      if (isObject(home.menu_page.states)) {
+        ['loading', 'no_categories', 'load_error'].forEach((stateKey) => {
+          assertStringIfDefined(
+            home.menu_page.states[stateKey],
+            `menu_page.states.${stateKey} debe ser string.`
+          );
+        });
+      }
+
+      assert(
+        isObject(home.menu_page.category_empty_messages),
+        'menu_page.category_empty_messages debe ser objeto.'
+      );
+      if (isObject(home.menu_page.category_empty_messages)) {
+        ['entradas', 'pizzas', 'postres', 'bebidas', 'productos'].forEach((categoryKey) => {
+          assertStringIfDefined(
+            home.menu_page.category_empty_messages[categoryKey],
+            `menu_page.category_empty_messages.${categoryKey} debe ser string.`
+          );
+        });
+      }
+    }
+  }
+
+  if ('menu_detail_editorial' in home) {
+    assert(
+      isObject(home.menu_detail_editorial),
+      'menu_detail_editorial debe ser un objeto cuando existe.'
+    );
+
+    if (isObject(home.menu_detail_editorial)) {
+      assertStringIfDefined(
+        home.menu_detail_editorial.sensory_subtitle,
+        'menu_detail_editorial.sensory_subtitle debe ser string cuando existe.'
+      );
+
+      if ('sensory' in home.menu_detail_editorial) {
+        assert(isObject(home.menu_detail_editorial.sensory), 'menu_detail_editorial.sensory debe ser objeto.');
+        if (isObject(home.menu_detail_editorial.sensory)) {
+          assertStringIfDefined(
+            home.menu_detail_editorial.sensory.section_title,
+            'menu_detail_editorial.sensory.section_title debe ser string.'
+          );
+          assertStringIfDefined(
+            home.menu_detail_editorial.sensory.subtitle,
+            'menu_detail_editorial.sensory.subtitle debe ser string.'
+          );
+          assertStringIfDefined(
+            home.menu_detail_editorial.sensory.compare_button_label,
+            'menu_detail_editorial.sensory.compare_button_label debe ser string.'
+          );
+          assertStringIfDefined(
+            home.menu_detail_editorial.sensory.compare_button_label_active,
+            'menu_detail_editorial.sensory.compare_button_label_active debe ser string.'
+          );
+          assertStringIfDefined(
+            home.menu_detail_editorial.sensory.comparison_clear_label,
+            'menu_detail_editorial.sensory.comparison_clear_label debe ser string.'
+          );
+        }
+      }
+
+      if ('compare_modal' in home.menu_detail_editorial) {
+        assert(isObject(home.menu_detail_editorial.compare_modal), 'menu_detail_editorial.compare_modal debe ser objeto.');
+      }
+      if ('pairings' in home.menu_detail_editorial) {
+        assert(isObject(home.menu_detail_editorial.pairings), 'menu_detail_editorial.pairings debe ser objeto.');
+      }
+      if ('story' in home.menu_detail_editorial) {
+        assert(isObject(home.menu_detail_editorial.story), 'menu_detail_editorial.story debe ser objeto.');
+      }
+      if ('info_chips' in home.menu_detail_editorial) {
+        assert(isObject(home.menu_detail_editorial.info_chips), 'menu_detail_editorial.info_chips debe ser objeto.');
+      }
+      if ('sensory_axis_tooltips' in home.menu_detail_editorial) {
+        assert(
+          isObject(home.menu_detail_editorial.sensory_axis_tooltips),
+          'menu_detail_editorial.sensory_axis_tooltips debe ser objeto.'
+        );
+      }
+    }
   }
 
   if (isObject(home.delivery)) {

@@ -255,5 +255,180 @@
       "tripadvisor": ""
     },
     "note": ""
+  },
+  "menu_page": {
+    "hero": {
+      "title": "Nuestra carta",
+      "subtitle": "Una selección pensada para compartir, descubrir sabores y volver a pedir tus favoritos."
+    },
+    "search": {
+      "placeholder": "",
+      "helper_prefix": "Busca por",
+      "helper_words": [
+        "ingredientes",
+        "alérgenos",
+        "platos",
+        "bebidas"
+      ],
+      "empty_state": {
+        "title": "No encontramos resultados",
+        "description": "No vimos coincidencias en el menú.",
+        "description_with_query": "No vimos coincidencias para \"{query}\" en el menú.",
+        "hint": "Prueba con otro término o revisa la ortografía."
+      }
+    },
+    "account_modal": {
+      "title": "Tu cuenta",
+      "empty_state": {
+        "title": "¡Aún no has añadido nada!",
+        "description": "Explora el menú y cada plato o bebida que añadas aparecerá aquí con su total estimado"
+      },
+      "labels": {
+        "subtotal": "Subtotal",
+        "itbis": "ITBIS (18%)",
+        "legal_tip": "Propina legal (10%)",
+        "total": "Total"
+      },
+      "total_tooltip": {
+        "title": "Total estimado",
+        "description": "Este monto es una referencia de tu cuenta e incluye ITBIS y propina legal. El total final puede variar al momento de ordenar."
+      },
+      "remove_toast": {
+        "title": "Ítem eliminado",
+        "description": "Si fue un error, aún puedes deshacerlo"
+      }
+    },
+    "filter_modal": {
+      "title": "Filtrar",
+      "sections": {
+        "allergens": {
+          "title": "Alérgenos",
+          "description": "Selecciona lo que prefieres evitar."
+        },
+        "pizza_type": {
+          "title": "Tipo de pizza",
+          "tabs": {
+            "all": "Todas",
+            "clasica": "Clásicas",
+            "autor": "De autor"
+          }
+        },
+        "price_range": {
+          "title": "Rango de precio",
+          "description": "Vista preliminar del reparto de precios actual en la carta completa.",
+          "min_label": "Mínimo",
+          "max_label": "Máximo"
+        },
+        "dietary": {
+          "title": "Dieta",
+          "vegetarian_title": "Vegetariana",
+          "vegetarian_description": "Sin carne, llena de sabor",
+          "vegan_title": "Vegana",
+          "vegan_description": "100% vegetal y ligera"
+        },
+        "organoleptic": {
+          "title": "Perfil organoléptico",
+          "description": "Perfiles que resumen cómo se siente cada plato al probarlo."
+        }
+      },
+      "actions": {
+        "clear_label": "Limpiar",
+        "apply_prefix": "Mostrar",
+        "apply_suffix": "platos"
+      }
+    },
+    "states": {
+      "loading": "Cargando menú...",
+      "no_categories": "No hay categorías disponibles en este momento.",
+      "load_error": "No se pudo cargar el menú."
+    },
+    "category_empty_messages": {
+      "entradas": "No hay entradas disponibles en este momento.",
+      "pizzas": "No hay pizzas disponibles en este momento.",
+      "postres": "No hay postres disponibles en este momento.",
+      "bebidas": "Nuestra selección de bebidas estará disponible pronto.",
+      "productos": "No hay productos disponibles en este momento."
+    }
+  },
+  "menu_detail_editorial": {
+    "sensory": {
+      "section_title": "Perfil sensorial",
+      "subtitle": "Una lectura sensorial del plato: cómo se expresa en sabor, textura y aroma.",
+      "compare_button_label": "Comparar",
+      "compare_button_label_active": "Cambiar",
+      "tabs": {
+        "radar_label": "Radar",
+        "bars_label": "Barras"
+      },
+      "comparison_clear_label": "Quitar"
+    },
+    "compare_modal": {
+      "title": "Comparar",
+      "description": "Selecciona otro plato para comparar su perfil sensorial con el actual.",
+      "search_placeholder": "",
+      "search_helper_prefix": "Busca por",
+      "search_helper_word": "plato",
+      "empty_state": {
+        "title": "Sin resultados",
+        "description": "No hay platos elegibles para comparar en este momento.",
+        "description_with_query": "No hay coincidencias para \"{query}\" en entradas y pizzas con perfil sensorial."
+      },
+      "current_item_prefix": "Plato actual:",
+      "current_item_fallback": "Selecciona un plato para comparar.",
+      "candidate_summary_fallback": "Perfil sensorial disponible"
+    },
+    "pairings": {
+      "section_title": "Maridajes recomendados",
+      "section_subtitle": "Selección del sommelier de Figata para elevar cada bocado.",
+      "cta_fallback_label": "Añadir maridaje"
+    },
+    "story": {
+      "section_title": "La historia detrás"
+    },
+    "info_chips": {
+      "calories": {
+        "title": "Calorías estimadas",
+        "description": "Valor aproximado por porción. Puede variar según ingredientes, tamaño y preparación final."
+      },
+      "eta": {
+        "title": "Tiempo estimado",
+        "description": "Tiempo aproximado de servicio desde que ordenas. Puede variar según horario y volumen de pedidos."
+      }
+    },
+    "sensory_axis_tooltips": {
+      "dulce": {
+        "title": "Dulzor",
+        "description": "Qué tan presentes son las notas dulces."
+      },
+      "salado": {
+        "title": "Salinidad",
+        "description": "Nivel de sal y sazón dominante."
+      },
+      "acido": {
+        "title": "Acidez",
+        "description": "Frescura cítrica o sensación ácida en boca."
+      },
+      "cremosa": {
+        "title": "Cremosidad",
+        "description": "Textura suave, untuosa y envolvente."
+      },
+      "crujiente": {
+        "title": "Crujiente",
+        "description": "Grado de crocancia al morder."
+      },
+      "ligero": {
+        "title": "Ligereza",
+        "description": "Qué tan liviano se siente el plato."
+      },
+      "aromatico": {
+        "title": "Aromas",
+        "description": "Intensidad y riqueza aromática al servir."
+      },
+      "intensidad": {
+        "title": "Intensidad",
+        "description": "Fuerza global del sabor en cada bocado."
+      }
+    },
+    "sensory_subtitle": "Una lectura sensorial del plato: cómo se expresa en sabor, textura y aroma."
   }
 }

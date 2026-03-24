@@ -6,37 +6,49 @@
       "id": "entradas",
       "label": "Entradas",
       "order": 1,
-      "visible": true
+      "visible": true,
+      "enabled": true,
+      "subcategories": []
     },
     {
       "id": "pizza",
       "label": "Pizza Clasica",
       "order": 2,
-      "visible": true
+      "visible": true,
+      "enabled": true,
+      "subcategories": []
     },
     {
       "id": "pizza_autor",
       "label": "Pizza de Autor",
       "order": 3,
-      "visible": true
+      "visible": true,
+      "enabled": true,
+      "subcategories": []
     },
     {
       "id": "postres",
       "label": "Postres",
       "order": 4,
-      "visible": true
+      "visible": true,
+      "enabled": true,
+      "subcategories": []
     },
     {
       "id": "bebidas",
       "label": "Bebidas",
       "order": 5,
-      "visible": true
+      "visible": true,
+      "enabled": true,
+      "subcategories": []
     },
     {
       "id": "productos",
       "label": "Productos",
       "order": 6,
-      "visible": true
+      "visible": true,
+      "enabled": true,
+      "subcategories": []
     }
   ]
 }

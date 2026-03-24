@@ -150,7 +150,7 @@
                   </button>
                   <div id="sidebar-ingredients-accordion" class="sidebar-menu-accordion" aria-hidden="true"></div>
 
-                  <a class="sidebar-nav__item" href="/admin/cms/#/collections/availability">
+                  <button id="sidebar-nav-modal" class="sidebar-nav__item" type="button">
                     <span class="sidebar-nav__icon" aria-hidden="true">
                       <svg viewBox="0 0 16 16">
                         <path
@@ -160,8 +160,8 @@
                         ></path>
                       </svg>
                     </span>
-                    <span class="sidebar-nav__label">Availability</span>
-                  </a>
+                    <span class="sidebar-nav__label">Modal</span>
+                  </button>
 
                   <button id="sidebar-nav-categories" class="sidebar-nav__item" type="button">
                     <span class="sidebar-nav__icon" aria-hidden="true">
@@ -282,7 +282,6 @@
                     <button id="open-menu-browser-button" class="btn btn-inline" type="button">
                       Abrir editor
                     </button>
-                    <a href="/admin/cms/#/collections/menu">Decap fallback</a>
                   </div>
                 </article>
 
@@ -307,12 +306,12 @@
                   <p>Ingredientes, tags y alergenos.</p>
                 </button>
 
-                <a class="dash-card" href="/admin/cms/#/collections/availability">
+                <button id="open-modal-editor-button" class="dash-card dash-card--button" type="button">
                   <p class="dash-card__eyebrow">Operacion</p>
-                  <h2>Availability</h2>
+                  <h2>Modal</h2>
                   <p id="metric-availability" class="dash-card__metric">-</p>
-                  <p>Disponibilidad y notas.</p>
-                </a>
+                  <p>Editor global de modales con preview real mobile.</p>
+                </button>
 
                 <button id="open-categories-editor-button" class="dash-card dash-card--button" type="button">
                   <p class="dash-card__eyebrow">Estructura</p>
@@ -395,15 +394,15 @@
               <div class="menu-item-editor__layout">
                 <section class="menu-item-editor__form card" aria-label="Formulario de item">
                   <nav class="item-tabs" aria-label="Item tabs">
-                    <button class="item-tab is-active" data-tab="basic" type="button">Basico</button>
-                    <button class="item-tab" data-tab="editorial" type="button">Editorial</button>
+                    <button class="item-tab is-active" data-tab="editorial" type="button">Editorial</button>
+                    <button class="item-tab" data-tab="basic" type="button">Basico</button>
                     <button class="item-tab" data-tab="traits" type="button">Traits</button>
                     <button class="item-tab" data-tab="media" type="button">Media</button>
                     <button class="item-tab" data-tab="availability" type="button">Disponibilidad</button>
                   </nav>
 
                   <div class="item-tab-panels">
-                    <section class="item-tab-panel is-active" data-tab-panel="basic">
+                    <section class="item-tab-panel" data-tab-panel="basic">
                       <label class="field">
                         <span>ID</span>
                         <input id="item-field-id" type="text" readonly />
@@ -430,8 +429,8 @@
                       </label>
                     </section>
 
-                    <section class="item-tab-panel" data-tab-panel="editorial">
-                      <section class="traits-panel-section">
+                    <section class="item-tab-panel is-active" data-tab-panel="editorial">
+                      <section class="traits-panel-section item-editor-card" data-item-preview-section="header">
                         <header class="traits-panel-section__header">
                           <h4>Header del detalle</h4>
                           <p>
@@ -482,24 +481,10 @@
                         <p class="inline-help">
                           <strong>Featured</strong> también controla el badge <strong>Top Seller</strong> cuando el modo está en Auto.
                         </p>
-                      </section>
-
-                      <section class="traits-panel-section">
-                        <header class="traits-panel-section__header">
-                          <h4>Resumen visible</h4>
-                          <p>
-                            Texto principal del detalle y soporte editorial de lectura rápida.
-                          </p>
-                        </header>
-
+                        
                         <label class="field">
-                          <span>Descripcion corta</span>
-                          <textarea id="item-field-description-short" rows="3"></textarea>
-                        </label>
-
-                        <label class="field">
-                          <span>Descripcion larga</span>
-                          <textarea id="item-field-description-long" rows="7"></textarea>
+                          <span>Descripción visible</span>
+                          <textarea id="item-field-description" rows="5"></textarea>
                         </label>
 
                         <label class="field">
@@ -508,7 +493,7 @@
                         </label>
                       </section>
 
-                      <section class="traits-panel-section">
+                      <section class="traits-panel-section item-editor-card" data-item-preview-section="ingredients">
                         <header class="traits-panel-section__header">
                           <h4>Ingredientes y alergenos visibles</h4>
                           <p>
@@ -524,7 +509,7 @@
                         <ul id="ingredient-chip-list" class="chip-list chip-list--draggable"></ul>
                         <p class="inline-help">Arrastra para cambiar el orden de ingredientes.</p>
 
-                        <div class="traits-panel-grid">
+                        <div class="traits-panel-grid" data-item-preview-section="allergens">
                           <div class="traits-panel-card">
                             <span class="traits-panel-card__label">Alérgenos automáticos</span>
                             <div id="item-derived-allergens" class="traits-pill-list"></div>
@@ -537,12 +522,12 @@
                           </div>
                         </div>
 
-                        <div class="field">
+                        <div class="field" data-item-preview-section="allergens">
                           <span>Fuentes por alérgeno</span>
                           <div id="item-allergen-sources" class="allergen-source-list"></div>
                         </div>
 
-                        <details class="advanced-box">
+                        <details class="advanced-box" data-item-preview-section="allergens">
                           <summary>Excepciones avanzadas de alergenos</summary>
 
                           <div class="allergen-override-grid">
@@ -573,18 +558,14 @@
                         </details>
                       </section>
 
-                      <section class="traits-panel-section">
+                      <section class="traits-panel-section item-editor-card" data-item-preview-section="sensory">
                         <header class="traits-panel-section__header">
                           <h4>Perfil sensorial</h4>
                           <p>
-                            Controla la sección sensorial visible: intro, ejes y resumen/callout.
+                            Controla la sección sensorial visible por plato: ejes y resumen/callout.
+                            El subtítulo general se edita en Pages > Menú.
                           </p>
                         </header>
-
-                        <label class="field">
-                          <span>Subtitulo / intro de la sección</span>
-                          <textarea id="item-field-sensory-intro" rows="2" placeholder="Ej: Una lectura sensorial del plato..."></textarea>
-                        </label>
 
                         <label class="field">
                           <span>Resumen / callout</span>
@@ -612,7 +593,7 @@
                         </label>
                       </section>
 
-                      <section class="traits-panel-section">
+                      <section class="traits-panel-section item-editor-card" data-item-preview-section="pairings">
                         <header class="traits-panel-section__header">
                           <h4>Maridajes recomendados</h4>
                           <p>
@@ -657,7 +638,7 @@
                         </div>
                       </section>
 
-                      <section class="traits-panel-section">
+                      <section class="traits-panel-section item-editor-card" data-item-preview-section="story">
                         <header class="traits-panel-section__header">
                           <h4>Historia detrás</h4>
                           <p>
@@ -790,7 +771,7 @@
                       </section>
                     </section>
 
-                    <section class="item-tab-panel" data-tab-panel="media">
+                    <section class="item-tab-panel" data-tab-panel="media" data-item-preview-section="hero-media">
                       <label class="field">
                         <span>Image path</span>
                         <input id="item-field-image" type="text" />
@@ -819,26 +800,30 @@
                   </div>
                 </section>
 
-                <aside class="menu-item-editor__preview card" aria-label="Preview en tiempo real">
-                  <p class="kicker">Preview</p>
-                  <div class="preview-columns">
-                    <article class="preview-card">
-                      <div class="preview-card__image-wrap">
-                        <img id="preview-card-image" alt="Card preview" />
-                      </div>
-                      <h3 id="preview-card-name">-</h3>
-                      <p id="preview-card-short">-</p>
-                      <div id="preview-card-badges" class="preview-badges"></div>
-                    </article>
+                <aside class="menu-item-editor__preview" aria-label="Preview editorial mobile">
+                  <div class="menu-item-editor__preview-head">
+                    <p class="kicker">Preview</p>
+                    <p class="menu-item-editor__preview-caption">
+                      Detalle editorial mobile en vivo
+                    </p>
+                  </div>
 
-                    <article class="preview-modal">
-                      <div class="preview-modal__image-wrap">
-                        <img id="preview-modal-image" alt="Modal preview" />
+                  <div class="menu-item-editor__device" aria-hidden="true">
+                    <div class="menu-item-editor__device-notch"></div>
+                    <div class="menu-item-editor__device-screen">
+                      <iframe
+                        id="item-editor-mobile-preview-frame"
+                        class="menu-item-editor__device-iframe"
+                        title="Preview detalle menú móvil"
+                        loading="lazy">
+                      </iframe>
+                      <div
+                        id="item-editor-mobile-preview-loading"
+                        class="menu-item-editor__device-loading"
+                        aria-live="polite">
+                        Cargando preview...
                       </div>
-                      <h3 id="preview-modal-name">-</h3>
-                      <p id="preview-modal-long">-</p>
-                      <p id="preview-modal-price" class="preview-modal__price">-</p>
-                    </article>
+                    </div>
                   </div>
                 </aside>
               </div>
@@ -1180,6 +1165,8 @@
             <section id="media-editor-panel" class="media-editor is-hidden" aria-label="Editor de media"></section>
 
             <section id="pages-editor-panel" class="pages-editor is-hidden" aria-label="Editor de paginas"></section>
+
+            <section id="modal-editor-panel" class="modal-editor is-hidden" aria-label="Editor de modales"></section>
           </div>
         </div>
 
@@ -1431,6 +1418,7 @@
     <script src="/admin/app/modules/panels/restaurant-panel.js"></script>
     <script src="/admin/app/modules/panels/media-panel.js"></script>
     <script src="/admin/app/modules/panels/pages-panel.js"></script>
+    <script src="/admin/app/modules/panels/modal-panel.js"></script>
     <script src="/admin/app/app.js"></script>
   </body>
 </html>

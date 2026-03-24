@@ -14,7 +14,7 @@
   const SEARCH_STAGGER_IN_CAP_MS = 126;
   const SEARCH_LAYOUT_MOVE_MS = 240;
   const SEARCH_LAYOUT_MOVE_EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
-  const SEARCH_HELPER_WORDS = Object.freeze([
+  const SEARCH_HELPER_WORDS_DEFAULT = Object.freeze([
     'ingredientes',
     'alérgenos',
     'platos',
@@ -60,8 +60,8 @@
   const ACCOUNT_VALUE_OUT_EASE = SEARCH_HELPER_OUT_EASE;
   const ACCOUNT_VALUE_IN_EASE = SEARCH_HELPER_IN_EASE;
   const ACCOUNT_REMOVE_TOAST_DURATION_MS = 6000;
-  const ACCOUNT_REMOVE_TOAST_TITLE = 'Ítem eliminado';
-  const ACCOUNT_REMOVE_TOAST_COPY = 'Si fue un error, aún puedes deshacerlo';
+  const ACCOUNT_REMOVE_TOAST_TITLE_DEFAULT = 'Ítem eliminado';
+  const ACCOUNT_REMOVE_TOAST_COPY_DEFAULT = 'Si fue un error, aún puedes deshacerlo';
   const ACCOUNT_CARD_VIEW_TRANSITION_MS = 360;
   const ACCOUNT_CARD_VIEW_TRANSITION_EASE = 'cubic-bezier(0, 0, 0.2, 1)';
   const ACCOUNT_CARD_LAYOUT_MOVE_MS = 620;
@@ -120,12 +120,35 @@
 
   const listView = document.getElementById('menu-list-view');
   const detailView = document.getElementById('menu-detail-view');
+  const ADMIN_PREVIEW_MODAL_KEYS_LIST = Object.freeze([
+    'account',
+    'filter',
+    'compare',
+  ]);
+  const normalizeAdminPreviewModalKey = (value) => {
+    const normalized = String(value || '').trim().toLowerCase();
+    return ADMIN_PREVIEW_MODAL_KEYS_LIST.includes(normalized) ? normalized : '';
+  };
+  const queryParams = new URL(window.location.href).searchParams;
+  const isAdminPreviewMode = queryParams.get('adminPreview') === '1';
+  const adminPreviewSurface = String(queryParams.get('adminPreviewSurface') || '')
+    .trim()
+    .toLowerCase();
+  const adminPreviewModalRequested = normalizeAdminPreviewModalKey(
+    queryParams.get('adminPreviewModal')
+  );
+  let adminPreviewModalActive =
+    adminPreviewModalRequested ||
+    (adminPreviewSurface === 'modal' ? 'account' : '');
+  const menuPageTitle = document.getElementById('menu-page-title');
+  const menuPageSubtitle = document.getElementById('menu-page-subtitle');
   const tabRoot = document.getElementById('menu-page-tabs');
   const contentRoot = document.getElementById('menu-categories-content');
   const statusNode = document.getElementById('menu-page-status');
   const searchRoot = document.getElementById('menu-page-search');
   const searchInput = document.getElementById('menu-page-search-input');
   const searchHelper = document.getElementById('menu-page-search-helper');
+  const searchHelperPrefix = document.getElementById('menu-page-search-helper-prefix');
   const searchHelperWord = document.getElementById('menu-page-search-helper-word');
   const clearSearchButton = document.getElementById('menu-page-search-clear');
   const filterButton = document.getElementById('menu-page-filter-button');
@@ -148,6 +171,10 @@
   const detailBadgeIcon = document.getElementById('menu-detail-badge-icon');
   const detailBadgeLabel = document.getElementById('menu-detail-badge-label');
   const detailPanel = document.getElementById('menu-detail-panel');
+  const detailHeroHeader =
+    detailPanel instanceof HTMLElement
+      ? detailPanel.querySelector('.menu-page-detail__hero')
+      : null;
   const detailMedia = document.getElementById('menu-detail-media');
   const detailEditorialRoot = document.getElementById('menu-detail-editorial');
   const detailEditorialTrack = document.getElementById('menu-detail-editorial-track');
@@ -161,6 +188,7 @@
   const detailChipRatingValue = document.getElementById('menu-detail-chip-rating-value');
   const detailDescription = document.getElementById('menu-detail-description');
   const detailPrice = document.getElementById('menu-detail-price');
+  const detailSensoryTitle = document.getElementById('menu-detail-sensory-title');
   const detailSensoryDivider = document.getElementById('menu-detail-sensory-divider');
   const detailSensorySection = document.getElementById('menu-detail-sensory-section');
   const detailSensoryViewTabsRoot = document.getElementById(
@@ -178,6 +206,7 @@
   const detailSensoryGroups = document.getElementById('menu-detail-sensory-groups');
   const detailSensoryRadar = document.getElementById('menu-detail-sensory-radar');
   const detailSensorySummary = document.getElementById('menu-detail-sensory-summary');
+  const detailSensorySubtitle = document.getElementById('menu-detail-sensory-subtitle');
   const detailSensoryCompareButton = document.getElementById('menu-detail-sensory-compare');
   const detailSensoryComparisonMeta = document.getElementById(
     'menu-detail-sensory-comparison-meta'
@@ -191,11 +220,24 @@
   const detailSensoryComparisonClearButton = document.getElementById(
     'menu-detail-sensory-comparison-clear'
   );
+  const detailSensoryTabRadarTitle = document.getElementById(
+    'menu-detail-sensory-tab-radar-title'
+  );
+  const detailSensoryTabBarsTitle = document.getElementById(
+    'menu-detail-sensory-tab-bars-title'
+  );
   const detailPairingsDivider = document.getElementById('menu-detail-pairings-divider');
   const detailPairingsSection = document.getElementById('menu-detail-pairings-section');
+  const detailPairingsTitle = document.getElementById('menu-detail-pairings-title');
+  const detailPairingsSubtitle = document.getElementById('menu-detail-pairings-subtitle');
+  const detailPairingName = document.getElementById('menu-detail-pairing-name');
+  const detailPairingMeta = document.getElementById('menu-detail-pairing-meta');
+  const detailPairingDescription = document.getElementById('menu-detail-pairing-description');
   const detailPairingCta = document.getElementById('menu-detail-pairing-cta');
   const detailHistoryDivider = document.getElementById('menu-detail-history-divider');
   const detailHistorySection = document.getElementById('menu-detail-history-section');
+  const detailHistoryTitle = document.getElementById('menu-detail-history-title');
+  const detailHistoryBody = document.getElementById('menu-detail-history-body');
   const detailSpecGrid = document.getElementById('menu-detail-spec-grid');
   const detailSpecsDivider = document.getElementById('menu-detail-specs-divider');
   const detailTagsDivider = document.getElementById('menu-detail-tags-divider');
@@ -213,10 +255,71 @@
   const detailCloseButton = document.getElementById('menu-detail-close');
   const detailAddButton = document.getElementById('menu-detail-add');
   const menuPageBody = document.body;
+  if (isAdminPreviewMode) {
+    document.documentElement.classList.add('menu-admin-preview');
+    document.documentElement.setAttribute('data-disable-scroll-indicator', 'true');
+    document.documentElement.setAttribute(
+      'data-admin-preview-surface',
+      adminPreviewSurface || 'detail'
+    );
+    if (adminPreviewModalActive) {
+      document.documentElement.setAttribute(
+        'data-admin-preview-modal',
+        adminPreviewModalActive
+      );
+    } else {
+      document.documentElement.removeAttribute('data-admin-preview-modal');
+    }
+    if (menuPageBody instanceof HTMLElement) {
+      menuPageBody.classList.add('menu-admin-preview-body');
+      menuPageBody.setAttribute('data-menu-admin-preview', 'true');
+      menuPageBody.setAttribute('data-disable-scroll-indicator', 'true');
+      menuPageBody.setAttribute(
+        'data-admin-preview-surface',
+        adminPreviewSurface || 'detail'
+      );
+      if (adminPreviewModalActive) {
+        menuPageBody.setAttribute('data-admin-preview-modal', adminPreviewModalActive);
+      } else {
+        menuPageBody.removeAttribute('data-admin-preview-modal');
+      }
+    }
+  }
   const filterModal = document.getElementById('menu-filter-modal');
+  const filterModalTitle = document.getElementById('menu-filter-modal-title');
   const filterDialog = document.getElementById('menu-filter-modal-dialog');
   const filterCloseButton = document.getElementById('menu-filter-modal-close');
   const filterClearButton = document.getElementById('menu-filter-modal-clear');
+  const filterApplyButton = document.getElementById('menu-filter-modal-apply');
+  const filterSectionTitleAllergens = document.getElementById('menu-filter-title-allergens');
+  const filterSectionCopyAllergens = document.getElementById('menu-filter-copy-allergens');
+  const filterSectionTitlePizzaType = document.getElementById('menu-filter-title-pizza-type');
+  const filterSectionTitlePriceRange = document.getElementById('menu-filter-title-price-range');
+  const filterSectionCopyPriceRange = document.getElementById('menu-filter-copy-price-range');
+  const filterSectionTitleDietary = document.getElementById('menu-filter-title-dietary');
+  const filterSectionTitleOrganoleptic = document.getElementById(
+    'menu-filter-title-organoleptic'
+  );
+  const filterSectionCopyOrganoleptic = document.getElementById(
+    'menu-filter-copy-organoleptic'
+  );
+  const filterPizzaTabAll = document.getElementById('menu-filter-pizza-tab-all');
+  const filterPizzaTabClasica = document.getElementById('menu-filter-pizza-tab-clasica');
+  const filterPizzaTabAutor = document.getElementById('menu-filter-pizza-tab-autor');
+  const filterPriceLabelMin = document.getElementById('menu-filter-price-label-min');
+  const filterPriceLabelMax = document.getElementById('menu-filter-price-label-max');
+  const filterDietVegetarianTitle = document.getElementById(
+    'menu-filter-diet-vegetarian-title'
+  );
+  const filterDietVegetarianDescription = document.getElementById(
+    'menu-filter-diet-vegetarian-description'
+  );
+  const filterDietVeganTitle = document.getElementById('menu-filter-diet-vegan-title');
+  const filterDietVeganDescription = document.getElementById(
+    'menu-filter-diet-vegan-description'
+  );
+  const filterApplyPrefix = document.getElementById('menu-filter-apply-prefix');
+  const filterApplySuffix = document.getElementById('menu-filter-apply-suffix');
   const filterPizzaTabsRoot = document.getElementById('menu-filter-modal-pizza-tabs');
   const filterOrganolepticCloud = document.getElementById('menu-filter-modal-organoleptic-cloud');
   const filterModalBody =
@@ -225,22 +328,33 @@
       : null;
   const accountModal = document.getElementById('menu-account-modal');
   const accountDialog = document.getElementById('menu-account-modal-dialog');
+  const accountModalTitle = document.getElementById('menu-account-modal-title');
   const accountCloseButton = document.getElementById('menu-account-modal-close');
   const accountModalBody = document.getElementById('menu-account-modal-body');
+  const accountLabelSubtotal = document.getElementById('menu-account-label-subtotal');
+  const accountLabelItbis = document.getElementById('menu-account-label-itbis');
+  const accountLabelLegalTip = document.getElementById('menu-account-label-legal-tip');
+  const accountLabelTotal = document.getElementById('menu-account-label-total');
   const accountSubtotalNode = document.getElementById('menu-account-subtotal');
   const accountItbisNode = document.getElementById('menu-account-itbis');
   const accountLegalTipNode = document.getElementById('menu-account-legal-tip');
   const accountTotalNode = document.getElementById('menu-account-total');
   const accountTotalInfoToggle = document.getElementById('menu-account-total-info-toggle');
+  const accountTotalInfoTitle = document.getElementById('menu-account-total-info-title');
+  const accountTotalInfoCopy = document.getElementById('menu-account-total-info-copy');
   const accountToast = document.getElementById('menu-account-toast');
   const accountToastTitle = document.getElementById('menu-account-toast-title');
   const accountToastCopy = document.getElementById('menu-account-toast-copy');
   const compareModal = document.getElementById('menu-compare-modal');
   const compareDialog = document.getElementById('menu-compare-modal-dialog');
+  const compareModalTitle = document.getElementById('menu-compare-modal-title');
+  const compareModalDescription = document.getElementById('menu-compare-modal-description');
   const compareCloseButton = document.getElementById('menu-compare-modal-close');
   const compareModalBody = document.getElementById('menu-compare-modal-body');
   const compareSearchRoot = document.getElementById('menu-compare-search');
   const compareSearchInput = document.getElementById('menu-compare-search-input');
+  const compareSearchHelperPrefix = document.getElementById('menu-compare-search-helper-prefix');
+  const compareSearchHelperWord = document.getElementById('menu-compare-search-helper-word');
   const compareSearchClearButton = document.getElementById('menu-compare-search-clear');
   const compareResultsRoot = document.getElementById('menu-compare-results');
   const traitsApi = window.FigataMenuTraits;
@@ -319,6 +433,12 @@
     VEGETARIAN: 'vegetarian',
     FEATURED: 'featured',
   });
+  const DETAIL_EDITORIAL_COMPARE_MODE = Object.freeze({
+    AUTO: 'auto',
+    ENABLED: 'enabled',
+    DISABLED: 'disabled',
+  });
+  const DETAIL_EDITORIAL_HERO_BADGE_NONE = 'none';
   const DETAIL_HERO_BADGE_COPY = Object.freeze({
     [DETAIL_HERO_BADGE_KIND.VEGAN]: 'Vegana',
     [DETAIL_HERO_BADGE_KIND.VEGETARIAN]: 'Vegetariana',
@@ -345,11 +465,140 @@
         'Tiempo aproximado de servicio desde que ordenas. Puede variar según horario y volumen de pedidos.',
     }),
   });
+  const MENU_PAGE_COPY_DEFAULTS = Object.freeze({
+    hero: Object.freeze({
+      title: 'Nuestra selección',
+      subtitle:
+        'Una carta pensada para compartir, descubrir sabores y volver a pedir tus favoritos.',
+    }),
+    search: Object.freeze({
+      placeholder: '',
+      helperPrefix: 'Busca por',
+      helperWords: SEARCH_HELPER_WORDS_DEFAULT,
+      emptyState: Object.freeze({
+        title: 'No encontramos resultados',
+        description: 'No vimos coincidencias en el menú.',
+        descriptionWithQuery: 'No vimos coincidencias para "{query}" en el menú.',
+        hint: 'Prueba con otro término o revisa la ortografía.',
+      }),
+    }),
+    accountModal: Object.freeze({
+      title: 'Tu cuenta',
+      emptyState: Object.freeze({
+        title: '¡Aún no has añadido nada!',
+        description:
+          'Explora el menú y cada plato o bebida que añadas aparecerá aquí con su total estimado',
+      }),
+      labels: Object.freeze({
+        subtotal: 'Subtotal',
+        itbis: 'ITBIS (18%)',
+        legalTip: 'Propina legal (10%)',
+        total: 'Total',
+      }),
+      totalTooltip: Object.freeze({
+        title: 'Total estimado',
+        description:
+          'Este monto es una referencia de tu cuenta e incluye ITBIS y propina legal. El total final puede variar al momento de ordenar.',
+      }),
+      removeToast: Object.freeze({
+        title: ACCOUNT_REMOVE_TOAST_TITLE_DEFAULT,
+        description: ACCOUNT_REMOVE_TOAST_COPY_DEFAULT,
+      }),
+    }),
+    filterModal: Object.freeze({
+      title: 'Filtrar',
+      sections: Object.freeze({
+        allergens: Object.freeze({
+          title: 'Alérgenos',
+          description: 'Selecciona lo que prefieres evitar.',
+        }),
+        pizzaType: Object.freeze({
+          title: 'Tipo de pizza',
+          tabs: Object.freeze({
+            all: 'Todas',
+            clasica: 'Clásicas',
+            autor: 'De autor',
+          }),
+        }),
+        priceRange: Object.freeze({
+          title: 'Rango de precio',
+          description:
+            'Vista preliminar del reparto de precios actual en la carta completa.',
+          minLabel: 'Mínimo',
+          maxLabel: 'Máximo',
+        }),
+        dietary: Object.freeze({
+          title: 'Dieta',
+          vegetarianTitle: 'Vegetariana',
+          vegetarianDescription: 'Sin carne, llena de sabor',
+          veganTitle: 'Vegana',
+          veganDescription: '100% vegetal y ligera',
+        }),
+        organoleptic: Object.freeze({
+          title: 'Perfil organoléptico',
+          description: 'Perfiles que resumen cómo se siente cada plato al probarlo.',
+        }),
+      }),
+      actions: Object.freeze({
+        clearLabel: 'Limpiar',
+        applyPrefix: 'Mostrar',
+        applySuffix: 'platos',
+      }),
+    }),
+    states: Object.freeze({
+      loading: 'Cargando menú...',
+      noCategories: 'No hay categorías disponibles en este momento.',
+      loadError: 'No se pudo cargar el menú.',
+    }),
+    categoryEmptyMessages: Object.freeze({
+      entradas: 'No hay entradas disponibles en este momento.',
+      pizzas: 'No hay pizzas disponibles en este momento.',
+      postres: 'No hay postres disponibles en este momento.',
+      bebidas: 'Nuestra selección de bebidas estará disponible pronto.',
+      productos: 'No hay productos disponibles en este momento.',
+    }),
+  });
+  const MENU_DETAIL_EDITORIAL_COPY_DEFAULTS = Object.freeze({
+    sensory: Object.freeze({
+      sectionTitle: 'Perfil sensorial',
+      subtitle: 'Una lectura sensorial del plato: cómo se expresa en sabor, textura y aroma.',
+      compareButtonLabel: 'Comparar',
+      compareButtonLabelActive: 'Cambiar',
+      tabRadarLabel: 'Radar',
+      tabBarsLabel: 'Barras',
+      comparisonClearLabel: 'Quitar',
+    }),
+    compareModal: Object.freeze({
+      title: 'Comparar',
+      description:
+        'Selecciona otro plato para comparar su perfil sensorial con el actual.',
+      searchPlaceholder: '',
+      searchHelperPrefix: 'Busca por',
+      searchHelperWord: 'plato',
+      emptyStateTitle: 'Sin resultados',
+      emptyStateDescription:
+        'No hay platos elegibles para comparar en este momento.',
+      emptyStateDescriptionWithQuery:
+        'No hay coincidencias para "{query}" en entradas y pizzas con perfil sensorial.',
+      currentItemPrefix: 'Plato actual:',
+      currentItemFallback: 'Selecciona un plato para comparar.',
+      candidateSummaryFallback: 'Perfil sensorial disponible',
+    }),
+    pairings: Object.freeze({
+      sectionTitle: 'Maridajes recomendados',
+      sectionSubtitle:
+        'Selección del sommelier de Figata para elevar cada bocado.',
+      ctaFallbackLabel: 'Añadir maridaje',
+    }),
+    story: Object.freeze({
+      sectionTitle: 'La historia detrás',
+    }),
+    infoChips: DETAIL_INFO_CHIP_TOOLTIP_COPY,
+    sensoryAxisTooltips: DETAIL_SENSORY_AXIS_TOOLTIP_COPY,
+  });
   const DETAIL_INFO_CHIP_TOOLTIP_EXIT_MS = 120;
   const DETAIL_INFO_CHIP_TOOLTIP_SWITCH_EXIT_MS = 84;
   const DETAIL_INFO_CHIP_TOOLTIP_SCROLL_CLOSE_PX = 48;
-  const DETAIL_V1_PAIRING_ITEM_IDS = new Set(['margherita']);
-  const DETAIL_V1_HISTORY_ITEM_IDS = new Set(['margherita']);
   const ORGANOLEPTIC_PROFILE_ICON_IDS = Object.freeze({
     fresh: 'albahaca',
     aromatic: 'romero',
@@ -381,7 +630,7 @@
     !menuApi?.getMenuItemById
   ) {
     console.error('[menu-page] API de menú no disponible.');
-    statusNode.textContent = 'No se pudo cargar el menú.';
+    statusNode.textContent = MENU_PAGE_COPY_DEFAULTS.states.loadError;
     statusNode.classList.add('is-error');
     return;
   }
@@ -438,6 +687,28 @@
     globalPriceMin: 0,
     globalPriceMax: 0,
   };
+  const ADMIN_PREVIEW_MESSAGE_READY = 'figata-admin-preview:ready';
+  const ADMIN_PREVIEW_MESSAGE_UPDATE = 'figata-admin-preview:update-detail';
+  const ADMIN_PREVIEW_MESSAGE_UPDATE_MODAL = 'figata-admin-preview:update-modal';
+  const ADMIN_PREVIEW_MESSAGE_SCROLL = 'figata-admin-preview:scroll-to-section';
+  const ADMIN_PREVIEW_MESSAGE_NAVIGATE_EDITOR = 'figata-admin-preview:navigate-editor';
+  const ADMIN_PREVIEW_SURFACE_MODAL = 'modal';
+  const ADMIN_PREVIEW_MODAL_KEYS = new Set(ADMIN_PREVIEW_MODAL_KEYS_LIST);
+  const ADMIN_PREVIEW_SECTION_KEYS = new Set([
+    'hero-media',
+    'header',
+    'summary',
+    'ingredients',
+    'allergens',
+    'sensory',
+    'pairings',
+    'story',
+  ]);
+  let menuPageCopy = MENU_PAGE_COPY_DEFAULTS;
+  let menuDetailEditorialCopy = MENU_DETAIL_EDITORIAL_COPY_DEFAULTS;
+  let detailInfoChipTooltipCopy = DETAIL_INFO_CHIP_TOOLTIP_COPY;
+  let detailSensoryAxisTooltipCopy = DETAIL_SENSORY_AXIS_TOOLTIP_COPY;
+  let searchHelperWords = SEARCH_HELPER_WORDS_DEFAULT.slice();
   const cartPulseTimeoutByTarget = new WeakMap();
   const accountMorphCleanupByNode = new WeakMap();
   let bridgeReadyResolver = null;
@@ -461,7 +732,7 @@
   let menuRouteViewTransitionTask = Promise.resolve();
   let lastRenderedRouteItemId = '';
   let organolepticIconsPromise = null;
-  let homePopularFeaturedIdsPromise = null;
+  let homeMenuDetailContextPromise = null;
   let organolepticIconPathsByProfileId = new Map();
   let searchHelperTimerId = 0;
   let searchHelperAnimationTimerId = 0;
@@ -479,6 +750,8 @@
   let detailHeroBadgeFadeTimerId = 0;
   let detailHeroBadgeHasLabel = false;
   let detailHeroBadgeFirstSlideOnly = false;
+  let adminPreviewRenderToken = 0;
+  let adminPreviewPendingSectionId = '';
   let searchHelperWordIndex = 0;
   let searchHelperHasStarted = false;
   let searchHelperAnimating = false;
@@ -499,8 +772,587 @@
   const isMobileCardViewport = () => MOBILE_CARD_QUERY.matches;
 
   const normalizeText = (value) => String(value || '').trim();
+  const resolveItemDescriptionText = (item) =>
+    normalizeText(item?.description) ||
+    normalizeText(item?.descriptionLong) ||
+    normalizeText(item?.descriptionShort);
   const isObject = (value) =>
     Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+  const deepClone = (value) => JSON.parse(JSON.stringify(value));
+  const deepMergeCopy = (defaults, source) => {
+    if (Array.isArray(defaults)) {
+      return Array.isArray(source) ? source.slice() : defaults.slice();
+    }
+
+    if (!isObject(defaults)) {
+      return source === undefined ? defaults : source;
+    }
+
+    const merged = {};
+    const sourceObject = isObject(source) ? source : {};
+    Object.keys(defaults).forEach((key) => {
+      const defaultValue = defaults[key];
+      const sourceValue = sourceObject[key];
+      if (Array.isArray(defaultValue)) {
+        merged[key] = Array.isArray(sourceValue)
+          ? sourceValue.slice()
+          : defaultValue.slice();
+        return;
+      }
+      if (isObject(defaultValue)) {
+        merged[key] = deepMergeCopy(defaultValue, sourceValue);
+        return;
+      }
+      merged[key] = sourceValue === undefined ? defaultValue : sourceValue;
+    });
+    return merged;
+  };
+  const normalizeStringList = (value, fallback = []) => {
+    const source = Array.isArray(value) ? value : fallback;
+    return source
+      .map((entry) => normalizeText(entry))
+      .filter(Boolean);
+  };
+  const readHomePath = (root, path) => {
+    if (!isObject(root)) {
+      return undefined;
+    }
+    const segments = String(path || '').split('.').filter(Boolean);
+    let cursor = root;
+    for (let index = 0; index < segments.length; index += 1) {
+      if (!isObject(cursor) && index < segments.length - 1) {
+        return undefined;
+      }
+      cursor = cursor?.[segments[index]];
+      if (cursor === undefined) {
+        return undefined;
+      }
+    }
+    return cursor;
+  };
+  const formatTemplate = (template, replacements = {}) => {
+    const baseTemplate = normalizeText(template);
+    if (!baseTemplate) {
+      return '';
+    }
+    return Object.keys(replacements).reduce((result, key) => {
+      const token = `{${key}}`;
+      return result.split(token).join(String(replacements[key] ?? ''));
+    }, baseTemplate);
+  };
+  const readFirstDefinedString = (source, paths = []) => {
+    for (let index = 0; index < paths.length; index += 1) {
+      const value = readHomePath(source, paths[index]);
+      if (typeof value === 'string') {
+        return value.trim();
+      }
+    }
+    return undefined;
+  };
+  const syncAdminPreviewSurfaceAttributes = () => {
+    if (!isAdminPreviewMode) {
+      return;
+    }
+
+    const surfaceValue = adminPreviewSurface || 'detail';
+    document.documentElement.setAttribute('data-admin-preview-surface', surfaceValue);
+    if (menuPageBody instanceof HTMLElement) {
+      menuPageBody.setAttribute('data-admin-preview-surface', surfaceValue);
+    }
+
+    if (adminPreviewModalActive) {
+      document.documentElement.setAttribute(
+        'data-admin-preview-modal',
+        adminPreviewModalActive
+      );
+      if (menuPageBody instanceof HTMLElement) {
+        menuPageBody.setAttribute('data-admin-preview-modal', adminPreviewModalActive);
+      }
+      return;
+    }
+
+    document.documentElement.removeAttribute('data-admin-preview-modal');
+    if (menuPageBody instanceof HTMLElement) {
+      menuPageBody.removeAttribute('data-admin-preview-modal');
+    }
+  };
+  const resolveMenuPageCopyFromHome = (homePayload) => {
+    const source = readHomePath(homePayload, 'menu_page');
+    const merged = deepClone(MENU_PAGE_COPY_DEFAULTS);
+    if (!isObject(source)) {
+      return merged;
+    }
+
+    const heroTitle = readFirstDefinedString(source, ['hero.title']);
+    const heroSubtitle = readFirstDefinedString(source, ['hero.subtitle']);
+    const searchPlaceholder = readFirstDefinedString(source, [
+      'search.placeholder',
+    ]);
+    const searchHelperPrefix = readFirstDefinedString(source, [
+      'search.helper_prefix',
+      'search.helperPrefix',
+    ]);
+    const searchEmptyTitle = readFirstDefinedString(source, [
+      'search.empty_state.title',
+      'search.emptyState.title',
+    ]);
+    const searchEmptyDescription = readFirstDefinedString(source, [
+      'search.empty_state.description',
+      'search.emptyState.description',
+    ]);
+    const searchEmptyDescriptionWithQuery = readFirstDefinedString(source, [
+      'search.empty_state.description_with_query',
+      'search.emptyState.descriptionWithQuery',
+    ]);
+    const searchEmptyHint = readFirstDefinedString(source, [
+      'search.empty_state.hint',
+      'search.emptyState.hint',
+    ]);
+    const helperWordsSource =
+      readHomePath(source, 'search.helper_words') ??
+      readHomePath(source, 'search.helperWords');
+    const helperWords = normalizeStringList(
+      helperWordsSource,
+      SEARCH_HELPER_WORDS_DEFAULT
+    );
+
+    merged.hero.title = heroTitle === undefined ? merged.hero.title : heroTitle;
+    merged.hero.subtitle =
+      heroSubtitle === undefined ? merged.hero.subtitle : heroSubtitle;
+    merged.search.placeholder =
+      searchPlaceholder === undefined ? merged.search.placeholder : searchPlaceholder;
+    merged.search.helperPrefix =
+      searchHelperPrefix === undefined ? merged.search.helperPrefix : searchHelperPrefix;
+    merged.search.helperWords = helperWords.length
+      ? helperWords
+      : SEARCH_HELPER_WORDS_DEFAULT.slice();
+    merged.search.emptyState.title =
+      searchEmptyTitle === undefined
+        ? merged.search.emptyState.title
+        : searchEmptyTitle;
+    merged.search.emptyState.description =
+      searchEmptyDescription === undefined
+        ? merged.search.emptyState.description
+        : searchEmptyDescription;
+    merged.search.emptyState.descriptionWithQuery =
+      searchEmptyDescriptionWithQuery === undefined
+        ? merged.search.emptyState.descriptionWithQuery
+        : searchEmptyDescriptionWithQuery;
+    merged.search.emptyState.hint =
+      searchEmptyHint === undefined
+        ? merged.search.emptyState.hint
+        : searchEmptyHint;
+
+    merged.accountModal.title =
+      readFirstDefinedString(source, ['account_modal.title', 'accountModal.title']) ??
+      merged.accountModal.title;
+    merged.accountModal.emptyState.title =
+      readFirstDefinedString(source, [
+        'account_modal.empty_state.title',
+        'accountModal.emptyState.title',
+      ]) ?? merged.accountModal.emptyState.title;
+    merged.accountModal.emptyState.description =
+      readFirstDefinedString(source, [
+        'account_modal.empty_state.description',
+        'accountModal.emptyState.description',
+      ]) ?? merged.accountModal.emptyState.description;
+    merged.accountModal.labels.subtotal =
+      readFirstDefinedString(source, [
+        'account_modal.labels.subtotal',
+        'accountModal.labels.subtotal',
+      ]) ?? merged.accountModal.labels.subtotal;
+    merged.accountModal.labels.itbis =
+      readFirstDefinedString(source, [
+        'account_modal.labels.itbis',
+        'accountModal.labels.itbis',
+      ]) ?? merged.accountModal.labels.itbis;
+    merged.accountModal.labels.legalTip =
+      readFirstDefinedString(source, [
+        'account_modal.labels.legal_tip',
+        'accountModal.labels.legalTip',
+      ]) ?? merged.accountModal.labels.legalTip;
+    merged.accountModal.labels.total =
+      readFirstDefinedString(source, [
+        'account_modal.labels.total',
+        'accountModal.labels.total',
+      ]) ?? merged.accountModal.labels.total;
+    merged.accountModal.totalTooltip.title =
+      readFirstDefinedString(source, [
+        'account_modal.total_tooltip.title',
+        'accountModal.totalTooltip.title',
+      ]) ?? merged.accountModal.totalTooltip.title;
+    merged.accountModal.totalTooltip.description =
+      readFirstDefinedString(source, [
+        'account_modal.total_tooltip.description',
+        'accountModal.totalTooltip.description',
+      ]) ?? merged.accountModal.totalTooltip.description;
+    merged.accountModal.removeToast.title =
+      readFirstDefinedString(source, [
+        'account_modal.remove_toast.title',
+        'accountModal.removeToast.title',
+      ]) ?? merged.accountModal.removeToast.title;
+    merged.accountModal.removeToast.description =
+      readFirstDefinedString(source, [
+        'account_modal.remove_toast.description',
+        'accountModal.removeToast.description',
+      ]) ?? merged.accountModal.removeToast.description;
+
+    merged.filterModal.title =
+      readFirstDefinedString(source, [
+        'filter_modal.title',
+        'filterModal.title',
+      ]) ?? merged.filterModal.title;
+    merged.filterModal.sections.allergens.title =
+      readFirstDefinedString(source, [
+        'filter_modal.sections.allergens.title',
+        'filterModal.sections.allergens.title',
+      ]) ?? merged.filterModal.sections.allergens.title;
+    merged.filterModal.sections.allergens.description =
+      readFirstDefinedString(source, [
+        'filter_modal.sections.allergens.description',
+        'filterModal.sections.allergens.description',
+      ]) ?? merged.filterModal.sections.allergens.description;
+    merged.filterModal.sections.pizzaType.title =
+      readFirstDefinedString(source, [
+        'filter_modal.sections.pizza_type.title',
+        'filter_modal.sections.pizzaType.title',
+        'filterModal.sections.pizzaType.title',
+      ]) ?? merged.filterModal.sections.pizzaType.title;
+    merged.filterModal.sections.pizzaType.tabs.all =
+      readFirstDefinedString(source, [
+        'filter_modal.sections.pizza_type.tabs.all',
+        'filter_modal.sections.pizzaType.tabs.all',
+        'filterModal.sections.pizzaType.tabs.all',
+      ]) ?? merged.filterModal.sections.pizzaType.tabs.all;
+    merged.filterModal.sections.pizzaType.tabs.clasica =
+      readFirstDefinedString(source, [
+        'filter_modal.sections.pizza_type.tabs.clasica',
+        'filter_modal.sections.pizzaType.tabs.clasica',
+        'filterModal.sections.pizzaType.tabs.clasica',
+      ]) ?? merged.filterModal.sections.pizzaType.tabs.clasica;
+    merged.filterModal.sections.pizzaType.tabs.autor =
+      readFirstDefinedString(source, [
+        'filter_modal.sections.pizza_type.tabs.autor',
+        'filter_modal.sections.pizzaType.tabs.autor',
+        'filterModal.sections.pizzaType.tabs.autor',
+      ]) ?? merged.filterModal.sections.pizzaType.tabs.autor;
+    merged.filterModal.sections.priceRange.title =
+      readFirstDefinedString(source, [
+        'filter_modal.sections.price_range.title',
+        'filter_modal.sections.priceRange.title',
+        'filterModal.sections.priceRange.title',
+      ]) ?? merged.filterModal.sections.priceRange.title;
+    merged.filterModal.sections.priceRange.description =
+      readFirstDefinedString(source, [
+        'filter_modal.sections.price_range.description',
+        'filter_modal.sections.priceRange.description',
+        'filterModal.sections.priceRange.description',
+      ]) ?? merged.filterModal.sections.priceRange.description;
+    merged.filterModal.sections.priceRange.minLabel =
+      readFirstDefinedString(source, [
+        'filter_modal.sections.price_range.min_label',
+        'filter_modal.sections.priceRange.minLabel',
+        'filterModal.sections.priceRange.minLabel',
+      ]) ?? merged.filterModal.sections.priceRange.minLabel;
+    merged.filterModal.sections.priceRange.maxLabel =
+      readFirstDefinedString(source, [
+        'filter_modal.sections.price_range.max_label',
+        'filter_modal.sections.priceRange.maxLabel',
+        'filterModal.sections.priceRange.maxLabel',
+      ]) ?? merged.filterModal.sections.priceRange.maxLabel;
+    merged.filterModal.sections.dietary.title =
+      readFirstDefinedString(source, [
+        'filter_modal.sections.dietary.title',
+        'filterModal.sections.dietary.title',
+      ]) ?? merged.filterModal.sections.dietary.title;
+    merged.filterModal.sections.dietary.vegetarianTitle =
+      readFirstDefinedString(source, [
+        'filter_modal.sections.dietary.vegetarian_title',
+        'filter_modal.sections.dietary.vegetarianTitle',
+        'filterModal.sections.dietary.vegetarianTitle',
+      ]) ?? merged.filterModal.sections.dietary.vegetarianTitle;
+    merged.filterModal.sections.dietary.vegetarianDescription =
+      readFirstDefinedString(source, [
+        'filter_modal.sections.dietary.vegetarian_description',
+        'filter_modal.sections.dietary.vegetarianDescription',
+        'filterModal.sections.dietary.vegetarianDescription',
+      ]) ?? merged.filterModal.sections.dietary.vegetarianDescription;
+    merged.filterModal.sections.dietary.veganTitle =
+      readFirstDefinedString(source, [
+        'filter_modal.sections.dietary.vegan_title',
+        'filter_modal.sections.dietary.veganTitle',
+        'filterModal.sections.dietary.veganTitle',
+      ]) ?? merged.filterModal.sections.dietary.veganTitle;
+    merged.filterModal.sections.dietary.veganDescription =
+      readFirstDefinedString(source, [
+        'filter_modal.sections.dietary.vegan_description',
+        'filter_modal.sections.dietary.veganDescription',
+        'filterModal.sections.dietary.veganDescription',
+      ]) ?? merged.filterModal.sections.dietary.veganDescription;
+    merged.filterModal.sections.organoleptic.title =
+      readFirstDefinedString(source, [
+        'filter_modal.sections.organoleptic.title',
+        'filterModal.sections.organoleptic.title',
+      ]) ?? merged.filterModal.sections.organoleptic.title;
+    merged.filterModal.sections.organoleptic.description =
+      readFirstDefinedString(source, [
+        'filter_modal.sections.organoleptic.description',
+        'filterModal.sections.organoleptic.description',
+      ]) ?? merged.filterModal.sections.organoleptic.description;
+    merged.filterModal.actions.clearLabel =
+      readFirstDefinedString(source, [
+        'filter_modal.actions.clear_label',
+        'filter_modal.actions.clearLabel',
+        'filterModal.actions.clearLabel',
+      ]) ?? merged.filterModal.actions.clearLabel;
+    merged.filterModal.actions.applyPrefix =
+      readFirstDefinedString(source, [
+        'filter_modal.actions.apply_prefix',
+        'filter_modal.actions.applyPrefix',
+        'filterModal.actions.applyPrefix',
+      ]) ?? merged.filterModal.actions.applyPrefix;
+    merged.filterModal.actions.applySuffix =
+      readFirstDefinedString(source, [
+        'filter_modal.actions.apply_suffix',
+        'filter_modal.actions.applySuffix',
+        'filterModal.actions.applySuffix',
+      ]) ?? merged.filterModal.actions.applySuffix;
+
+    merged.states.loading =
+      readFirstDefinedString(source, ['states.loading']) ?? merged.states.loading;
+    merged.states.noCategories =
+      readFirstDefinedString(source, [
+        'states.no_categories',
+        'states.noCategories',
+      ]) ?? merged.states.noCategories;
+    merged.states.loadError =
+      readFirstDefinedString(source, ['states.load_error', 'states.loadError']) ??
+      merged.states.loadError;
+
+    ['entradas', 'pizzas', 'postres', 'bebidas', 'productos'].forEach((categoryId) => {
+      const categoryText = readFirstDefinedString(source, [
+        `category_empty_messages.${categoryId}`,
+        `categoryEmptyMessages.${categoryId}`,
+      ]);
+      if (categoryText !== undefined) {
+        merged.categoryEmptyMessages[categoryId] = categoryText;
+      }
+    });
+
+    return merged;
+  };
+  const resolveDetailEditorialCopyFromHome = (homePayload) => {
+    const source = readHomePath(homePayload, 'menu_detail_editorial');
+    const merged = deepClone(MENU_DETAIL_EDITORIAL_COPY_DEFAULTS);
+    if (!isObject(source)) {
+      return merged;
+    }
+
+    const legacySubtitle = readFirstDefinedString(source, ['sensory_subtitle']) || '';
+    const nestedSubtitle = readFirstDefinedString(source, [
+      'sensory.subtitle',
+    ]) || '';
+    const resolvedSubtitle =
+      nestedSubtitle ||
+      legacySubtitle ||
+      MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.sensory.subtitle;
+    merged.sensory.sectionTitle =
+      readFirstDefinedString(source, [
+        'sensory.section_title',
+        'sensory.sectionTitle',
+      ]) ?? merged.sensory.sectionTitle;
+    merged.sensory.subtitle = resolvedSubtitle;
+    merged.sensory.compareButtonLabel =
+      readFirstDefinedString(source, [
+        'sensory.compare_button_label',
+        'sensory.compareButtonLabel',
+      ]) ?? merged.sensory.compareButtonLabel;
+    merged.sensory.compareButtonLabelActive =
+      readFirstDefinedString(source, [
+        'sensory.compare_button_label_active',
+        'sensory.compareButtonLabelActive',
+      ]) ?? merged.sensory.compareButtonLabelActive;
+    merged.sensory.tabRadarLabel =
+      readFirstDefinedString(source, [
+        'sensory.tabs.radar_label',
+        'sensory.tabs.radarLabel',
+      ]) ?? merged.sensory.tabRadarLabel;
+    merged.sensory.tabBarsLabel =
+      readFirstDefinedString(source, [
+        'sensory.tabs.bars_label',
+        'sensory.tabs.barsLabel',
+      ]) ?? merged.sensory.tabBarsLabel;
+    merged.sensory.comparisonClearLabel =
+      readFirstDefinedString(source, [
+        'sensory.comparison_clear_label',
+        'sensory.comparisonClearLabel',
+      ]) ?? merged.sensory.comparisonClearLabel;
+
+    merged.compareModal.title =
+      readFirstDefinedString(source, ['compare_modal.title', 'compareModal.title']) ??
+      merged.compareModal.title;
+    merged.compareModal.description =
+      readFirstDefinedString(source, [
+        'compare_modal.description',
+        'compareModal.description',
+      ]) ?? merged.compareModal.description;
+    merged.compareModal.searchPlaceholder =
+      readFirstDefinedString(source, [
+        'compare_modal.search_placeholder',
+        'compareModal.searchPlaceholder',
+      ]) ?? merged.compareModal.searchPlaceholder;
+    merged.compareModal.searchHelperPrefix =
+      readFirstDefinedString(source, [
+        'compare_modal.search_helper_prefix',
+        'compareModal.searchHelperPrefix',
+      ]) ?? merged.compareModal.searchHelperPrefix;
+    merged.compareModal.searchHelperWord =
+      readFirstDefinedString(source, [
+        'compare_modal.search_helper_word',
+        'compareModal.searchHelperWord',
+      ]) ?? merged.compareModal.searchHelperWord;
+    merged.compareModal.emptyStateTitle =
+      readFirstDefinedString(source, [
+        'compare_modal.empty_state.title',
+        'compareModal.emptyState.title',
+      ]) ?? merged.compareModal.emptyStateTitle;
+    merged.compareModal.emptyStateDescription =
+      readFirstDefinedString(source, [
+        'compare_modal.empty_state.description',
+        'compareModal.emptyState.description',
+      ]) ?? merged.compareModal.emptyStateDescription;
+    merged.compareModal.emptyStateDescriptionWithQuery =
+      readFirstDefinedString(source, [
+        'compare_modal.empty_state.description_with_query',
+        'compareModal.emptyState.descriptionWithQuery',
+      ]) ?? merged.compareModal.emptyStateDescriptionWithQuery;
+    merged.compareModal.currentItemPrefix =
+      readFirstDefinedString(source, [
+        'compare_modal.current_item_prefix',
+        'compareModal.currentItemPrefix',
+      ]) ?? merged.compareModal.currentItemPrefix;
+    merged.compareModal.currentItemFallback =
+      readFirstDefinedString(source, [
+        'compare_modal.current_item_fallback',
+        'compareModal.currentItemFallback',
+      ]) ?? merged.compareModal.currentItemFallback;
+    merged.compareModal.candidateSummaryFallback =
+      readFirstDefinedString(source, [
+        'compare_modal.candidate_summary_fallback',
+        'compareModal.candidateSummaryFallback',
+      ]) ?? merged.compareModal.candidateSummaryFallback;
+
+    merged.pairings.sectionTitle =
+      readFirstDefinedString(source, [
+        'pairings.section_title',
+        'pairings.sectionTitle',
+      ]) ?? merged.pairings.sectionTitle;
+    merged.pairings.sectionSubtitle =
+      readFirstDefinedString(source, [
+        'pairings.section_subtitle',
+        'pairings.sectionSubtitle',
+      ]) ?? merged.pairings.sectionSubtitle;
+    merged.pairings.ctaFallbackLabel =
+      readFirstDefinedString(source, [
+        'pairings.cta_fallback_label',
+        'pairings.ctaFallbackLabel',
+      ]) ?? merged.pairings.ctaFallbackLabel;
+
+    merged.story.sectionTitle =
+      readFirstDefinedString(source, ['story.section_title', 'story.sectionTitle']) ??
+      merged.story.sectionTitle;
+
+    ['calories', 'eta'].forEach((chipKey) => {
+      merged.infoChips[chipKey].title =
+        readFirstDefinedString(source, [
+          `info_chips.${chipKey}.title`,
+          `infoChips.${chipKey}.title`,
+        ]) ?? merged.infoChips[chipKey].title;
+      merged.infoChips[chipKey].description =
+        readFirstDefinedString(source, [
+          `info_chips.${chipKey}.description`,
+          `infoChips.${chipKey}.description`,
+        ]) ?? merged.infoChips[chipKey].description;
+    });
+
+    Object.keys(merged.sensoryAxisTooltips).forEach((axisKey) => {
+      merged.sensoryAxisTooltips[axisKey].title =
+        readFirstDefinedString(source, [
+          `sensory_axis_tooltips.${axisKey}.title`,
+          `sensoryAxisTooltips.${axisKey}.title`,
+        ]) ?? merged.sensoryAxisTooltips[axisKey].title;
+      merged.sensoryAxisTooltips[axisKey].description =
+        readFirstDefinedString(source, [
+          `sensory_axis_tooltips.${axisKey}.description`,
+          `sensoryAxisTooltips.${axisKey}.description`,
+        ]) ?? merged.sensoryAxisTooltips[axisKey].description;
+    });
+
+    return merged;
+  };
+  const getMenuPageStateCopy = () => menuPageCopy?.states || MENU_PAGE_COPY_DEFAULTS.states;
+  const getMenuCategoryEmptyMessage = (categoryId, fallback) =>
+    normalizeText(menuPageCopy?.categoryEmptyMessages?.[categoryId]) || fallback;
+  const getDetailChipTooltipCopy = (chipKey) =>
+    detailInfoChipTooltipCopy?.[chipKey] || DETAIL_INFO_CHIP_TOOLTIP_COPY[chipKey];
+  const getSensoryAxisTooltipCopy = (axisId) =>
+    detailSensoryAxisTooltipCopy?.[axisId] || DETAIL_SENSORY_AXIS_TOOLTIP_COPY[axisId];
+  const DETAIL_DEFAULT_SENSORY_SUBTITLE =
+    detailSensorySubtitle instanceof HTMLElement
+      ? normalizeText(detailSensorySubtitle.textContent)
+      : '';
+  const DETAIL_DEFAULT_PAIRING_CONTENT = Object.freeze({
+    subtitle:
+      detailPairingsSubtitle instanceof HTMLElement
+        ? normalizeText(detailPairingsSubtitle.textContent)
+        : '',
+    ctaLabel:
+      detailPairingCta instanceof HTMLButtonElement
+        ? normalizeText(detailPairingCta.getAttribute('aria-label'))
+        : '',
+  });
+  const DETAIL_DEFAULT_SECTION_COPY = Object.freeze({
+    sensoryTitle:
+      detailSensoryTitle instanceof HTMLElement
+        ? normalizeText(detailSensoryTitle.textContent)
+        : MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.sensory.sectionTitle,
+    pairingsTitle:
+      detailPairingsTitle instanceof HTMLElement
+        ? normalizeText(detailPairingsTitle.textContent)
+        : MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.pairings.sectionTitle,
+    storyTitle:
+      detailHistoryTitle instanceof HTMLElement
+        ? normalizeText(detailHistoryTitle.textContent)
+        : MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.story.sectionTitle,
+    compareModalTitle:
+      compareModalTitle instanceof HTMLElement
+        ? normalizeText(compareModalTitle.textContent)
+        : MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.compareModal.title,
+    compareModalDescription:
+      compareModalDescription instanceof HTMLElement
+        ? normalizeText(compareModalDescription.textContent)
+        : MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.compareModal.description,
+    compareSearchHelperPrefix:
+      compareSearchHelperPrefix instanceof HTMLElement
+        ? normalizeText(compareSearchHelperPrefix.textContent)
+        : MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.compareModal.searchHelperPrefix,
+    compareSearchHelperWord:
+      compareSearchHelperWord instanceof HTMLElement
+        ? normalizeText(compareSearchHelperWord.textContent)
+        : MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.compareModal.searchHelperWord,
+    sensoryTabRadar:
+      detailSensoryTabRadarTitle instanceof HTMLElement
+        ? normalizeText(detailSensoryTabRadarTitle.textContent)
+        : MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.sensory.tabRadarLabel,
+    sensoryTabBars:
+      detailSensoryTabBarsTitle instanceof HTMLElement
+        ? normalizeText(detailSensoryTabBarsTitle.textContent)
+        : MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.sensory.tabBarsLabel,
+    sensoryComparisonClear:
+      detailSensoryComparisonClearButton instanceof HTMLButtonElement
+        ? normalizeText(detailSensoryComparisonClearButton.textContent)
+        : MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.sensory.comparisonClearLabel,
+  });
   const clampNumber = (value, min, max) => Math.min(max, Math.max(min, value));
   const wait = (ms) =>
     new Promise((resolve) => {
@@ -1773,9 +2625,7 @@
         return {
           id: normalizeText(item?.id),
           name: normalizeText(item?.name || item?.id),
-          description:
-            normalizeText(item?.descriptionShort) ||
-            normalizeText(item?.descriptionLong),
+          description: resolveItemDescriptionText(item),
           image: media.card || media.detail || '',
           imageAlt: normalizeText(media.alt || item?.name || item?.id),
           quantity,
@@ -1909,6 +2759,7 @@
     syncAccountMoneyValueNode(groupNode.subtotal, group.subtotal, { animate });
   };
   const createAccountEmptyStateNode = () => {
+    const emptyStateCopy = menuPageCopy?.accountModal?.emptyState || MENU_PAGE_COPY_DEFAULTS.accountModal.emptyState;
     const node = document.createElement('section');
     node.className = 'menu-account-modal__empty menu-page-search-empty';
     node.setAttribute('aria-labelledby', 'menu-account-empty-title');
@@ -1925,12 +2776,15 @@
     const title = document.createElement('h3');
     title.className = 'menu-page-search-empty__title menu-account-modal__empty-title';
     title.id = 'menu-account-empty-title';
-    title.textContent = '¡Aún no has añadido nada!';
+    title.textContent =
+      normalizeText(emptyStateCopy?.title) ||
+      MENU_PAGE_COPY_DEFAULTS.accountModal.emptyState.title;
 
     const message = document.createElement('p');
     message.className = 'menu-page-search-empty__message menu-account-modal__empty-message';
     message.textContent =
-      'Explora el menú y cada plato o bebida que añadas aparecerá aquí con su total estimado';
+      normalizeText(emptyStateCopy?.description) ||
+      MENU_PAGE_COPY_DEFAULTS.accountModal.emptyState.description;
 
     node.append(art, title, message);
     return node;
@@ -2232,11 +3086,15 @@
     }
 
     if (accountToastTitle instanceof HTMLElement) {
-      accountToastTitle.textContent = ACCOUNT_REMOVE_TOAST_TITLE;
+      accountToastTitle.textContent =
+        normalizeText(menuPageCopy?.accountModal?.removeToast?.title) ||
+        ACCOUNT_REMOVE_TOAST_TITLE_DEFAULT;
     }
 
     if (accountToastCopy instanceof HTMLElement) {
-      accountToastCopy.textContent = ACCOUNT_REMOVE_TOAST_COPY;
+      accountToastCopy.textContent =
+        normalizeText(menuPageCopy?.accountModal?.removeToast?.description) ||
+        ACCOUNT_REMOVE_TOAST_COPY_DEFAULT;
     }
 
     clearAccountRemovalToastTimer();
@@ -2935,14 +3793,19 @@
   const syncDetailSensoryCompareButton = ({
     hasSensoryProfile = false,
     hasComparison = false,
+    compareEnabled = true,
   } = {}) => {
     if (!(detailSensoryCompareButton instanceof HTMLButtonElement)) {
       return;
     }
 
-    detailSensoryCompareButton.hidden = !hasSensoryProfile;
-    detailSensoryCompareButton.disabled = !hasSensoryProfile;
-    detailSensoryCompareButton.textContent = hasComparison ? 'Cambiar' : 'Comparar';
+    const canCompare = hasSensoryProfile && compareEnabled;
+    detailSensoryCompareButton.hidden = !canCompare;
+    detailSensoryCompareButton.disabled = !canCompare;
+    const sensoryCopy = menuDetailEditorialCopy?.sensory || MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.sensory;
+    detailSensoryCompareButton.textContent = hasComparison
+      ? normalizeText(sensoryCopy?.compareButtonLabelActive) || MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.sensory.compareButtonLabelActive
+      : normalizeText(sensoryCopy?.compareButtonLabel) || MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.sensory.compareButtonLabel;
   };
 
   const clearDetailSensoryRadarTooltipController = () => {
@@ -4192,6 +5055,78 @@
     }, reducedMotionQuery.matches ? 0 : 70);
   };
 
+  const openAdminPreviewModalSurface = ({
+    modalKey = '',
+    smooth = false,
+  } = {}) => {
+    if (
+      !isAdminPreviewMode ||
+      adminPreviewSurface !== ADMIN_PREVIEW_SURFACE_MODAL
+    ) {
+      return;
+    }
+
+    const normalizedModalKey =
+      normalizeAdminPreviewModalKey(modalKey) ||
+      normalizeAdminPreviewModalKey(adminPreviewModalActive) ||
+      'account';
+    adminPreviewModalActive = normalizedModalKey;
+    syncAdminPreviewSurfaceAttributes();
+
+    if (normalizedModalKey === 'filter') {
+      openFilterModal();
+      return;
+    }
+
+    if (normalizedModalKey === 'compare') {
+      state.compareSearchQuery = '';
+      if (compareSearchInput instanceof HTMLInputElement) {
+        compareSearchInput.value = '';
+      }
+      syncCompareSearchControls();
+      renderCompareModalShell();
+      openCompareModal();
+      if (!smooth && compareModal instanceof HTMLElement) {
+        compareModal.scrollTop = 0;
+      }
+      return;
+    }
+
+    openAccountModal();
+    if (!smooth && accountModal instanceof HTMLElement) {
+      accountModal.scrollTop = 0;
+    }
+  };
+
+  const applyAdminPreviewModalPayload = (payload = {}) => {
+    if (!isAdminPreviewMode || !isObject(payload)) {
+      return;
+    }
+
+    if (isObject(payload.home)) {
+      const context = applyHomeMenuDetailContextFromPayload(payload.home);
+      homeMenuDetailContextPromise = Promise.resolve(context);
+    }
+
+    const requestedModalKey = normalizeAdminPreviewModalKey(payload.modal);
+    if (requestedModalKey) {
+      adminPreviewModalActive = requestedModalKey;
+    }
+
+    syncAdminPreviewSurfaceAttributes();
+
+    if (adminPreviewSurface !== ADMIN_PREVIEW_SURFACE_MODAL) {
+      return;
+    }
+
+    window.requestAnimationFrame(() => {
+      openAdminPreviewModalSurface({
+        modalKey: adminPreviewModalActive,
+        smooth: false,
+      });
+    });
+  };
+
   const finishBridgeReady = () => {
     if (!bridgeReadyResolver) {
       return;
@@ -4200,6 +5135,49 @@
     bridgeReadyResolver();
     bridgeReadyResolver = null;
     window.dispatchEvent(new CustomEvent('figata:menu-page-ready'));
+    emitAdminPreviewReadyMessage();
+  };
+
+  const emitAdminPreviewReadyMessage = () => {
+    if (!isAdminPreviewMode || window.parent === window) {
+      return;
+    }
+
+    try {
+      window.parent.postMessage(
+        {
+          type: ADMIN_PREVIEW_MESSAGE_READY,
+        },
+        window.location.origin
+      );
+    } catch (_error) {
+      // Swallow postMessage errors inside embedded preview mode.
+    }
+  };
+
+  const emitAdminPreviewNavigateEditorMessage = (sectionId = '') => {
+    if (!isAdminPreviewMode || window.parent === window) {
+      return;
+    }
+
+    const normalizedSection = normalizeText(sectionId).toLowerCase();
+    if (!ADMIN_PREVIEW_SECTION_KEYS.has(normalizedSection)) {
+      return;
+    }
+
+    try {
+      window.parent.postMessage(
+        {
+          type: ADMIN_PREVIEW_MESSAGE_NAVIGATE_EDITOR,
+          payload: {
+            section: normalizedSection,
+          },
+        },
+        window.location.origin
+      );
+    } catch (_error) {
+      // Swallow postMessage errors inside embedded preview mode.
+    }
   };
 
   const getBridgeState = () => ({
@@ -4288,12 +5266,307 @@
       : toMenuListUrl();
   };
 
-  const loadHomePopularFeaturedIds = () => {
-    if (homePopularFeaturedIdsPromise) {
-      return homePopularFeaturedIdsPromise;
+  const applyMenuPageCopyToDom = () => {
+    const copy = menuPageCopy || MENU_PAGE_COPY_DEFAULTS;
+    const filterCopy = copy?.filterModal || MENU_PAGE_COPY_DEFAULTS.filterModal;
+    if (menuPageTitle instanceof HTMLElement) {
+      menuPageTitle.textContent = normalizeText(copy?.hero?.title) || MENU_PAGE_COPY_DEFAULTS.hero.title;
+    }
+    if (menuPageSubtitle instanceof HTMLElement) {
+      menuPageSubtitle.textContent =
+        normalizeText(copy?.hero?.subtitle) || MENU_PAGE_COPY_DEFAULTS.hero.subtitle;
+    }
+    if (searchInput instanceof HTMLInputElement) {
+      searchInput.placeholder = normalizeText(copy?.search?.placeholder);
+    }
+    if (searchHelperPrefix instanceof HTMLElement) {
+      searchHelperPrefix.textContent =
+        normalizeText(copy?.search?.helperPrefix) ||
+        MENU_PAGE_COPY_DEFAULTS.search.helperPrefix;
+    }
+    if (accountModalTitle instanceof HTMLElement) {
+      accountModalTitle.textContent =
+        normalizeText(copy?.accountModal?.title) ||
+        MENU_PAGE_COPY_DEFAULTS.accountModal.title;
+    }
+    if (accountLabelSubtotal instanceof HTMLElement) {
+      accountLabelSubtotal.textContent =
+        normalizeText(copy?.accountModal?.labels?.subtotal) ||
+        MENU_PAGE_COPY_DEFAULTS.accountModal.labels.subtotal;
+    }
+    if (accountLabelItbis instanceof HTMLElement) {
+      accountLabelItbis.textContent =
+        normalizeText(copy?.accountModal?.labels?.itbis) ||
+        MENU_PAGE_COPY_DEFAULTS.accountModal.labels.itbis;
+    }
+    if (accountLabelLegalTip instanceof HTMLElement) {
+      accountLabelLegalTip.textContent =
+        normalizeText(copy?.accountModal?.labels?.legalTip) ||
+        MENU_PAGE_COPY_DEFAULTS.accountModal.labels.legalTip;
+    }
+    if (accountLabelTotal instanceof HTMLElement) {
+      accountLabelTotal.textContent =
+        normalizeText(copy?.accountModal?.labels?.total) ||
+        MENU_PAGE_COPY_DEFAULTS.accountModal.labels.total;
+    }
+    if (accountTotalInfoTitle instanceof HTMLElement) {
+      accountTotalInfoTitle.textContent =
+        normalizeText(copy?.accountModal?.totalTooltip?.title) ||
+        MENU_PAGE_COPY_DEFAULTS.accountModal.totalTooltip.title;
+    }
+    if (accountTotalInfoCopy instanceof HTMLElement) {
+      accountTotalInfoCopy.textContent =
+        normalizeText(copy?.accountModal?.totalTooltip?.description) ||
+        MENU_PAGE_COPY_DEFAULTS.accountModal.totalTooltip.description;
+    }
+    if (filterModalTitle instanceof HTMLElement) {
+      filterModalTitle.textContent =
+        normalizeText(filterCopy?.title) || MENU_PAGE_COPY_DEFAULTS.filterModal.title;
+    }
+    if (filterSectionTitleAllergens instanceof HTMLElement) {
+      filterSectionTitleAllergens.textContent =
+        normalizeText(filterCopy?.sections?.allergens?.title) ||
+        MENU_PAGE_COPY_DEFAULTS.filterModal.sections.allergens.title;
+    }
+    if (filterSectionCopyAllergens instanceof HTMLElement) {
+      filterSectionCopyAllergens.textContent =
+        normalizeText(filterCopy?.sections?.allergens?.description) ||
+        MENU_PAGE_COPY_DEFAULTS.filterModal.sections.allergens.description;
+    }
+    if (filterSectionTitlePizzaType instanceof HTMLElement) {
+      filterSectionTitlePizzaType.textContent =
+        normalizeText(filterCopy?.sections?.pizzaType?.title) ||
+        MENU_PAGE_COPY_DEFAULTS.filterModal.sections.pizzaType.title;
+    }
+    if (filterPizzaTabAll instanceof HTMLElement) {
+      filterPizzaTabAll.textContent =
+        normalizeText(filterCopy?.sections?.pizzaType?.tabs?.all) ||
+        MENU_PAGE_COPY_DEFAULTS.filterModal.sections.pizzaType.tabs.all;
+    }
+    if (filterPizzaTabClasica instanceof HTMLElement) {
+      filterPizzaTabClasica.textContent =
+        normalizeText(filterCopy?.sections?.pizzaType?.tabs?.clasica) ||
+        MENU_PAGE_COPY_DEFAULTS.filterModal.sections.pizzaType.tabs.clasica;
+    }
+    if (filterPizzaTabAutor instanceof HTMLElement) {
+      filterPizzaTabAutor.textContent =
+        normalizeText(filterCopy?.sections?.pizzaType?.tabs?.autor) ||
+        MENU_PAGE_COPY_DEFAULTS.filterModal.sections.pizzaType.tabs.autor;
+    }
+    if (filterSectionTitlePriceRange instanceof HTMLElement) {
+      filterSectionTitlePriceRange.textContent =
+        normalizeText(filterCopy?.sections?.priceRange?.title) ||
+        MENU_PAGE_COPY_DEFAULTS.filterModal.sections.priceRange.title;
+    }
+    if (filterSectionCopyPriceRange instanceof HTMLElement) {
+      filterSectionCopyPriceRange.textContent =
+        normalizeText(filterCopy?.sections?.priceRange?.description) ||
+        MENU_PAGE_COPY_DEFAULTS.filterModal.sections.priceRange.description;
+    }
+    if (filterPriceLabelMin instanceof HTMLElement) {
+      filterPriceLabelMin.textContent =
+        normalizeText(filterCopy?.sections?.priceRange?.minLabel) ||
+        MENU_PAGE_COPY_DEFAULTS.filterModal.sections.priceRange.minLabel;
+    }
+    if (filterPriceLabelMax instanceof HTMLElement) {
+      filterPriceLabelMax.textContent =
+        normalizeText(filterCopy?.sections?.priceRange?.maxLabel) ||
+        MENU_PAGE_COPY_DEFAULTS.filterModal.sections.priceRange.maxLabel;
+    }
+    if (filterSectionTitleDietary instanceof HTMLElement) {
+      filterSectionTitleDietary.textContent =
+        normalizeText(filterCopy?.sections?.dietary?.title) ||
+        MENU_PAGE_COPY_DEFAULTS.filterModal.sections.dietary.title;
+    }
+    if (filterDietVegetarianTitle instanceof HTMLElement) {
+      filterDietVegetarianTitle.textContent =
+        normalizeText(filterCopy?.sections?.dietary?.vegetarianTitle) ||
+        MENU_PAGE_COPY_DEFAULTS.filterModal.sections.dietary.vegetarianTitle;
+    }
+    if (filterDietVegetarianDescription instanceof HTMLElement) {
+      filterDietVegetarianDescription.textContent =
+        normalizeText(filterCopy?.sections?.dietary?.vegetarianDescription) ||
+        MENU_PAGE_COPY_DEFAULTS.filterModal.sections.dietary.vegetarianDescription;
+    }
+    if (filterDietVeganTitle instanceof HTMLElement) {
+      filterDietVeganTitle.textContent =
+        normalizeText(filterCopy?.sections?.dietary?.veganTitle) ||
+        MENU_PAGE_COPY_DEFAULTS.filterModal.sections.dietary.veganTitle;
+    }
+    if (filterDietVeganDescription instanceof HTMLElement) {
+      filterDietVeganDescription.textContent =
+        normalizeText(filterCopy?.sections?.dietary?.veganDescription) ||
+        MENU_PAGE_COPY_DEFAULTS.filterModal.sections.dietary.veganDescription;
+    }
+    if (filterSectionTitleOrganoleptic instanceof HTMLElement) {
+      filterSectionTitleOrganoleptic.textContent =
+        normalizeText(filterCopy?.sections?.organoleptic?.title) ||
+        MENU_PAGE_COPY_DEFAULTS.filterModal.sections.organoleptic.title;
+    }
+    if (filterSectionCopyOrganoleptic instanceof HTMLElement) {
+      filterSectionCopyOrganoleptic.textContent =
+        normalizeText(filterCopy?.sections?.organoleptic?.description) ||
+        MENU_PAGE_COPY_DEFAULTS.filterModal.sections.organoleptic.description;
+    }
+    if (filterClearButton instanceof HTMLButtonElement) {
+      filterClearButton.textContent =
+        normalizeText(filterCopy?.actions?.clearLabel) ||
+        MENU_PAGE_COPY_DEFAULTS.filterModal.actions.clearLabel;
+    }
+    if (filterApplyPrefix instanceof HTMLElement) {
+      filterApplyPrefix.textContent =
+        normalizeText(filterCopy?.actions?.applyPrefix) ||
+        MENU_PAGE_COPY_DEFAULTS.filterModal.actions.applyPrefix;
+    }
+    if (filterApplySuffix instanceof HTMLElement) {
+      filterApplySuffix.textContent =
+        normalizeText(filterCopy?.actions?.applySuffix) ||
+        MENU_PAGE_COPY_DEFAULTS.filterModal.actions.applySuffix;
     }
 
-    homePopularFeaturedIdsPromise = fetch(
+    if (state.accountModalOpen) {
+      renderAccountState({ persist: false, animate: false });
+    }
+    if (state.filterModalOpen) {
+      renderFilterModalShell();
+    }
+  };
+
+  const applyDetailEditorialCopyToDom = () => {
+    const copy = menuDetailEditorialCopy || MENU_DETAIL_EDITORIAL_COPY_DEFAULTS;
+    if (detailSensoryTitle instanceof HTMLElement) {
+      detailSensoryTitle.textContent =
+        normalizeText(copy?.sensory?.sectionTitle) ||
+        DETAIL_DEFAULT_SECTION_COPY.sensoryTitle;
+    }
+    if (detailSensorySubtitle instanceof HTMLElement) {
+      const subtitle =
+        normalizeText(copy?.sensory?.subtitle) ||
+        DETAIL_DEFAULT_SENSORY_SUBTITLE;
+      if (!normalizeText(detailSensorySubtitle.textContent)) {
+        detailSensorySubtitle.textContent = subtitle;
+      }
+    }
+    if (detailSensoryTabRadarTitle instanceof HTMLElement) {
+      detailSensoryTabRadarTitle.textContent =
+        normalizeText(copy?.sensory?.tabRadarLabel) ||
+        DETAIL_DEFAULT_SECTION_COPY.sensoryTabRadar;
+    }
+    if (detailSensoryTabBarsTitle instanceof HTMLElement) {
+      detailSensoryTabBarsTitle.textContent =
+        normalizeText(copy?.sensory?.tabBarsLabel) ||
+        DETAIL_DEFAULT_SECTION_COPY.sensoryTabBars;
+    }
+    if (detailSensoryComparisonClearButton instanceof HTMLButtonElement) {
+      detailSensoryComparisonClearButton.textContent =
+        normalizeText(copy?.sensory?.comparisonClearLabel) ||
+        DETAIL_DEFAULT_SECTION_COPY.sensoryComparisonClear;
+    }
+    if (detailPairingsTitle instanceof HTMLElement) {
+      detailPairingsTitle.textContent =
+        normalizeText(copy?.pairings?.sectionTitle) ||
+        DETAIL_DEFAULT_SECTION_COPY.pairingsTitle;
+    }
+    if (detailPairingsSubtitle instanceof HTMLElement) {
+      detailPairingsSubtitle.textContent =
+        normalizeText(copy?.pairings?.sectionSubtitle) ||
+        DETAIL_DEFAULT_PAIRING_CONTENT.subtitle;
+    }
+    if (detailHistoryTitle instanceof HTMLElement) {
+      detailHistoryTitle.textContent =
+        normalizeText(copy?.story?.sectionTitle) ||
+        DETAIL_DEFAULT_SECTION_COPY.storyTitle;
+    }
+    if (compareModalTitle instanceof HTMLElement) {
+      compareModalTitle.textContent =
+        normalizeText(copy?.compareModal?.title) ||
+        DETAIL_DEFAULT_SECTION_COPY.compareModalTitle;
+    }
+    if (compareModalDescription instanceof HTMLElement) {
+      compareModalDescription.textContent =
+        normalizeText(copy?.compareModal?.description) ||
+        DETAIL_DEFAULT_SECTION_COPY.compareModalDescription;
+    }
+    if (compareSearchInput instanceof HTMLInputElement) {
+      compareSearchInput.placeholder = normalizeText(copy?.compareModal?.searchPlaceholder);
+    }
+    if (compareSearchHelperPrefix instanceof HTMLElement) {
+      compareSearchHelperPrefix.textContent =
+        normalizeText(copy?.compareModal?.searchHelperPrefix) ||
+        DETAIL_DEFAULT_SECTION_COPY.compareSearchHelperPrefix;
+    }
+    if (compareSearchHelperWord instanceof HTMLElement) {
+      compareSearchHelperWord.textContent =
+        normalizeText(copy?.compareModal?.searchHelperWord) ||
+        DETAIL_DEFAULT_SECTION_COPY.compareSearchHelperWord;
+    }
+
+    if (state.compareModalOpen) {
+      renderCompareModalShell();
+    }
+  };
+
+  const applyHomeMenuDetailContextFromPayload = (homePayload = {}) => {
+    const featuredIds = Array.isArray(homePayload?.popular?.featuredIds)
+      ? homePayload.popular.featuredIds
+      : [];
+    menuPageCopy = resolveMenuPageCopyFromHome(homePayload);
+    menuDetailEditorialCopy = resolveDetailEditorialCopyFromHome(homePayload);
+    detailInfoChipTooltipCopy = isObject(menuDetailEditorialCopy?.infoChips)
+      ? menuDetailEditorialCopy.infoChips
+      : DETAIL_INFO_CHIP_TOOLTIP_COPY;
+    detailSensoryAxisTooltipCopy = isObject(menuDetailEditorialCopy?.sensoryAxisTooltips)
+      ? menuDetailEditorialCopy.sensoryAxisTooltips
+      : DETAIL_SENSORY_AXIS_TOOLTIP_COPY;
+    const normalizedHelperWords = normalizeStringList(
+      menuPageCopy?.search?.helperWords,
+      SEARCH_HELPER_WORDS_DEFAULT
+    );
+    searchHelperWords = normalizedHelperWords.length
+      ? normalizedHelperWords
+      : SEARCH_HELPER_WORDS_DEFAULT.slice();
+    searchHelperWordIndex = 0;
+    searchHelperHasStarted = false;
+    searchHelperAnimating = false;
+    if (typeof clearSearchHelperTimers === 'function') {
+      clearSearchHelperTimers();
+    }
+    applyMenuPageCopyToDom();
+    applyDetailEditorialCopyToDom();
+    if (typeof renderSearchHelperWord === 'function') {
+      renderSearchHelperWord(searchHelperWords[0]);
+    }
+    if (typeof syncSearchHelperWidth === 'function') {
+      syncSearchHelperWidth();
+    }
+    if (typeof syncSearchControls === 'function') {
+      syncSearchControls();
+    }
+    const sensorySubtitle = normalizeText(menuDetailEditorialCopy?.sensory?.subtitle);
+
+    return {
+      featuredIds: new Set(
+        featuredIds.map((featuredId) => normalizeText(featuredId)).filter(Boolean)
+      ),
+      sensorySubtitle,
+      menuPage: menuPageCopy,
+      menuDetailEditorial: menuDetailEditorialCopy,
+    };
+  };
+
+  const applyHomeMenuDetailContextDefaults = () =>
+    applyHomeMenuDetailContextFromPayload({
+      menu_page: MENU_PAGE_COPY_DEFAULTS,
+      menu_detail_editorial: MENU_DETAIL_EDITORIAL_COPY_DEFAULTS,
+      popular: { featuredIds: [] },
+    });
+
+  const loadHomeMenuDetailContext = () => {
+    if (homeMenuDetailContextPromise) {
+      return homeMenuDetailContextPromise;
+    }
+
+    homeMenuDetailContextPromise = fetch(
       publicPaths?.toAbsoluteUrl ? publicPaths.toAbsoluteUrl('data/home.json') : 'data/home.json',
       { cache: 'no-cache' }
     )
@@ -4303,19 +5576,16 @@
         }
         return response.json();
       })
-      .then((homePayload) => {
-        const featuredIds = Array.isArray(homePayload?.popular?.featuredIds)
-          ? homePayload.popular.featuredIds
-          : [];
-
-        return new Set(featuredIds.map((featuredId) => normalizeText(featuredId)).filter(Boolean));
-      })
+      .then((homePayload) => applyHomeMenuDetailContextFromPayload(homePayload))
       .catch((error) => {
-        console.warn('[menu-page] No se pudo resolver popular.featuredIds para badge hero.', error);
-        return new Set();
+        console.warn(
+          '[menu-page] No se pudo resolver el contexto global de detalle desde data/home.json.',
+          error
+        );
+        return applyHomeMenuDetailContextDefaults();
       });
 
-    return homePopularFeaturedIdsPromise;
+    return homeMenuDetailContextPromise;
   };
 
   const disableNativeScrollRestoration = () => {
@@ -4645,8 +5915,9 @@
     [
       item?.id,
       item?.name,
-      item?.descriptionShort,
+      item?.description,
       item?.descriptionLong,
+      item?.descriptionShort,
       item?.categoryLabel,
       category?.label,
       Array.isArray(item?.ingredients)
@@ -4747,6 +6018,7 @@
   };
 
   const createCompareResultItemNode = (candidate, { isSelected = false } = {}) => {
+    const compareCopy = menuDetailEditorialCopy?.compareModal || MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.compareModal;
     const item = document.createElement('li');
     item.className = 'menu-compare-modal__item-row';
 
@@ -4771,7 +6043,9 @@
     const summary = document.createElement('p');
     summary.className = 'menu-compare-modal__item-summary';
     summary.textContent =
-      normalizeText(candidate?.summary) || 'Perfil sensorial disponible';
+      normalizeText(candidate?.summary) ||
+      normalizeText(compareCopy?.candidateSummaryFallback) ||
+      MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.compareModal.candidateSummaryFallback;
 
     button.append(title, meta, summary);
     item.appendChild(button);
@@ -4789,6 +6063,7 @@
     const query = normalizeText(state.compareSearchQuery);
     const normalizedQuery = normalizeSearchValue(query);
     const selectedComparisonItemId = normalizeText(state.detailComparisonItemId);
+    const compareCopy = menuDetailEditorialCopy?.compareModal || MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.compareModal;
     const allCandidates = getSensoryComparisonCandidates(currentItemId);
     const visibleCandidates = normalizedQuery
       ? allCandidates.filter((candidate) => candidate.searchText.includes(normalizedQuery))
@@ -4799,9 +6074,14 @@
     if (!visibleCandidates.length) {
       const emptyNode = document.createElement('p');
       emptyNode.className = 'menu-compare-modal__empty';
-      emptyNode.textContent = normalizedQuery
-        ? `No hay coincidencias para "${query}" en entradas y pizzas con perfil sensorial.`
-        : 'No hay platos elegibles para comparar en este momento.';
+      const emptyTitle = normalizeText(compareCopy?.emptyStateTitle);
+      const emptyDescription = normalizedQuery
+        ? formatTemplate(
+            compareCopy?.emptyStateDescriptionWithQuery,
+            { query }
+          )
+        : normalizeText(compareCopy?.emptyStateDescription);
+      emptyNode.textContent = [emptyTitle, emptyDescription].filter(Boolean).join('. ');
       compareResultsRoot.appendChild(emptyNode);
       return;
     }
@@ -4809,8 +6089,9 @@
     const introNode = document.createElement('p');
     introNode.className = 'menu-compare-modal__list-intro';
     introNode.textContent = currentTitle
-      ? `Plato actual: ${currentTitle}`
-      : 'Selecciona un plato para comparar.';
+      ? `${normalizeText(compareCopy?.currentItemPrefix) || MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.compareModal.currentItemPrefix} ${currentTitle}`
+      : normalizeText(compareCopy?.currentItemFallback) ||
+        MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.compareModal.currentItemFallback;
 
     const list = document.createElement('ul');
     list.className = 'menu-compare-modal__list';
@@ -4830,6 +6111,7 @@
     itemId = '',
     currentLabel = '',
     sensoryProfile = null,
+    compareMode = DETAIL_EDITORIAL_COMPARE_MODE.AUTO,
   } = {}) => {
     const normalizedItemId = normalizeText(itemId);
     state.detailItemId = normalizedItemId;
@@ -4845,10 +6127,18 @@
       comparisonLabel,
     });
     const hasComparison = hasSensoryProfile && Boolean(comparisonProfile);
+    const normalizedCompareMode = normalizeDetailEditorialCompareMode(compareMode);
+    const compareEnabled =
+      normalizedCompareMode === DETAIL_EDITORIAL_COMPARE_MODE.ENABLED
+        ? true
+        : normalizedCompareMode === DETAIL_EDITORIAL_COMPARE_MODE.DISABLED
+          ? false
+          : hasSensoryProfile;
 
     syncDetailSensoryCompareButton({
       hasSensoryProfile,
       hasComparison,
+      compareEnabled,
     });
 
     if (detailSensoryDivider instanceof HTMLElement) {
@@ -4858,6 +6148,7 @@
     return {
       hasSensoryProfile,
       hasComparison,
+      compareEnabled,
     };
   };
 
@@ -4880,6 +6171,7 @@
       itemId: currentItemId,
       currentLabel: normalizeText(currentItem?.name || currentItem?.id),
       sensoryProfile,
+      compareMode: resolveDetailEditorialModel(currentItem).compareMode,
     });
 
     return true;
@@ -5033,7 +6325,132 @@
     return null;
   };
 
+  const normalizeDetailEditorialCompareMode = (value) => {
+    const normalized = normalizeText(value).toLowerCase();
+    if (
+      normalized === DETAIL_EDITORIAL_COMPARE_MODE.ENABLED ||
+      normalized === DETAIL_EDITORIAL_COMPARE_MODE.DISABLED
+    ) {
+      return normalized;
+    }
+    return DETAIL_EDITORIAL_COMPARE_MODE.AUTO;
+  };
+
+  const normalizeDetailEditorialHeroBadge = (value) => {
+    const normalized = normalizeText(value).toLowerCase();
+    if (
+      normalized === DETAIL_HERO_BADGE_KIND.VEGAN ||
+      normalized === DETAIL_HERO_BADGE_KIND.VEGETARIAN ||
+      normalized === DETAIL_HERO_BADGE_KIND.FEATURED ||
+      normalized === DETAIL_EDITORIAL_HERO_BADGE_NONE
+    ) {
+      return normalized;
+    }
+    return '';
+  };
+
+  const normalizeDetailEditorialPairingEntry = (input) => {
+    if (!isObject(input)) {
+      return null;
+    }
+
+    const cta = isObject(input.cta) ? input.cta : {};
+    const name = normalizeText(input.name || input.title);
+    const subtitle = normalizeText(input.subtitle || input.intro);
+    const meta = normalizeText(input.meta || input.region || input.style);
+    const description = normalizeText(input.description || input.summary || input.copy);
+    const ctaLabel = normalizeText(
+      input.cta_label ||
+      input.ctaLabel ||
+      input.button_label ||
+      input.buttonLabel ||
+      cta.label
+    );
+    const ctaTarget = normalizeText(
+      input.cta_target ||
+      input.ctaTarget ||
+      input.button_target ||
+      input.buttonTarget ||
+      cta.target
+    );
+    const hasContent = Boolean(name || meta || description || ctaLabel || ctaTarget);
+    const hasExplicitEnabled = typeof input.enabled === 'boolean';
+    const enabled = hasExplicitEnabled ? input.enabled : hasContent;
+
+    if (!hasContent && !hasExplicitEnabled) {
+      return null;
+    }
+
+    return {
+      enabled,
+      subtitle,
+      name,
+      meta,
+      description,
+      ctaLabel,
+      ctaTarget,
+    };
+  };
+
+  const normalizeDetailEditorialStory = (input) => {
+    if (!isObject(input)) {
+      return null;
+    }
+
+    const title = normalizeText(input.title || input.heading);
+    const body = normalizeText(input.body || input.content || input.copy || input.text);
+
+    if (!title && !body) {
+      return null;
+    }
+
+    return {
+      title,
+      body,
+    };
+  };
+
+  const resolveDetailEditorialModel = (item) => {
+    const detailEditorial = isObject(item?.detail_editorial) ? item.detail_editorial : {};
+
+    let pairingSource = null;
+    if (Array.isArray(detailEditorial.pairings)) {
+      pairingSource = detailEditorial.pairings.find((entry) => isObject(entry)) || null;
+    } else if (isObject(detailEditorial.pairings)) {
+      pairingSource = detailEditorial.pairings;
+    } else if (isObject(detailEditorial.pairing)) {
+      pairingSource = detailEditorial.pairing;
+    }
+
+    return {
+      compareMode: normalizeDetailEditorialCompareMode(detailEditorial.compare_mode),
+      heroBadge: normalizeDetailEditorialHeroBadge(detailEditorial.hero_badge),
+      sensoryIntro: normalizeText(detailEditorial.sensory_intro || detailEditorial.sensory_subtitle),
+      pairing: normalizeDetailEditorialPairingEntry(pairingSource),
+      story: normalizeDetailEditorialStory(detailEditorial.story || detailEditorial.history),
+    };
+  };
+
   const resolveDetailHeroBadge = ({ item, badges = [], featuredIds = new Set() } = {}) => {
+    const detailEditorial = resolveDetailEditorialModel(item);
+    const forcedHeroBadge = detailEditorial.heroBadge;
+
+    if (forcedHeroBadge === DETAIL_EDITORIAL_HERO_BADGE_NONE) {
+      return null;
+    }
+
+    if (
+      forcedHeroBadge === DETAIL_HERO_BADGE_KIND.VEGAN ||
+      forcedHeroBadge === DETAIL_HERO_BADGE_KIND.VEGETARIAN ||
+      forcedHeroBadge === DETAIL_HERO_BADGE_KIND.FEATURED
+    ) {
+      return {
+        kind: forcedHeroBadge,
+        label: DETAIL_HERO_BADGE_COPY[forcedHeroBadge] || '',
+        icon: DETAIL_HERO_BADGE_ICON_BY_KIND[forcedHeroBadge] || '',
+      };
+    }
+
     const dietaryKind = resolveDietaryHeroKind(item, badges);
 
     if (dietaryKind) {
@@ -5709,7 +7126,7 @@
     model.axes.forEach((axis) => {
       const valueRatio = Math.max(0, Math.min(1, axis.value / model.scaleMax));
       const barPresence = 0.2 + valueRatio * 0.8;
-      const axisTooltipCopy = DETAIL_SENSORY_AXIS_TOOLTIP_COPY[axis.id] || {
+      const axisTooltipCopy = getSensoryAxisTooltipCopy(axis.id) || {
         title: axis.label,
         description: `Cómo se percibe ${axis.label.toLowerCase()} en el plato.`,
       };
@@ -6320,7 +7737,7 @@
 
     axisPoints.forEach((axis) => {
       if (axis.iconPath) {
-        const axisTooltipCopy = DETAIL_SENSORY_AXIS_TOOLTIP_COPY[axis.id] || {
+        const axisTooltipCopy = getSensoryAxisTooltipCopy(axis.id) || {
           title: axis.label,
           description: `Cómo se percibe ${axis.label.toLowerCase()} en el plato.`,
         };
@@ -6681,9 +8098,132 @@
     return true;
   };
 
-  const syncDetailPairingsSection = (itemId) => {
-    const normalizedItemId = normalizeText(itemId);
-    const shouldShowPairings = DETAIL_V1_PAIRING_ITEM_IDS.has(normalizedItemId);
+  const syncDetailSensorySubtitle = (sensoryIntro = '') => {
+    if (!(detailSensorySubtitle instanceof HTMLElement)) {
+      return;
+    }
+
+    detailSensorySubtitle.textContent =
+      normalizeText(sensoryIntro) ||
+      normalizeText(menuDetailEditorialCopy?.sensory?.subtitle) ||
+      DETAIL_DEFAULT_SENSORY_SUBTITLE;
+  };
+
+  const applyDetailPairingContent = (pairing = null) => {
+    if (!isObject(pairing)) {
+      return;
+    }
+    const pairingsCopy = menuDetailEditorialCopy?.pairings || MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.pairings;
+
+    if (detailPairingsSubtitle instanceof HTMLElement) {
+      detailPairingsSubtitle.textContent =
+        normalizeText(pairing.subtitle) ||
+        normalizeText(pairingsCopy?.sectionSubtitle) ||
+        DETAIL_DEFAULT_PAIRING_CONTENT.subtitle;
+    }
+    if (detailPairingName instanceof HTMLElement) {
+      detailPairingName.textContent = normalizeText(pairing.name || '');
+    }
+    if (detailPairingMeta instanceof HTMLElement) {
+      detailPairingMeta.textContent = normalizeText(pairing.meta || '');
+    }
+    if (detailPairingDescription instanceof HTMLElement) {
+      detailPairingDescription.textContent = normalizeText(pairing.description || '');
+    }
+    if (detailPairingCta instanceof HTMLButtonElement) {
+      const ctaLabel =
+        normalizeText(pairing.ctaLabel) ||
+        normalizeText(pairingsCopy?.ctaFallbackLabel) ||
+        DETAIL_DEFAULT_PAIRING_CONTENT.ctaLabel ||
+        MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.pairings.ctaFallbackLabel;
+      const ctaTarget = normalizeText(pairing.ctaTarget);
+      detailPairingCta.setAttribute('aria-label', ctaLabel);
+      detailPairingCta.title = ctaLabel;
+      if (ctaTarget) {
+        detailPairingCta.dataset.pairingTarget = ctaTarget;
+      } else {
+        delete detailPairingCta.dataset.pairingTarget;
+      }
+    }
+  };
+
+  const renderDetailStoryBodyFromText = (storyBody = '') => {
+    if (!(detailHistoryBody instanceof HTMLElement)) {
+      return;
+    }
+
+    const normalizedBody = normalizeText(storyBody);
+    if (!normalizedBody) {
+      detailHistoryBody.replaceChildren();
+      return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    const blocks = normalizedBody
+      .split(/\n{2,}/)
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+
+    blocks.forEach((block) => {
+      const lines = block
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean);
+
+      if (lines.length > 0 && lines.every((line) => line.startsWith('- '))) {
+        const list = document.createElement('ul');
+        list.className = 'menu-page-detail__history-list';
+        lines.forEach((line) => {
+          const item = document.createElement('li');
+          item.textContent = line.slice(2).trim();
+          list.appendChild(item);
+        });
+        fragment.appendChild(list);
+        return;
+      }
+
+      const paragraph = document.createElement('p');
+      paragraph.className = 'menu-page-detail__history-paragraph';
+      paragraph.textContent = lines.join(' ');
+      fragment.appendChild(paragraph);
+    });
+
+    detailHistoryBody.replaceChildren(fragment);
+  };
+
+  const applyDetailStoryContent = (story = null) => {
+    if (!isObject(story)) {
+      return;
+    }
+
+    if (detailHistoryTitle instanceof HTMLElement) {
+      detailHistoryTitle.textContent =
+        normalizeText(story.title) ||
+        normalizeText(menuDetailEditorialCopy?.story?.sectionTitle) ||
+        DETAIL_DEFAULT_SECTION_COPY.storyTitle;
+    }
+    renderDetailStoryBodyFromText(story.body);
+  };
+
+  const syncDetailPairingsSection = ({ pairing = null } = {}) => {
+    const hasEditorialPairing = isObject(pairing);
+    let shouldShowPairings = false;
+
+    if (hasEditorialPairing) {
+      const hasPairingContent = Boolean(
+        normalizeText(pairing.name) ||
+        normalizeText(pairing.meta) ||
+        normalizeText(pairing.description) ||
+        normalizeText(pairing.ctaLabel) ||
+        normalizeText(pairing.ctaTarget)
+      );
+      shouldShowPairings =
+        hasPairingContent &&
+        (pairing.enabled === true || pairing.enabled !== false);
+      if (shouldShowPairings) {
+        applyDetailPairingContent(pairing);
+      }
+    }
 
     if (detailPairingsSection instanceof HTMLElement) {
       detailPairingsSection.hidden = !shouldShowPairings;
@@ -6700,9 +8240,16 @@
     return shouldShowPairings;
   };
 
-  const syncDetailHistorySection = (itemId) => {
-    const normalizedItemId = normalizeText(itemId);
-    const shouldShowHistory = DETAIL_V1_HISTORY_ITEM_IDS.has(normalizedItemId);
+  const syncDetailHistorySection = ({ story = null } = {}) => {
+    const hasEditorialStory = isObject(story);
+    let shouldShowHistory = false;
+
+    if (hasEditorialStory) {
+      shouldShowHistory = Boolean(normalizeText(story.title) || normalizeText(story.body));
+      if (shouldShowHistory) {
+        applyDetailStoryContent(story);
+      }
+    }
 
     if (detailHistorySection instanceof HTMLElement) {
       detailHistorySection.hidden = !shouldShowHistory;
@@ -7069,7 +8616,7 @@
     }
 
     const tooltipKey = normalizeText(chip.getAttribute('data-menu-detail-chip-tooltip'));
-    const copy = DETAIL_INFO_CHIP_TOOLTIP_COPY[tooltipKey];
+    const copy = getDetailChipTooltipCopy(tooltipKey);
 
     if (!copy) {
       return;
@@ -7479,9 +9026,7 @@
     return {
       id: normalizeText(item?.id),
       title: normalizeText(item?.name || item?.id),
-      description:
-        normalizeText(item?.descriptionShort) ||
-        normalizeText(item?.descriptionLong),
+      description: resolveItemDescriptionText(item),
       price: normalizeText(item?.priceFormatted),
       available: isAvailable,
       meta: !isAvailable ? soldOutReason || 'No disponible' : '',
@@ -7493,6 +9038,7 @@
 
   const toDetailViewModel = async (item) => {
     const media = resolveItemMedia(item);
+    const editorial = resolveDetailEditorialModel(item);
     const editorialAltBase = normalizeText(media.alt || item?.name || item?.id);
     let editorialSlides = buildDetailEditorialSlides(media.editorialSlides, editorialAltBase);
 
@@ -7518,34 +9064,39 @@
       editorialSlides = buildDetailEditorialSlides(editorialGallery, editorialAltBase);
     }
 
+    const homeMenuDetailContext = await loadHomeMenuDetailContext();
+    const globalSensorySubtitle = normalizeText(homeMenuDetailContext?.sensorySubtitle);
+
     const badges = Array.isArray(item?.public_badges?.flat)
       ? item.public_badges.flat
       : [];
     return {
       id: normalizeText(item?.id),
       title: normalizeText(item?.name || item?.id),
-      description:
-        normalizeText(item?.descriptionLong) ||
-        normalizeText(item?.descriptionShort),
+      description: resolveItemDescriptionText(item),
       price: formatDetailPrice(item),
       reviews: normalizeText(item?.reviews),
-      calories: item?.nutrition?.calories ?? item?.calories ?? item?.metrics?.calories,
+      calories: item?.metrics?.calories ?? item?.nutrition?.calories ?? item?.calories,
       etaMinutes:
+        item?.metrics?.etaMinutes ??
         item?.serviceEtaMinutes ??
         item?.estimatedServeMinutes ??
-        item?.etaMinutes ??
-        item?.metrics?.etaMinutes,
+        item?.etaMinutes,
       rating:
+        item?.metrics?.rating ??
         item?.rating ??
         item?.averageRating ??
-        item?.ratingAverage ??
-        item?.metrics?.rating,
+        item?.ratingAverage,
       available: item?.available !== false,
       soldOutReason: normalizeText(item?.soldOutReason),
       badges,
       ingredients: Array.isArray(item?.ingredients) ? item.ingredients : [],
       allergens: Array.isArray(item?.allergens) ? item.allergens : [],
       sensoryProfile: isObject(item?.sensory_profile) ? item.sensory_profile : null,
+      sensoryIntro: globalSensorySubtitle || editorial.sensoryIntro,
+      compareMode: editorial.compareMode,
+      pairing: editorial.pairing,
+      story: editorial.story,
       image: media.detail || media.card,
       imageAlt: media.alt,
       editorialSlides,
@@ -8078,15 +9629,29 @@
 
   const getSearchEmptyMessage = (query) => {
     const normalizedQuery = normalizeText(query);
+    const emptyCopy = menuPageCopy?.search?.emptyState || MENU_PAGE_COPY_DEFAULTS.search.emptyState;
 
     if (!normalizedQuery) {
-      return 'No vimos coincidencias en el menú.';
+      return (
+        normalizeText(emptyCopy?.description) ||
+        MENU_PAGE_COPY_DEFAULTS.search.emptyState.description
+      );
     }
 
-    return `No vimos coincidencias para "${normalizedQuery}" en el menú.`;
+    const fromTemplate = formatTemplate(emptyCopy?.descriptionWithQuery, {
+      query: normalizedQuery,
+    });
+    return (
+      fromTemplate ||
+      formatTemplate(
+        MENU_PAGE_COPY_DEFAULTS.search.emptyState.descriptionWithQuery,
+        { query: normalizedQuery }
+      )
+    );
   };
 
   const createSearchEmptyState = (query) => {
+    const emptyCopy = menuPageCopy?.search?.emptyState || MENU_PAGE_COPY_DEFAULTS.search.emptyState;
     const node = document.createElement('section');
     node.className = 'menu-page-search-empty';
     node.setAttribute('aria-labelledby', 'menu-search-empty-title');
@@ -8101,7 +9666,9 @@
     const title = document.createElement('h2');
     title.className = 'menu-page-search-empty__title';
     title.id = 'menu-search-empty-title';
-    title.textContent = 'No encontramos resultados';
+    title.textContent =
+      normalizeText(emptyCopy?.title) ||
+      MENU_PAGE_COPY_DEFAULTS.search.emptyState.title;
 
     const message = document.createElement('p');
     message.className = 'menu-page-search-empty__message';
@@ -8109,7 +9676,9 @@
 
     const hint = document.createElement('p');
     hint.className = 'menu-page-search-empty__hint';
-    hint.textContent = 'Prueba con otro término o revisa la ortografía.';
+    hint.textContent =
+      normalizeText(emptyCopy?.hint) ||
+      MENU_PAGE_COPY_DEFAULTS.search.emptyState.hint;
 
     node.append(art, title, message, hint);
     return node;
@@ -8326,8 +9895,13 @@
   const createSearchHelperLayer = (word, className, initialState = null) => {
     const layer = document.createElement('span');
     layer.className = className;
+    const safeWord =
+      normalizeText(word) ||
+      searchHelperWords[0] ||
+      SEARCH_HELPER_WORDS_DEFAULT[0] ||
+      '';
 
-    Array.from(word).forEach((character) => {
+    Array.from(safeWord).forEach((character) => {
       const char = createSearchHelperChar(character);
 
       if (initialState) {
@@ -8340,7 +9914,7 @@
     return layer;
   };
 
-  const renderSearchHelperWord = (word = SEARCH_HELPER_WORDS[0]) => {
+  const renderSearchHelperWord = (word = searchHelperWords[0] || SEARCH_HELPER_WORDS_DEFAULT[0]) => {
     if (!(searchHelperWord instanceof HTMLElement)) {
       return;
     }
@@ -8351,7 +9925,7 @@
   };
 
   const syncSearchHelperWidth = () => {
-    if (!(searchHelperWord instanceof HTMLElement) || !SEARCH_HELPER_WORDS.length) {
+    if (!(searchHelperWord instanceof HTMLElement) || !searchHelperWords.length) {
       return;
     }
 
@@ -8364,7 +9938,7 @@
 
     let maxWidth = 0;
 
-    SEARCH_HELPER_WORDS.forEach((word) => {
+    searchHelperWords.forEach((word) => {
       measure.textContent = word;
       maxWidth = Math.max(maxWidth, Math.ceil(measure.getBoundingClientRect().width));
     });
@@ -8385,7 +9959,7 @@
   const canAnimateSearchHelper = () =>
     shouldShowSearchHelper() &&
     searchHelperWord instanceof HTMLElement &&
-    SEARCH_HELPER_WORDS.length > 1 &&
+    searchHelperWords.length > 1 &&
     !reducedMotionQuery.matches;
 
   const animateSearchHelperChars = (
@@ -8446,9 +10020,9 @@
         return;
       }
 
-      const currentWord = SEARCH_HELPER_WORDS[searchHelperWordIndex] || SEARCH_HELPER_WORDS[0];
-      const nextIndex = (searchHelperWordIndex + 1) % SEARCH_HELPER_WORDS.length;
-      const nextWord = SEARCH_HELPER_WORDS[nextIndex];
+      const currentWord = searchHelperWords[searchHelperWordIndex] || searchHelperWords[0];
+      const nextIndex = (searchHelperWordIndex + 1) % searchHelperWords.length;
+      const nextWord = searchHelperWords[nextIndex];
       const outgoingLayer = createSearchHelperLayer(
         currentWord,
         'menu-page-search__helper-layer',
@@ -8539,7 +10113,7 @@
       return;
     }
 
-    const currentWord = SEARCH_HELPER_WORDS[searchHelperWordIndex] || SEARCH_HELPER_WORDS[0];
+    const currentWord = searchHelperWords[searchHelperWordIndex] || searchHelperWords[0];
     if (!searchHelperAnimating && getRenderedSearchHelperWord() !== currentWord) {
       renderSearchHelperWord(currentWord);
     }
@@ -8996,6 +10570,260 @@
     emitBridgeState();
   };
 
+  const isVisiblePreviewSectionNode = (node) =>
+    node instanceof HTMLElement &&
+    !node.hidden &&
+    node.getClientRects().length > 0;
+
+  const resolveAdminPreviewSectionTarget = (sectionId = '') => {
+    const normalizedSection = normalizeText(sectionId).toLowerCase();
+    const candidatesBySection = {
+      'hero-media': [detailMedia, detailView],
+      header: [detailPanel, detailTitle, detailView],
+      summary: [detailDescription, detailPanel, detailView],
+      ingredients: [detailIngredientsSection, detailSpecGrid, detailPanel, detailView],
+      allergens: [detailAllergensSection, detailSpecGrid, detailPanel, detailView],
+      sensory: [detailSensorySection, detailPanel, detailView],
+      pairings: [
+        detailPairingsSection,
+        detailSensorySection,
+        detailPanel,
+        detailView,
+      ],
+      story: [
+        detailHistorySection,
+        detailPairingsSection,
+        detailPanel,
+        detailView,
+      ],
+    };
+
+    const candidates = candidatesBySection[normalizedSection] || [detailView];
+    const visibleNode = candidates.find((node) => isVisiblePreviewSectionNode(node));
+    if (visibleNode) {
+      return visibleNode;
+    }
+
+    return (
+      candidates.find((node) => node instanceof HTMLElement) ||
+      (detailView instanceof HTMLElement ? detailView : null)
+    );
+  };
+
+  const scrollAdminPreviewToSection = (
+    sectionId = '',
+    { smooth = true } = {}
+  ) => {
+    if (!isAdminPreviewMode) {
+      return false;
+    }
+
+    const normalizedSection = normalizeText(sectionId).toLowerCase();
+    if (!ADMIN_PREVIEW_SECTION_KEYS.has(normalizedSection)) {
+      return false;
+    }
+
+    const target = resolveAdminPreviewSectionTarget(normalizedSection);
+    if (!(target instanceof HTMLElement)) {
+      return false;
+    }
+
+    const behavior = reducedMotionQuery.matches || !smooth ? 'auto' : 'smooth';
+
+    try {
+      target.scrollIntoView({
+        block: 'start',
+        inline: 'nearest',
+        behavior,
+      });
+    } catch (_error) {
+      target.scrollIntoView();
+    }
+
+    return true;
+  };
+
+  const queueAdminPreviewScrollToSection = (
+    sectionId = '',
+    { smooth = true } = {}
+  ) => {
+    if (!isAdminPreviewMode) {
+      return;
+    }
+
+    const normalizedSection = normalizeText(sectionId).toLowerCase();
+    if (!ADMIN_PREVIEW_SECTION_KEYS.has(normalizedSection)) {
+      return;
+    }
+
+    adminPreviewPendingSectionId = normalizedSection;
+    window.requestAnimationFrame(() => {
+      if (!adminPreviewPendingSectionId) {
+        return;
+      }
+
+      if (
+        scrollAdminPreviewToSection(adminPreviewPendingSectionId, {
+          smooth,
+        })
+      ) {
+        adminPreviewPendingSectionId = '';
+      }
+    });
+  };
+
+  const applyAdminPreviewUpdatePayload = async (payload = {}) => {
+    if (!isAdminPreviewMode || !isObject(payload)) {
+      return;
+    }
+
+    const previewItem = isObject(payload.item) ? deepClone(payload.item) : null;
+    const itemId = normalizeText(previewItem?.id);
+    if (!itemId) {
+      return;
+    }
+
+    previewItem.id = itemId;
+
+    if (isObject(payload.home)) {
+      const context = applyHomeMenuDetailContextFromPayload(payload.home);
+      homeMenuDetailContextPromise = Promise.resolve(context);
+    }
+
+    state.itemsById.set(itemId, previewItem);
+    const renderToken = ++adminPreviewRenderToken;
+    await renderDetail(previewItem);
+
+    if (renderToken !== adminPreviewRenderToken) {
+      return;
+    }
+
+    if (adminPreviewPendingSectionId) {
+      queueAdminPreviewScrollToSection(adminPreviewPendingSectionId, {
+        smooth: false,
+      });
+    }
+
+    if (adminPreviewSurface === ADMIN_PREVIEW_SURFACE_MODAL) {
+      openAdminPreviewModalSurface({
+        modalKey: adminPreviewModalActive,
+        smooth: false,
+      });
+    }
+  };
+
+  const handleAdminPreviewBridgeMessage = (event) => {
+    if (!isAdminPreviewMode) {
+      return;
+    }
+
+    if (!event || event.origin !== window.location.origin) {
+      return;
+    }
+
+    if (window.parent !== window && event.source !== window.parent) {
+      return;
+    }
+
+    const data = event.data;
+    if (!isObject(data)) {
+      return;
+    }
+
+    const type = normalizeText(data.type);
+    if (type === ADMIN_PREVIEW_MESSAGE_UPDATE) {
+      void applyAdminPreviewUpdatePayload(data.payload);
+      return;
+    }
+
+    if (type === ADMIN_PREVIEW_MESSAGE_UPDATE_MODAL) {
+      applyAdminPreviewModalPayload(data.payload);
+      return;
+    }
+
+    if (type === ADMIN_PREVIEW_MESSAGE_SCROLL) {
+      const sectionId = normalizeText(data?.payload?.section).toLowerCase();
+      if (!ADMIN_PREVIEW_SECTION_KEYS.has(sectionId)) {
+        return;
+      }
+
+      queueAdminPreviewScrollToSection(sectionId, { smooth: true });
+    }
+  };
+
+  const tagAdminPreviewSectionLink = (node, sectionId) => {
+    if (!(node instanceof HTMLElement)) {
+      return;
+    }
+
+    const normalizedSection = normalizeText(sectionId).toLowerCase();
+    if (!ADMIN_PREVIEW_SECTION_KEYS.has(normalizedSection)) {
+      return;
+    }
+
+    node.setAttribute('data-admin-preview-link-section', normalizedSection);
+  };
+
+  const bindAdminPreviewSectionNavigation = () => {
+    if (!isAdminPreviewMode || !(detailView instanceof HTMLElement)) {
+      return;
+    }
+
+    if (detailView.getAttribute('data-admin-preview-nav-bound') === 'true') {
+      return;
+    }
+
+    detailView.setAttribute('data-admin-preview-nav-bound', 'true');
+
+    tagAdminPreviewSectionLink(detailMedia, 'hero-media');
+    tagAdminPreviewSectionLink(detailHeroHeader, 'header');
+    tagAdminPreviewSectionLink(detailBadge, 'header');
+    tagAdminPreviewSectionLink(detailTitle, 'header');
+    tagAdminPreviewSectionLink(detailPrice, 'header');
+    tagAdminPreviewSectionLink(detailChipCalories, 'header');
+    tagAdminPreviewSectionLink(detailChipEta, 'header');
+    if (detailChipRatingValue instanceof HTMLElement) {
+      tagAdminPreviewSectionLink(
+        detailChipRatingValue.closest('.menu-page-detail__info-chip'),
+        'header'
+      );
+    }
+    tagAdminPreviewSectionLink(detailDescription, 'summary');
+    tagAdminPreviewSectionLink(detailIngredientsSection, 'ingredients');
+    tagAdminPreviewSectionLink(detailAllergensSection, 'allergens');
+    tagAdminPreviewSectionLink(detailSensorySection, 'sensory');
+    tagAdminPreviewSectionLink(detailPairingsSection, 'pairings');
+    tagAdminPreviewSectionLink(detailHistorySection, 'story');
+
+    detailView.addEventListener(
+      'click',
+      (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) {
+          return;
+        }
+
+        const linkNode = target.closest('[data-admin-preview-link-section]');
+        if (!(linkNode instanceof HTMLElement)) {
+          return;
+        }
+
+        const sectionId = normalizeText(
+          linkNode.getAttribute('data-admin-preview-link-section')
+        ).toLowerCase();
+        if (!ADMIN_PREVIEW_SECTION_KEYS.has(sectionId)) {
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        queueAdminPreviewScrollToSection(sectionId, { smooth: true });
+        emitAdminPreviewNavigateEditorMessage(sectionId);
+      },
+      true
+    );
+  };
+
   const goToMenuListView = async () => {
     hideDetailInfoChipTooltip({ immediate: true });
 
@@ -9065,7 +10893,11 @@
     hideDetailInfoChipTooltip({ immediate: true });
 
     const detail = await toDetailViewModel(item);
-    const featuredIds = await loadHomePopularFeaturedIds();
+    const homeMenuDetailContext = await loadHomeMenuDetailContext();
+    const featuredIds =
+      homeMenuDetailContext?.featuredIds instanceof Set
+        ? homeMenuDetailContext.featuredIds
+        : new Set();
     const heroBadge = resolveDetailHeroBadge({
       item,
       badges: detail.badges,
@@ -9080,11 +10912,11 @@
     detailChipRatingValue.textContent = metrics.rating;
     detailChipCalories.setAttribute(
       'aria-label',
-      `${DETAIL_INFO_CHIP_TOOLTIP_COPY.calories.title}: ${metrics.calories}`
+      `${normalizeText(getDetailChipTooltipCopy('calories')?.title) || MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.infoChips.calories.title}: ${metrics.calories}`
     );
     detailChipEta.setAttribute(
       'aria-label',
-      `${DETAIL_INFO_CHIP_TOOLTIP_COPY.eta.title}: ${metrics.eta}`
+      `${normalizeText(getDetailChipTooltipCopy('eta')?.title) || MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.infoChips.eta.title}: ${metrics.eta}`
     );
 
     detailBadge.setAttribute('data-badge-kind', normalizeText(heroBadge?.kind));
@@ -9106,16 +10938,22 @@
       ? ''
       : detail.soldOutReason || 'Temporalmente no disponible.';
     detailSoldOutReason.hidden = detail.available;
-    const { hasSensoryProfile } = renderDetailSensoryState({
+    syncDetailSensorySubtitle(detail.sensoryIntro);
+    const { hasSensoryProfile, compareEnabled } = renderDetailSensoryState({
       itemId: detail.id,
       currentLabel: detail.title,
       sensoryProfile: detail.sensoryProfile,
+      compareMode: detail.compareMode,
     });
-    if (!hasSensoryProfile && state.compareModalOpen) {
+    if ((!hasSensoryProfile || !compareEnabled) && state.compareModalOpen) {
       closeCompareModal({ restoreFocus: false, immediate: true });
     }
-    syncDetailPairingsSection(detail.id);
-    syncDetailHistorySection(detail.id);
+    syncDetailPairingsSection({
+      pairing: detail.pairing,
+    });
+    syncDetailHistorySection({
+      story: detail.story,
+    });
     if (detailAddButton instanceof HTMLButtonElement) {
       const isAvailable = detail.available !== false;
       detailAddButton.textContent = isAvailable ? 'Añadir' : 'No disponible';
@@ -9277,7 +11115,11 @@
   };
 
   const renderMenu = async () => {
-    setStatus('Cargando menú...');
+    await loadHomeMenuDetailContext();
+    const stateCopy = getMenuPageStateCopy();
+    setStatus(
+      normalizeText(stateCopy?.loading) || MENU_PAGE_COPY_DEFAULTS.states.loading
+    );
 
     if (mediaApi?.loadMediaStore) {
       try {
@@ -9291,6 +11133,7 @@
       tabEntries.map(async (group) => ({
         ...group,
         sectionId: toSectionId(group.id),
+        emptyMessage: getMenuCategoryEmptyMessage(group.id, group.emptyMessage),
         items: await buildGroupItems(group),
         sourceCategories: menuApi?.getMenuCategoryById
           ? await Promise.all(
@@ -9310,7 +11153,10 @@
     state.categories = renderedGroups;
 
     if (!state.categories.length) {
-      setStatus('No hay categorías disponibles en este momento.');
+      setStatus(
+        normalizeText(stateCopy?.noCategories) ||
+          MENU_PAGE_COPY_DEFAULTS.states.noCategories
+      );
       return;
     }
 
@@ -9941,6 +11787,11 @@
     });
   });
 
+  if (isAdminPreviewMode) {
+    window.addEventListener('message', handleAdminPreviewBridgeMessage);
+    bindAdminPreviewSectionNavigation();
+  }
+
   const waitForPublicNavbar = async () => {
     const navbarApi = window.FigataPublicNavbar;
 
@@ -10033,15 +11884,26 @@
       await waitForPublicNavbar();
       await renderMenu();
       hydrateAccountSession();
-      renderSearchHelperWord(SEARCH_HELPER_WORDS[0]);
+      renderSearchHelperWord(searchHelperWords[0]);
       syncSearchHelperWidth();
       syncSearchControls();
       await renderRouteFromLocation();
+      if (adminPreviewSurface === ADMIN_PREVIEW_SURFACE_MODAL) {
+        openAdminPreviewModalSurface({
+          modalKey: adminPreviewModalActive,
+          smooth: false,
+        });
+      }
       emitBridgeState();
       finishBridgeReady();
     } catch (error) {
       console.error('[menu-page] Error renderizando menú.', error);
-      setStatus('No se pudo cargar el menú.', { isError: true });
+      const stateCopy = getMenuPageStateCopy();
+      setStatus(
+        normalizeText(stateCopy?.loadError) ||
+          MENU_PAGE_COPY_DEFAULTS.states.loadError,
+        { isError: true }
+      );
       showListView();
       emitBridgeState();
       finishBridgeReady();

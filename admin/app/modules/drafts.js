@@ -18,6 +18,10 @@
     return normalizeText(value).replace(/^\/+/, "");
   }
 
+  function isPlainObject(value) {
+    return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+  }
+
   function isPlaceholderPath(value) {
     var normalized = normalizePath(value);
     if (!normalized) return false;
@@ -43,7 +47,28 @@
     return false;
   }
 
-  function mergeMenuDraftWithSourceDescriptions(draftMenu, sourceMenu) {
+  function mergeMissingObjectFields(target, source) {
+    if (!isPlainObject(target) || !isPlainObject(source)) {
+      return;
+    }
+
+    Object.keys(source).forEach(function (key) {
+      var sourceValue = source[key];
+      var hasTargetValue = Object.prototype.hasOwnProperty.call(target, key);
+
+      if (!hasTargetValue) {
+        target[key] = deepClone(sourceValue);
+        return;
+      }
+
+      var targetValue = target[key];
+      if (isPlainObject(targetValue) && isPlainObject(sourceValue)) {
+        mergeMissingObjectFields(targetValue, sourceValue);
+      }
+    });
+  }
+
+  function mergeMenuDraftWithSourceDefaults(draftMenu, sourceMenu) {
     if (
       !draftMenu ||
       !Array.isArray(draftMenu.sections) ||
@@ -84,6 +109,36 @@
 
         if (shouldAdoptSourceImage(item.image, sourceItem.image)) {
           item.image = sourceItem.image;
+        }
+
+        if (
+          !Object.prototype.hasOwnProperty.call(item, "reviews") &&
+          normalizeText(sourceItem.reviews)
+        ) {
+          item.reviews = sourceItem.reviews;
+        }
+
+        if (isPlainObject(sourceItem.metrics)) {
+          if (!isPlainObject(item.metrics)) {
+            item.metrics = {};
+          }
+          mergeMissingObjectFields(item.metrics, sourceItem.metrics);
+        }
+
+        if (isPlainObject(sourceItem.sensory_profile)) {
+          if (!isPlainObject(item.sensory_profile)) {
+            item.sensory_profile = deepClone(sourceItem.sensory_profile);
+          } else {
+            mergeMissingObjectFields(item.sensory_profile, sourceItem.sensory_profile);
+          }
+        }
+
+        if (isPlainObject(sourceItem.detail_editorial)) {
+          if (!isPlainObject(item.detail_editorial)) {
+            item.detail_editorial = deepClone(sourceItem.detail_editorial);
+          } else {
+            mergeMissingObjectFields(item.detail_editorial, sourceItem.detail_editorial);
+          }
         }
       });
     });
@@ -240,7 +295,7 @@
         return false;
       }
 
-      mergeMenuDraftWithSourceDescriptions(restoredMenu, state.data && state.data.menu);
+      mergeMenuDraftWithSourceDefaults(restoredMenu, state.data && state.data.menu);
       mergeMediaDraftWithSourceMedia(restoredMedia, state.data && state.data.media);
 
       state.drafts.menu = restoredMenu;

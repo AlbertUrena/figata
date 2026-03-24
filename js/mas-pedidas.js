@@ -670,13 +670,17 @@
   setPagePush(0);
 
   const DEFAULT_SOLD_OUT_REASON = "Temporalmente no disponible.";
+  const resolveItemDescriptionText = (item) =>
+    String(
+      (item && (item.description || item.descriptionLong || item.descriptionShort)) || ""
+    ).trim();
 
   const toCardViewModel = (item, media) => ({
     id: item.id,
     slug: item.slug,
     title: item.name || item.id,
-    description: item.descriptionShort || "",
-    previewDescription: item.descriptionLong || item.descriptionShort || "",
+    description: resolveItemDescriptionText(item),
+    previewDescription: resolveItemDescriptionText(item),
     ingredients: Array.isArray(item.ingredients) ? item.ingredients : [],
     reviews: item.reviews || "",
     price: item.priceFormatted || "",

@@ -129,7 +129,7 @@
       <section class="menu-page-list" id="menu-list-view">
         <section class="menu-page-intro" aria-labelledby="menu-page-title">
           <h1 class="menu-page-intro__title" id="menu-page-title">Nuestra selección</h1>
-          <p class="menu-page-intro__subtitle">
+          <p class="menu-page-intro__subtitle" id="menu-page-subtitle">
             Una carta pensada para compartir, descubrir sabores y volver a pedir tus favoritos.
           </p>
         </section>
@@ -239,7 +239,7 @@
                     class="menu-page-search__helper"
                     id="menu-page-search-helper"
                     aria-hidden="true">
-                    <span class="menu-page-search__helper-prefix">Busca por</span>
+                    <span class="menu-page-search__helper-prefix" id="menu-page-search-helper-prefix">Busca por</span>
                     <span
                       class="menu-page-search__helper-word"
                       id="menu-page-search-helper-word">ingredientes</span>
@@ -395,8 +395,8 @@
               id="menu-detail-sensory-section"
               hidden>
               <div class="menu-page-detail__section-heading menu-page-detail__section-heading--sensory">
-                <h3 class="menu-page-detail__section-title">Perfil sensorial</h3>
-                <p class="menu-page-detail__sensory-subtitle">
+                <h3 class="menu-page-detail__section-title" id="menu-detail-sensory-title">Perfil sensorial</h3>
+                <p class="menu-page-detail__sensory-subtitle" id="menu-detail-sensory-subtitle">
                   Una lectura sensorial del plato: cómo se expresa en sabor, textura y aroma.
                 </p>
               </div>
@@ -434,7 +434,7 @@
                       aria-controls="menu-detail-sensory-radar-panel"
                       data-sensory-view="radar">
                       <span class="menu-page-detail__sensory-view-tab-text">
-                        <span class="menu-page-detail__sensory-view-tab-title">Radar</span>
+                        <span class="menu-page-detail__sensory-view-tab-title" id="menu-detail-sensory-tab-radar-title">Radar</span>
                       </span>
                     </button>
                   </div>
@@ -450,7 +450,7 @@
                       aria-controls="menu-detail-sensory-bars-panel"
                       data-sensory-view="bars">
                       <span class="menu-page-detail__sensory-view-tab-text">
-                        <span class="menu-page-detail__sensory-view-tab-title">Barras</span>
+                        <span class="menu-page-detail__sensory-view-tab-title" id="menu-detail-sensory-tab-bars-title">Barras</span>
                       </span>
                     </button>
                   </div>
@@ -500,8 +500,8 @@
               id="menu-detail-pairings-section"
               hidden>
               <div class="menu-page-detail__section-heading menu-page-detail__section-heading--pairings">
-                <h3 class="menu-page-detail__section-title">Maridajes recomendados</h3>
-                <p class="menu-page-detail__pairings-subtitle">
+                <h3 class="menu-page-detail__section-title" id="menu-detail-pairings-title">Maridajes recomendados</h3>
+                <p class="menu-page-detail__pairings-subtitle" id="menu-detail-pairings-subtitle">
                   Selección del sommelier de Figata para elevar cada bocado.
                 </p>
               </div>
@@ -520,8 +520,8 @@
                           transform="translate(-970.745 -496.544)"></path>
                       </svg>
                     </span>
-                    <h4 class="menu-page-detail__pairing-name">Chianti</h4>
-                    <p class="menu-page-detail__pairing-meta">Toscana · Tinto</p>
+                    <h4 class="menu-page-detail__pairing-name" id="menu-detail-pairing-name">Chianti</h4>
+                    <p class="menu-page-detail__pairing-meta" id="menu-detail-pairing-meta">Toscana · Tinto</p>
                   </div>
                   <button
                     class="menu-page-detail__pairing-cta"
@@ -533,7 +533,7 @@
                     </svg>
                   </button>
                 </div>
-                <p class="menu-page-detail__pairing-description">
+                <p class="menu-page-detail__pairing-description" id="menu-detail-pairing-description">
                   La acidez del tomate se equilibra con la acidez del Chianti, mientras sus notas frutales realzan la frescura de la albahaca.
                 </p>
               </article>
@@ -545,9 +545,9 @@
               class="menu-page-detail__section menu-page-detail__section--history"
               id="menu-detail-history-section"
               hidden>
-              <h3 class="menu-page-detail__section-title">La historia detrás</h3>
+              <h3 class="menu-page-detail__section-title" id="menu-detail-history-title">La historia detrás</h3>
 
-              <div class="menu-page-detail__history-body">
+              <div class="menu-page-detail__history-body" id="menu-detail-history-body">
                 <p class="menu-page-detail__history-paragraph">
                   En 1889, el rey Umberto I of Italy y su esposa Margherita of Savoy visitaron Naples.
                   En ese tiempo, la pizza era comida típica del pueblo y no de la realeza.
@@ -658,8 +658,8 @@
         <div class="menu-filter-modal__body" data-scroll-indicator-container>
           <section class="menu-filter-modal__section">
             <div class="menu-filter-modal__section-copy">
-              <h3 class="menu-filter-modal__section-title">Alérgenos</h3>
-              <p class="menu-filter-modal__section-text">
+              <h3 class="menu-filter-modal__section-title" id="menu-filter-title-allergens">Alérgenos</h3>
+              <p class="menu-filter-modal__section-text" id="menu-filter-copy-allergens">
                 Selecciona lo que prefieres evitar.
               </p>
             </div>
@@ -675,7 +675,7 @@
                   <span class="menu-filter-modal__feature-icon" aria-hidden="true">
                     <img
                       class="menu-filter-modal__feature-image"
-                      src="../assets/gluten.webp"
+                      src="assets/gluten.webp"
                       alt=""
                       width="56"
                       height="56"
@@ -696,7 +696,7 @@
                   <span class="menu-filter-modal__feature-icon" aria-hidden="true">
                     <img
                       class="menu-filter-modal__feature-image"
-                      src="../assets/lacteos.webp"
+                      src="assets/lacteos.webp"
                       alt=""
                       width="56"
                       height="56"
@@ -717,7 +717,7 @@
                   <span class="menu-filter-modal__feature-icon" aria-hidden="true">
                     <img
                       class="menu-filter-modal__feature-image"
-                      src="../assets/frutos-secos.webp"
+                      src="assets/frutos-secos.webp"
                       alt=""
                       width="56"
                       height="56"
@@ -738,7 +738,7 @@
                   <span class="menu-filter-modal__feature-icon" aria-hidden="true">
                     <img
                       class="menu-filter-modal__feature-image"
-                      src="../assets/pescado.webp"
+                      src="assets/pescado.webp"
                       alt=""
                       width="56"
                       height="56"
@@ -753,7 +753,7 @@
 
           <section class="menu-filter-modal__section">
             <div class="menu-filter-modal__section-copy">
-              <h3 class="menu-filter-modal__section-title">Tipo de pizza</h3>
+              <h3 class="menu-filter-modal__section-title" id="menu-filter-title-pizza-type">Tipo de pizza</h3>
             </div>
 
             <div
@@ -776,7 +776,7 @@
                   aria-selected="true"
                   data-pizza-type="all">
                   <span class="menu-filter-modal__pizza-tab-text">
-                    <span class="menu-filter-modal__pizza-tab-title">Todas</span>
+                    <span class="menu-filter-modal__pizza-tab-title" id="menu-filter-pizza-tab-all">Todas</span>
                   </span>
                 </button>
               </div>
@@ -790,7 +790,7 @@
                   aria-selected="false"
                   data-pizza-type="clasica">
                   <span class="menu-filter-modal__pizza-tab-text">
-                    <span class="menu-filter-modal__pizza-tab-title">Clásicas</span>
+                    <span class="menu-filter-modal__pizza-tab-title" id="menu-filter-pizza-tab-clasica">Clásicas</span>
                   </span>
                 </button>
               </div>
@@ -804,7 +804,7 @@
                   aria-selected="false"
                   data-pizza-type="autor">
                   <span class="menu-filter-modal__pizza-tab-text">
-                    <span class="menu-filter-modal__pizza-tab-title">De autor</span>
+                    <span class="menu-filter-modal__pizza-tab-title" id="menu-filter-pizza-tab-autor">De autor</span>
                   </span>
                 </button>
               </div>
@@ -813,8 +813,8 @@
 
           <section class="menu-filter-modal__section menu-filter-modal__section--price">
             <div class="menu-filter-modal__section-copy">
-              <h3 class="menu-filter-modal__section-title">Rango de precio</h3>
-              <p class="menu-filter-modal__section-text">
+              <h3 class="menu-filter-modal__section-title" id="menu-filter-title-price-range">Rango de precio</h3>
+              <p class="menu-filter-modal__section-text" id="menu-filter-copy-price-range">
                 Vista preliminar del reparto de precios actual en la carta completa.
               </p>
             </div>
@@ -835,7 +835,7 @@
 
               <div class="menu-filter-modal__price-labels">
                 <div class="menu-filter-modal__price-bound menu-filter-modal__price-bound--min">
-                  <label class="menu-filter-modal__price-bound-label" for="menu-filter-label-min">Mínimo</label>
+                  <label class="menu-filter-modal__price-bound-label" for="menu-filter-label-min" id="menu-filter-price-label-min">Mínimo</label>
                   <div class="menu-filter-modal__price-bound-pill">
                     <span class="menu-filter-modal__price-bound-currency" aria-hidden="true">RD$</span>
                     <input
@@ -850,7 +850,7 @@
                   </div>
                 </div>
                 <div class="menu-filter-modal__price-bound menu-filter-modal__price-bound--max">
-                  <label class="menu-filter-modal__price-bound-label" for="menu-filter-label-max">Máximo</label>
+                  <label class="menu-filter-modal__price-bound-label" for="menu-filter-label-max" id="menu-filter-price-label-max">Máximo</label>
                   <div class="menu-filter-modal__price-bound-pill">
                     <span class="menu-filter-modal__price-bound-currency" aria-hidden="true">RD$</span>
                     <input
@@ -870,7 +870,7 @@
 
           <section class="menu-filter-modal__section">
             <div class="menu-filter-modal__section-copy">
-              <h3 class="menu-filter-modal__section-title">Dieta</h3>
+              <h3 class="menu-filter-modal__section-title" id="menu-filter-title-dietary">Dieta</h3>
             </div>
 
             <div class="menu-filter-modal__standout-grid">
@@ -900,8 +900,8 @@
                   </g>
                 </svg>
                 <div class="menu-filter-modal__standout-text">
-                  <span class="menu-filter-modal__standout-title">Vegetariana</span>
-                  <span class="menu-filter-modal__standout-desc">Sin carne, llena de sabor</span>
+                  <span class="menu-filter-modal__standout-title" id="menu-filter-diet-vegetarian-title">Vegetariana</span>
+                  <span class="menu-filter-modal__standout-desc" id="menu-filter-diet-vegetarian-description">Sin carne, llena de sabor</span>
                 </div>
               </button>
 
@@ -912,10 +912,10 @@
                 aria-pressed="false"
                 data-dietary-filter="vegan"
               >
-                <img src="../assets/vegetariana.webp" alt="" class="menu-filter-modal__standout-icon" loading="lazy" width="32" height="32">
+                <img src="assets/vegetariana.webp" alt="" class="menu-filter-modal__standout-icon" loading="lazy" width="32" height="32">
                 <div class="menu-filter-modal__standout-text">
-                  <span class="menu-filter-modal__standout-title">Vegana</span>
-                  <span class="menu-filter-modal__standout-desc">100% vegetal y ligera</span>
+                  <span class="menu-filter-modal__standout-title" id="menu-filter-diet-vegan-title">Vegana</span>
+                  <span class="menu-filter-modal__standout-desc" id="menu-filter-diet-vegan-description">100% vegetal y ligera</span>
                 </div>
               </button>
             </div>
@@ -923,8 +923,8 @@
 
           <section class="menu-filter-modal__section">
             <div class="menu-filter-modal__section-copy">
-              <h3 class="menu-filter-modal__section-title">Perfil organoléptico</h3>
-              <p class="menu-filter-modal__section-text">
+              <h3 class="menu-filter-modal__section-title" id="menu-filter-title-organoleptic">Perfil organoléptico</h3>
+              <p class="menu-filter-modal__section-text" id="menu-filter-copy-organoleptic">
                 Perfiles que resumen cómo se siente cada plato al probarlo.
               </p>
             </div>
@@ -951,7 +951,7 @@
             id="menu-filter-modal-apply"
             type="button"
             data-menu-filter-apply>
-            Mostrar <span data-filter-cta-count>0</span> platos
+            <span id="menu-filter-apply-prefix">Mostrar</span> <span data-filter-cta-count>0</span> <span id="menu-filter-apply-suffix">platos</span>
           </button>
         </footer>
       </div>
@@ -994,20 +994,20 @@
         <footer class="menu-filter-modal__footer menu-account-modal__footer">
           <div class="menu-account-modal__summary" aria-label="Desglose de precios">
             <div class="menu-account-modal__line">
-              <p class="menu-account-modal__label">Subtotal</p>
+              <p class="menu-account-modal__label" id="menu-account-label-subtotal">Subtotal</p>
               <p class="menu-account-modal__value" id="menu-account-subtotal">RD$ 0.00</p>
             </div>
             <div class="menu-account-modal__line">
-              <p class="menu-account-modal__label">ITBIS (18%)</p>
+              <p class="menu-account-modal__label" id="menu-account-label-itbis">ITBIS (18%)</p>
               <p class="menu-account-modal__value" id="menu-account-itbis">RD$ 0.00</p>
             </div>
             <div class="menu-account-modal__line">
-              <p class="menu-account-modal__label">Propina legal (10%)</p>
+              <p class="menu-account-modal__label" id="menu-account-label-legal-tip">Propina legal (10%)</p>
               <p class="menu-account-modal__value" id="menu-account-legal-tip">RD$ 0.00</p>
             </div>
             <div class="menu-account-modal__line menu-account-modal__line--total">
               <p class="menu-account-modal__label menu-account-modal__label--total">
-                <span>Total</span>
+                <span id="menu-account-label-total">Total</span>
                 <span class="menu-account-modal__total-info" data-account-total-info>
                   <button
                     class="menu-account-modal__total-info-toggle"
@@ -1039,9 +1039,9 @@
                         focusable="false">
                         <path d="M320 64C334.7 64 348.2 72.1 355.2 85L571.2 485C577.9 497.4 577.6 512.4 570.4 524.5C563.2 536.6 550.1 544 536 544L104 544C89.9 544 76.8 536.6 69.6 524.5C62.4 512.4 62.1 497.4 68.8 485L284.8 85C291.8 72.1 305.3 64 320 64zM320 416C302.3 416 288 430.3 288 448C288 465.7 302.3 480 320 480C337.7 480 352 465.7 352 448C352 430.3 337.7 416 320 416zM320 224C301.8 224 287.3 239.5 288.6 257.7L296 361.7C296.9 374.2 307.4 384 319.9 384C332.5 384 342.9 374.3 343.8 361.7L351.2 257.7C352.5 239.5 338.1 224 319.8 224z"/>
                       </svg>
-                      <span>Total estimado</span>
+                      <span id="menu-account-total-info-title">Total estimado</span>
                     </span>
-                    <span class="menu-account-modal__total-info-copy">
+                    <span class="menu-account-modal__total-info-copy" id="menu-account-total-info-copy">
                       Este monto es una referencia de tu cuenta e incluye ITBIS y propina legal. El total final puede variar al momento de ordenar.
                     </span>
                   </span>
@@ -1134,7 +1134,7 @@
           id="menu-compare-modal-body">
           <section class="menu-filter-modal__section menu-compare-modal__section menu-compare-modal__section--intro">
             <div class="menu-filter-modal__section-copy">
-              <p class="menu-filter-modal__section-text">
+              <p class="menu-filter-modal__section-text" id="menu-compare-modal-description">
                 Selecciona otro plato para comparar su perfil sensorial con el actual.
               </p>
             </div>
@@ -1158,8 +1158,8 @@
                       spellcheck="false"
                       enterkeyhint="search">
                     <span class="menu-page-search__helper" id="menu-compare-search-helper" aria-hidden="true">
-                      <span class="menu-page-search__helper-prefix">Busca por</span>
-                      <span class="menu-page-search__helper-word">plato</span>
+                      <span class="menu-page-search__helper-prefix" id="menu-compare-search-helper-prefix">Busca por</span>
+                      <span class="menu-page-search__helper-word" id="menu-compare-search-helper-word">plato</span>
                     </span>
                   </span>
                   <button
