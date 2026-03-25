@@ -1,0 +1,5 @@
+# Cloudflare Pages deep-link rewrites for menu detail routes.
+# Keep static menu CSS pass-through first; Cloudflare evaluates redirects before static file lookup.
+/menu/menu-page.css /menu/menu-page.css 200
+/menu/:item /menu/index.html 200
+/menu/:item/ /menu/index.html 200

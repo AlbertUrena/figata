@@ -1,18 +1,20 @@
 # Build Tools and Scripts
 
-> **Read this doc when** running the dev server, using validation scripts, or working with any file in `scripts/`, `package.json`, or `netlify.toml`.
+> **Read this doc when** running the dev server, using validation scripts, or working with any file in `scripts/`, `package.json`, `_redirects`, `_headers`, or `netlify.toml`.
 
 ---
 
 ## Overview
 
-The Figata repository has **no compile/build step** for production code. The public site and admin panel run as static files, while deploy tooling packages the public site either for Netlify or for GitHub Pages. All tooling is for **local development**, **data validation**, **static packaging**, and **analysis**.
+The Figata repository has **no compile/build step** for production code. The public site and admin panel run as static files, while deploy tooling ships the public site to Cloudflare Pages (primary) and can also target Netlify/GitHub Pages fallback flows. All tooling is for **local development**, **data validation**, **static packaging**, and **analysis**.
 
 | Aspect | Details |
 |--------|---------|
 | Dev server | `scripts/dev-server.js` (Node.js HTTP server) |
-| Validation | 5 validation scripts in `scripts/` |
+| Validation | 6 validation scripts in `scripts/` |
 | Analysis | `check_admin_ui.js`, `dynamic_probe.js` |
+| Cloudflare Pages | `_redirects` (deep-link rewrites), `_headers` (cache policy) |
+| Netlify | `netlify.toml` + `netlify/functions/publish.js` (admin publish pipeline) |
 | GitHub Pages | `.github/workflows/github-pages.yml` packages the public site into a Pages artifact |
 | Package manager | npm (`package.json`) |
 | Runtime dependency | playwright (used for analysis/testing, not production) |
@@ -26,11 +28,13 @@ From `package.json`:
 | Script | Command | Purpose |
 |--------|---------|---------|
 | `dev` | `node scripts/dev-server.js` | Start local development server |
+| `test` | `node scripts/test-menu-traits.js && node scripts/test-menu-allergens.js` | Run menu traits + allergens smoke tests |
+| `validate:menu` | `node scripts/validate-menu.js` | Validate `data/menu.json` |
 | `validate:home` | `node scripts/validate_home_json.js` | Validate `data/home.json` |
 | `validate:media` | `node scripts/validate_media_json.js` | Validate `data/media.json` |
 | `validate:ingredients` | `node scripts/validate-ingredients.js` | Validate `data/ingredients.json` |
 | `validate:categories` | `node scripts/validate-categories.js` | Validate `data/categories.json` |
-| `validate:restaurant` | `node scripts/validate_restaurant_json.js` | Validate `data/restaurant.json` |
+| `validate:restaurant` | `node scripts/validate-restaurant.js` | Validate `data/restaurant.json` |
 | `check:admin-ui` | `node scripts/check_admin_ui.js` | Check admin UI element IDs |
 
 ---
@@ -124,7 +128,7 @@ npm run validate:media
 
 Checks: all menu items have media entries, all media items reference valid menu items, variant completeness (card/hover/modal), broken file paths, duplicate paths.
 
-### `scripts/validate_restaurant_json.js` (179 lines)
+### `scripts/validate-restaurant.js` (179 lines)
 
 Validates `data/restaurant.json` structure.
 
@@ -164,18 +168,21 @@ node scripts/dynamic_probe.js
 
 ---
 
-## Netlify Configuration (`netlify.toml`)
+## Hosting Configuration Files
 
-Controls caching and deployment behavior. Key settings:
+### Cloudflare Pages (`_redirects`, `_headers`)
 
-| Rule | Path pattern | Cache-Control |
-|------|-------------|---------------|
-| Static assets | `/assets/*`, `/menu/*`, `/fonts/*`, `/assets/fonts/*` | `public, max-age=31536000, immutable` (1 year) |
-| JS/CSS | `/js/*`, `/styles.css`, `/admin/app/*.css`, `/admin/app/*.js` | `public, max-age=31536000, immutable` (1 year) |
-| Data files | `/data/*.json` | `public, max-age=0, must-revalidate` (always fresh) |
+Cloudflare Pages uses root-level flat files in the publish output:
 
-Data JSON files are explicitly set to never cache, so that published changes are immediately visible.
+| File | Purpose |
+|------|---------|
+| `_redirects` | Handles deep-link rewrites for `/menu/:item` to `menu/index.html` while preserving static menu CSS requests |
+| `_headers` | Sets cache policy for long-lived static assets and no-cache behavior for `data/*.json` |
 
-No build command is configured — Netlify serves the repo contents directly.
+These files are versioned so Cloudflare behavior stays reproducible across deploys.
+
+### Netlify (`netlify.toml`)
+
+`netlify.toml` still controls Netlify runtime behavior (fallback full-stack hosting and admin/publish flow support), including cache headers and legacy redirect handling for Netlify deploys.
 
 The Netlify function at `netlify/functions/publish.js` is auto-detected from the conventional `netlify/functions/` directory.

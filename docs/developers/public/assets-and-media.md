@@ -19,7 +19,7 @@
 
 ## Overview
 
-The Figata project uses static image assets organized by type. There is no CDN or image processing pipeline — all assets are served directly by Netlify from the repository.
+The Figata project uses static image assets organized by type. There is no image processing pipeline — assets are served directly from the repository by the hosting runtime (Cloudflare Pages primary, Netlify fallback).
 
 | Asset type | Directory | Format | Count |
 |-----------|-----------|--------|------:|
@@ -210,11 +210,11 @@ Referenced directly in `index.html` and `styles.css` via `<img>` tags and CSS `b
 
 ## Caching
 
-Netlify caching rules (from `netlify.toml`):
+Cloudflare Pages caching rules (from `_headers`) and Netlify fallback rules (`netlify.toml`) share the same policy:
 
 | Path | Cache behavior |
 |------|---------------|
-| `/assets/*` | `max-age=31536000, immutable` (1 year, aggressive caching) |
+| `/assets/*`, `/js/*`, `/styles.css`, `/menu/menu-page.css` | `max-age=31536000, immutable` (1 year, aggressive caching) |
 | `/data/*.json` | `max-age=0, must-revalidate` (always fresh) |
 
 Since assets are cached aggressively, **changing an existing image** requires changing the filename or adding a cache-busting query parameter. Adding a new image with a new filename works immediately.

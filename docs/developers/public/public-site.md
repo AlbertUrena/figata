@@ -6,7 +6,7 @@
 
 ## Overview
 
-The public site is a static multi-route surface served by Netlify and mirrored to GitHub Pages for preview/mobile QA. It currently has:
+The public site is a static multi-route surface served primarily by Cloudflare Pages, with Netlify/GitHub Pages fallback flows. It currently has:
 - Homepage: `index.html`
 - Full menu page: `menu/index.html` (`/menu/`)
 
@@ -18,7 +18,7 @@ There is no build step — the HTML, CSS, and JavaScript are deployed directly.
 | Styles | `styles.css` (~2,600 lines, 75KB) |
 | Scripts | 12 files in `js/` + shared runtime modules/assets in `shared/` + data loaders in `src/data/` |
 | Data | Fetches from `data/*.json` at runtime |
-| Hosting | Netlify runtime plus GitHub Pages static mirror for the public surface |
+| Hosting | Cloudflare Pages runtime (primary) plus Netlify/GitHub Pages fallback for the public surface |
 
 ---
 
@@ -114,6 +114,12 @@ Menu page (`menu/index.html`) loads:
 - `index.html` uses `<base href="./">` and `menu/index.html` uses `<base href="../">` so public assets and route links resolve correctly both at site root (`/`) and under the GitHub Pages project prefix (`/figata/`).
 - `shared/public-paths.js` is the canonical helper for converting site-relative URLs and stripping the GitHub Pages project prefix from `window.location.pathname`.
 - `404.html` redirects GitHub Pages deep-link misses back into the public menu shell so `/menu/:item` still works after direct navigation or refresh.
+
+### Cloudflare Pages Notes
+
+- `_redirects` defines the `/menu/:item` rewrite behavior used by Cloudflare Pages so deep links load the menu shell directly.
+- Because Cloudflare redirects are evaluated before static file lookup, the route file includes an explicit static pass-through for `/menu/menu-page.css` before dynamic `/menu/:item` rules.
+- `_headers` applies immutable cache for static assets and forces revalidation for `data/*.json` so published menu/config updates appear without stale data.
 
 ### Script Responsibilities
 

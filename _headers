@@ -1,0 +1,34 @@
+# Static asset caching
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/js/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/styles.css
+  Cache-Control: public, max-age=31536000, immutable
+
+/menu/menu-page.css
+  Cache-Control: public, max-age=31536000, immutable
+
+/admin/app/*.css
+  Cache-Control: public, max-age=31536000, immutable
+
+/admin/app/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/admin/app/modules/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/admin/app/modules/panels/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Data should always be fresh after publish.
+/data/*.json
+  Cache-Control: public, max-age=0, must-revalidate

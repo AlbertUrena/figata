@@ -6,7 +6,7 @@
 
 **Figata** is a restaurant website for an Italian pizza & wine restaurant in Santo Domingo, Dominican Republic. The project has two main systems:
 
-1. **Public website** — A static HTML/CSS/JS site served at runtime by Netlify and also deployable to GitHub Pages for preview/mobile QA. Customers see the menu, homepage, and restaurant info.
+1. **Public website** — A static HTML/CSS/JS site served in production by Cloudflare Pages and also deployable to Netlify or GitHub Pages for fallback/preview workflows. Customers see the menu, homepage, and restaurant info.
 2. **Admin panel** — A custom single-page application at `/admin/app/` used by staff to manage menu items, ingredients, categories, homepage content, and publish changes.
 
 Both systems share a **data layer** (JSON files in `data/`) and are connected through a **publish pipeline** (Netlify serverless function that commits data changes via Git).
@@ -16,7 +16,7 @@ Both systems share a **data layer** (JSON files in `data/`) and are connected th
 | Language | Vanilla JavaScript (no TypeScript, no framework) |
 | Styling | Vanilla CSS |
 | Build | No build step for production; dev server via `npm run dev` |
-| Hosting | Public site: Netlify + GitHub Pages; Admin/auth/publish: Netlify |
+| Hosting | Public site: Cloudflare Pages (primary), Netlify + GitHub Pages (fallback/preview); Admin/auth/publish: Netlify |
 | Auth | Netlify Identity (admin panel only) |
 | Tests | Validation scripts + menu traits/allergen smoke tests (`npm run validate:*`, `npm test`) |
 
@@ -30,6 +30,8 @@ website-figata/
 ├── .github/
 │   └── workflows/
 │       └── github-pages.yml   ← GitHub Pages deploy workflow for the public site
+├── _headers                   ← Cloudflare Pages custom cache headers
+├── _redirects                 ← Cloudflare Pages deep-link rewrites for `/menu/:item`
 ├── 404.html                   ← GitHub Pages fallback redirect for public deep links
 ├── index.html                 ← Public homepage (single-page, ~3,500 lines)
 ├── menu/
@@ -104,7 +106,7 @@ website-figata/
 ├── src/                       ← Source generators (build-time)
 │   ├── data/                     Data generator scripts (menu, home, media, etc.)
 │   └── ui/                       UI component generators
-├── netlify.toml               ← Deploy config + cache headers
+├── netlify.toml               ← Netlify deploy config + headers for Netlify runtime
 ├── package.json               ← npm scripts (dev, validate:*)
 └── docs/                      ← Documentation
     └── developers/               Developer/agent documentation
@@ -192,7 +194,8 @@ npm test                       # smoke tests for Menu Traits V2 + Menu Allergens
 
 ### Deployment
 
-The public site can deploy in two ways:
+The public site can deploy in three ways:
+- Cloudflare Pages serves the public production site, using `_redirects` for `/menu/:item` deep-link rewrites and `_headers` for cache policy.
 - Netlify serves the full stack (static site + Netlify Identity + serverless publish function) when that environment is available.
 - GitHub Pages publishes the public site only through `.github/workflows/github-pages.yml` on push to `master`, packaging the static files into a Pages artifact and using `404.html` to recover deep public routes such as `/menu/:item`.
 
