@@ -5326,11 +5326,11 @@ html[data-account-card-vt="active"]::view-transition-new(menu-account-toast) {
   }
 
   .menu-page-main {
-    padding-top: calc(var(--navbar-height) + clamp(8px, 2vw, 14px));
+    padding-top: calc(var(--menu-mobile-top-inset) + clamp(10px, 2.4vw, 16px));
   }
 
   .menu-page-body[data-menu-page-view="detail"] .menu-page-main {
-    padding-top: calc(var(--navbar-height) + 0.5rem);
+    padding-top: calc(var(--menu-mobile-top-inset) + 0.5rem);
   }
 
   .menu-page-body[data-menu-page-view="detail"][data-menu-detail-hero="editorial"] .menu-page-main {
@@ -5344,7 +5344,7 @@ html[data-account-card-vt="active"]::view-transition-new(menu-account-toast) {
 
   .menu-page-intro {
     gap: 8px;
-    padding-top: clamp(12px, 3vh, 24px);
+    padding-top: clamp(30px, 5.2vh, 48px);
     margin-bottom: clamp(60px, 10vh, 92px);
   }
 
