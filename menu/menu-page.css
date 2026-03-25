@@ -328,11 +328,11 @@ body.menu-page-body.menu-filters-open {
 .site-header {
   transform-origin: center top;
   box-sizing: border-box;
-  padding-top: var(--menu-mobile-top-inset);
 }
 
 .site-header .navbar {
   box-sizing: border-box;
+  padding-top: var(--menu-mobile-top-inset);
 }
 
 .menu-page-main {
