@@ -19,13 +19,13 @@
     "subtitle": "Estas son las más pedidas por nuestros clientes",
     "featuredIds": [
       "quattro_formaggi_truffle",
-      "margherita",
       "pan_ciabatta",
       "tiramisu",
       "focaccia_rellena",
       "margherita_sbagliata",
       "filetti",
-      "diavola"
+      "diavola",
+      "margherita"
     ],
     "limit": 8
   },
@@ -298,6 +298,18 @@
         "description": "Si fue un error, aún puedes deshacerlo"
       }
     },
+    "states": {
+      "loading": "Cargando menú...",
+      "no_categories": "No hay categorías disponibles en este momento.",
+      "load_error": "No se pudo cargar el menú."
+    },
+    "category_empty_messages": {
+      "entradas": "No hay entradas disponibles en este momento.",
+      "pizzas": "No hay pizzas disponibles en este momento.",
+      "postres": "No hay postres disponibles en este momento.",
+      "bebidas": "Nuestra selección de bebidas estará disponible pronto.",
+      "productos": "No hay productos disponibles en este momento."
+    },
     "filter_modal": {
       "title": "Filtrar",
       "sections": {
@@ -336,18 +348,6 @@
         "apply_prefix": "Mostrar",
         "apply_suffix": "platos"
       }
-    },
-    "states": {
-      "loading": "Cargando menú...",
-      "no_categories": "No hay categorías disponibles en este momento.",
-      "load_error": "No se pudo cargar el menú."
-    },
-    "category_empty_messages": {
-      "entradas": "No hay entradas disponibles en este momento.",
-      "pizzas": "No hay pizzas disponibles en este momento.",
-      "postres": "No hay postres disponibles en este momento.",
-      "bebidas": "Nuestra selección de bebidas estará disponible pronto.",
-      "productos": "No hay productos disponibles en este momento."
     }
   },
   "menu_detail_editorial": {
@@ -383,7 +383,7 @@
       "cta_fallback_label": "Añadir maridaje"
     },
     "story": {
-      "section_title": "La historia detrás"
+      "section_title": "Detrás del plato"
     },
     "info_chips": {
       "calories": {

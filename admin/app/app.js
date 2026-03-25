@@ -44,10 +44,71 @@
   var INGREDIENT_CATEGORY_KEYWORDS = C.INGREDIENT_CATEGORY_KEYWORDS;
   var ITEM_HERO_BADGE_OVERRIDE_VALUES = ["vegan", "vegetarian", "featured", "none"];
   var ITEM_COMPARE_MODE_VALUES = ["enabled", "disabled"];
+  var ITEM_DETAIL_SECTION_VISIBILITY_FIELDS = [
+    {
+      key: "hero_media",
+      toggleId: "item-field-section-visibility-hero-media",
+      elementKey: "itemFieldSectionVisibilityHeroMedia",
+      mountId: "item-field-section-visibility-hero-media-mount",
+      ariaLabel: "Mostrar u ocultar Hero / media del detalle"
+    },
+    {
+      key: "header",
+      toggleId: "item-field-section-visibility-header",
+      elementKey: "itemFieldSectionVisibilityHeader",
+      mountId: "item-field-section-visibility-header-mount",
+      ariaLabel: "Mostrar u ocultar Header del detalle"
+    },
+    {
+      key: "ingredients",
+      toggleId: "item-field-section-visibility-ingredients",
+      elementKey: "itemFieldSectionVisibilityIngredients",
+      mountId: "item-field-section-visibility-ingredients-mount",
+      ariaLabel: "Mostrar u ocultar sección Ingredientes"
+    },
+    {
+      key: "allergens",
+      toggleId: "item-field-section-visibility-allergens",
+      elementKey: "itemFieldSectionVisibilityAllergens",
+      mountId: "item-field-section-visibility-allergens-mount",
+      ariaLabel: "Mostrar u ocultar sección Alérgenos"
+    },
+    {
+      key: "add_cta",
+      toggleId: "item-field-section-visibility-add-cta",
+      elementKey: "itemFieldSectionVisibilityAddCta",
+      mountId: "item-field-section-visibility-add-cta-mount",
+      ariaLabel: "Mostrar u ocultar botón Añadir"
+    },
+    {
+      key: "sensory",
+      toggleId: "item-field-section-visibility-sensory",
+      elementKey: "itemFieldSectionVisibilitySensory",
+      mountId: "item-field-section-visibility-sensory-mount",
+      ariaLabel: "Mostrar u ocultar Perfil sensorial"
+    },
+    {
+      key: "pairings",
+      toggleId: "item-field-section-visibility-pairings",
+      elementKey: "itemFieldSectionVisibilityPairings",
+      mountId: "item-field-section-visibility-pairings-mount",
+      ariaLabel: "Mostrar u ocultar Maridajes recomendados"
+    },
+    {
+      key: "story",
+      toggleId: "item-field-section-visibility-story",
+      elementKey: "itemFieldSectionVisibilityStory",
+      mountId: "item-field-section-visibility-story-mount",
+      ariaLabel: "Mostrar u ocultar sección Historia detrás"
+    }
+  ];
+  var ITEM_DETAIL_SECTION_VISIBILITY_TOGGLE_ID_MAP = ITEM_DETAIL_SECTION_VISIBILITY_FIELDS.reduce(function (map, entry) {
+    map[entry.toggleId] = true;
+    return map;
+  }, {});
   var ITEM_EDITOR_PREVIEW_SYNC_DEBOUNCE_MS = 130;
   var ITEM_EDITOR_PREVIEW_MESSAGE_READY = "figata-admin-preview:ready";
   var ITEM_EDITOR_PREVIEW_MESSAGE_UPDATE = "figata-admin-preview:update-detail";
-  var ITEM_EDITOR_PREVIEW_MESSAGE_SCROLL = "figata-admin-preview:scroll-to-section";
   var ITEM_EDITOR_PREVIEW_MESSAGE_NAVIGATE_EDITOR = "figata-admin-preview:navigate-editor";
   var ITEM_EDITOR_PREVIEW_TAB_BY_SECTION = {
     "hero-media": "media",
@@ -55,6 +116,7 @@
     "summary": "editorial",
     "ingredients": "editorial",
     "allergens": "editorial",
+    "add-cta": "editorial",
     "sensory": "editorial",
     "pairings": "editorial",
     "story": "editorial"
@@ -69,42 +131,7 @@
     { axisId: "aromatico", elementKey: "itemFieldSensoryAxisAromatico" },
     { axisId: "intensidad", elementKey: "itemFieldSensoryAxisIntensidad" }
   ];
-  var ITEM_EDITOR_PREVIEW_SECTION_BY_FIELD_ID = {
-    "item-field-name": "header",
-    "item-field-price": "header",
-    "item-field-hero-badge-override": "header",
-    "item-field-metric-calories": "header",
-    "item-field-metric-eta": "header",
-    "item-field-metric-rating": "header",
-    "item-field-featured": "header",
-    "item-availability-toggle": "header",
-    "item-field-description": "header",
-    "item-field-reviews": "summary",
-    "ingredient-search-input": "ingredients",
-    "allergen-override-add-search-input": "allergens",
-    "allergen-override-remove-search-input": "allergens",
-    "item-field-sensory-summary": "sensory",
-    "item-field-sensory-axis-dulce": "sensory",
-    "item-field-sensory-axis-salado": "sensory",
-    "item-field-sensory-axis-acido": "sensory",
-    "item-field-sensory-axis-cremosa": "sensory",
-    "item-field-sensory-axis-crujiente": "sensory",
-    "item-field-sensory-axis-ligero": "sensory",
-    "item-field-sensory-axis-aromatico": "sensory",
-    "item-field-sensory-axis-intensidad": "sensory",
-    "item-field-compare-mode": "sensory",
-    "item-field-pairing-enabled": "pairings",
-    "item-field-pairing-name": "pairings",
-    "item-field-pairing-meta": "pairings",
-    "item-field-pairing-description": "pairings",
-    "item-field-pairing-cta-label": "pairings",
-    "item-field-pairing-cta-target": "pairings",
-    "item-field-history-title": "story",
-    "item-field-history-body": "story",
-    "item-field-image": "hero-media",
-    "item-media-picker": "hero-media"
-  };
-
+  var ITEM_PAIRING_FIELD_KEYS = ["name", "meta", "description", "cta_label", "cta_target"];
   var state = {
     data: null,
     drafts: {
@@ -204,6 +231,7 @@
       sourceItemIndex: -1,
       draft: null,
       ingredients: [],
+      pairings: [],
       availability: {
         available: true,
         soldOutReason: ""
@@ -450,14 +478,18 @@
     itemFieldSensoryAxisAromatico: document.getElementById("item-field-sensory-axis-aromatico"),
     itemFieldSensoryAxisIntensidad: document.getElementById("item-field-sensory-axis-intensidad"),
     itemFieldCompareMode: document.getElementById("item-field-compare-mode"),
-    itemFieldPairingEnabled: document.getElementById("item-field-pairing-enabled"),
-    itemFieldPairingName: document.getElementById("item-field-pairing-name"),
-    itemFieldPairingMeta: document.getElementById("item-field-pairing-meta"),
-    itemFieldPairingDescription: document.getElementById("item-field-pairing-description"),
-    itemFieldPairingCtaLabel: document.getElementById("item-field-pairing-cta-label"),
-    itemFieldPairingCtaTarget: document.getElementById("item-field-pairing-cta-target"),
+    itemPairingsAddButton: document.getElementById("item-pairings-add-button"),
+    itemPairingsList: document.getElementById("item-pairings-list"),
     itemFieldHistoryTitle: document.getElementById("item-field-history-title"),
     itemFieldHistoryBody: document.getElementById("item-field-history-body"),
+    itemFieldSectionVisibilityHeroMedia: document.getElementById("item-field-section-visibility-hero-media"),
+    itemFieldSectionVisibilityHeader: document.getElementById("item-field-section-visibility-header"),
+    itemFieldSectionVisibilityIngredients: document.getElementById("item-field-section-visibility-ingredients"),
+    itemFieldSectionVisibilityAllergens: document.getElementById("item-field-section-visibility-allergens"),
+    itemFieldSectionVisibilityAddCta: document.getElementById("item-field-section-visibility-add-cta"),
+    itemFieldSectionVisibilitySensory: document.getElementById("item-field-section-visibility-sensory"),
+    itemFieldSectionVisibilityPairings: document.getElementById("item-field-section-visibility-pairings"),
+    itemFieldSectionVisibilityStory: document.getElementById("item-field-section-visibility-story"),
 
     ingredientSearchInput: document.getElementById("ingredient-search-input"),
     ingredientSearchResults: document.getElementById("ingredient-search-results"),
@@ -1277,6 +1309,15 @@
   // --- Rendering utilities & Toggle component (from modules/render-utils.js) ---
   var RU = window.FigataAdmin.renderUtils;
   function normalizeText(value) { return RU.normalizeText(value); }
+  function normalizeEditorialText(value) {
+    return String(value == null ? "" : value).replace(/\r\n?/g, "\n");
+  }
+  function normalizeEditorialSingleLine(value) {
+    return normalizeEditorialText(value).trim();
+  }
+  function hasEditorialText(value) {
+    return Boolean(normalizeEditorialText(value).trim());
+  }
   function escapeHtml(value) { return RU.escapeHtml(value); }
   function slugify(value) { return RU.slugify(value); }
   function buildHtmlAttributes(attributes) { return RU.buildHtmlAttributes(attributes); }
@@ -4466,11 +4507,6 @@
       var panelTab = panel.getAttribute("data-tab-panel");
       panel.classList.toggle("is-active", panelTab === tabId);
     });
-
-    var previewSectionFromTab = resolvePreviewSectionFromTab(tabId);
-    if (previewSectionFromTab) {
-      scrollItemEditorPreviewToSection(previewSectionFromTab);
-    }
   }
 
   function renderIngredientChips() {
@@ -4491,6 +4527,255 @@
     }).join("");
 
     elements.ingredientChipList.innerHTML = html;
+  }
+
+  function createEmptyItemPairingDraft() {
+    return {
+      name: "",
+      meta: "",
+      description: "",
+      cta_label: "",
+      cta_target: ""
+    };
+  }
+
+  function normalizeDetailEditorialPairingEntry(input) {
+    if (!isPlainObject(input)) {
+      return null;
+    }
+
+    var cta = isPlainObject(input.cta) ? input.cta : {};
+    var normalized = {};
+    if (typeof input.enabled === "boolean") {
+      normalized.enabled = input.enabled;
+    }
+
+    var name = normalizeEditorialSingleLine(input.name || input.title);
+    var meta = normalizeEditorialSingleLine(input.meta || input.region || input.style);
+    var description = normalizeEditorialSingleLine(
+      input.description || input.summary || input.copy
+    );
+    var ctaLabel = normalizeEditorialSingleLine(
+      input.cta_label ||
+      input.ctaLabel ||
+      input.button_label ||
+      input.buttonLabel ||
+      cta.label
+    );
+    var ctaTarget = normalizeEditorialSingleLine(
+      input.cta_target ||
+      input.ctaTarget ||
+      input.button_target ||
+      input.buttonTarget ||
+      cta.target
+    );
+
+    if (name) normalized.name = name;
+    if (meta) normalized.meta = meta;
+    if (description) normalized.description = description;
+    if (ctaLabel) normalized.cta_label = ctaLabel;
+    if (ctaTarget) normalized.cta_target = ctaTarget;
+
+    var hasContent = Boolean(name || meta || description || ctaLabel || ctaTarget);
+    var hasExplicitEnabled = typeof input.enabled === "boolean";
+    if (!hasContent && !hasExplicitEnabled) {
+      return null;
+    }
+
+    return normalized;
+  }
+
+  function resolveDetailEditorialPairingEntries(detailEditorial) {
+    if (!isPlainObject(detailEditorial)) {
+      return [];
+    }
+
+    var entries = [];
+
+    if (Array.isArray(detailEditorial.pairings)) {
+      detailEditorial.pairings.forEach(function (entry) {
+        var normalizedEntry = normalizeDetailEditorialPairingEntry(entry);
+        if (normalizedEntry) entries.push(normalizedEntry);
+      });
+      return entries;
+    }
+
+    if (isPlainObject(detailEditorial.pairings)) {
+      var normalizedPairingsObject = normalizeDetailEditorialPairingEntry(detailEditorial.pairings);
+      if (normalizedPairingsObject) entries.push(normalizedPairingsObject);
+      return entries;
+    }
+
+    if (isPlainObject(detailEditorial.pairing)) {
+      var normalizedLegacyPairing = normalizeDetailEditorialPairingEntry(detailEditorial.pairing);
+      if (normalizedLegacyPairing) entries.push(normalizedLegacyPairing);
+    }
+
+    return entries;
+  }
+
+  function normalizeItemPairingsForEditorState(detailEditorial) {
+    return resolveDetailEditorialPairingEntries(detailEditorial).map(function (entry) {
+      return {
+        name: entry.name || "",
+        meta: entry.meta || "",
+        description: entry.description || "",
+        cta_label: entry.cta_label || "",
+        cta_target: entry.cta_target || ""
+      };
+    });
+  }
+
+  function hasItemPairingContent(entry) {
+    if (!isPlainObject(entry)) {
+      return false;
+    }
+
+    return Boolean(
+      normalizeText(entry.name || entry.title) ||
+      normalizeText(entry.meta || entry.region || entry.style) ||
+      normalizeText(entry.description || entry.summary || entry.copy) ||
+      normalizeText(
+        entry.cta_label ||
+        entry.ctaLabel ||
+        entry.button_label ||
+        entry.buttonLabel
+      ) ||
+      normalizeText(
+        entry.cta_target ||
+        entry.ctaTarget ||
+        entry.button_target ||
+        entry.buttonTarget
+      )
+    );
+  }
+
+  function renderItemPairingsEditor() {
+    if (!elements.itemPairingsList) {
+      return;
+    }
+
+    var pairings = Array.isArray(state.itemEditor.pairings) ? state.itemEditor.pairings : [];
+    if (!pairings.length) {
+      elements.itemPairingsList.innerHTML =
+        '<p class="inline-help item-editor-pairings-list__empty">Sin maridajes todavía. Usa "Añadir maridaje".</p>';
+      return;
+    }
+
+    var html = pairings.map(function (pairing, index) {
+      var safePairing = isPlainObject(pairing) ? pairing : {};
+      var isFirst = index === 0;
+      var isLast = index === pairings.length - 1;
+
+      return (
+        '<article class="item-editor-pairing-card" data-pairing-index="' + index + '">' +
+        '  <header class="item-editor-pairing-card__head">' +
+        '    <h5 class="item-editor-pairing-card__title">Maridaje ' + (index + 1) + '</h5>' +
+        '    <div class="item-editor-pairing-card__actions">' +
+        '      <button class="btn btn-ghost item-editor-pairing-card__action" type="button" data-pairing-action="move-up" data-pairing-index="' + index + '"' + (isFirst ? " disabled" : "") + '>Subir</button>' +
+        '      <button class="btn btn-ghost item-editor-pairing-card__action" type="button" data-pairing-action="move-down" data-pairing-index="' + index + '"' + (isLast ? " disabled" : "") + '>Bajar</button>' +
+        '      <button class="btn btn-ghost item-editor-pairing-card__action is-danger" type="button" data-pairing-action="remove" data-pairing-index="' + index + '">Eliminar</button>' +
+        '    </div>' +
+        "  </header>" +
+        '  <div class="traits-override-grid item-editor-pairing-card__grid">' +
+        '    <label class="field">' +
+        '      <span>Nombre</span>' +
+        '      <input type="text" data-pairing-field="name" data-pairing-index="' + index + '" placeholder="Ej: Chianti" value="' + escapeHtml(safePairing.name || "") + '" />' +
+        "    </label>" +
+        '    <label class="field">' +
+        '      <span>Meta</span>' +
+        '      <input type="text" data-pairing-field="meta" data-pairing-index="' + index + '" placeholder="Ej: Toscana · Tinto" value="' + escapeHtml(safePairing.meta || "") + '" />' +
+        "    </label>" +
+        "  </div>" +
+        '  <label class="field">' +
+        '    <span>Descripción</span>' +
+        '    <textarea data-pairing-field="description" data-pairing-index="' + index + '" rows="3">' + escapeHtml(safePairing.description || "") + "</textarea>" +
+        "  </label>" +
+        '  <div class="traits-override-grid item-editor-pairing-card__grid">' +
+        '    <label class="field">' +
+        '      <span>CTA label</span>' +
+        '      <input type="text" data-pairing-field="cta_label" data-pairing-index="' + index + '" placeholder="Ej: Añadir copa" value="' + escapeHtml(safePairing.cta_label || "") + '" />' +
+        "    </label>" +
+        '    <label class="field">' +
+        '      <span>CTA target (itemId/url)</span>' +
+        '      <input type="text" data-pairing-field="cta_target" data-pairing-index="' + index + '" placeholder="Ej: chianti o https://..." value="' + escapeHtml(safePairing.cta_target || "") + '" />' +
+        "    </label>" +
+        "  </div>" +
+        "</article>"
+      );
+    }).join("");
+
+    elements.itemPairingsList.innerHTML = html;
+  }
+
+  function setItemPairingFieldValue(index, fieldKey, value) {
+    if (!Number.isInteger(index) || index < 0) {
+      return false;
+    }
+    if (!ITEM_PAIRING_FIELD_KEYS.includes(fieldKey)) {
+      return false;
+    }
+    if (!Array.isArray(state.itemEditor.pairings) || !state.itemEditor.pairings[index]) {
+      return false;
+    }
+
+    state.itemEditor.pairings[index][fieldKey] = String(value || "");
+    return true;
+  }
+
+  function addItemPairing() {
+    if (!Array.isArray(state.itemEditor.pairings)) {
+      state.itemEditor.pairings = [];
+    }
+    state.itemEditor.pairings.push(createEmptyItemPairingDraft());
+    renderItemPairingsEditor();
+    syncDraftFromForm();
+
+    if (elements.itemPairingsList) {
+      var newIndex = state.itemEditor.pairings.length - 1;
+      var firstField = elements.itemPairingsList.querySelector(
+        '[data-pairing-field="name"][data-pairing-index="' + newIndex + '"]'
+      );
+      if (firstField && typeof firstField.focus === "function") {
+        firstField.focus();
+      }
+    }
+  }
+
+  function removeItemPairing(index) {
+    if (!Array.isArray(state.itemEditor.pairings)) {
+      return;
+    }
+    if (!Number.isInteger(index) || index < 0 || index >= state.itemEditor.pairings.length) {
+      return;
+    }
+
+    state.itemEditor.pairings.splice(index, 1);
+    renderItemPairingsEditor();
+    syncDraftFromForm();
+  }
+
+  function moveItemPairing(index, direction) {
+    if (!Array.isArray(state.itemEditor.pairings)) {
+      return;
+    }
+    if (!Number.isInteger(index) || index < 0 || index >= state.itemEditor.pairings.length) {
+      return;
+    }
+
+    var step = direction === "up" ? -1 : 1;
+    var nextIndex = index + step;
+    if (nextIndex < 0 || nextIndex >= state.itemEditor.pairings.length) {
+      return;
+    }
+
+    var nextPairings = state.itemEditor.pairings.slice();
+    var moved = nextPairings[index];
+    nextPairings[index] = nextPairings[nextIndex];
+    nextPairings[nextIndex] = moved;
+    state.itemEditor.pairings = nextPairings;
+    renderItemPairingsEditor();
+    syncDraftFromForm();
   }
 
   function renderTokenSearchResults(type, query) {
@@ -4706,64 +4991,6 @@
     }, ITEM_EDITOR_PREVIEW_SYNC_DEBOUNCE_MS);
   }
 
-  function resolvePreviewSectionFromTab(tabId) {
-    var normalizedTab = normalizeText(tabId || "").toLowerCase();
-    if (normalizedTab === "media") return "hero-media";
-    if (normalizedTab === "editorial") return "header";
-    if (normalizedTab === "traits") return "sensory";
-    if (normalizedTab === "availability") return "header";
-    return "";
-  }
-
-  function resolveItemEditorPreviewSectionFromNode(node) {
-    if (!(node instanceof HTMLElement)) {
-      return "";
-    }
-
-    var tabNode = node.closest(".item-tab[data-tab]");
-    if (tabNode) {
-      return resolvePreviewSectionFromTab(tabNode.getAttribute("data-tab"));
-    }
-
-    var sectionNode = node.closest("[data-item-preview-section]");
-    if (sectionNode) {
-      return normalizeText(sectionNode.getAttribute("data-item-preview-section")).toLowerCase();
-    }
-
-    var fieldNode = node.closest("[id]");
-    var fieldId = fieldNode ? normalizeText(fieldNode.id).toLowerCase() : "";
-    if (fieldId && ITEM_EDITOR_PREVIEW_SECTION_BY_FIELD_ID[fieldId]) {
-      return ITEM_EDITOR_PREVIEW_SECTION_BY_FIELD_ID[fieldId];
-    }
-
-    if (node.closest("[data-add-ingredient],[data-remove-ingredient]")) {
-      return "ingredients";
-    }
-    if (node.closest("[data-add-allergen-override],[data-remove-allergen-override]")) {
-      return "allergens";
-    }
-    return "";
-  }
-
-  function scrollItemEditorPreviewToSection(sectionId) {
-    var normalizedSection = normalizeText(sectionId).toLowerCase();
-    if (!normalizedSection || !state.itemEditor.isOpen) {
-      return;
-    }
-
-    var bridgeState = state.itemEditor.previewBridge;
-    if (!bridgeState || !bridgeState.bridgeReady) {
-      return;
-    }
-
-    postMessageToItemEditorPreview({
-      type: ITEM_EDITOR_PREVIEW_MESSAGE_SCROLL,
-      payload: {
-        section: normalizedSection
-      }
-    });
-  }
-
   function resolveItemEditorTabFromPreviewSection(sectionId) {
     var normalizedSection = normalizeText(sectionId).toLowerCase();
     return ITEM_EDITOR_PREVIEW_TAB_BY_SECTION[normalizedSection] || "editorial";
@@ -4858,26 +5085,6 @@
 
     window.addEventListener("message", handleItemEditorPreviewBridgeMessage);
     itemEditorPreviewBridgeBound = true;
-  }
-
-  function bindItemEditorPreviewFocusBridge() {
-    if (!views.menuItemPanel) return;
-    if (views.menuItemPanel.getAttribute("data-preview-focus-bridge-bound") === "true") {
-      return;
-    }
-
-    views.menuItemPanel.setAttribute("data-preview-focus-bridge-bound", "true");
-
-    var forwardFocusToPreview = function (event) {
-      if (state.currentPanel !== "menu-item") return;
-      var target = event.target;
-      var sectionId = resolveItemEditorPreviewSectionFromNode(target);
-      if (!sectionId) return;
-      scrollItemEditorPreviewToSection(sectionId);
-    };
-
-    views.menuItemPanel.addEventListener("focusin", forwardFocusToPreview);
-    views.menuItemPanel.addEventListener("click", forwardFocusToPreview);
   }
 
   function renderItemPreview() {
@@ -5140,6 +5347,70 @@
     return draft.detail_editorial;
   }
 
+  function resolveDetailEditorialStory(detailEditorial) {
+    if (!isPlainObject(detailEditorial)) {
+      return null;
+    }
+
+    if (isPlainObject(detailEditorial.story)) {
+      return detailEditorial.story;
+    }
+
+    if (isPlainObject(detailEditorial.history)) {
+      return detailEditorial.history;
+    }
+
+    return null;
+  }
+
+  function hasDetailEditorialPairingContent(detailEditorial) {
+    var pairings = resolveDetailEditorialPairingEntries(detailEditorial);
+    if (!pairings.length) {
+      return false;
+    }
+
+    return pairings.some(function (entry) {
+      return hasItemPairingContent(entry);
+    });
+  }
+
+  function hasDetailEditorialStoryContent(detailEditorial) {
+    var story = resolveDetailEditorialStory(detailEditorial);
+    if (!isPlainObject(story)) {
+      return false;
+    }
+
+    return hasEditorialText(story.body || story.content || story.copy || story.text);
+  }
+
+  function isDetailSectionVisible(sectionVisibilityMap, key, detailEditorial) {
+    if (isPlainObject(sectionVisibilityMap) && Object.prototype.hasOwnProperty.call(sectionVisibilityMap, key)) {
+      return sectionVisibilityMap[key] !== false;
+    }
+
+    // Pairings/story should default to off when the item has no editorial content.
+    if (key === "pairings") {
+      return hasDetailEditorialPairingContent(detailEditorial);
+    }
+    if (key === "story") {
+      return hasDetailEditorialStoryContent(detailEditorial);
+    }
+
+    return true;
+  }
+
+  function applyItemDetailSectionVisibilityControls(detailEditorial) {
+    var sectionVisibilityMap = isPlainObject(detailEditorial && detailEditorial.section_visibility)
+      ? detailEditorial.section_visibility
+      : {};
+
+    ITEM_DETAIL_SECTION_VISIBILITY_FIELDS.forEach(function (entry) {
+      var control = elements[entry.elementKey];
+      if (!control) return;
+      setToggleChecked(control, isDetailSectionVisible(sectionVisibilityMap, entry.key, detailEditorial));
+    });
+  }
+
   function syncDraftDetailEditorialFromForm(draft) {
     if (!draft) return;
 
@@ -5165,73 +5436,59 @@
       delete currentDetailEditorial.compare_mode;
     }
 
-    var pairingEnabled = elements.itemFieldPairingEnabled
-      ? elements.itemFieldPairingEnabled.value === "yes"
-      : false;
-    var pairingName = normalizeText(
-      elements.itemFieldPairingName && elements.itemFieldPairingName.value
-    );
-    var pairingMeta = normalizeText(
-      elements.itemFieldPairingMeta && elements.itemFieldPairingMeta.value
-    );
-    var pairingDescription = normalizeText(
-      elements.itemFieldPairingDescription && elements.itemFieldPairingDescription.value
-    );
-    var pairingCtaLabel = normalizeText(
-      elements.itemFieldPairingCtaLabel && elements.itemFieldPairingCtaLabel.value
-    );
-    var pairingCtaTarget = normalizeText(
-      elements.itemFieldPairingCtaTarget && elements.itemFieldPairingCtaTarget.value
-    );
-    var hasPairingData = pairingEnabled ||
-      pairingName ||
-      pairingMeta ||
-      pairingDescription ||
-      pairingCtaLabel ||
-      pairingCtaTarget;
+    var nextSectionVisibilityMap = isPlainObject(currentDetailEditorial.section_visibility)
+      ? deepClone(currentDetailEditorial.section_visibility)
+      : {};
+    ITEM_DETAIL_SECTION_VISIBILITY_FIELDS.forEach(function (entry) {
+      var control = elements[entry.elementKey];
+      var isVisible = control ? getToggleChecked(control) : true;
+      if (isVisible === false) {
+        nextSectionVisibilityMap[entry.key] = false;
+      } else if (Object.prototype.hasOwnProperty.call(nextSectionVisibilityMap, entry.key)) {
+        delete nextSectionVisibilityMap[entry.key];
+      }
+    });
+    // `tags` stays backend-only and must never be controlled from the editor UI.
+    delete nextSectionVisibilityMap.tags;
+    if (Object.keys(nextSectionVisibilityMap).length) {
+      currentDetailEditorial.section_visibility = nextSectionVisibilityMap;
+    } else {
+      delete currentDetailEditorial.section_visibility;
+    }
 
-    if (hasPairingData) {
-      var pairingSource =
-        isPlainObject(currentDetailEditorial.pairings)
-          ? currentDetailEditorial.pairings
-          : isPlainObject(currentDetailEditorial.pairing)
-            ? currentDetailEditorial.pairing
-            : null;
-      var nextPairing = pairingSource
-        ? deepClone(pairingSource)
-        : {};
+    var canonicalPairings = Array.isArray(state.itemEditor.pairings)
+      ? state.itemEditor.pairings
+        .map(function (entry) {
+          var normalizedEntry = normalizeDetailEditorialPairingEntry(entry);
+          if (!normalizedEntry) {
+            return null;
+          }
 
-      nextPairing.enabled = Boolean(pairingEnabled);
+          var nextEntry = {};
+          ITEM_PAIRING_FIELD_KEYS.forEach(function (fieldKey) {
+            var normalizedValue = normalizeEditorialSingleLine(normalizedEntry[fieldKey]);
+            if (normalizedValue) {
+              nextEntry[fieldKey] = normalizedValue;
+            }
+          });
 
-      if (pairingName) nextPairing.name = pairingName;
-      else delete nextPairing.name;
+          return hasItemPairingContent(nextEntry) ? nextEntry : null;
+        })
+        .filter(Boolean)
+      : [];
 
-      if (pairingMeta) nextPairing.meta = pairingMeta;
-      else delete nextPairing.meta;
-
-      if (pairingDescription) nextPairing.description = pairingDescription;
-      else delete nextPairing.description;
-
-      if (pairingCtaLabel) nextPairing.cta_label = pairingCtaLabel;
-      else delete nextPairing.cta_label;
-
-      if (pairingCtaTarget) nextPairing.cta_target = pairingCtaTarget;
-      else delete nextPairing.cta_target;
-
-      currentDetailEditorial.pairings = nextPairing;
+    if (canonicalPairings.length) {
+      currentDetailEditorial.pairings = canonicalPairings;
       delete currentDetailEditorial.pairing;
     } else {
       delete currentDetailEditorial.pairings;
       delete currentDetailEditorial.pairing;
     }
 
-    var historyTitle = normalizeText(
-      elements.itemFieldHistoryTitle && elements.itemFieldHistoryTitle.value
-    );
-    var historyBody = normalizeText(
+    var historyBody = normalizeEditorialText(
       elements.itemFieldHistoryBody && elements.itemFieldHistoryBody.value
     );
-    if (historyTitle || historyBody) {
+    if (hasEditorialText(historyBody)) {
       var storySource =
         isPlainObject(currentDetailEditorial.story)
           ? currentDetailEditorial.story
@@ -5242,10 +5499,11 @@
         ? deepClone(storySource)
         : {};
 
-      if (historyTitle) nextStory.title = historyTitle;
-      else delete nextStory.title;
+      // Section title is global (`Pages > Editorial`), never per-item.
+      delete nextStory.title;
+      delete nextStory.heading;
 
-      if (historyBody) nextStory.body = historyBody;
+      if (hasEditorialText(historyBody)) nextStory.body = historyBody;
       else delete nextStory.body;
 
       currentDetailEditorial.story = nextStory;
@@ -5269,9 +5527,9 @@
       ? deepClone(draft.sensory_profile)
       : {};
 
-    var summary = normalizeText(
+    var summary = normalizeEditorialText(
       elements.itemFieldSensorySummary && elements.itemFieldSensorySummary.value
-    );
+    ).trim();
     currentProfile.summary = summary;
 
     var existingAxes = isPlainObject(currentProfile.axes) ? currentProfile.axes : {};
@@ -5289,7 +5547,7 @@
         : {};
       nextAxisEntry.value = axisValue;
       if (Object.prototype.hasOwnProperty.call(nextAxisEntry, "explanation")) {
-        var normalizedExplanation = normalizeText(nextAxisEntry.explanation);
+        var normalizedExplanation = normalizeEditorialSingleLine(nextAxisEntry.explanation);
         if (normalizedExplanation) {
           nextAxisEntry.explanation = normalizedExplanation;
         } else {
@@ -5373,41 +5631,16 @@
       ? compareModeValue
       : "auto";
 
-    var pairing = {};
-    if (Array.isArray(detailEditorial.pairings)) {
-      pairing = detailEditorial.pairings.find(function (entry) {
-        return isPlainObject(entry);
-      }) || {};
-    } else if (isPlainObject(detailEditorial.pairings)) {
-      pairing = detailEditorial.pairings;
-    } else if (isPlainObject(detailEditorial.pairing)) {
-      pairing = detailEditorial.pairing;
-    }
-
-    var pairingHasText = Boolean(
-      pairing.name ||
-      pairing.meta ||
-      pairing.description ||
-      pairing.cta_label ||
-      pairing.cta_target
-    );
-    elements.itemFieldPairingEnabled.value =
-      pairing.enabled === true || (pairing.enabled !== false && pairingHasText)
-        ? "yes"
-        : "no";
-    elements.itemFieldPairingName.value = pairing.name || "";
-    elements.itemFieldPairingMeta.value = pairing.meta || "";
-    elements.itemFieldPairingDescription.value = pairing.description || "";
-    elements.itemFieldPairingCtaLabel.value = pairing.cta_label || "";
-    elements.itemFieldPairingCtaTarget.value = pairing.cta_target || "";
+    state.itemEditor.pairings = normalizeItemPairingsForEditorState(detailEditorial);
+    renderItemPairingsEditor();
 
     var story = isPlainObject(detailEditorial.story)
       ? detailEditorial.story
       : isPlainObject(detailEditorial.history)
         ? detailEditorial.history
         : {};
-    elements.itemFieldHistoryTitle.value = story.title || "";
     elements.itemFieldHistoryBody.value = story.body || "";
+    applyItemDetailSectionVisibilityControls(detailEditorial);
   }
 
   function syncDraftFromForm() {
@@ -5513,6 +5746,7 @@
     state.itemEditor.sourceItemIndex = itemPosition.itemIndex;
     state.itemEditor.draft = draft;
     state.itemEditor.ingredients = Array.isArray(draft.ingredients) ? draft.ingredients.slice() : [];
+    state.itemEditor.pairings = [];
     state.itemEditor.availability = {
       available: availabilityEntry ? Boolean(availabilityEntry.available) : fallbackAvailable,
       soldOutReason: availabilityEntry ? (availabilityEntry.soldOutReason || "") : ""
@@ -5580,6 +5814,7 @@
     state.itemEditor.sourceItemIndex = -1;
     state.itemEditor.draft = draft;
     state.itemEditor.ingredients = [];
+    state.itemEditor.pairings = [];
     state.itemEditor.availability = {
       available: true,
       soldOutReason: ""
@@ -5805,13 +6040,43 @@
         }
       }
 
-      var editorialPairing = null;
+      if (Object.prototype.hasOwnProperty.call(draft.detail_editorial, "section_visibility")) {
+        var sectionVisibility = draft.detail_editorial.section_visibility;
+        if (!isPlainObject(sectionVisibility)) {
+          errors.push("detail_editorial.section_visibility debe ser objeto cuando existe.");
+        } else {
+          ITEM_DETAIL_SECTION_VISIBILITY_FIELDS.forEach(function (entry) {
+            if (!Object.prototype.hasOwnProperty.call(sectionVisibility, entry.key)) {
+              return;
+            }
+            if (typeof sectionVisibility[entry.key] !== "boolean") {
+              errors.push(
+                "detail_editorial.section_visibility." +
+                  entry.key +
+                  " debe ser boolean cuando existe."
+              );
+            }
+          });
+        }
+      }
+
+      var pairingValidationEntries = [];
       if (Array.isArray(draft.detail_editorial.pairings)) {
-        editorialPairing = draft.detail_editorial.pairings.find(function (entry) {
-          return isPlainObject(entry);
-        }) || null;
+        draft.detail_editorial.pairings.forEach(function (entry, index) {
+          if (!isPlainObject(entry)) {
+            errors.push("detail_editorial.pairings[" + index + "] debe ser objeto.");
+            return;
+          }
+          pairingValidationEntries.push({
+            path: "detail_editorial.pairings[" + index + "]",
+            entry: entry
+          });
+        });
       } else if (isPlainObject(draft.detail_editorial.pairings)) {
-        editorialPairing = draft.detail_editorial.pairings;
+        pairingValidationEntries.push({
+          path: "detail_editorial.pairings",
+          entry: draft.detail_editorial.pairings
+        });
       } else if (
         Object.prototype.hasOwnProperty.call(draft.detail_editorial, "pairings") &&
         draft.detail_editorial.pairings !== null
@@ -5819,10 +6084,12 @@
         errors.push("detail_editorial.pairings debe ser objeto o array cuando existe.");
       }
 
-      if (!editorialPairing && isPlainObject(draft.detail_editorial.pairing)) {
-        editorialPairing = draft.detail_editorial.pairing;
+      if (isPlainObject(draft.detail_editorial.pairing)) {
+        pairingValidationEntries.push({
+          path: "detail_editorial.pairing",
+          entry: draft.detail_editorial.pairing
+        });
       } else if (
-        !editorialPairing &&
         Object.prototype.hasOwnProperty.call(draft.detail_editorial, "pairing") &&
         draft.detail_editorial.pairing !== null &&
         !isPlainObject(draft.detail_editorial.pairing)
@@ -5830,14 +6097,14 @@
         errors.push("detail_editorial.pairing debe ser objeto cuando existe.");
       }
 
-      if (isPlainObject(editorialPairing)) {
+      pairingValidationEntries.forEach(function (validationEntry) {
         if (
-          Object.prototype.hasOwnProperty.call(editorialPairing, "enabled") &&
-          typeof editorialPairing.enabled !== "boolean"
+          Object.prototype.hasOwnProperty.call(validationEntry.entry, "enabled") &&
+          typeof validationEntry.entry.enabled !== "boolean"
         ) {
-          errors.push("detail_editorial.pairings.enabled debe ser boolean.");
+          errors.push(validationEntry.path + ".enabled debe ser boolean.");
         }
-      }
+      });
 
       var editorialStory = null;
       if (isPlainObject(draft.detail_editorial.story)) {
@@ -11290,7 +11557,18 @@
         toggleId: "item-availability-toggle",
         label: "Disponible"
       }
-    ];
+    ].concat(
+      ITEM_DETAIL_SECTION_VISIBILITY_FIELDS.map(function (entry) {
+        return {
+          mountId: entry.mountId,
+          toggleId: entry.toggleId,
+          label: "",
+          ariaLabel: entry.ariaLabel,
+          checked: true,
+          className: "item-editor-section-visibility-toggle-field"
+        };
+      })
+    );
 
     itemToggleMounts.forEach(function (entry) {
       var mountElement = document.getElementById(entry.mountId);
@@ -11298,17 +11576,22 @@
       mountElement.innerHTML = renderToggle({
         id: entry.toggleId,
         label: entry.label,
-        checked: false
+        checked: entry.checked === true,
+        ariaLabel: entry.ariaLabel,
+        className: entry.className || "",
+        wrapperDataAttributes: entry.wrapperDataAttributes || null
       });
     });
 
     elements.itemFieldFeatured = document.getElementById("item-field-featured");
     elements.itemAvailabilityToggle = document.getElementById("item-availability-toggle");
+    ITEM_DETAIL_SECTION_VISIBILITY_FIELDS.forEach(function (entry) {
+      elements[entry.elementKey] = document.getElementById(entry.toggleId);
+    });
   }
 
   function bindItemEditorEvents() {
     bindItemEditorPreviewBridge();
-    bindItemEditorPreviewFocusBridge();
 
     elements.itemTabs.forEach(function (tabButton) {
       tabButton.addEventListener("click", function () {
@@ -11349,12 +11632,6 @@
       elements.itemFieldSensoryAxisAromatico,
       elements.itemFieldSensoryAxisIntensidad,
       elements.itemFieldCompareMode,
-      elements.itemFieldPairingEnabled,
-      elements.itemFieldPairingName,
-      elements.itemFieldPairingMeta,
-      elements.itemFieldPairingDescription,
-      elements.itemFieldPairingCtaLabel,
-      elements.itemFieldPairingCtaTarget,
       elements.itemFieldHistoryTitle,
       elements.itemFieldHistoryBody,
       elements.itemFieldImage,
@@ -11366,12 +11643,65 @@
       inputElement.addEventListener("change", syncDraftFromForm);
     });
 
+    if (elements.itemPairingsAddButton) {
+      elements.itemPairingsAddButton.addEventListener("click", function () {
+        addItemPairing();
+      });
+    }
+
+    if (elements.itemPairingsList) {
+      var handlePairingFieldInput = function (event) {
+        var target = event.target;
+        if (!target || typeof target.getAttribute !== "function") {
+          return;
+        }
+        var fieldKey = String(target.getAttribute("data-pairing-field") || "").trim();
+        if (!fieldKey) {
+          return;
+        }
+        var rawIndex = Number(target.getAttribute("data-pairing-index"));
+        if (!Number.isInteger(rawIndex) || rawIndex < 0) {
+          return;
+        }
+        if (setItemPairingFieldValue(rawIndex, fieldKey, target.value)) {
+          syncDraftFromForm();
+        }
+      };
+
+      elements.itemPairingsList.addEventListener("input", handlePairingFieldInput);
+      elements.itemPairingsList.addEventListener("change", handlePairingFieldInput);
+
+      elements.itemPairingsList.addEventListener("click", function (event) {
+        var actionButton = event.target.closest("[data-pairing-action]");
+        if (!actionButton) return;
+
+        var action = String(actionButton.getAttribute("data-pairing-action") || "").trim();
+        var index = Number(actionButton.getAttribute("data-pairing-index"));
+        if (!Number.isInteger(index) || index < 0) {
+          return;
+        }
+
+        if (action === "remove") {
+          removeItemPairing(index);
+          return;
+        }
+        if (action === "move-up") {
+          moveItemPairing(index, "up");
+          return;
+        }
+        if (action === "move-down") {
+          moveItemPairing(index, "down");
+        }
+      });
+    }
+
     bindToggles(views.menuItemPanel, {
       onChange: function (_checked, control) {
         if (!control || !control.id) return;
         if (
           control.id === "item-field-featured" ||
-          control.id === "item-availability-toggle"
+          control.id === "item-availability-toggle" ||
+          Boolean(ITEM_DETAIL_SECTION_VISIBILITY_TOGGLE_ID_MAP[control.id])
         ) {
           syncDraftFromForm();
         }
@@ -12677,6 +13007,7 @@
         sourceItemIndex: -1,
         draft: null,
         ingredients: [],
+        pairings: [],
         tags: [],
         availability: { available: true, soldOutReason: "" }
       };

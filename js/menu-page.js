@@ -42,6 +42,8 @@
   const MENU_CART_FLIGHT_MAX_MS = 760;
   const MENU_CART_FLIGHT_EASE = 'cubic-bezier(0.18, 0.78, 0.32, 1)';
   const MENU_CART_FALLBACK_COMMIT_DELAY_MS = 140;
+  const DETAIL_ADD_QTY_MIN = 1;
+  const DETAIL_ADD_QTY_MAX = 99;
   const ACCOUNT_STORAGE_KEY = 'figata:menu-account:v2';
   const ACCOUNT_STORAGE_VERSION = 2;
   const ACCOUNT_STORAGE_TTL_MS = 3 * 60 * 60 * 1000;
@@ -171,6 +173,7 @@
   const detailBadgeIcon = document.getElementById('menu-detail-badge-icon');
   const detailBadgeLabel = document.getElementById('menu-detail-badge-label');
   const detailPanel = document.getElementById('menu-detail-panel');
+  const detailHeaderSection = document.getElementById('menu-detail-header-section');
   const detailHeroHeader =
     detailPanel instanceof HTMLElement
       ? detailPanel.querySelector('.menu-page-detail__hero')
@@ -230,10 +233,8 @@
   const detailPairingsSection = document.getElementById('menu-detail-pairings-section');
   const detailPairingsTitle = document.getElementById('menu-detail-pairings-title');
   const detailPairingsSubtitle = document.getElementById('menu-detail-pairings-subtitle');
-  const detailPairingName = document.getElementById('menu-detail-pairing-name');
-  const detailPairingMeta = document.getElementById('menu-detail-pairing-meta');
-  const detailPairingDescription = document.getElementById('menu-detail-pairing-description');
-  const detailPairingCta = document.getElementById('menu-detail-pairing-cta');
+  const detailPairingsList = document.getElementById('menu-detail-pairings-list');
+  const detailPairingTemplate = document.getElementById('menu-detail-pairing-template');
   const detailHistoryDivider = document.getElementById('menu-detail-history-divider');
   const detailHistorySection = document.getElementById('menu-detail-history-section');
   const detailHistoryTitle = document.getElementById('menu-detail-history-title');
@@ -253,7 +254,16 @@
   const detailAllergens = document.getElementById('menu-detail-allergens');
   const detailSoldOutReason = document.getElementById('menu-detail-soldout-reason');
   const detailCloseButton = document.getElementById('menu-detail-close');
+  const detailAddCtaSection = document.getElementById('menu-detail-add-cta-section');
   const detailAddButton = document.getElementById('menu-detail-add');
+  const detailQuantityStepper = document.getElementById('menu-detail-qty-stepper');
+  const detailQuantityDecreaseButton = document.getElementById(
+    'menu-detail-qty-decrease'
+  );
+  const detailQuantityIncreaseButton = document.getElementById(
+    'menu-detail-qty-increase'
+  );
+  const detailQuantityValue = document.getElementById('menu-detail-qty-value');
   const menuPageBody = document.body;
   if (isAdminPreviewMode) {
     document.documentElement.classList.add('menu-admin-preview');
@@ -438,6 +448,16 @@
     ENABLED: 'enabled',
     DISABLED: 'disabled',
   });
+  const DETAIL_SECTION_VISIBILITY_KEYS = Object.freeze([
+    'hero_media',
+    'header',
+    'ingredients',
+    'allergens',
+    'add_cta',
+    'sensory',
+    'pairings',
+    'story',
+  ]);
   const DETAIL_EDITORIAL_HERO_BADGE_NONE = 'none';
   const DETAIL_HERO_BADGE_COPY = Object.freeze({
     [DETAIL_HERO_BADGE_KIND.VEGAN]: 'Vegana',
@@ -683,6 +703,7 @@
     detailSensoryView: DEFAULT_DETAIL_SENSORY_VIEW,
     detailItemId: '',
     detailComparisonItemId: '',
+    detailAddQuantity: DETAIL_ADD_QTY_MIN,
     compareSearchQuery: '',
     globalPriceMin: 0,
     globalPriceMax: 0,
@@ -690,7 +711,6 @@
   const ADMIN_PREVIEW_MESSAGE_READY = 'figata-admin-preview:ready';
   const ADMIN_PREVIEW_MESSAGE_UPDATE = 'figata-admin-preview:update-detail';
   const ADMIN_PREVIEW_MESSAGE_UPDATE_MODAL = 'figata-admin-preview:update-modal';
-  const ADMIN_PREVIEW_MESSAGE_SCROLL = 'figata-admin-preview:scroll-to-section';
   const ADMIN_PREVIEW_MESSAGE_NAVIGATE_EDITOR = 'figata-admin-preview:navigate-editor';
   const ADMIN_PREVIEW_SURFACE_MODAL = 'modal';
   const ADMIN_PREVIEW_MODAL_KEYS = new Set(ADMIN_PREVIEW_MODAL_KEYS_LIST);
@@ -700,6 +720,7 @@
     'summary',
     'ingredients',
     'allergens',
+    'add-cta',
     'sensory',
     'pairings',
     'story',
@@ -751,7 +772,6 @@
   let detailHeroBadgeHasLabel = false;
   let detailHeroBadgeFirstSlideOnly = false;
   let adminPreviewRenderToken = 0;
-  let adminPreviewPendingSectionId = '';
   let searchHelperWordIndex = 0;
   let searchHelperHasStarted = false;
   let searchHelperAnimating = false;
@@ -1307,8 +1327,12 @@
         ? normalizeText(detailPairingsSubtitle.textContent)
         : '',
     ctaLabel:
-      detailPairingCta instanceof HTMLButtonElement
-        ? normalizeText(detailPairingCta.getAttribute('aria-label'))
+      detailPairingTemplate instanceof HTMLTemplateElement
+        ? normalizeText(
+          detailPairingTemplate.content.querySelector('.menu-page-detail__pairing-cta')?.getAttribute(
+            'aria-label'
+          )
+        )
         : '',
   });
   const DETAIL_DEFAULT_SECTION_COPY = Object.freeze({
@@ -2002,10 +2026,22 @@
     }
 
     let glyphNode = button.querySelector('.menu-account-modal__stepper-glyph');
-    if (!(glyphNode instanceof HTMLElement)) {
-      glyphNode = document.createElement('span');
-      glyphNode.className = 'menu-account-modal__stepper-glyph';
-      button.replaceChildren(glyphNode);
+    if (!(glyphNode instanceof HTMLElement) && !(glyphNode instanceof SVGElement)) {
+      const svgGlyphNode = button.querySelector('svg');
+      if (svgGlyphNode instanceof SVGElement) {
+        svgGlyphNode.classList.add('menu-account-modal__stepper-glyph');
+        glyphNode = svgGlyphNode;
+      } else {
+        glyphNode = document.createElement('span');
+        glyphNode.className = 'menu-account-modal__stepper-glyph';
+        button.replaceChildren(glyphNode);
+      }
+    }
+
+    if (glyphNode instanceof SVGElement) {
+      glyphNode.setAttribute('aria-hidden', 'true');
+      glyphNode.setAttribute('focusable', 'false');
+      return glyphNode;
     }
 
     const explicitGlyph = normalizeText(fallbackGlyph);
@@ -2028,12 +2064,23 @@
     }
 
     const glyphNode = ensureAccountStepperGlyph(button);
-    if (!(glyphNode instanceof HTMLElement)) {
+    if (!(glyphNode instanceof HTMLElement) && !(glyphNode instanceof SVGElement)) {
       return;
     }
 
     pulseNodeWithMenuCartClass(glyphNode);
     pulseNodeWithMenuCartClass(button);
+  };
+
+  const syncDetailQuantityValue = (value, { animate = false } = {}) => {
+    const nextQuantity = clampNumber(
+      Math.round(Number(value) || DETAIL_ADD_QTY_MIN),
+      DETAIL_ADD_QTY_MIN,
+      DETAIL_ADD_QTY_MAX
+    );
+    state.detailAddQuantity = nextQuantity;
+    setAccountTextValue(detailQuantityValue, String(nextQuantity), { animate });
+    return nextQuantity;
   };
   const resolveCardAddSourceImage = (baseImage, hoverImage) => {
     if (
@@ -2171,18 +2218,28 @@
       }
     });
   };
-  const commitMenuCartVisualAdd = (itemId) => {
+  const commitMenuCartVisualAdd = (itemId, quantity = 1) => {
     const normalizedItemId = normalizeText(itemId);
     if (!normalizedItemId) {
       return;
     }
 
-    addItemToAccount(normalizedItemId, 1, { pulse: true });
+    const delta = clampNumber(
+      Math.round(Number(quantity) || DETAIL_ADD_QTY_MIN),
+      DETAIL_ADD_QTY_MIN,
+      DETAIL_ADD_QTY_MAX
+    );
+    addItemToAccount(normalizedItemId, delta, { pulse: true });
   };
-  const runMenuCartVisualAdd = async (sourceImage, itemId) => {
+  const runMenuCartVisualAdd = async (sourceImage, itemId, quantity = DETAIL_ADD_QTY_MIN) => {
     const target = getPreferredMenuCartTarget();
+    const safeQuantity = clampNumber(
+      Math.round(Number(quantity) || DETAIL_ADD_QTY_MIN),
+      DETAIL_ADD_QTY_MIN,
+      DETAIL_ADD_QTY_MAX
+    );
     await animateMenuCartFlight(sourceImage, target);
-    commitMenuCartVisualAdd(itemId);
+    commitMenuCartVisualAdd(itemId, safeQuantity);
   };
   const roundAccountValue = (value) =>
     Math.round((Number(value) + Number.EPSILON) * 100) / 100;
@@ -4277,8 +4334,23 @@
     const leftPercent = ((minVal - sliderMin) / sliderSpan) * 100;
     const rightPercent = ((sliderMax - maxVal) / sliderSpan) * 100;
 
-    track.style.left = `${leftPercent}%`;
-    track.style.right = `${rightPercent}%`;
+    const sliderContainer =
+      track.parentElement instanceof HTMLElement ? track.parentElement : null;
+    const sliderWidth = sliderContainer?.getBoundingClientRect?.().width || 0;
+    const priceRangeRoot =
+      sliderContainer?.closest?.('.menu-filter-modal__price-range') || sliderContainer || track;
+    const thumbSize = Number.parseFloat(
+      window
+        .getComputedStyle(priceRangeRoot)
+        .getPropertyValue('--menu-filter-price-thumb-size')
+    );
+    const normalizedEdgeGap = Number.isFinite(thumbSize) ? thumbSize / 2 : 0;
+    const usefulTrackWidth = Math.max(sliderWidth - normalizedEdgeGap * 2, 0);
+    const leftPx = normalizedEdgeGap + (leftPercent / 100) * usefulTrackWidth;
+    const rightPx = normalizedEdgeGap + (rightPercent / 100) * usefulTrackWidth;
+
+    track.style.left = `${leftPx}px`;
+    track.style.right = `${rightPx}px`;
     pathActive.style.clipPath = `inset(0 ${rightPercent}% 0 ${leftPercent}%)`;
   };
 
@@ -6112,9 +6184,27 @@
     currentLabel = '',
     sensoryProfile = null,
     compareMode = DETAIL_EDITORIAL_COMPARE_MODE.AUTO,
+    forceHidden = false,
   } = {}) => {
     const normalizedItemId = normalizeText(itemId);
     state.detailItemId = normalizedItemId;
+
+    if (forceHidden) {
+      clearDetailSensoryProfile();
+      syncDetailSensoryCompareButton({
+        hasSensoryProfile: false,
+        hasComparison: false,
+        compareEnabled: false,
+      });
+      if (detailSensoryDivider instanceof HTMLElement) {
+        detailSensoryDivider.hidden = true;
+      }
+      return {
+        hasSensoryProfile: false,
+        hasComparison: false,
+        compareEnabled: false,
+      };
+    }
 
     const comparisonItem = resolveDetailComparisonItem(normalizedItemId);
     const comparisonProfile = isObject(comparisonItem?.sensory_profile)
@@ -6336,6 +6426,39 @@
     return DETAIL_EDITORIAL_COMPARE_MODE.AUTO;
   };
 
+  const normalizeDetailEditorialSectionVisibility = (input) => {
+    if (!isObject(input)) {
+      return {};
+    }
+
+    const nextVisibility = {};
+    DETAIL_SECTION_VISIBILITY_KEYS.forEach((key) => {
+      if (!Object.prototype.hasOwnProperty.call(input, key)) {
+        return;
+      }
+      if (input[key] === false) {
+        nextVisibility[key] = false;
+      } else if (input[key] === true) {
+        nextVisibility[key] = true;
+      }
+    });
+    return nextVisibility;
+  };
+
+  const isDetailSectionVisible = (sectionVisibility = {}, key = '') => {
+    const normalizedKey = normalizeText(key).toLowerCase();
+    if (!normalizedKey) {
+      return true;
+    }
+    if (!isObject(sectionVisibility)) {
+      return true;
+    }
+    if (!Object.prototype.hasOwnProperty.call(sectionVisibility, normalizedKey)) {
+      return true;
+    }
+    return sectionVisibility[normalizedKey] !== false;
+  };
+
   const normalizeDetailEditorialHeroBadge = (value) => {
     const normalized = normalizeText(value).toLowerCase();
     if (
@@ -6398,7 +6521,9 @@
     }
 
     const title = normalizeText(input.title || input.heading);
-    const body = normalizeText(input.body || input.content || input.copy || input.text);
+    const body = String(input.body || input.content || input.copy || input.text || '')
+      .replace(/\r\n?/g, '\n')
+      .trim();
 
     if (!title && !body) {
       return null;
@@ -6413,20 +6538,38 @@
   const resolveDetailEditorialModel = (item) => {
     const detailEditorial = isObject(item?.detail_editorial) ? item.detail_editorial : {};
 
-    let pairingSource = null;
+    const pairingEntries = [];
     if (Array.isArray(detailEditorial.pairings)) {
-      pairingSource = detailEditorial.pairings.find((entry) => isObject(entry)) || null;
+      detailEditorial.pairings.forEach((entry) => {
+        const normalizedEntry = normalizeDetailEditorialPairingEntry(entry);
+        if (isObject(normalizedEntry) && normalizedEntry.enabled !== false) {
+          pairingEntries.push(normalizedEntry);
+        }
+      });
     } else if (isObject(detailEditorial.pairings)) {
-      pairingSource = detailEditorial.pairings;
+      const normalizedPairingsObject = normalizeDetailEditorialPairingEntry(
+        detailEditorial.pairings
+      );
+      if (isObject(normalizedPairingsObject) && normalizedPairingsObject.enabled !== false) {
+        pairingEntries.push(normalizedPairingsObject);
+      }
     } else if (isObject(detailEditorial.pairing)) {
-      pairingSource = detailEditorial.pairing;
+      const normalizedLegacyPairing = normalizeDetailEditorialPairingEntry(
+        detailEditorial.pairing
+      );
+      if (isObject(normalizedLegacyPairing) && normalizedLegacyPairing.enabled !== false) {
+        pairingEntries.push(normalizedLegacyPairing);
+      }
     }
 
     return {
       compareMode: normalizeDetailEditorialCompareMode(detailEditorial.compare_mode),
       heroBadge: normalizeDetailEditorialHeroBadge(detailEditorial.hero_badge),
+      sectionVisibility: normalizeDetailEditorialSectionVisibility(
+        detailEditorial.section_visibility
+      ),
       sensoryIntro: normalizeText(detailEditorial.sensory_intro || detailEditorial.sensory_subtitle),
-      pairing: normalizeDetailEditorialPairingEntry(pairingSource),
+      pairings: pairingEntries,
       story: normalizeDetailEditorialStory(detailEditorial.story || detailEditorial.history),
     };
   };
@@ -6944,23 +7087,74 @@
         320,
         window.innerWidth || document.documentElement.clientWidth || chartRect.width
       );
-      const tooltipWidth = Math.max(152, Math.min(208, viewportWidth - 16));
+      const viewportHeight = Math.max(
+        320,
+        window.innerHeight || document.documentElement.clientHeight || chartRect.height
+      );
+
+      let minViewportLeft = 8;
+      let maxViewportRight = Math.max(minViewportLeft, viewportWidth - 8);
+      let minViewportTop = 8;
+      let maxViewportBottom = Math.max(minViewportTop, viewportHeight - 8);
+
+      if (detailSensorySection instanceof HTMLElement) {
+        const sectionRect = detailSensorySection.getBoundingClientRect();
+        if (sectionRect.width > 0 && sectionRect.height > 0) {
+          const sectionStyles = window.getComputedStyle(detailSensorySection);
+          const sectionPaddingLeft =
+            Number.parseFloat(sectionStyles.paddingLeft) || 0;
+          const sectionPaddingRight =
+            Number.parseFloat(sectionStyles.paddingRight) || 0;
+          const sectionPaddingTop =
+            Number.parseFloat(sectionStyles.paddingTop) || 0;
+          const sectionPaddingBottom =
+            Number.parseFloat(sectionStyles.paddingBottom) || 0;
+          minViewportLeft = Math.max(
+            minViewportLeft,
+            sectionRect.left + sectionPaddingLeft
+          );
+          maxViewportRight = Math.min(
+            maxViewportRight,
+            sectionRect.right - sectionPaddingRight
+          );
+          minViewportTop = Math.max(
+            minViewportTop,
+            sectionRect.top + sectionPaddingTop
+          );
+          maxViewportBottom = Math.min(
+            maxViewportBottom,
+            sectionRect.bottom - sectionPaddingBottom
+          );
+        }
+      }
+
+      const availableTooltipWidth = Math.max(
+        136,
+        maxViewportRight - minViewportLeft
+      );
+      const tooltipWidth = Math.max(136, Math.min(208, availableTooltipWidth));
       tooltip.style.width = `${tooltipWidth}px`;
 
       const tooltipHeight = tooltip.offsetHeight || 72;
       const iconCenterViewportX = iconRect.left + iconRect.width / 2;
       const desiredLeftViewport = iconCenterViewportX - tooltipWidth / 2;
-      const minViewportLeft = 8;
       const maxViewportLeft = Math.max(
         minViewportLeft,
-        viewportWidth - tooltipWidth - 8
+        maxViewportRight - tooltipWidth
       );
       const clampedLeftViewport = Math.min(
         maxViewportLeft,
         Math.max(minViewportLeft, desiredLeftViewport)
       );
       const desiredTopViewport = iconRect.top - tooltipHeight - 12;
-      const topViewport = Math.max(8, desiredTopViewport);
+      const maxViewportTop = Math.max(
+        minViewportTop,
+        maxViewportBottom - tooltipHeight
+      );
+      const topViewport = Math.min(
+        maxViewportTop,
+        Math.max(minViewportTop, desiredTopViewport)
+      );
       const left = clampedLeftViewport - chartRect.left;
       const top = topViewport - chartRect.top;
       const arrowX = Math.max(
@@ -7439,23 +7633,74 @@
         320,
         window.innerWidth || document.documentElement.clientWidth || radarRect.width
       );
-      const tooltipWidth = Math.max(152, Math.min(208, viewportWidth - 16));
+      const viewportHeight = Math.max(
+        320,
+        window.innerHeight || document.documentElement.clientHeight || radarRect.height
+      );
+
+      let minViewportLeft = 8;
+      let maxViewportRight = Math.max(minViewportLeft, viewportWidth - 8);
+      let minViewportTop = 8;
+      let maxViewportBottom = Math.max(minViewportTop, viewportHeight - 8);
+
+      if (detailSensorySection instanceof HTMLElement) {
+        const sectionRect = detailSensorySection.getBoundingClientRect();
+        if (sectionRect.width > 0 && sectionRect.height > 0) {
+          const sectionStyles = window.getComputedStyle(detailSensorySection);
+          const sectionPaddingLeft =
+            Number.parseFloat(sectionStyles.paddingLeft) || 0;
+          const sectionPaddingRight =
+            Number.parseFloat(sectionStyles.paddingRight) || 0;
+          const sectionPaddingTop =
+            Number.parseFloat(sectionStyles.paddingTop) || 0;
+          const sectionPaddingBottom =
+            Number.parseFloat(sectionStyles.paddingBottom) || 0;
+          minViewportLeft = Math.max(
+            minViewportLeft,
+            sectionRect.left + sectionPaddingLeft
+          );
+          maxViewportRight = Math.min(
+            maxViewportRight,
+            sectionRect.right - sectionPaddingRight
+          );
+          minViewportTop = Math.max(
+            minViewportTop,
+            sectionRect.top + sectionPaddingTop
+          );
+          maxViewportBottom = Math.min(
+            maxViewportBottom,
+            sectionRect.bottom - sectionPaddingBottom
+          );
+        }
+      }
+
+      const availableTooltipWidth = Math.max(
+        136,
+        maxViewportRight - minViewportLeft
+      );
+      const tooltipWidth = Math.max(136, Math.min(208, availableTooltipWidth));
       tooltip.style.width = `${tooltipWidth}px`;
 
       const tooltipHeight = tooltip.offsetHeight || 72;
       const iconCenterViewportX = iconRect.left + iconRect.width / 2;
       const desiredLeftViewport = iconCenterViewportX - tooltipWidth / 2;
-      const minViewportLeft = 8;
       const maxViewportLeft = Math.max(
         minViewportLeft,
-        viewportWidth - tooltipWidth - 8
+        maxViewportRight - tooltipWidth
       );
       const clampedLeftViewport = Math.min(
         maxViewportLeft,
         Math.max(minViewportLeft, desiredLeftViewport)
       );
       const desiredTopViewport = iconRect.top - tooltipHeight - 12;
-      const topViewport = Math.max(8, desiredTopViewport);
+      const maxViewportTop = Math.max(
+        minViewportTop,
+        maxViewportBottom - tooltipHeight
+      );
+      const topViewport = Math.min(
+        maxViewportTop,
+        Math.max(minViewportTop, desiredTopViewport)
+      );
       const left = clampedLeftViewport - radarRect.left;
       const top = topViewport - radarRect.top;
       const arrowX = Math.max(
@@ -8109,42 +8354,347 @@
       DETAIL_DEFAULT_SENSORY_SUBTITLE;
   };
 
-  const applyDetailPairingContent = (pairing = null) => {
+  const buildDetailPairingEntryElement = (pairing = null) => {
     if (!isObject(pairing)) {
-      return;
+      return null;
     }
-    const pairingsCopy = menuDetailEditorialCopy?.pairings || MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.pairings;
 
-    if (detailPairingsSubtitle instanceof HTMLElement) {
-      detailPairingsSubtitle.textContent =
-        normalizeText(pairing.subtitle) ||
-        normalizeText(pairingsCopy?.sectionSubtitle) ||
-        DETAIL_DEFAULT_PAIRING_CONTENT.subtitle;
+    let entryNode = null;
+    if (detailPairingTemplate instanceof HTMLTemplateElement) {
+      const cloned = detailPairingTemplate.content.firstElementChild?.cloneNode(true);
+      if (cloned instanceof HTMLElement) {
+        entryNode = cloned;
+      }
     }
-    if (detailPairingName instanceof HTMLElement) {
-      detailPairingName.textContent = normalizeText(pairing.name || '');
+
+    if (!(entryNode instanceof HTMLElement)) {
+      entryNode = document.createElement('article');
+      entryNode.className = 'menu-page-detail__pairing-entry';
+      entryNode.setAttribute('aria-label', 'Recomendación de maridaje');
+      entryNode.innerHTML =
+        '<div class="menu-page-detail__pairing-head">'
+        + '<div class="menu-page-detail__pairing-name-row">'
+        + '<h4 class="menu-page-detail__pairing-name"></h4>'
+        + '<p class="menu-page-detail__pairing-meta"></p>'
+        + '</div>'
+        + '<button class="menu-page-detail__pairing-cta" type="button" aria-label=""></button>'
+        + '</div>'
+        + '<p class="menu-page-detail__pairing-description"></p>';
     }
-    if (detailPairingMeta instanceof HTMLElement) {
-      detailPairingMeta.textContent = normalizeText(pairing.meta || '');
+
+    const pairingsCopy =
+      menuDetailEditorialCopy?.pairings || MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.pairings;
+    const nameNode = entryNode.querySelector('.menu-page-detail__pairing-name');
+    const metaNode = entryNode.querySelector('.menu-page-detail__pairing-meta');
+    const descriptionNode = entryNode.querySelector('.menu-page-detail__pairing-description');
+    const ctaNode = entryNode.querySelector('.menu-page-detail__pairing-cta');
+
+    if (nameNode instanceof HTMLElement) {
+      nameNode.textContent = normalizeText(pairing.name || '');
     }
-    if (detailPairingDescription instanceof HTMLElement) {
-      detailPairingDescription.textContent = normalizeText(pairing.description || '');
+    if (metaNode instanceof HTMLElement) {
+      metaNode.textContent = normalizeText(pairing.meta || '');
     }
-    if (detailPairingCta instanceof HTMLButtonElement) {
+    if (descriptionNode instanceof HTMLElement) {
+      descriptionNode.textContent = normalizeText(pairing.description || '');
+    }
+
+    if (ctaNode instanceof HTMLButtonElement) {
       const ctaLabel =
         normalizeText(pairing.ctaLabel) ||
         normalizeText(pairingsCopy?.ctaFallbackLabel) ||
         DETAIL_DEFAULT_PAIRING_CONTENT.ctaLabel ||
         MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.pairings.ctaFallbackLabel;
       const ctaTarget = normalizeText(pairing.ctaTarget);
-      detailPairingCta.setAttribute('aria-label', ctaLabel);
-      detailPairingCta.title = ctaLabel;
+      ctaNode.setAttribute('aria-label', ctaLabel);
+      ctaNode.title = ctaLabel;
       if (ctaTarget) {
-        detailPairingCta.dataset.pairingTarget = ctaTarget;
+        ctaNode.dataset.pairingTarget = ctaTarget;
       } else {
-        delete detailPairingCta.dataset.pairingTarget;
+        delete ctaNode.dataset.pairingTarget;
       }
     }
+
+    return entryNode;
+  };
+
+  const applyDetailPairingContent = (pairings = []) => {
+    const normalizedPairings = Array.isArray(pairings)
+      ? pairings.filter((entry) => isObject(entry))
+      : [];
+    const pairingsCopy =
+      menuDetailEditorialCopy?.pairings || MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.pairings;
+
+    if (detailPairingsSubtitle instanceof HTMLElement) {
+      const firstPairing = normalizedPairings[0] || null;
+      detailPairingsSubtitle.textContent =
+        normalizeText(firstPairing?.subtitle) ||
+        normalizeText(pairingsCopy?.sectionSubtitle) ||
+        DETAIL_DEFAULT_PAIRING_CONTENT.subtitle;
+    }
+
+    if (!(detailPairingsList instanceof HTMLElement)) {
+      return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    normalizedPairings.forEach((pairing) => {
+      const entryNode = buildDetailPairingEntryElement(pairing);
+      if (entryNode) {
+        fragment.appendChild(entryNode);
+      }
+    });
+    detailPairingsList.replaceChildren(fragment);
+  };
+
+  const clearDetailPairingContent = () => {
+    const pairingsCopy =
+      menuDetailEditorialCopy?.pairings || MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.pairings;
+    if (detailPairingsSubtitle instanceof HTMLElement) {
+      detailPairingsSubtitle.textContent =
+        normalizeText(pairingsCopy?.sectionSubtitle) ||
+        DETAIL_DEFAULT_PAIRING_CONTENT.subtitle;
+    }
+    if (detailPairingsList instanceof HTMLElement) {
+      detailPairingsList.replaceChildren();
+    }
+  };
+
+  const DETAIL_STORY_HEADING_PATTERN = /^ {0,3}(#{1,6})\s+(.+)$/;
+  const DETAIL_STORY_BLOCKQUOTE_PATTERN = /^ {0,3}>\s?(.*)$/;
+  const DETAIL_STORY_UNORDERED_MARKER_PATTERN = /^ {0,3}[-*+]\s+(.+)$/;
+  const DETAIL_STORY_ORDERED_MARKER_PATTERN = /^ {0,3}\d+[.)]\s+(.+)$/;
+
+  const normalizeDetailStoryMarkdownSource = (value = '') =>
+    String(value || '')
+      .replace(/\r\n?/g, '\n')
+      .trim();
+
+  const isDetailStoryHorizontalRule = (line = '') => {
+    const trimmed = String(line || '').trim();
+    if (!trimmed) {
+      return false;
+    }
+    return (
+      /^-{3,}$/.test(trimmed) ||
+      /^\*{3,}$/.test(trimmed) ||
+      /^(?:-\s*){3,}$/.test(trimmed) ||
+      /^(?:\*\s*){3,}$/.test(trimmed)
+    );
+  };
+
+  const isDetailStoryBlockBoundary = (line = '') =>
+    Boolean(
+      line.match(DETAIL_STORY_HEADING_PATTERN) ||
+      line.match(DETAIL_STORY_BLOCKQUOTE_PATTERN) ||
+      line.match(DETAIL_STORY_UNORDERED_MARKER_PATTERN) ||
+      line.match(DETAIL_STORY_ORDERED_MARKER_PATTERN) ||
+      isDetailStoryHorizontalRule(line)
+    );
+
+  const sanitizeDetailStoryLinkHref = (rawHref = '') => {
+    const trimmed = String(rawHref || '').trim();
+    if (!trimmed) {
+      return '';
+    }
+
+    const hrefMatch = trimmed.match(/^(\S+)(?:\s+['"][^'"]*['"])?$/);
+    if (!hrefMatch || !hrefMatch[1]) {
+      return '';
+    }
+
+    const href = hrefMatch[1].trim();
+    if (!href || href.startsWith('//')) {
+      return '';
+    }
+
+    const protocolMatch = href.match(/^([a-z][a-z0-9+.-]*):/i);
+    if (protocolMatch) {
+      const protocol = `${protocolMatch[1].toLowerCase()}:`;
+      if (
+        protocol !== 'http:' &&
+        protocol !== 'https:' &&
+        protocol !== 'mailto:' &&
+        protocol !== 'tel:'
+      ) {
+        return '';
+      }
+    }
+
+    return href;
+  };
+
+  const getDetailStoryNextInlineToken = (text = '') => {
+    const tokens = [];
+
+    const linkMatch = /\[([^\]\n]+)\]\(([^)\n]+)\)/.exec(text);
+    if (linkMatch) {
+      tokens.push({
+        type: 'link',
+        match: linkMatch,
+        index: linkMatch.index,
+        length: linkMatch[0].length,
+        priority: 0,
+      });
+    }
+
+    const strongMatch = /\*\*([^*\n][^*\n]*?)\*\*/.exec(text);
+    if (strongMatch) {
+      tokens.push({
+        type: 'strong',
+        match: strongMatch,
+        index: strongMatch.index,
+        length: strongMatch[0].length,
+        priority: 1,
+      });
+    }
+
+    const emphasisMatch = /\*([^*\n]+)\*/.exec(text);
+    if (emphasisMatch) {
+      tokens.push({
+        type: 'emphasis',
+        match: emphasisMatch,
+        index: emphasisMatch.index,
+        length: emphasisMatch[0].length,
+        priority: 2,
+      });
+    }
+
+    if (!tokens.length) {
+      return null;
+    }
+
+    tokens.sort((a, b) =>
+      a.index - b.index ||
+      a.priority - b.priority ||
+      b.length - a.length
+    );
+
+    return tokens[0];
+  };
+
+  const appendDetailStoryInlineNodes = (parent, text = '', depth = 0) => {
+    const source = String(text || '');
+    if (!source) {
+      return;
+    }
+
+    if (depth > 10) {
+      parent.appendChild(document.createTextNode(source));
+      return;
+    }
+
+    const token = getDetailStoryNextInlineToken(source);
+    if (!token) {
+      parent.appendChild(document.createTextNode(source));
+      return;
+    }
+
+    if (token.index > 0) {
+      parent.appendChild(document.createTextNode(source.slice(0, token.index)));
+    }
+
+    const matchedText = token.match[0];
+    if (token.type === 'strong') {
+      const strong = document.createElement('strong');
+      appendDetailStoryInlineNodes(strong, token.match[1], depth + 1);
+      parent.appendChild(strong);
+    } else if (token.type === 'emphasis') {
+      const emphasis = document.createElement('em');
+      appendDetailStoryInlineNodes(emphasis, token.match[1], depth + 1);
+      parent.appendChild(emphasis);
+    } else if (token.type === 'link') {
+      const href = sanitizeDetailStoryLinkHref(token.match[2]);
+      if (!href) {
+        parent.appendChild(document.createTextNode(matchedText));
+      } else {
+        const link = document.createElement('a');
+        link.className = 'menu-page-detail__history-link';
+        link.setAttribute('href', href);
+        if (/^https?:/i.test(href)) {
+          link.setAttribute('target', '_blank');
+          link.setAttribute('rel', 'noopener noreferrer');
+        }
+        appendDetailStoryInlineNodes(link, token.match[1], depth + 1);
+        parent.appendChild(link);
+      }
+    } else {
+      parent.appendChild(document.createTextNode(matchedText));
+    }
+
+    const tail = source.slice(token.index + matchedText.length);
+    if (tail) {
+      appendDetailStoryInlineNodes(parent, tail, depth);
+    }
+  };
+
+  const appendDetailStoryInlineLines = (parent, lines = []) => {
+    lines.forEach((line, index) => {
+      appendDetailStoryInlineNodes(parent, String(line || '').trim(), 0);
+      if (index < lines.length - 1) {
+        parent.appendChild(document.createElement('br'));
+      }
+    });
+  };
+
+  const createDetailStoryParagraph = (lines = []) => {
+    const paragraph = document.createElement('p');
+    paragraph.className = 'menu-page-detail__history-paragraph';
+    appendDetailStoryInlineLines(paragraph, lines);
+    return paragraph;
+  };
+
+  const createDetailStoryHeading = ({ level = 2, text = '' } = {}) => {
+    const safeLevel = Math.min(6, Math.max(1, Number(level) || 2));
+    const heading = document.createElement(`h${safeLevel}`);
+    heading.className = `menu-page-detail__history-heading menu-page-detail__history-heading--h${safeLevel}`;
+    appendDetailStoryInlineNodes(heading, String(text || '').trim(), 0);
+    return heading;
+  };
+
+  const createDetailStoryList = ({ ordered = false, items = [] } = {}) => {
+    const list = document.createElement(ordered ? 'ol' : 'ul');
+    list.className = ordered
+      ? 'menu-page-detail__history-list menu-page-detail__history-list--ordered'
+      : 'menu-page-detail__history-list';
+
+    items.forEach((entry) => {
+      const item = document.createElement('li');
+      appendDetailStoryInlineNodes(item, String(entry || '').trim(), 0);
+      list.appendChild(item);
+    });
+
+    return list;
+  };
+
+  const createDetailStoryBlockquote = (quoteLines = []) => {
+    const blockquote = document.createElement('blockquote');
+    blockquote.className = 'menu-page-detail__history-blockquote';
+
+    const paragraphs = [];
+    let currentParagraph = [];
+    quoteLines.forEach((line) => {
+      if (!normalizeText(line)) {
+        if (currentParagraph.length) {
+          paragraphs.push(currentParagraph.slice());
+          currentParagraph = [];
+        }
+        return;
+      }
+      currentParagraph.push(line);
+    });
+    if (currentParagraph.length) {
+      paragraphs.push(currentParagraph.slice());
+    }
+
+    if (!paragraphs.length) {
+      return blockquote;
+    }
+
+    paragraphs.forEach((paragraphLines) => {
+      blockquote.appendChild(createDetailStoryParagraph(paragraphLines));
+    });
+    return blockquote;
   };
 
   const renderDetailStoryBodyFromText = (storyBody = '') => {
@@ -8152,41 +8702,111 @@
       return;
     }
 
-    const normalizedBody = normalizeText(storyBody);
-    if (!normalizedBody) {
+    const source = normalizeDetailStoryMarkdownSource(storyBody);
+    if (!source) {
       detailHistoryBody.replaceChildren();
       return;
     }
 
+    const lines = source.split('\n');
     const fragment = document.createDocumentFragment();
-    const blocks = normalizedBody
-      .split(/\n{2,}/)
-      .map((entry) => entry.trim())
-      .filter(Boolean);
+    let lineIndex = 0;
 
-    blocks.forEach((block) => {
-      const lines = block
-        .split('\n')
-        .map((line) => line.trim())
-        .filter(Boolean);
+    while (lineIndex < lines.length) {
+      const currentLine = lines[lineIndex];
 
-      if (lines.length > 0 && lines.every((line) => line.startsWith('- '))) {
-        const list = document.createElement('ul');
-        list.className = 'menu-page-detail__history-list';
-        lines.forEach((line) => {
-          const item = document.createElement('li');
-          item.textContent = line.slice(2).trim();
-          list.appendChild(item);
-        });
-        fragment.appendChild(list);
-        return;
+      if (!normalizeText(currentLine)) {
+        lineIndex += 1;
+        continue;
       }
 
-      const paragraph = document.createElement('p');
-      paragraph.className = 'menu-page-detail__history-paragraph';
-      paragraph.textContent = lines.join(' ');
-      fragment.appendChild(paragraph);
-    });
+      if (isDetailStoryHorizontalRule(currentLine)) {
+        const divider = document.createElement('hr');
+        divider.className = 'menu-page-detail__history-divider';
+        fragment.appendChild(divider);
+        lineIndex += 1;
+        continue;
+      }
+
+      const headingMatch = currentLine.match(DETAIL_STORY_HEADING_PATTERN);
+      if (headingMatch) {
+        fragment.appendChild(
+          createDetailStoryHeading({
+            level: headingMatch[1].length,
+            text: headingMatch[2],
+          })
+        );
+        lineIndex += 1;
+        continue;
+      }
+
+      const quoteMatch = currentLine.match(DETAIL_STORY_BLOCKQUOTE_PATTERN);
+      if (quoteMatch) {
+        const quoteLines = [];
+        while (lineIndex < lines.length) {
+          const nestedQuoteMatch = lines[lineIndex].match(DETAIL_STORY_BLOCKQUOTE_PATTERN);
+          if (!nestedQuoteMatch) {
+            break;
+          }
+          quoteLines.push(nestedQuoteMatch[1] || '');
+          lineIndex += 1;
+        }
+        fragment.appendChild(createDetailStoryBlockquote(quoteLines));
+        continue;
+      }
+
+      const unorderedMarker = currentLine.match(DETAIL_STORY_UNORDERED_MARKER_PATTERN);
+      if (unorderedMarker) {
+        const items = [];
+        while (lineIndex < lines.length) {
+          const listMatch = lines[lineIndex].match(DETAIL_STORY_UNORDERED_MARKER_PATTERN);
+          if (!listMatch) {
+            break;
+          }
+          items.push(listMatch[1]);
+          lineIndex += 1;
+        }
+        if (items.length) {
+          fragment.appendChild(createDetailStoryList({ items }));
+        }
+        continue;
+      }
+
+      const orderedMarker = currentLine.match(DETAIL_STORY_ORDERED_MARKER_PATTERN);
+      if (orderedMarker) {
+        const items = [];
+        while (lineIndex < lines.length) {
+          const listMatch = lines[lineIndex].match(DETAIL_STORY_ORDERED_MARKER_PATTERN);
+          if (!listMatch) {
+            break;
+          }
+          items.push(listMatch[1]);
+          lineIndex += 1;
+        }
+        if (items.length) {
+          fragment.appendChild(createDetailStoryList({ ordered: true, items }));
+        }
+        continue;
+      }
+
+      const paragraphLines = [];
+      while (lineIndex < lines.length) {
+        const line = lines[lineIndex];
+        if (!normalizeText(line)) {
+          lineIndex += 1;
+          break;
+        }
+        if (paragraphLines.length && isDetailStoryBlockBoundary(line)) {
+          break;
+        }
+        paragraphLines.push(line);
+        lineIndex += 1;
+      }
+
+      if (paragraphLines.length) {
+        fragment.appendChild(createDetailStoryParagraph(paragraphLines));
+      }
+    }
 
     detailHistoryBody.replaceChildren(fragment);
   };
@@ -8198,31 +8818,40 @@
 
     if (detailHistoryTitle instanceof HTMLElement) {
       detailHistoryTitle.textContent =
-        normalizeText(story.title) ||
         normalizeText(menuDetailEditorialCopy?.story?.sectionTitle) ||
         DETAIL_DEFAULT_SECTION_COPY.storyTitle;
     }
     renderDetailStoryBodyFromText(story.body);
   };
 
-  const syncDetailPairingsSection = ({ pairing = null } = {}) => {
-    const hasEditorialPairing = isObject(pairing);
-    let shouldShowPairings = false;
+  const clearDetailStoryContent = () => {
+    if (detailHistoryTitle instanceof HTMLElement) {
+      detailHistoryTitle.textContent =
+        normalizeText(menuDetailEditorialCopy?.story?.sectionTitle) ||
+        DETAIL_DEFAULT_SECTION_COPY.storyTitle;
+    }
+    renderDetailStoryBodyFromText('');
+  };
 
-    if (hasEditorialPairing) {
-      const hasPairingContent = Boolean(
-        normalizeText(pairing.name) ||
-        normalizeText(pairing.meta) ||
-        normalizeText(pairing.description) ||
-        normalizeText(pairing.ctaLabel) ||
-        normalizeText(pairing.ctaTarget)
-      );
-      shouldShowPairings =
-        hasPairingContent &&
-        (pairing.enabled === true || pairing.enabled !== false);
-      if (shouldShowPairings) {
-        applyDetailPairingContent(pairing);
-      }
+  const syncDetailPairingsSection = ({ pairings = [], forceHidden = false } = {}) => {
+    const normalizedPairings = Array.isArray(pairings)
+      ? pairings.filter((entry) => isObject(entry))
+      : [];
+    const visiblePairings = normalizedPairings.filter((entry) =>
+      Boolean(
+        normalizeText(entry.name) ||
+        normalizeText(entry.meta) ||
+        normalizeText(entry.description) ||
+        normalizeText(entry.ctaLabel) ||
+        normalizeText(entry.ctaTarget)
+      )
+    );
+
+    const shouldShowPairings = !forceHidden && visiblePairings.length > 0;
+    if (shouldShowPairings) {
+      applyDetailPairingContent(visiblePairings);
+    } else {
+      clearDetailPairingContent();
     }
 
     if (detailPairingsSection instanceof HTMLElement) {
@@ -8233,22 +8862,22 @@
       detailPairingsDivider.hidden = !shouldShowPairings;
     }
 
-    if (detailPairingCta instanceof HTMLButtonElement) {
-      detailPairingCta.disabled = !shouldShowPairings;
-    }
-
     return shouldShowPairings;
   };
 
-  const syncDetailHistorySection = ({ story = null } = {}) => {
+  const syncDetailHistorySection = ({ story = null, forceHidden = false } = {}) => {
     const hasEditorialStory = isObject(story);
-    let shouldShowHistory = false;
+    let shouldShowHistory = !forceHidden && hasEditorialStory;
 
-    if (hasEditorialStory) {
-      shouldShowHistory = Boolean(normalizeText(story.title) || normalizeText(story.body));
+    if (shouldShowHistory) {
+      shouldShowHistory = Boolean(normalizeText(story.body));
       if (shouldShowHistory) {
         applyDetailStoryContent(story);
       }
+    }
+
+    if (!shouldShowHistory) {
+      clearDetailStoryContent();
     }
 
     if (detailHistorySection instanceof HTMLElement) {
@@ -9095,7 +9724,8 @@
       sensoryProfile: isObject(item?.sensory_profile) ? item.sensory_profile : null,
       sensoryIntro: globalSensorySubtitle || editorial.sensoryIntro,
       compareMode: editorial.compareMode,
-      pairing: editorial.pairing,
+      sectionVisibility: editorial.sectionVisibility,
+      pairings: editorial.pairings,
       story: editorial.story,
       image: media.detail || media.card,
       imageAlt: media.alt,
@@ -10570,108 +11200,6 @@
     emitBridgeState();
   };
 
-  const isVisiblePreviewSectionNode = (node) =>
-    node instanceof HTMLElement &&
-    !node.hidden &&
-    node.getClientRects().length > 0;
-
-  const resolveAdminPreviewSectionTarget = (sectionId = '') => {
-    const normalizedSection = normalizeText(sectionId).toLowerCase();
-    const candidatesBySection = {
-      'hero-media': [detailMedia, detailView],
-      header: [detailPanel, detailTitle, detailView],
-      summary: [detailDescription, detailPanel, detailView],
-      ingredients: [detailIngredientsSection, detailSpecGrid, detailPanel, detailView],
-      allergens: [detailAllergensSection, detailSpecGrid, detailPanel, detailView],
-      sensory: [detailSensorySection, detailPanel, detailView],
-      pairings: [
-        detailPairingsSection,
-        detailSensorySection,
-        detailPanel,
-        detailView,
-      ],
-      story: [
-        detailHistorySection,
-        detailPairingsSection,
-        detailPanel,
-        detailView,
-      ],
-    };
-
-    const candidates = candidatesBySection[normalizedSection] || [detailView];
-    const visibleNode = candidates.find((node) => isVisiblePreviewSectionNode(node));
-    if (visibleNode) {
-      return visibleNode;
-    }
-
-    return (
-      candidates.find((node) => node instanceof HTMLElement) ||
-      (detailView instanceof HTMLElement ? detailView : null)
-    );
-  };
-
-  const scrollAdminPreviewToSection = (
-    sectionId = '',
-    { smooth = true } = {}
-  ) => {
-    if (!isAdminPreviewMode) {
-      return false;
-    }
-
-    const normalizedSection = normalizeText(sectionId).toLowerCase();
-    if (!ADMIN_PREVIEW_SECTION_KEYS.has(normalizedSection)) {
-      return false;
-    }
-
-    const target = resolveAdminPreviewSectionTarget(normalizedSection);
-    if (!(target instanceof HTMLElement)) {
-      return false;
-    }
-
-    const behavior = reducedMotionQuery.matches || !smooth ? 'auto' : 'smooth';
-
-    try {
-      target.scrollIntoView({
-        block: 'start',
-        inline: 'nearest',
-        behavior,
-      });
-    } catch (_error) {
-      target.scrollIntoView();
-    }
-
-    return true;
-  };
-
-  const queueAdminPreviewScrollToSection = (
-    sectionId = '',
-    { smooth = true } = {}
-  ) => {
-    if (!isAdminPreviewMode) {
-      return;
-    }
-
-    const normalizedSection = normalizeText(sectionId).toLowerCase();
-    if (!ADMIN_PREVIEW_SECTION_KEYS.has(normalizedSection)) {
-      return;
-    }
-
-    adminPreviewPendingSectionId = normalizedSection;
-    window.requestAnimationFrame(() => {
-      if (!adminPreviewPendingSectionId) {
-        return;
-      }
-
-      if (
-        scrollAdminPreviewToSection(adminPreviewPendingSectionId, {
-          smooth,
-        })
-      ) {
-        adminPreviewPendingSectionId = '';
-      }
-    });
-  };
-
   const applyAdminPreviewUpdatePayload = async (payload = {}) => {
     if (!isAdminPreviewMode || !isObject(payload)) {
       return;
@@ -10696,12 +11224,6 @@
 
     if (renderToken !== adminPreviewRenderToken) {
       return;
-    }
-
-    if (adminPreviewPendingSectionId) {
-      queueAdminPreviewScrollToSection(adminPreviewPendingSectionId, {
-        smooth: false,
-      });
     }
 
     if (adminPreviewSurface === ADMIN_PREVIEW_SURFACE_MODAL) {
@@ -10741,14 +11263,6 @@
       return;
     }
 
-    if (type === ADMIN_PREVIEW_MESSAGE_SCROLL) {
-      const sectionId = normalizeText(data?.payload?.section).toLowerCase();
-      if (!ADMIN_PREVIEW_SECTION_KEYS.has(sectionId)) {
-        return;
-      }
-
-      queueAdminPreviewScrollToSection(sectionId, { smooth: true });
-    }
   };
 
   const tagAdminPreviewSectionLink = (node, sectionId) => {
@@ -10776,6 +11290,7 @@
     detailView.setAttribute('data-admin-preview-nav-bound', 'true');
 
     tagAdminPreviewSectionLink(detailMedia, 'hero-media');
+    tagAdminPreviewSectionLink(detailHeaderSection, 'header');
     tagAdminPreviewSectionLink(detailHeroHeader, 'header');
     tagAdminPreviewSectionLink(detailBadge, 'header');
     tagAdminPreviewSectionLink(detailTitle, 'header');
@@ -10791,6 +11306,8 @@
     tagAdminPreviewSectionLink(detailDescription, 'summary');
     tagAdminPreviewSectionLink(detailIngredientsSection, 'ingredients');
     tagAdminPreviewSectionLink(detailAllergensSection, 'allergens');
+    tagAdminPreviewSectionLink(detailAddCtaSection, 'add-cta');
+    tagAdminPreviewSectionLink(detailAddButton, 'add-cta');
     tagAdminPreviewSectionLink(detailSensorySection, 'sensory');
     tagAdminPreviewSectionLink(detailPairingsSection, 'pairings');
     tagAdminPreviewSectionLink(detailHistorySection, 'story');
@@ -10817,7 +11334,6 @@
 
         event.preventDefault();
         event.stopPropagation();
-        queueAdminPreviewScrollToSection(sectionId, { smooth: true });
         emitAdminPreviewNavigateEditorMessage(sectionId);
       },
       true
@@ -10858,6 +11374,7 @@
       !(detailBadgeIcon instanceof HTMLImageElement) ||
       !(detailBadgeLabel instanceof HTMLElement) ||
       !(detailPanel instanceof HTMLElement) ||
+      !(detailHeaderSection instanceof HTMLElement) ||
       !(detailMedia instanceof HTMLElement) ||
       !(detailImage instanceof HTMLImageElement) ||
       !(detailTitle instanceof HTMLElement) ||
@@ -10881,6 +11398,7 @@
       !(detailIngredients instanceof HTMLElement) ||
       !(detailAllergensSection instanceof HTMLElement) ||
       !(detailAllergens instanceof HTMLElement) ||
+      !(detailAddCtaSection instanceof HTMLElement) ||
       !(detailSoldOutReason instanceof HTMLElement)
     ) {
       return;
@@ -10893,6 +11411,43 @@
     hideDetailInfoChipTooltip({ immediate: true });
 
     const detail = await toDetailViewModel(item);
+    const sectionVisibility = isObject(detail?.sectionVisibility)
+      ? detail.sectionVisibility
+      : {};
+    const showHeroMedia = isDetailSectionVisible(sectionVisibility, 'hero_media');
+    const showHeader = isDetailSectionVisible(sectionVisibility, 'header');
+    const showIngredients = isDetailSectionVisible(sectionVisibility, 'ingredients');
+    const showAllergens = isDetailSectionVisible(sectionVisibility, 'allergens');
+    const showAddCta = isDetailSectionVisible(sectionVisibility, 'add_cta');
+    const showSensory = isDetailSectionVisible(sectionVisibility, 'sensory');
+    const showPairings = isDetailSectionVisible(sectionVisibility, 'pairings');
+    const showStory = isDetailSectionVisible(sectionVisibility, 'story');
+    const syncDetailAddQuantity = (value, { animate = false } = {}) => {
+      const nextQuantity = syncDetailQuantityValue(value, { animate });
+      if (detailQuantityDecreaseButton instanceof HTMLButtonElement) {
+        detailQuantityDecreaseButton.disabled = nextQuantity <= DETAIL_ADD_QTY_MIN;
+      }
+      if (detailQuantityIncreaseButton instanceof HTMLButtonElement) {
+        detailQuantityIncreaseButton.disabled = nextQuantity >= DETAIL_ADD_QTY_MAX;
+      }
+      return nextQuantity;
+    };
+    const syncDetailQuantityAvailability = (isAvailable) => {
+      if (detailQuantityStepper instanceof HTMLElement) {
+        detailQuantityStepper.setAttribute(
+          'data-disabled',
+          isAvailable ? 'false' : 'true'
+        );
+      }
+      if (detailQuantityDecreaseButton instanceof HTMLButtonElement) {
+        detailQuantityDecreaseButton.disabled =
+          !isAvailable || state.detailAddQuantity <= DETAIL_ADD_QTY_MIN;
+      }
+      if (detailQuantityIncreaseButton instanceof HTMLButtonElement) {
+        detailQuantityIncreaseButton.disabled =
+          !isAvailable || state.detailAddQuantity >= DETAIL_ADD_QTY_MAX;
+      }
+    };
     const homeMenuDetailContext = await loadHomeMenuDetailContext();
     const featuredIds =
       homeMenuDetailContext?.featuredIds instanceof Set
@@ -10938,30 +11493,37 @@
       ? ''
       : detail.soldOutReason || 'Temporalmente no disponible.';
     detailSoldOutReason.hidden = detail.available;
+    detailHeaderSection.hidden = !showHeader;
     syncDetailSensorySubtitle(detail.sensoryIntro);
     const { hasSensoryProfile, compareEnabled } = renderDetailSensoryState({
       itemId: detail.id,
       currentLabel: detail.title,
       sensoryProfile: detail.sensoryProfile,
       compareMode: detail.compareMode,
+      forceHidden: !showSensory,
     });
     if ((!hasSensoryProfile || !compareEnabled) && state.compareModalOpen) {
       closeCompareModal({ restoreFocus: false, immediate: true });
     }
-    syncDetailPairingsSection({
-      pairing: detail.pairing,
+    const hasPairings = syncDetailPairingsSection({
+      pairings: detail.pairings,
+      forceHidden: !showPairings,
     });
-    syncDetailHistorySection({
+    const hasHistory = syncDetailHistorySection({
       story: detail.story,
+      forceHidden: !showStory,
     });
     if (detailAddButton instanceof HTMLButtonElement) {
-      const isAvailable = detail.available !== false;
+      const isAvailable = detail.available !== false && showAddCta;
       detailAddButton.textContent = isAvailable ? 'Añadir' : 'No disponible';
       detailAddButton.classList.toggle('is-available', isAvailable);
       detailAddButton.classList.toggle('is-unavailable', !isAvailable);
       detailAddButton.disabled = !isAvailable;
       detailAddButton.dataset.menuItemId = detail.id;
+      syncDetailAddQuantity(DETAIL_ADD_QTY_MIN, { animate: false });
+      syncDetailQuantityAvailability(isAvailable);
     }
+    detailAddCtaSection.hidden = !showAddCta;
     detailPanel.setAttribute(
       'data-availability',
       detail.available ? 'available' : 'unavailable'
@@ -10970,6 +11532,7 @@
       ? detail.editorialSlides.length > 0
       : false;
     const shouldUseEditorialHero =
+      showHeroMedia &&
       hasEditorialSlides &&
       DETAIL_EDITORIAL_HERO_QUERY.matches &&
       renderDetailEditorialCarousel(detail.editorialSlides);
@@ -10988,10 +11551,19 @@
       );
     }
 
-    if (shouldUseEditorialHero) {
+    if (!showHeroMedia) {
+      clearDetailEditorialCarousel();
       detailImage.hidden = true;
       detailImage.removeAttribute('src');
       detailImage.alt = '';
+      detailMedia.hidden = true;
+      detailMedia.setAttribute('data-media-mode', 'catalog');
+      detailMedia.setAttribute('data-image-state', 'empty');
+    } else if (shouldUseEditorialHero) {
+      detailImage.hidden = true;
+      detailImage.removeAttribute('src');
+      detailImage.alt = '';
+      detailMedia.hidden = false;
       detailMedia.setAttribute('data-media-mode', 'editorial');
       detailMedia.setAttribute('data-image-state', 'ready');
     } else if (detail.image) {
@@ -10999,6 +11571,7 @@
       detailImage.src = detail.image;
       detailImage.alt = detail.imageAlt || detail.title;
       detailImage.hidden = false;
+      detailMedia.hidden = false;
       detailMedia.setAttribute('data-media-mode', 'catalog');
       detailMedia.setAttribute('data-image-state', 'ready');
     } else {
@@ -11006,18 +11579,19 @@
       detailImage.hidden = true;
       detailImage.removeAttribute('src');
       detailImage.alt = '';
+      detailMedia.hidden = false;
       detailMedia.setAttribute('data-media-mode', 'catalog');
       detailMedia.setAttribute('data-image-state', 'empty');
     }
 
     const ingredientEntries = await resolveIngredientEntries(detail.ingredients);
     renderIngredientList(detailIngredients, ingredientEntries);
-    const hasIngredients = ingredientEntries.length > 0;
+    const hasIngredients = showIngredients && ingredientEntries.length > 0;
     detailIngredientsSection.hidden = !hasIngredients;
 
     const allergenEntries = await resolveAllergenEntries(detail.allergens);
     renderAllergenList(detailAllergens, allergenEntries);
-    const hasAllergens = allergenEntries.length > 0;
+    const hasAllergens = showAllergens && allergenEntries.length > 0;
     detailAllergensSection.hidden = !hasAllergens;
 
     const hasSpecs = hasIngredients || hasAllergens;
@@ -11026,13 +11600,20 @@
       'data-columns',
       hasIngredients && hasAllergens ? '2' : '1'
     );
-    detailSpecsDivider.hidden = !hasSpecs;
+    detailSpecsDivider.hidden = !hasSpecs || !showHeader;
+    detailAddCtaSection.setAttribute(
+      'data-has-leading-content',
+      showHeader || hasSpecs ? 'true' : 'false'
+    );
 
-    const tagsForSection = filterDetailSectionTags(detail.badges);
-    renderTagBadges(detailTags, tagsForSection);
-    const hasTags = tagsForSection.length > 0;
-    detailTagsSection.hidden = !hasTags;
-    detailTagsDivider.hidden = !hasTags;
+    renderTagBadges(detailTags, []);
+    detailTagsSection.hidden = true;
+    detailTagsDivider.hidden = true;
+    const hasTrailingBentoCards = hasSensoryProfile || hasPairings || hasHistory;
+    detailAddCtaSection.setAttribute(
+      'data-has-trailing-content',
+      hasTrailingBentoCards ? 'true' : 'false'
+    );
 
     setDetailStatus('', { hide: true });
     showDetailView();
@@ -11215,8 +11796,76 @@
           ? detailImage
           : null;
 
-      void runMenuCartVisualAdd(sourceImage, itemId);
+      const requestedQuantity = clampNumber(
+        Math.round(Number(state.detailAddQuantity) || DETAIL_ADD_QTY_MIN),
+        DETAIL_ADD_QTY_MIN,
+        DETAIL_ADD_QTY_MAX
+      );
+      void runMenuCartVisualAdd(sourceImage, itemId, requestedQuantity);
     });
+  }
+
+  if (
+    detailQuantityDecreaseButton instanceof HTMLButtonElement &&
+    detailQuantityValue instanceof HTMLElement
+  ) {
+    detailQuantityDecreaseButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      if (detailQuantityDecreaseButton.disabled) {
+        return;
+      }
+      const nextQuantity = clampNumber(
+        Math.round(Number(state.detailAddQuantity) || DETAIL_ADD_QTY_MIN) - 1,
+        DETAIL_ADD_QTY_MIN,
+        DETAIL_ADD_QTY_MAX
+      );
+      syncDetailQuantityValue(nextQuantity, { animate: true });
+      detailQuantityDecreaseButton.disabled = nextQuantity <= DETAIL_ADD_QTY_MIN;
+      if (detailQuantityIncreaseButton instanceof HTMLButtonElement) {
+        detailQuantityIncreaseButton.disabled =
+          (detailAddButton instanceof HTMLButtonElement &&
+            detailAddButton.disabled) ||
+          nextQuantity >= DETAIL_ADD_QTY_MAX;
+      }
+      pulseAccountStepperGlyph(detailQuantityDecreaseButton);
+    });
+  }
+
+  if (
+    detailQuantityIncreaseButton instanceof HTMLButtonElement &&
+    detailQuantityValue instanceof HTMLElement
+  ) {
+    detailQuantityIncreaseButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      if (detailQuantityIncreaseButton.disabled) {
+        return;
+      }
+      const nextQuantity = clampNumber(
+        Math.round(Number(state.detailAddQuantity) || DETAIL_ADD_QTY_MIN) + 1,
+        DETAIL_ADD_QTY_MIN,
+        DETAIL_ADD_QTY_MAX
+      );
+      syncDetailQuantityValue(nextQuantity, { animate: true });
+      detailQuantityIncreaseButton.disabled = nextQuantity >= DETAIL_ADD_QTY_MAX;
+      if (detailQuantityDecreaseButton instanceof HTMLButtonElement) {
+        detailQuantityDecreaseButton.disabled =
+          (detailAddButton instanceof HTMLButtonElement &&
+            detailAddButton.disabled) ||
+          nextQuantity <= DETAIL_ADD_QTY_MIN;
+      }
+      pulseAccountStepperGlyph(detailQuantityIncreaseButton);
+    });
+  }
+
+  if (detailQuantityStepper instanceof HTMLElement) {
+    detailQuantityStepper.setAttribute('data-disabled', 'true');
+  }
+
+  if (detailQuantityDecreaseButton instanceof HTMLButtonElement) {
+    ensureAccountStepperGlyph(detailQuantityDecreaseButton, '-');
+  }
+  if (detailQuantityIncreaseButton instanceof HTMLButtonElement) {
+    ensureAccountStepperGlyph(detailQuantityIncreaseButton, '+');
   }
 
   bindFilterPizzaTabs();

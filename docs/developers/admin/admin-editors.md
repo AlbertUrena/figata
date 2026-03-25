@@ -100,9 +100,9 @@ The item editor has 5 tabs:
 | Tab ID | Name | Fields |
 |--------|------|--------|
 | `basic` | Basic Info | ID, slug, category, subcategory |
-| `editorial` | Editorial | Detail-visible fields: title, price, hero badge override, metrics chips, canonical description (`item.description`), reviews, ingredients, derived/resolved allergens + overrides, sensory summary/axes, compare mode, pairing block, history block, featured toggle |
+| `editorial` | Editorial | Detail-visible fields: title, price, hero badge override, metrics chips, canonical description (`item.description`), reviews, ingredients, derived/resolved allergens + overrides, sensory summary/axes, compare mode, pairing block, history body block (title is global), featured toggle, and per-section visibility toggles embedded in each section header (`header`, `ingredients`, `allergens`, `add_cta`, `sensory`, `pairings`, `story`) |
 | `traits` | Traits | Derived dietary/content/experience state + editorial `trait_overrides` |
-| `media` | Media | Image picker (card, hover, modal variants) |
+| `media` | Media | Image picker (card, hover, modal variants) + `hero_media` visibility toggle in the media header |
 | `availability` | Availability | Available toggle, sold-out reason |
 
 ### State
@@ -115,8 +115,20 @@ The item editor state is stored in `state.itemEditor`:
 
 Editorial fields are persisted on the menu item under:
 - `metrics` (`calories`, `etaMinutes`, `rating`)
-- `detail_editorial` (`hero_badge`, `compare_mode`, `pairings`, `story`)
+- `detail_editorial` (`hero_badge`, `compare_mode`, `section_visibility`, `pairings`, `story`)
 - `sensory_profile` (`summary` + 8 required axes when present)
+
+`detail_editorial.section_visibility` rules:
+- Section toggles are **per item** and consumed by both production detail and admin live preview
+- Known keys: `hero_media`, `header`, `ingredients`, `allergens`, `add_cta`, `sensory`, `pairings`, `story`
+- `tags` is backend/filter metadata only and remains hidden in detail UI
+- `pairings` and `story` default to **off** in the editor when the item has no editorial content for those blocks
+- Missing keys are interpreted as `true` (backward-compatible default)
+- `detail_editorial.pairings[]` and `detail_editorial.story.*` are saved preserving the authored casing/accents (no lowercase normalization)
+- Pairings visibility owner is `detail_editorial.section_visibility.pairings` (section toggle in Item Editor); per-item `detail_editorial.pairings.enabled` is treated as legacy only and no longer edited in UI
+- Pairings editor is list-based: one card per entry with `Añadir maridaje`, `Subir`, `Bajar`, and `Eliminar`; save writes canonical `detail_editorial.pairings` as an ordered array
+- `detail_editorial.story.body` is saved as editorial markdown text (line breaks preserved), and runtime parses a safe markdown subset for both preview and production detail rendering
+- `detail_editorial.story.title` is not edited in Item Editor; story section title is owned globally by `Pages > Editorial` (`home.menu_detail_editorial.story.section_title`)
 
 Global copy for the detail sensory section subtitle is persisted in:
 - `home.menu_detail_editorial.sensory_subtitle` (edited in Pages > Editorial, not per item)

@@ -610,6 +610,7 @@ html.nav--collapsed .site-header[data-menu-sticky-mode="sticky"][data-menu-stick
   flex: 0 1 auto;
   min-width: 0;
   max-width: 100%;
+  overflow: hidden;
   color: rgba(240, 239, 237, 0.28);
 }
 
@@ -618,11 +619,13 @@ html.nav--collapsed .site-header[data-menu-sticky-mode="sticky"][data-menu-stick
   display: inline-flex;
   align-items: center;
   min-width: 0;
+  width: max-content;
   white-space: nowrap;
 }
 
 .navbar--menu-route .navbar__sticky-search-helper-char {
   display: inline-block;
+  flex: 0 0 auto;
   min-width: 0;
   will-change: transform, opacity, filter;
 }
@@ -709,6 +712,7 @@ html.nav--collapsed .site-header[data-menu-sticky-mode="sticky"][data-menu-stick
 
 .navbar--menu-route .navbar__mobile-search-clear {
   padding: 0;
+  margin-inline-end: 6px;
   border: 0;
   background: transparent;
   cursor: pointer;

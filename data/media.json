@@ -1,7 +1,7 @@
 {
   "version": 2,
   "schema": "figata.media.v2",
-  "updatedAt": "2026-03-21T18:18:48.803Z",
+  "updatedAt": "2026-03-25T15:27:45.070Z",
   "updatedBy": "admin-app",
   "notes": "Mapa oficial de media por item. Si una variante falta, el frontend aplica fallback controlado.",
   "items": {
@@ -15,7 +15,11 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "card": "assets/menu/entradas/berenjenas-a-la-parmesana.webp",
+      "modal": "assets/menu/entradas/berenjenas-a-la-parmesana.webp",
+      "hover": "",
+      "gallery": []
     },
     "focaccia_parmigiano": {
       "source": "assets/menu/entradas/focaccia.webp",
@@ -149,7 +153,11 @@
         ]
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "card": "assets/menu/pizzas/clasica/margherita.webp",
+      "modal": "assets/menu/pizzas/clasica/margherita.webp",
+      "hover": "",
+      "gallery": []
     },
     "marinara": {
       "source": "assets/menu/pizzas/clasica/marinara.webp",
@@ -158,10 +166,16 @@
         "card": "",
         "hover": "",
         "modal": "",
-        "gallery": []
+        "gallery": [
+          "assets/menu/editorial/marinara-slide-0.webp"
+        ]
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "card": "assets/menu/pizzas/clasica/marinara.webp",
+      "modal": "assets/menu/pizzas/clasica/marinara.webp",
+      "hover": "",
+      "gallery": []
     },
     "cacio_pepe": {
       "source": "assets/menu/pizzas/clasica/cacio-e-pepe.webp",
@@ -353,7 +367,11 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "card": "assets/menu/pizzas/autor/fantasia-de-pistachos.webp",
+      "modal": "assets/menu/pizzas/autor/fantasia-de-pistachos.webp",
+      "hover": "",
+      "gallery": []
     },
     "vulcano": {
       "source": "assets/menu/pizzas/autor/vulcano.webp",

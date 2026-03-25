@@ -98,6 +98,8 @@ The route is item-driven but uses a fixed top-level navigation grouping:
 - Active category can update from scroll position
 - Each category section renders its own title and item grid
 - Item detail uses a dynamic route (`/menu/<id>`) inside the same page shell (no modal, no per-item HTML files)
+- `item.detail_editorial.story.body` is rendered as safe editorial markdown (headings, bold/italic, ordered/unordered lists, blockquotes, horizontal rules, and markdown links) with plain-text fallback compatibility
+- `item.detail_editorial.pairings` renders as an ordered list of pairing cards in detail view; runtime keeps compatibility with legacy single-pairing payloads (`pairings` object or `pairing` object)
 - When `item.sensory_profile` exists, the detail view renders a dedicated `Perfil sensorial` section with an editorial subtitle, a right-aligned compact `Radar` / `Barras` toggle in the same heading row, radar as the default view, preserved summary copy, editorial icon-based radar axes, a smoothed radar area without per-axis point markers, a subtle stroke halo, and shared tap/focus icon tooltips (radar axes + bars X-axis icons) that auto-dismiss after 5 seconds or on outside dismissal; `Barras` renders one consolidated vertical chart (Y scale 1–10, shared accent bars with value-based opacity, and icon-only X axis)
 
 ### Sticky Navbar Layer

@@ -79,18 +79,30 @@ The primary menu data file. Contains all items grouped by section (category).
           "detail_editorial": {          // optional detail-page editorial layer
             "hero_badge": "vegetarian", // vegan|vegetarian|featured|none
             "compare_mode": "enabled",  // enabled|disabled (auto by omission)
-            "sensory_intro": "Una lectura sensorial del plato...", // legacy fallback only
-            "pairings": {
-              "enabled": true,
-              "name": "Chianti",
-              "meta": "Toscana · Tinto",
-              "description": "La acidez del tomate se equilibra con el vino.",
-              "cta_label": "Añadir copa",
-              "cta_target": "chianti"
+            "section_visibility": {      // optional per-item section visibility (missing keys => true)
+              "hero_media": true,
+              "header": true,
+              "ingredients": true,
+              "allergens": true,
+              "add_cta": true,
+              "sensory": true,
+              "pairings": true,
+              "story": true
             },
+            "sensory_intro": "Una lectura sensorial del plato...", // legacy fallback only
+            "pairings": [
+              {
+                "enabled": true,
+                "name": "Chianti",
+                "meta": "Toscana · Tinto",
+                "description": "La acidez del tomate se equilibra con el vino.",
+                "cta_label": "Añadir copa",
+                "cta_target": "chianti"
+              }
+            ],
             "story": {
               "title": "La historia detrás",
-              "body": "Texto largo editorial del plato."
+              "body": "Markdown editorial del plato (headings, listas, citas, enlaces, etc.)."
             }
           },
           "available": true,             // runtime availability (also in availability.json)
@@ -112,6 +124,11 @@ The primary menu data file. Contains all items grouped by section (category).
 - `items[].trait_overrides` is the only persisted editorial override surface for derived item traits
 - `items[].sensory_profile` is the structured detail-view sensory layer; it coexists with `experience_tags` and does not replace filters/chips
 - `items[].metrics` and `items[].detail_editorial` are the editable detail-page presentation layer used by the public menu detail UI
+- `items[].detail_editorial.section_visibility` controls full detail blocks per item (`hero_media`, `header`, `ingredients`, `allergens`, `add_cta`, `sensory`, `pairings`, `story`); if a known key is missing it is interpreted as `true` for backward compatibility
+- For `pairings` and `story`, runtime/editor behavior is content-gated: if the item has no editorial payload for that block, the section stays hidden by default (no placeholder content)
+- `items[].detail_editorial.pairings` canonical shape is an ordered array of pairing cards (`pairings[]`); runtime/admin keep read compatibility with legacy single-object payloads (`pairings` object and `pairing` object)
+- `items[].detail_editorial.story.body` is stored as markdown text and rendered through the same safe markdown parser in both the public detail route and the admin live preview
+- Story section title is globally owned by `home.menu_detail_editorial.story.section_title` (Pages > Editorial); per-item `detail_editorial.story.title` is treated as legacy compatibility only
 - `items[].detail_editorial.sensory_intro` is legacy compatibility only; the global owner for that section subtitle moved to `home.menu_detail_editorial.sensory_subtitle`
 - `items[].description` is the canonical item description for both catalog/list and detail pages; runtime keeps temporary read fallback from `descriptionLong`/`descriptionShort` during migration
 

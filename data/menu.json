@@ -14,8 +14,6 @@
           "slug": "berenjenas-parmesana",
           "category": "entradas",
           "subcategory": "",
-          "descriptionShort": "Capas de berenjena con salsa de tomate, mozzarella fundida y parmigiano.",
-          "descriptionLong": "",
           "price": 550,
           "ingredients": [
             "berenjena",
@@ -26,8 +24,11 @@
           ],
           "image": "assets/menu/entradas/berenjenas-a-la-parmesana.webp",
           "featured": false,
-          "available": true,
-          "description": "Capas de berenjena con salsa de tomate, mozzarella fundida y parmigiano."
+          "description": "Capas de berenjena con salsa de tomate, mozzarella fundida y parmigiano.",
+          "metrics": {
+            "etaMinutes": 30,
+            "rating": 4.7
+          }
         },
         {
           "id": "focaccia_parmigiano",
@@ -50,8 +51,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Focaccia caliente con romero, aceite de oliva y parmigiano rallado."
+          }
         },
         {
           "id": "bruschetta_classica",
@@ -75,8 +75,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Entrada clásica italiana con pomodoro fresco, pesto de albahaca y aceite de oliva extra virgen sobre base crujiente."
+          }
         },
         {
           "id": "insalata_caprese",
@@ -95,8 +94,7 @@
           ],
           "image": "assets/menu/entradas/insalata-caprese.webp",
           "featured": false,
-          "available": true,
-          "description": "Mozzarella fresca con pomodoro, pesto de albahaca y aceite de oliva."
+          "available": true
         },
         {
           "id": "carpaccio_bresaola",
@@ -114,8 +112,7 @@
           ],
           "image": "assets/menu/entradas/carpaccio-di-bresaola.webp",
           "featured": false,
-          "available": true,
-          "description": "Láminas de bresaola con tomate cherry y pesto de rúcula."
+          "available": true
         },
         {
           "id": "salsiccia_vino_miele",
@@ -133,8 +130,7 @@
           ],
           "image": "assets/menu/entradas/salsiccia-vino-e-miele.webp",
           "featured": false,
-          "available": true,
-          "description": "Salchicha dorada con miel y romero, de perfil dulce y aromático."
+          "available": true
         },
         {
           "id": "burrata_prosciutto",
@@ -153,8 +149,7 @@
           ],
           "image": "assets/menu/entradas/burrata-con-prosciutto.webp",
           "featured": false,
-          "available": true,
-          "description": "Burrata cremosa con prosciutto di Parma, tomate cherry y pesto."
+          "available": true
         },
         {
           "id": "tagliere_misto",
@@ -174,8 +169,7 @@
           ],
           "image": "assets/menu/entradas/tagliere-misto.webp",
           "featured": false,
-          "available": true,
-          "description": "Selección de quesos y embutidos italianos con pesto y mermelada de tomate."
+          "available": true
         },
         {
           "id": "focaccia_rellena",
@@ -197,8 +191,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Focaccia caliente rellena de mortadella, stracciatella y pesto."
+          }
         }
       ]
     },
@@ -212,8 +205,6 @@
           "slug": "margherita",
           "category": "pizza",
           "subcategory": "",
-          "descriptionShort": "La reina napolitana con pomodoro San Marzano, mozzarella fresca y albahaca.",
-          "descriptionLong": "Pomodoro San Marzano, mozzarella fresca y albahaca sobre masa madre de fermentación lenta, horneada al estilo napolitano.",
           "price": 500,
           "ingredients": [
             "mozzarella",
@@ -266,16 +257,26 @@
             "hero_badge": "vegetarian",
             "compare_mode": "enabled",
             "sensory_intro": "Una lectura sensorial del plato: cómo se expresa en sabor, textura y aroma.",
-            "pairings": {
-              "enabled": true,
-              "name": "Chianti",
-              "meta": "Toscana · Tinto",
-              "description": "La acidez del tomate se equilibra con la acidez del Chianti, mientras sus notas frutales realzan la frescura de la albahaca.",
-              "cta_label": "Añadir copa"
-            },
+            "pairings": [
+              {
+                "name": "Chianti",
+                "meta": "Toscana · Tinto",
+                "description": "La acidez del tomate se equilibra con la acidez del chianti, mientras sus notas frutales realzan la frescura de la albahaca.",
+                "cta_label": "Añadir copa"
+              },
+              {
+                "name": "Pinot Noir",
+                "meta": "Borgoña · Tinto",
+                "description": "Ligero y elegante, acompaña sin opacar los sabores."
+              },
+              {
+                "name": "Sauvignon Blanc",
+                "meta": "Loira · Blanco",
+                "description": "Fresco y ácido, limpia la cremosidad del queso."
+              }
+            ],
             "story": {
-              "title": "La historia detrás",
-              "body": "En 1889, el rey Umberto I of Italy y su esposa Margherita of Savoy visitaron Naples. En ese tiempo, la pizza era comida típica del pueblo y no de la realeza.\n\nUn pizzero llamado Raffaele Esposito, que trabajaba en la pizzería Pizzeria Brandi, fue invitado a preparar varias pizzas para la reina.\n\nSegún la historia tradicional, Esposito preparó tres pizzas diferentes, pero la reina quedó especialmente encantada con una hecha con tomate, mozzarella y albahaca.\n\nEstos ingredientes representaban los colores de la bandera italiana:\n\n- rojo (tomate)\n- blanco (mozzarella)\n- verde (albahaca)\n\nEn honor a la reina, la pizza fue llamada Pizza Margherita."
+              "body": "En **1889**, el rey **Umberto I of Italy** y su esposa **Margherita of Savoy** visitaron Naples. En ese tiempo, la pizza era comida típica del pueblo y no de la realeza.\n\nUn pizzero llamado **Raffaele Esposito**, que trabajaba en la pizzería **Pizzeria Brandi**, fue invitado a preparar varias pizzas para la reina.\n\nSegún la historia tradicional, Esposito preparó **tres pizzas diferentes**, pero la reina quedó especialmente encantada con una hecha con:\n\n* **Tomate**\n* **Mozzarella**\n* **Albahaca**\n\nEstos ingredientes representaban los colores de la bandera italiana 🇮🇹:\n\n* rojo (tomate)\n* blanco (mozzarella)\n* verde (albahaca)\n\nEn honor a la reina, la pizza fue llamada **Pizza Margherita**.\n\n---\n\n## 🇮🇹 De comida callejera a símbolo de Italia\n\nAntes de eso, la pizza era comida barata para trabajadores en Naples. Con el tiempo:\n\n* se volvió famosa en toda Italia\n* luego en Europa\n* y finalmente en todo el mundo\n\nHoy es considerada **la pizza clásica por excelencia** y una de las bases de la **Neapolitan pizza**, protegida como tradición culinaria."
             }
           },
           "description": "Pomodoro San Marzano, mozzarella fresca y albahaca sobre masa madre de fermentación lenta, horneada al estilo napolitano."
@@ -286,8 +287,6 @@
           "slug": "marinara",
           "category": "pizza",
           "subcategory": "",
-          "descriptionShort": "Clásica napolitana con pomodoro, ajo, orégano y aceite de oliva.",
-          "descriptionLong": "",
           "price": 500,
           "ingredients": [
             "pomodoro",
@@ -297,7 +296,6 @@
           ],
           "image": "assets/menu/pizzas/clasica/marinara.webp",
           "featured": false,
-          "available": true,
           "allergen_overrides": {
             "add": [
               "gluten"
@@ -341,16 +339,16 @@
             "hero_badge": "vegan",
             "compare_mode": "enabled",
             "sensory_intro": "Una lectura más directa y minimalista: tomate, ajo y aceite en equilibrio napolitano.",
-            "pairings": {
-              "enabled": true,
-              "name": "Vermentino",
-              "meta": "Cerdeña · Blanco seco",
-              "description": "La acidez cítrica y mineral del Vermentino acompaña el tomate y limpia el paladar tras el ajo y el orégano.",
-              "cta_label": "Añadir copa"
-            },
+            "pairings": [
+              {
+                "name": "Vermentino",
+                "meta": "Cerdeña · Blanco seco",
+                "description": "La acidez cítrica y mineral del Vermentino acompaña el tomate y limpia el paladar tras el ajo y el orégano.",
+                "cta_label": "Añadir copa"
+              }
+            ],
             "story": {
-              "title": "La historia detrás",
-              "body": "La Marinara es una de las pizzas más antiguas de Nápoles y nació como una opción simple, accesible y llena de carácter.\n\nSu nombre se asocia a los marineros que llegaban al puerto y buscaban una comida rápida, aromática y reconfortante.\n\nSin queso y con pocos ingredientes, su identidad se sostiene en la calidad del tomate, el ajo, el aceite de oliva y el orégano."
+              "body": "La **Marinara** es una de las pizzas más antiguas que existen y, de hecho, es incluso **más vieja que la Margherita**.\n\n---\n\n## ⚓ El origen “marinero”\n\nEl nombre **“Marinara”** no viene de mariscos (esto confunde a mucha gente), sino de los **marineros**.\n\nEn **Napoli, Italia**, durante el siglo XVIII:\n\n* Los marineros regresaban al puerto después de largas jornadas\n* Necesitaban comida **rápida, barata y que no se dañara fácilmente**\n\nLa solución perfecta fue esta pizza sencilla hecha con ingredientes duraderos.\n\n---\n\n## 🍅 Ingredientes originales (y clave de su historia)\n\nLa Marinara tradicional lleva:\n\n* **Tomate (pomodoro)**\n* **Ajo**\n* **Orégano**\n* **Aceite de oliva (EVOO)**\n\n👉 **No lleva queso** (esto es súper importante).\n\nEsto tenía todo el sentido:\n\n* el ajo y el aceite ayudaban a conservar\n* no dependía de productos frescos como la mozzarella\n\n---\n\n## 🏛️ Una de las primeras pizzas de la historia\n\nAntes de que existiera la **Neapolitan** pizza moderna como la conocemos:\n\n* La Marinara ya se vendía en las calles de Naples\n* Era comida típica del pueblo, especialmente de trabajadores y marineros\n* Se considera una de las **primeras versiones de pizza con tomate**\n\n---\n\n## 🇮🇹 Simplicidad absoluta = identidad italiana\n\nLa Marinara representa algo muy importante en la cocina italiana:\n\n> **Pocos ingredientes + máxima calidad = plato perfecto**\n\nNo intenta ser compleja. Es **minimalista, intensa y tradicional**. Su identidad se sostiene en la altísima calidad de los ingredientes del suelo italiano.\n\n---\n\n✅ **Dato curioso:**\n\nEn Nápoles, junto con la Margherita, la Marinara es una de las **dos pizzas oficiales tradicionales** reconocidas por la tradición napolitana."
             }
           },
           "description": "Clásica napolitana con pomodoro, ajo, orégano y aceite de oliva."
@@ -376,8 +374,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Mozzarella y pecorino con pimienta negra sobre base cremosa."
+          }
         },
         {
           "id": "margherita_fume",
@@ -402,8 +399,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Pomodoro, mozzarella y provola ahumada con albahaca fresca."
+          }
         },
         {
           "id": "diavola",
@@ -426,8 +422,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Una pizza de perfil picante con pomodoro, mozzarella y salamino piccante, horneada para lograr borde aireado y centro jugoso."
+          }
         },
         {
           "id": "filetti",
@@ -451,8 +446,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Mozzarella con tomate cherry, ajo y albahaca sobre base ligera."
+          }
         },
         {
           "id": "sweet_goat",
@@ -476,8 +470,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Mozzarella, queso de cabra, bacon y miel sobre masa madre napolitana para un balance cremoso, salado y ligeramente dulce."
+          }
         },
         {
           "id": "mamma",
@@ -501,8 +494,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Mozzarella con soppressata, mermelada de tomate y toque de menta."
+          }
         },
         {
           "id": "tonno",
@@ -526,8 +518,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Mozzarella con atún, pomodoro y cebolla sobre masa napolitana."
+          }
         },
         {
           "id": "puta",
@@ -553,8 +544,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Pomodoro con pancetta, aceitunas, alcaparras y pecorino."
+          }
         },
         {
           "id": "figata",
@@ -577,8 +567,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Combinación de mozzarella, mortadella y crema de trufa para una pizza untuosa y aromática, con carácter de autor."
+          }
         },
         {
           "id": "margherita_sbagliata",
@@ -602,8 +591,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Mozzarella, San Marzano DOP y pesto de albahaca sobre masa madre. Una margherita con más profundidad herbal y carácter."
+          }
         }
       ]
     },
@@ -634,8 +622,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Mozzarella con salsiccia, pancetta y salamino picante."
+          }
         },
         {
           "id": "quattro_formaggi_truffle",
@@ -660,8 +647,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Cuatro quesos italianos con crema de trufa aromática."
+          }
         },
         {
           "id": "boscaiola",
@@ -685,8 +671,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Mozzarella con salsiccia, porcini y pecorino trufado."
+          }
         },
         {
           "id": "calzone",
@@ -711,8 +696,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Pizza cerrada rellena de mozzarella, mortadella y porcini."
+          }
         },
         {
           "id": "corazon_burrata",
@@ -737,8 +721,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Mozzarella con prosciutto di Parma y burrata fresca al centro."
+          }
         },
         {
           "id": "fantasia_pistachos",
@@ -746,8 +729,6 @@
           "slug": "fantasia-pistachos",
           "category": "pizza_autor",
           "subcategory": "",
-          "descriptionShort": "Mortadella con stracciatella, pesto de pistacho y pistachos.",
-          "descriptionLong": "",
           "price": 950,
           "ingredients": [
             "mozzarella",
@@ -758,13 +739,21 @@
           ],
           "image": "assets/menu/pizzas/autor/fantasia-de-pistachos.webp",
           "featured": false,
-          "available": true,
           "allergen_overrides": {
             "add": [
               "gluten"
             ]
           },
-          "description": "Mortadella con stracciatella, pesto de pistacho y pistachos."
+          "description": "Mortadella con stracciatella, pesto de pistacho y pistachos.",
+          "metrics": {
+            "rating": 4.9
+          },
+          "detail_editorial": {
+            "section_visibility": {
+              "pairings": false,
+              "story": false
+            }
+          }
         },
         {
           "id": "vulcano",
@@ -818,8 +807,7 @@
                 "value": 10
               }
             }
-          },
-          "description": "Pizza de autor con nduja, tomate cherry, gorgonzola y chili flakes; cremosa y picante, con final persistente."
+          }
         },
         {
           "id": "bellezza",
@@ -845,8 +833,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Mozzarella con mortadella, porcini, aceitunas y parmigiano."
+          }
         },
         {
           "id": "passione_del_sud",
@@ -871,8 +858,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Pomodoro con nduja, salamino picante y stracciatella."
+          }
         },
         {
           "id": "soppressata",
@@ -898,8 +884,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Mozzarella con soppressata, ricotta, cebolla y miel."
+          }
         },
         {
           "id": "parmesana",
@@ -924,8 +909,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Mozzarella con berenjena, salsa de tomate y parmigiano."
+          }
         },
         {
           "id": "prosciutto_rucula",
@@ -949,8 +933,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Mozzarella con prosciutto di Parma y pesto de rúcula."
+          }
         }
       ]
     },
@@ -975,8 +958,7 @@
             "add": [
               "gluten"
             ]
-          },
-          "description": "Masa caliente con Nutella cremosa para compartir."
+          }
         },
         {
           "id": "tiramisu",
@@ -1019,8 +1001,7 @@
                 "value": 6
               }
             }
-          },
-          "description": "Tiramisú artesanal de textura suave con notas de café y cacao, ideal para cerrar la experiencia Figata."
+          }
         },
         {
           "id": "helado_artesanal",
@@ -1033,8 +1014,7 @@
           "price": 350,
           "ingredients": [],
           "image": "assets/menu/postres/helado-artesanal.webp",
-          "featured": false,
-          "description": "Helado artesanal cremoso servido bien frío."
+          "featured": false
         },
         {
           "id": "delicia_coco",
@@ -1048,8 +1028,7 @@
           "ingredients": [],
           "image": "assets/menu/postres/delicia-de-coco.webp",
           "featured": false,
-          "available": true,
-          "description": "Postre suave de coco con textura ligera y fresca."
+          "available": true
         },
         {
           "id": "tartufo_affogato",
@@ -1063,8 +1042,7 @@
           "ingredients": [],
           "image": "assets/menu/postres/tartufo-affogato.webp",
           "featured": false,
-          "available": true,
-          "description": "Helado de chocolate con espresso caliente vertido al momento."
+          "available": true
         }
       ]
     },
@@ -1134,8 +1112,7 @@
               "title": "La historia detrás",
               "body": "El Negroni nació en Florencia a inicios del siglo XX cuando se pidió una versión más intensa del Americano.\n\nLa receta clásica combina gin, vermut rojo y bitter en partes iguales, servidos sobre hielo.\n\nSu equilibrio entre amargor, dulzor y notas botánicas lo convirtió en un ícono de la coctelería italiana."
             }
-          },
-          "description": "Mezcla intensa y equilibrada, con notas herbales, amargas y cítricas. Servido en vaso corto sobre hielo para un trago serio, limpio y con mucha presencia."
+          }
         },
         {
           "id": "passion_spritz",
@@ -1149,8 +1126,7 @@
           "ingredients": [],
           "image": "assets/menu/bebidas/passion-spritz.webp",
           "featured": false,
-          "available": true,
-          "description": "Una versión vibrante y fresca, con burbujas, fruta y un toque cítrico que lo hace fácil de tomar. Ideal para abrir la mesa con algo alegre y refrescante."
+          "available": true
         },
         {
           "id": "gin_tonic",
@@ -1164,8 +1140,7 @@
           "ingredients": [],
           "image": "assets/menu/bebidas/gin-tonic.webp",
           "featured": false,
-          "available": true,
-          "description": "Trago ligero y aromático, con notas botánicas y sensación fresca en boca. Servido con hielo y un perfil seco que funciona bien a cualquier hora."
+          "available": true
         },
         {
           "id": "sangria",
@@ -1179,8 +1154,7 @@
           "ingredients": [],
           "image": "assets/menu/bebidas/sangria.webp",
           "featured": false,
-          "available": true,
-          "description": "Una bebida relajada y fácil de disfrutar, con carácter frutal y un perfil refrescante. Pensada para acompañar la comida sin sentirse pesada."
+          "available": true
         },
         {
           "id": "aperol_spritz",
@@ -1194,8 +1168,7 @@
           "ingredients": [],
           "image": "assets/menu/bebidas/aperol-spritz.webp",
           "featured": false,
-          "available": true,
-          "description": "Ligero, brillante y de amargor suave, con notas de naranja y un final seco. Un clásico para arrancar con algo fresco y de estilo italiano."
+          "available": true
         },
         {
           "id": "tequila_sour",
@@ -1209,8 +1182,7 @@
           "ingredients": [],
           "image": "assets/menu/bebidas/tequila-sour.webp",
           "featured": false,
-          "available": true,
-          "description": "Cocktail de textura redonda y perfil fresco, donde el lado cítrico se mezcla con una sensación suave y cremosa. Tiene presencia, pero se mantiene fácil de tomar."
+          "available": true
         },
         {
           "id": "cuba_libre",
@@ -1224,8 +1196,7 @@
           "ingredients": [],
           "image": "assets/menu/bebidas/cuba-libre.webp",
           "featured": false,
-          "available": true,
-          "description": "Simple, frío y directo, con un perfil dulce, especiado y muy fácil de reconocer. Servido sobre hielo para un trago familiar y siempre efectivo."
+          "available": true
         }
       ]
     },
@@ -1248,8 +1219,7 @@
           ],
           "image": "assets/menu/productos/producto-meremelada-della-mamma.webp",
           "featured": false,
-          "available": true,
-          "description": "Mermelada de tomate con toque fresco de menta."
+          "available": true
         },
         {
           "id": "burrata_fresca_producto",
@@ -1265,8 +1235,7 @@
           ],
           "image": "assets/menu/productos/producto-burrata.webp",
           "featured": false,
-          "available": true,
-          "description": "Burrata cremosa y suave, ideal para compartir."
+          "available": true
         },
         {
           "id": "aceite_evoo_aromatizado",
@@ -1285,8 +1254,7 @@
           ],
           "image": "assets/menu/productos/aceite-evoo.webp",
           "featured": false,
-          "available": true,
-          "description": "Aceite de oliva extra virgen infusionado con aromas italianos."
+          "available": true
         },
         {
           "id": "pesto_artesanal",
@@ -1303,8 +1271,7 @@
           ],
           "image": "assets/menu/productos/pesto.webp",
           "featured": false,
-          "available": true,
-          "description": "Pesto artesanal de rúcula o albahaca."
+          "available": true
         },
         {
           "id": "pan_ciabatta",
@@ -1373,8 +1340,7 @@
               "title": "La historia detrás",
               "body": "Nuestra ciabatta se trabaja con fermentación lenta para desarrollar aroma, estructura y una miga aireada.\n\nEl resultado busca equilibrio: exterior crocante y centro ligero, pensado para compartir o acompañar la mesa."
             }
-          },
-          "description": "Pan ciabatta de masa madre con corteza crujiente."
+          }
         }
       ]
     }

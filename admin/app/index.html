@@ -431,11 +431,13 @@
 
                     <section class="item-tab-panel is-active" data-tab-panel="editorial">
                       <section class="traits-panel-section item-editor-card" data-item-preview-section="header">
-                        <header class="traits-panel-section__header">
-                          <h4>Header del detalle</h4>
-                          <p>
-                            Configura lo principal que ve el comensal al abrir el detalle del plato.
-                          </p>
+                        <header class="traits-panel-section__header item-editor-card__head">
+                          <div class="item-editor-card__head-copy">
+                            <h4>Header del detalle</h4>
+                          </div>
+                          <div
+                            id="item-field-section-visibility-header-mount"
+                            class="item-editor-section-visibility-toggle"></div>
                         </header>
 
                         <div class="traits-override-grid">
@@ -494,11 +496,13 @@
                       </section>
 
                       <section class="traits-panel-section item-editor-card" data-item-preview-section="ingredients">
-                        <header class="traits-panel-section__header">
-                          <h4>Ingredientes y alergenos visibles</h4>
-                          <p>
-                            Este bloque alimenta directamente la ficha culinaria del detalle.
-                          </p>
+                        <header class="traits-panel-section__header item-editor-card__head">
+                          <div class="item-editor-card__head-copy">
+                            <h4>Ingredientes</h4>
+                          </div>
+                          <div
+                            id="item-field-section-visibility-ingredients-mount"
+                            class="item-editor-section-visibility-toggle"></div>
                         </header>
 
                         <label class="field">
@@ -509,7 +513,19 @@
                         <ul id="ingredient-chip-list" class="chip-list chip-list--draggable"></ul>
                         <p class="inline-help">Arrastra para cambiar el orden de ingredientes.</p>
 
-                        <div class="traits-panel-grid" data-item-preview-section="allergens">
+                      </section>
+
+                      <section class="traits-panel-section item-editor-card" data-item-preview-section="allergens">
+                        <header class="traits-panel-section__header item-editor-card__head">
+                          <div class="item-editor-card__head-copy">
+                            <h4>Alérgenos</h4>
+                          </div>
+                          <div
+                            id="item-field-section-visibility-allergens-mount"
+                            class="item-editor-section-visibility-toggle"></div>
+                        </header>
+
+                        <div class="traits-panel-grid">
                           <div class="traits-panel-card">
                             <span class="traits-panel-card__label">Alérgenos automáticos</span>
                             <div id="item-derived-allergens" class="traits-pill-list"></div>
@@ -522,12 +538,12 @@
                           </div>
                         </div>
 
-                        <div class="field" data-item-preview-section="allergens">
+                        <div class="field">
                           <span>Fuentes por alérgeno</span>
                           <div id="item-allergen-sources" class="allergen-source-list"></div>
                         </div>
 
-                        <details class="advanced-box" data-item-preview-section="allergens">
+                        <details class="advanced-box">
                           <summary>Excepciones avanzadas de alergenos</summary>
 
                           <div class="allergen-override-grid">
@@ -558,13 +574,25 @@
                         </details>
                       </section>
 
+                      <section class="traits-panel-section item-editor-card" data-item-preview-section="add-cta">
+                        <header class="traits-panel-section__header item-editor-card__head">
+                          <div class="item-editor-card__head-copy">
+                            <h4>Botón Añadir</h4>
+                          </div>
+                          <div
+                            id="item-field-section-visibility-add-cta-mount"
+                            class="item-editor-section-visibility-toggle"></div>
+                        </header>
+                      </section>
+
                       <section class="traits-panel-section item-editor-card" data-item-preview-section="sensory">
-                        <header class="traits-panel-section__header">
-                          <h4>Perfil sensorial</h4>
-                          <p>
-                            Controla la sección sensorial visible por plato: ejes y resumen/callout.
-                            El subtítulo general se edita en Pages > Menú.
-                          </p>
+                        <header class="traits-panel-section__header item-editor-card__head">
+                          <div class="item-editor-card__head-copy">
+                            <h4>Perfil sensorial</h4>
+                          </div>
+                          <div
+                            id="item-field-section-visibility-sensory-mount"
+                            class="item-editor-section-visibility-toggle"></div>
                         </header>
 
                         <label class="field">
@@ -594,68 +622,40 @@
                       </section>
 
                       <section class="traits-panel-section item-editor-card" data-item-preview-section="pairings">
-                        <header class="traits-panel-section__header">
-                          <h4>Maridajes recomendados</h4>
-                          <p>
-                            Bloque editorial del detalle. Por ahora se gestiona una recomendación principal.
-                          </p>
+                        <header class="traits-panel-section__header item-editor-card__head">
+                          <div class="item-editor-card__head-copy">
+                            <h4>Maridajes recomendados</h4>
+                          </div>
+                          <div
+                            id="item-field-section-visibility-pairings-mount"
+                            class="item-editor-section-visibility-toggle"></div>
                         </header>
 
-                        <label class="field">
-                          <span>Mostrar maridaje</span>
-                          <select id="item-field-pairing-enabled">
-                            <option value="no">No</option>
-                            <option value="yes">Si</option>
-                          </select>
-                        </label>
-
-                        <div class="traits-override-grid">
-                          <label class="field">
-                            <span>Nombre</span>
-                            <input id="item-field-pairing-name" type="text" placeholder="Ej: Chianti" />
-                          </label>
-
-                          <label class="field">
-                            <span>Meta</span>
-                            <input id="item-field-pairing-meta" type="text" placeholder="Ej: Toscana · Tinto" />
-                          </label>
+                        <div class="item-editor-pairings-toolbar">
+                          <button id="item-pairings-add-button" class="btn btn-ghost" type="button">
+                            Añadir maridaje
+                          </button>
                         </div>
 
-                        <label class="field">
-                          <span>Descripcion</span>
-                          <textarea id="item-field-pairing-description" rows="3"></textarea>
-                        </label>
-
-                        <div class="traits-override-grid">
-                          <label class="field">
-                            <span>CTA label</span>
-                            <input id="item-field-pairing-cta-label" type="text" placeholder="Ej: Añadir copa" />
-                          </label>
-                          <label class="field">
-                            <span>CTA target (itemId/url)</span>
-                            <input id="item-field-pairing-cta-target" type="text" placeholder="Ej: chianti o https://..." />
-                          </label>
-                        </div>
+                        <div id="item-pairings-list" class="item-editor-pairings-list"></div>
                       </section>
 
                       <section class="traits-panel-section item-editor-card" data-item-preview-section="story">
-                        <header class="traits-panel-section__header">
-                          <h4>Historia detrás</h4>
-                          <p>
-                            Contenido editorial largo del detalle del plato.
-                          </p>
+                        <header class="traits-panel-section__header item-editor-card__head">
+                          <div class="item-editor-card__head-copy">
+                            <h4>Historia detrás</h4>
+                          </div>
+                          <div
+                            id="item-field-section-visibility-story-mount"
+                            class="item-editor-section-visibility-toggle"></div>
                         </header>
-
-                        <label class="field">
-                          <span>Titulo</span>
-                          <input id="item-field-history-title" type="text" placeholder="Ej: La historia detrás" />
-                        </label>
 
                         <label class="field">
                           <span>Cuerpo (texto/markdown simple)</span>
                           <textarea id="item-field-history-body" rows="8"></textarea>
                         </label>
                       </section>
+
                     </section>
 
                     <section class="item-tab-panel" data-tab-panel="traits">
@@ -772,6 +772,15 @@
                     </section>
 
                     <section class="item-tab-panel" data-tab-panel="media" data-item-preview-section="hero-media">
+                      <header class="traits-panel-section__header item-editor-card__head item-editor-media-head">
+                        <div class="item-editor-card__head-copy">
+                          <h4>Hero / media</h4>
+                        </div>
+                        <div
+                          id="item-field-section-visibility-hero-media-mount"
+                          class="item-editor-section-visibility-toggle"></div>
+                      </header>
+
                       <label class="field">
                         <span>Image path</span>
                         <input id="item-field-image" type="text" />

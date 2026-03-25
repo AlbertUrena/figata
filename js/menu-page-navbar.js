@@ -119,6 +119,8 @@
     burgerAnimationProgress: 0,
     stickySearchFocusTimerId: 0,
     stickySearchFocusCleanup: null,
+    stickySearchAutoOpenSuppressed: false,
+    lastWindowScrollY: window.scrollY || 0,
   };
 
   const refs = {
@@ -1080,6 +1082,36 @@
     }, waitMs);
   };
 
+  const closeStickySearch = ({ suppressAutoOpen = false, blurActiveInput = false } = {}) => {
+    state.stickySearchOpen = false;
+    state.shouldFocusCompactSearch = false;
+    clearPendingStickySearchFocus();
+
+    if (suppressAutoOpen) {
+      state.stickySearchAutoOpenSuppressed = true;
+    }
+
+    if (!blurActiveInput) {
+      return;
+    }
+
+    if (
+      refs.compactSearchInput instanceof HTMLInputElement &&
+      document.activeElement === refs.compactSearchInput &&
+      typeof refs.compactSearchInput.blur === 'function'
+    ) {
+      refs.compactSearchInput.blur();
+    }
+
+    if (
+      refs.mobileSearchInput instanceof HTMLInputElement &&
+      document.activeElement === refs.mobileSearchInput &&
+      typeof refs.mobileSearchInput.blur === 'function'
+    ) {
+      refs.mobileSearchInput.blur();
+    }
+  };
+
   const updateSearchControlsFor = (input, clearButton) => {
     if (
       !(input instanceof HTMLInputElement) ||
@@ -1471,7 +1503,13 @@
       state.stickySearchOpen = false;
     }
 
-    if (isStickyActive() && state.menuState?.isSearching) {
+    const isSearching = Boolean(state.menuState?.isSearching);
+
+    if (!isSearching) {
+      state.stickySearchAutoOpenSuppressed = false;
+    }
+
+    if (isStickyActive() && isSearching && !state.stickySearchAutoOpenSuppressed) {
       state.stickySearchOpen = true;
     }
 
@@ -1767,7 +1805,20 @@
   };
 
   const bindObservers = () => {
-    window.addEventListener('scroll', scheduleSync, { passive: true });
+    window.addEventListener('scroll', () => {
+      const currentScrollY = window.scrollY || 0;
+      const hasScrolled = Math.abs(currentScrollY - state.lastWindowScrollY) > 1;
+      state.lastWindowScrollY = currentScrollY;
+
+      if (hasScrolled && state.stickySearchOpen) {
+        closeStickySearch({
+          suppressAutoOpen: true,
+          blurActiveInput: true,
+        });
+      }
+
+      scheduleSync();
+    }, { passive: true });
     window.addEventListener('resize', () => {
       observeThreshold();
       scheduleSync();
@@ -2043,7 +2094,7 @@
 
       if (isStickyActive()) {
         state.suppressAutoSticky = true;
-        state.stickySearchOpen = false;
+        closeStickySearch({ suppressAutoOpen: true });
       } else {
         state.suppressAutoSticky = false;
       }
@@ -2056,8 +2107,14 @@
         return;
       }
 
-      state.stickySearchOpen = !state.stickySearchOpen;
-      state.shouldFocusCompactSearch = state.stickySearchOpen;
+      const nextOpen = !state.stickySearchOpen;
+      if (!nextOpen) {
+        closeStickySearch({ suppressAutoOpen: true });
+      } else {
+        state.stickySearchOpen = true;
+        state.shouldFocusCompactSearch = true;
+        state.stickySearchAutoOpenSuppressed = false;
+      }
       applyUiState();
     });
 
@@ -2077,8 +2134,17 @@
         return;
       }
 
-      state.stickySearchOpen = !state.stickySearchOpen;
-      state.shouldFocusCompactSearch = state.stickySearchOpen;
+      const nextOpen = !state.stickySearchOpen;
+      if (!nextOpen) {
+        closeStickySearch({
+          suppressAutoOpen: true,
+          blurActiveInput: true,
+        });
+      } else {
+        state.stickySearchOpen = true;
+        state.shouldFocusCompactSearch = true;
+        state.stickySearchAutoOpenSuppressed = false;
+      }
       applyUiState();
     });
 
@@ -2158,7 +2224,10 @@
       }
 
       if (!refs.mobileSearchTool.contains(target)) {
-        state.stickySearchOpen = false;
+        closeStickySearch({
+          suppressAutoOpen: true,
+          blurActiveInput: true,
+        });
         applyUiState();
       }
     });
@@ -2181,7 +2250,10 @@
           return;
         }
 
-        state.stickySearchOpen = false;
+        closeStickySearch({
+          suppressAutoOpen: true,
+          blurActiveInput: true,
+        });
         refs.mobileSearchButton?.focus();
         applyUiState();
       }
@@ -2206,7 +2278,7 @@
             return;
           }
 
-          state.stickySearchOpen = false;
+          closeStickySearch({ suppressAutoOpen: true });
           refs.searchButton?.focus();
           applyUiState();
         }
@@ -2264,7 +2336,10 @@
             return;
           }
 
-          state.stickySearchOpen = false;
+          closeStickySearch({
+            suppressAutoOpen: true,
+            blurActiveInput: true,
+          });
           refs.mobileSearchButton?.focus();
           applyUiState();
         }
