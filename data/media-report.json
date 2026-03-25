@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-03-11T02:59:31.877Z",
+  "generatedAt": "2026-03-25T19:17:56.414Z",
   "schemaVersion": 2,
   "summary": {
     "errors": 0,
     "warnings": 1,
-    "menuItems": 43,
-    "mediaItems": 43,
+    "menuItems": 50,
+    "mediaItems": 50,
     "missingMediaItems": 0,
     "unknownMediaItems": 0,
     "missingSource": 0,

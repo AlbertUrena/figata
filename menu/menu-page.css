@@ -1,6 +1,7 @@
 html.menu-page-root {
   --nav-collapse: 0;
   --nav-collapse-inv: 1;
+  --menu-mobile-top-inset: 0px;
   --menu-list-color-surface-card: hsl(240 4% 10%);
   --menu-list-color-text-primary: hsl(40 12% 93%);
   --menu-list-color-text-strong: hsl(40 12% 93% / 0.9);
@@ -326,6 +327,12 @@ body.menu-page-body.menu-filters-open {
 
 .site-header {
   transform-origin: center top;
+  box-sizing: border-box;
+  padding-top: var(--menu-mobile-top-inset);
+}
+
+.site-header .navbar {
+  box-sizing: border-box;
 }
 
 .menu-page-main {
@@ -5231,6 +5238,11 @@ html[data-account-card-vt="active"]::view-transition-new(menu-account-toast) {
 }
 
 @media (max-width: 1023px) {
+  html.menu-page-root {
+    --menu-mobile-top-inset: max(0px, env(safe-area-inset-top, 0px));
+    --navbar-height: calc(76px + var(--menu-mobile-top-inset));
+  }
+
   .menu-page-body[data-menu-page-view="list"] {
     --menu-mobile-rail: 0.875rem;
     --menu-list-content-gap: clamp(2.125rem, 5.8vw, 3.25rem);
@@ -5246,10 +5258,10 @@ html[data-account-card-vt="active"]::view-transition-new(menu-account-toast) {
   .menu-page-body[data-menu-page-view="list"] .menu-page-list::before {
     content: "";
     position: absolute;
-    top: calc(-1 * (var(--navbar-height) + clamp(22px, 4vw, 36px)));
+    top: calc(-1 * (var(--navbar-height) + clamp(30px, 6vh, 56px)));
     left: 50%;
     width: 100vw;
-    height: calc(var(--navbar-height) + clamp(22px, 4vw, 36px) + clamp(390px, 58vh, 540px));
+    height: calc(var(--navbar-height) + clamp(30px, 6vh, 56px) + clamp(390px, 58vh, 540px));
     transform: translateX(-50%);
     pointer-events: none;
     z-index: -1;
@@ -5314,11 +5326,11 @@ html[data-account-card-vt="active"]::view-transition-new(menu-account-toast) {
   }
 
   .menu-page-main {
-    padding-top: calc(var(--navbar-height) + clamp(22px, 4vw, 36px));
+    padding-top: calc(var(--navbar-height) + clamp(8px, 2vw, 14px));
   }
 
   .menu-page-body[data-menu-page-view="detail"] .menu-page-main {
-    padding-top: calc(var(--navbar-height) + 0.75rem);
+    padding-top: calc(var(--navbar-height) + 0.5rem);
   }
 
   .menu-page-body[data-menu-page-view="detail"][data-menu-detail-hero="editorial"] .menu-page-main {
@@ -5332,7 +5344,7 @@ html[data-account-card-vt="active"]::view-transition-new(menu-account-toast) {
 
   .menu-page-intro {
     gap: 8px;
-    padding-top: clamp(28px, 5vh, 40px);
+    padding-top: clamp(12px, 3vh, 24px);
     margin-bottom: clamp(60px, 10vh, 92px);
   }
 
