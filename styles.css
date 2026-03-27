@@ -897,6 +897,38 @@ html.nav--collapsed .site-header[data-menu-sticky-mode="sticky"][data-menu-stick
   text-overflow: ellipsis;
 }
 
+.navbar--menu-route .navbar__mobile-menu-title-row {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navbar--menu-route .navbar__mobile-menu-title-row .navbar__mobile-menu-title {
+  flex: 0 1 auto;
+}
+
+.navbar--menu-route .navbar__mobile-menu-badge {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 20px;
+  padding: 5px 7px 4px;
+  border-radius: 999px;
+  background: #bde0fe;
+  color: #023047;
+  font-family: "Montserrat", "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.16),
+    0 4px 10px rgba(0, 0, 0, 0.13);
+}
+
 .navbar--menu-route .navbar__mobile-menu-meta {
   color: rgba(240, 239, 237, 0.66);
   font-size: 0.74rem;
@@ -3272,6 +3304,12 @@ html.page-reload-transition main {
 
   .navbar--menu-route .navbar__mobile-menu-title {
     font-size: 0.98rem;
+  }
+
+  .navbar--menu-route .navbar__mobile-menu-badge {
+    min-height: 18px;
+    padding: 4px 6px 3px;
+    font-size: 0.56rem;
   }
 
   .navbar--menu-route .navbar__mobile-menu-meta {

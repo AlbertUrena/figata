@@ -99,7 +99,7 @@
 
 .eventos-main {
   width: 100%;
-  padding: calc(var(--navbar-height) + 26px) 0 90px;
+  padding: calc(var(--navbar-height) + 26px) 0 52px;
   color: #F0EFED;
 }
 
@@ -178,11 +178,11 @@
   margin: 0;
   font-size: 1rem;
   line-height: 1.62;
-  max-width: 36ch;
+  max-width: none;
 }
 
 .eventos-hero__video-block {
-  margin: 4px 0 0;
+  margin: 8px 0 0;
   display: grid;
   gap: 10px;
 }
@@ -284,18 +284,39 @@
 
 .eventos-what__media {
   margin: 18px 0 0;
-  display: grid;
-  gap: 10px;
+  display: block;
 }
 
 .eventos-what__media img {
   width: 100%;
   display: block;
-  aspect-ratio: 16 / 10;
   object-fit: cover;
   border-radius: 20px;
   border: 1px solid rgba(240, 239, 237, 0.2);
   background: #101010;
+  aspect-ratio: 16 / 10;
+}
+
+.eventos-what__media--parallax {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid rgba(240, 239, 237, 0.2);
+  background: #101010;
+  aspect-ratio: 16 / 7.5;
+}
+
+.eventos-what__media--parallax img {
+  position: absolute;
+  inset: 50% 0 auto;
+  width: 100%;
+  height: 133.333%;
+  object-fit: cover;
+  aspect-ratio: auto;
+  border: 0;
+  border-radius: 0;
+  transform: translate3d(0, calc(-50% + var(--eventos-parallax-y, 0px)), 0);
+  will-change: transform;
 }
 
 .eventos-what__closing {
@@ -315,8 +336,7 @@
 }
 
 .eventos-callout,
-.eventos-sample-menu__block,
-.eventos-final-cta__panel {
+.eventos-sample-menu__block {
   background: #202020;
   border: 1px solid rgba(240, 239, 237, 0.2);
   border-radius: 18px;
@@ -1927,6 +1947,21 @@
   aspect-ratio: 16 / 9;
 }
 
+.eventos-collage__tile--lead-parallax {
+  aspect-ratio: 16 / 6.75;
+}
+
+.eventos-collage__tile--lead-parallax img {
+  position: absolute;
+  inset: 50% 0 auto;
+  width: 100%;
+  height: 133.333%;
+  object-fit: cover;
+  transform: translate3d(0, calc(-50% + var(--eventos-parallax-y, 0px)), 0);
+  transition: none;
+  will-change: transform;
+}
+
 .eventos-collage__tile--small {
   aspect-ratio: 4 / 3;
 }
@@ -1974,6 +2009,11 @@
 .eventos-collage__tile:hover img,
 .eventos-collage__tile:focus-visible img {
   transform: scale(1.03);
+}
+
+.eventos-collage__tile--lead-parallax:hover img,
+.eventos-collage__tile--lead-parallax:focus-visible img {
+  transform: translate3d(0, calc(-50% + var(--eventos-parallax-y, 0px)), 0);
 }
 
 .eventos-page-root {
@@ -2457,27 +2497,61 @@
   transform: rotate(180deg);
 }
 
+.eventos-final-cta {
+  margin-top: 62px;
+  padding-top: 10px;
+}
+
 .eventos-final-cta__panel {
-  padding: 20px 16px;
+  padding: 0;
   display: grid;
-  gap: 12px;
+  gap: 16px;
+  max-width: 56ch;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
 }
 
 .eventos-final-cta__panel h2 {
   margin: 0;
   font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  font-size: clamp(1.75rem, 7vw, 2.5rem);
+  font-size: clamp(1.62rem, 7.2vw, 2.6rem);
   font-weight: 700;
-  line-height: 1.12;
-  letter-spacing: -0.018em;
-  max-width: 18ch;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  max-width: 14ch;
+  text-wrap: balance;
+}
+
+.eventos-final-cta__panel p {
+  max-width: 48ch;
+  color: rgba(240, 239, 237, 0.82);
 }
 
 .eventos-final-cta__button {
-  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  justify-self: stretch;
+  margin-top: 4px;
+  min-height: 44px;
+  padding: 0 22px;
+  width: 100%;
+  text-decoration: none;
+}
+
+.eventos-final-cta__button img {
+  width: 16px;
+  height: 16px;
 }
 
 @media (min-width: 700px) {
+  .eventos-final-cta__button {
+    justify-self: end;
+    width: auto;
+  }
+
   .eventos-container {
     width: min(1040px, calc(100% - 58px));
   }
@@ -2521,6 +2595,16 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .eventos-what__media--parallax img {
+    transform: translate3d(0, -50%, 0);
+    will-change: auto;
+  }
+
+  .eventos-collage__tile--lead-parallax img {
+    transform: translate3d(0, -50%, 0);
+    will-change: auto;
+  }
+
   .eventos-page-body::before {
     transition: none;
   }

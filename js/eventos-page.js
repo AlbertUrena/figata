@@ -16,7 +16,8 @@
     },
     eventos: {
       subtitle: 'Pizza Party by Figata',
-      thumbSrc: 'assets/home/caja.webp',
+      thumbSrc: 'assets/eventos/thumb.webp',
+      badgeLabel: 'NEW',
     },
     nosotros: {
       subtitle: 'Nuestra historia real',
@@ -286,7 +287,7 @@
   const QUOTE_VIEW_TRANSITION_CARD_NAME_PREFIX = 'eventos-quote-track-';
   const QUOTE_VIEW_TRANSITION_MEDIA_SUFFIX = '-media';
   const QUOTE_VIEW_TRANSITION_TITLE_SUFFIX = '-title';
-  const WHATSAPP_QUOTE_URL = 'https://wa.me/message/XQGQ7GEE2O5BD1';
+  const WHATSAPP_QUOTE_PHONE = '18095245117';
   const QUOTE_CURRENCY_FORMATTER = new Intl.NumberFormat('es-DO', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
@@ -628,11 +629,22 @@
       title.className = 'navbar__mobile-menu-title';
       title.textContent = label;
 
+      const titleRow = document.createElement('span');
+      titleRow.className = 'navbar__mobile-menu-title-row';
+      titleRow.appendChild(title);
+
       const meta = document.createElement('span');
       meta.className = 'navbar__mobile-menu-meta';
       meta.textContent = entryConfig?.subtitle || 'Descubre esta sección';
 
-      copy.append(title, meta);
+      if (entryConfig?.badgeLabel) {
+        const badge = document.createElement('span');
+        badge.className = 'navbar__mobile-menu-badge';
+        badge.textContent = entryConfig.badgeLabel;
+        titleRow.appendChild(badge);
+      }
+
+      copy.append(titleRow, meta);
 
       const chevron = document.createElement('span');
       chevron.className = 'navbar__mobile-menu-chevron';
@@ -2250,10 +2262,7 @@
 
     if (refs.quoteSummaryBaseFee instanceof HTMLElement) {
       if (breakdown.baseServiceFeeWaived) {
-        refs.quoteSummaryBaseFee.innerHTML = `
-          <span class="eventos-cotizador-summary__striked">${formatDop(QUOTE_BASE_SERVICE_FEE_DOP)}</span>
-          <strong class="eventos-cotizador-summary__included">Incluido</strong>
-        `;
+        refs.quoteSummaryBaseFee.innerHTML = '<strong class="eventos-cotizador-summary__included">Incluido</strong>';
       } else {
         refs.quoteSummaryBaseFee.textContent = formatDop(breakdown.baseServiceFee);
       }
@@ -2276,7 +2285,7 @@
         if (!variety) {
           return '';
         }
-        return `- ${variety.name}`;
+        return `  - ${variety.name}`;
       })
       .filter(Boolean);
 
@@ -2782,8 +2791,9 @@
       }
 
       const message = buildQuoteWhatsappMessage(breakdown);
-      const separator = WHATSAPP_QUOTE_URL.includes('?') ? '&' : '?';
-      const whatsappUrl = `${WHATSAPP_QUOTE_URL}${separator}text=${encodeURIComponent(message)}`;
+      const whatsappUrl = `https://wa.me/${WHATSAPP_QUOTE_PHONE}?text=${encodeURIComponent(
+        message
+      )}`;
       window.open(whatsappUrl, '_blank', 'noopener');
     });
 
@@ -2836,11 +2846,112 @@
     }
   };
 
+  const initSectionParallax = () => {
+    const parallaxEntries = [
+      {
+        frame: document.querySelector('[data-eventos-what-parallax]'),
+        imageSelector: '[data-eventos-what-parallax-image]',
+      },
+      {
+        frame: document.querySelector('[data-eventos-collage-parallax]'),
+        imageSelector: '[data-eventos-collage-parallax-image]',
+      },
+    ]
+      .map((entry) => {
+        if (!(entry.frame instanceof HTMLElement)) {
+          return null;
+        }
+        const image = entry.frame.querySelector(entry.imageSelector);
+        if (!(image instanceof HTMLImageElement)) {
+          return null;
+        }
+        return {
+          frame: entry.frame,
+          image,
+          maxShift: 0,
+        };
+      })
+      .filter(Boolean);
+
+    if (!parallaxEntries.length) {
+      return;
+    }
+
+    let frameTickId = 0;
+    const clampRange = (value, min, max) => Math.min(max, Math.max(min, value));
+
+    const applyParallaxFrame = () => {
+      frameTickId = 0;
+
+      if (reducedMotionQuery.matches) {
+        parallaxEntries.forEach((entry) => {
+          entry.frame.style.setProperty('--eventos-parallax-y', '0px');
+        });
+        return;
+      }
+
+      const viewportHeight = window.innerHeight || root.clientHeight || 1;
+      const viewportCenter = viewportHeight / 2;
+
+      parallaxEntries.forEach((entry) => {
+        const rect = entry.frame.getBoundingClientRect();
+        const frameCenter = rect.top + rect.height / 2;
+        const delta = viewportCenter - frameCenter;
+        const normalized = clampRange(delta / (viewportHeight * 0.65), -1, 1);
+        const shift = normalized * entry.maxShift;
+        entry.frame.style.setProperty('--eventos-parallax-y', `${shift.toFixed(2)}px`);
+      });
+    };
+
+    const queueParallaxFrame = () => {
+      if (frameTickId) {
+        return;
+      }
+      frameTickId = window.requestAnimationFrame(applyParallaxFrame);
+    };
+
+    const measureParallaxFrame = () => {
+      parallaxEntries.forEach((entry) => {
+        entry.maxShift = entry.frame.clientHeight / 6;
+      });
+      queueParallaxFrame();
+    };
+
+    const handleMotionPreferenceChange = () => {
+      if (reducedMotionQuery.matches) {
+        parallaxEntries.forEach((entry) => {
+          entry.frame.style.setProperty('--eventos-parallax-y', '0px');
+        });
+        return;
+      }
+      queueParallaxFrame();
+    };
+
+    window.addEventListener('scroll', queueParallaxFrame, { passive: true });
+    window.addEventListener('resize', measureParallaxFrame, { passive: true });
+    window.addEventListener('orientationchange', measureParallaxFrame);
+
+    if (typeof reducedMotionQuery.addEventListener === 'function') {
+      reducedMotionQuery.addEventListener('change', handleMotionPreferenceChange);
+    } else if (typeof reducedMotionQuery.addListener === 'function') {
+      reducedMotionQuery.addListener(handleMotionPreferenceChange);
+    }
+
+    parallaxEntries.forEach((entry) => {
+      if (!entry.image.complete) {
+        entry.image.addEventListener('load', measureParallaxFrame, { once: true });
+      }
+    });
+
+    measureParallaxFrame();
+  };
+
   const init = () => {
     initFaqAccordion();
     initPhotoTour();
     initQuoteCalculator();
     initHeroVideo();
+    initSectionParallax();
     initMenuNavbar();
   };
 

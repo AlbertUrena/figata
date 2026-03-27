@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="eventos/eventos.css">
   <link rel="stylesheet" href="shared/public-scroll-indicator.css">
 </head>
-<body class="eventos-page-body" data-nav-collapse-threshold="460">
+<body class="eventos-page-body" data-nav-collapse-threshold="460" data-nav-collapse-target=".eventos-chip">
   <header class="site-header" data-public-navbar-host data-public-navbar-hide-cta data-eventos-burger-nav data-menu-mobile-nav="closed">
     <nav class="navbar" aria-label="Navegación principal">
       <div class="navbar__inner">
@@ -82,8 +82,8 @@
             <li>Pizzas horneadas al momento</li>
             <li>Ideal para grupos y celebraciones</li>
           </ul>
-          <figure class="eventos-what__media">
-            <img src="assets/eventos/que-es.webp" alt="Montaje Pizza Party by Figata en un evento" loading="lazy" decoding="async">
+          <figure class="eventos-what__media eventos-what__media--parallax" data-eventos-what-parallax>
+            <img class="eventos-what__media-image" data-eventos-what-parallax-image src="assets/eventos/que-es.webp" alt="Montaje Pizza Party by Figata en un evento" loading="lazy" decoding="async">
           </figure>
           <p class="eventos-what__closing">Tu evento pone la ocasión. Nosotros cocinamos. Tus invitados disfrutan.</p>
         </div>
@@ -143,11 +143,13 @@
           <div class="eventos-flow-gallery" aria-label="Vista previa de la galería de eventos">
             <div class="eventos-collage" data-eventos-collage>
               <button
-                class="eventos-collage__tile eventos-collage__tile--lead"
+                class="eventos-collage__tile eventos-collage__tile--lead eventos-collage__tile--lead-parallax"
                 type="button"
                 data-eventos-tour-open
+                data-eventos-collage-parallax
                 aria-label="Abrir galería de fotos de Pizza Party by Figata">
                 <img
+                  data-eventos-collage-parallax-image
                   src="assets/eventos/collage/corito/corito-0.webp"
                   alt="Pizza Party by Figata en la playa, vista general de la experiencia"
                   loading="lazy"
@@ -534,13 +536,12 @@
     <section class="eventos-section eventos-final-cta" id="reservar" aria-labelledby="cotizar-title">
       <div class="eventos-container">
         <div class="eventos-final-cta__panel">
-          <h2 id="cotizar-title">Cierre</h2>
+          <h2 id="cotizar-title">Cuéntanos tu idea</h2>
           <p>
-            Cuéntanos fecha, cantidad de invitados y tipo de celebración. Te ayudamos a armar
-            una propuesta clara para activar tu Pizza Party by Figata.
+            Compártenos la fecha, el tamaño del grupo y el tipo de celebración. Nosotros te ayudamos a convertirlo en una propuesta clara y fácil de coordinar.
           </p>
-          <a class="cta-button btn-liquid-glass eventos-final-cta__button" href="https://wa.me/18095550123?text=Hola%20Figata,%20quiero%20reservar%20Pizza%20Party" target="_blank" rel="noopener">
-            <span>Reservar / Cotizar</span>
+          <a class="preview-overlay__button preview-overlay__button--primary is-available eventos-final-cta__button" href="https://wa.me/18095550123?text=Hola%20Figata,%20quiero%20reservar%20Pizza%20Party" target="_blank" rel="noopener">
+            <span>Escríbenos</span>
             <img src="assets/svg-icons/whatsapp.svg" alt="" aria-hidden="true">
           </a>
         </div>

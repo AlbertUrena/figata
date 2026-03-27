@@ -22,8 +22,14 @@
   const fallbackThresholdRaw =
     root.getAttribute("data-nav-collapse-threshold") ||
     document.body.getAttribute("data-nav-collapse-threshold");
-  const fallbackScrollThreshold = Number.parseFloat(fallbackThresholdRaw);
-  const hasFallbackScrollThreshold = Number.isFinite(fallbackScrollThreshold);
+  const fallbackThresholdTargetSelector = (
+    root.getAttribute("data-nav-collapse-target") ||
+    document.body.getAttribute("data-nav-collapse-target") ||
+    ""
+  ).trim();
+  const hasFallbackThresholdTarget = Boolean(fallbackThresholdTargetSelector);
+  let fallbackScrollThreshold = Number.parseFloat(fallbackThresholdRaw);
+  let hasFallbackScrollThreshold = Number.isFinite(fallbackScrollThreshold);
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   let sentinel = null;
   let observer = null;
@@ -136,7 +142,7 @@
 
   // Routes without a hero can still reuse the same navbar transition by declaring
   // a scroll threshold in markup. If none is declared, keep width vars in sync only.
-  if (!hero && !hasFallbackScrollThreshold) {
+  if (!hero && !hasFallbackScrollThreshold && !hasFallbackThresholdTarget) {
     const syncStaticWidths = () => {
       syncNavWidthVars();
     };
@@ -164,6 +170,28 @@
     }
 
     return header.getBoundingClientRect().height || header.offsetHeight || 76;
+  };
+
+  const syncFallbackTargetThreshold = () => {
+    if (!hasFallbackThresholdTarget) {
+      return;
+    }
+
+    const targetElement = document.querySelector(fallbackThresholdTargetSelector);
+    if (!(targetElement instanceof HTMLElement)) {
+      return;
+    }
+
+    const currentScrollY = window.scrollY || window.pageYOffset || 0;
+    const targetTop = targetElement.getBoundingClientRect().top + currentScrollY;
+    const nextThreshold = targetTop - getNavbarHeight();
+
+    if (!Number.isFinite(nextThreshold)) {
+      return;
+    }
+
+    fallbackScrollThreshold = Math.max(0, Math.round(nextThreshold));
+    hasFallbackScrollThreshold = true;
   };
 
   const ensureSentinel = () => {
@@ -340,6 +368,8 @@
     syncNavWidthVars();
     if (hero) {
       placeSentinel();
+    } else {
+      syncFallbackTargetThreshold();
     }
     scheduleEvaluate();
   };

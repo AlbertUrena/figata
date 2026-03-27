@@ -29,7 +29,8 @@
     },
     eventos: {
       subtitle: 'Pizza Party by Figata',
-      thumbSrc: 'assets/home/caja.webp',
+      thumbSrc: 'assets/eventos/thumb.webp',
+      badgeLabel: 'NEW',
     },
     nosotros: {
       subtitle: 'Nuestra historia real',
@@ -448,15 +449,26 @@
       title.className = 'navbar__mobile-menu-title';
       title.textContent = label;
 
+      const titleRow = document.createElement('span');
+      titleRow.className = 'navbar__mobile-menu-title-row';
+      titleRow.appendChild(title);
+
       const meta = document.createElement('span');
       meta.className = 'navbar__mobile-menu-meta';
       const labelKey = toLookupKey(label);
       const entryConfig = MOBILE_MENU_ENTRY_BY_KEY[labelKey] || null;
       meta.textContent = entryConfig?.subtitle || 'Descubre esta sección';
 
+      if (entryConfig?.badgeLabel) {
+        const badge = document.createElement('span');
+        badge.className = 'navbar__mobile-menu-badge';
+        badge.textContent = entryConfig.badgeLabel;
+        titleRow.appendChild(badge);
+      }
+
       const copy = document.createElement('span');
       copy.className = 'navbar__mobile-menu-copy';
-      copy.append(title, meta);
+      copy.append(titleRow, meta);
 
       const thumb = document.createElement('span');
       thumb.className = 'navbar__mobile-menu-thumb';
