@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="es" class="eventos-page-root">
+<head>
+  <meta charset="UTF-8">
+  <base href="../">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Eventos | Pizza Party by Figata</title>
+  <meta name="description" content="Pizza Party by Figata: llevamos hornos portátiles y cocinamos pizza en vivo para tu evento.">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="eventos/eventos.css">
+  <link rel="stylesheet" href="shared/public-scroll-indicator.css">
+</head>
+<body class="eventos-page-body" data-nav-collapse-threshold="460">
+  <header class="site-header" data-public-navbar-host data-public-navbar-hide-cta data-eventos-burger-nav data-menu-mobile-nav="closed">
+    <nav class="navbar" aria-label="Navegación principal">
+      <div class="navbar__inner">
+        <a class="navbar__brand" href="#inicio" aria-label="Figata Pizza &amp; Wine">
+          <img class="navbar__brand-icon" src="assets/svg-icons/logo-icon.svg" alt="" aria-hidden="true">
+          <img class="navbar__brand-text" src="assets/svg-icons/logo-text.svg" alt="" aria-hidden="true">
+        </a>
+
+        <ul class="navbar__links" role="list">
+          <li><a href="menu/">Menú</a></li>
+          <li><a href="eventos/">Eventos</a></li>
+          <li><a href="#nosotros">Nosotros</a></li>
+          <li><a href="#ubicacion">Ubicación</a></li>
+          <li><a href="#contacto">Contacto</a></li>
+        </ul>
+
+        <div class="navbar__actions"></div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="eventos-main">
+    <section class="eventos-hero" id="inicio" aria-labelledby="eventos-hero-title">
+      <div class="eventos-container eventos-hero__content">
+        <p class="eventos-chip">
+          <span class="eventos-chip__icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+              <path d="m80-80 200-560 360 360L80-80Zm132-132 282-100-182-182-100 282Zm370-246-42-42 224-224q32-32 77-32t77 32l24 24-42 42-24-24q-14-14-35-14t-35 14L582-458ZM422-618l-42-42 24-24q14-14 14-34t-14-34l-26-26 42-42 26 26q32 32 32 76t-32 76l-24 24Zm80 80-42-42 144-144q14-14 14-35t-14-35l-64-64 42-42 64 64q32 32 32 77t-32 77L502-538Zm160 160-42-42 64-64q32-32 77-32t77 32l64 64-42 42-64-64q-14-14-35-14t-35 14l-64 64ZM212-212Z"/>
+            </svg>
+          </span>
+          <span class="eventos-chip__label">Eventos</span>
+        </p>
+        <p class="eventos-meta">By Jose Luis · 10 Abril · 10 mins lectura</p>
+        <h1 id="eventos-hero-title">Pizza Party by Figata</h1>
+        <p class="eventos-hero__subtitle">
+          Tu evento, nuestro horno portátil y pizza hecha en vivo para tus invitados.
+          Una experiencia pensada para compartir, conversar y celebrar alrededor del fuego.
+        </p>
+        <figure class="eventos-hero__video-block">
+          <video
+            class="eventos-hero__video"
+            data-video-slot="pizza-party-hero-loop"
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="metadata"
+            poster="assets/menu/editorial/margherita-video-slide-1-poster.webp">
+            <source src="assets/eventos/eventos-hero.webm" type="video/webm">
+          </video>
+          <figcaption>Así se vive Pizza Party by Figata</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="eventos-section eventos-what" id="que-es" aria-labelledby="que-es-title">
+      <div class="eventos-container">
+        <header class="eventos-section__header">
+          <h2 id="que-es-title">¿Qué es?</h2>
+        </header>
+
+        <div class="eventos-what__flow">
+          <p>
+            Llevamos nuestra cocina al lugar de tu evento; montamos los hornos, horneamos en vivo y servimos pizzas al momento para que tus invitados disfruten una experiencia cálida, artesanal y fácil de compartir.
+          </p>
+          <ul class="eventos-bullets">
+            <li>Montaje portátil en el lugar</li>
+            <li>Pizzas horneadas al momento</li>
+            <li>Ideal para grupos y celebraciones</li>
+          </ul>
+          <figure class="eventos-what__media">
+            <img src="assets/eventos/que-es.webp" alt="Montaje Pizza Party by Figata en un evento" loading="lazy" decoding="async">
+          </figure>
+          <p class="eventos-what__closing">Tu evento pone la ocasión. Nosotros cocinamos. Tus invitados disfrutan.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="eventos-section" id="como-funciona" aria-labelledby="como-funciona-title">
+      <div class="eventos-container">
+        <header class="eventos-section__header">
+          <h2 id="como-funciona-title">¿Cómo funciona?</h2>
+        </header>
+
+        <div class="eventos-flow">
+          <p class="eventos-flow__intro">
+            Un formato simple, ágil y pensado para que tú disfrutes del evento mientras nosotros nos encargamos del fuego.
+          </p>
+
+          <ol class="eventos-flow__list" aria-label="Pasos del servicio">
+            <li class="eventos-flow__step">
+              <div class="eventos-flow__head">
+                <span class="eventos-flow__icon" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M216 64C229.3 64 240 74.7 240 88L240 128L400 128L400 88C400 74.7 410.7 64 424 64C437.3 64 448 74.7 448 88L448 128L480 128C515.3 128 544 156.7 544 192L544 480C544 515.3 515.3 544 480 544L160 544C124.7 544 96 515.3 96 480L96 192C96 156.7 124.7 128 160 128L192 128L192 88C192 74.7 202.7 64 216 64zM480 496C488.8 496 496 488.8 496 480L496 416L408 416L408 496L480 496zM496 368L496 288L408 288L408 368L496 368zM360 368L360 288L280 288L280 368L360 368zM232 368L232 288L144 288L144 368L232 368zM144 416L144 480C144 488.8 151.2 496 160 496L232 496L232 416L144 416zM280 416L280 496L360 496L360 416L280 416zM216 176L160 176C151.2 176 144 183.2 144 192L144 240L496 240L496 192C496 183.2 488.8 176 480 176L216 176z"/></svg>
+                </span>
+                <h3>Cuéntanos tu fecha y cantidad</h3>
+              </div>
+              <p>Definimos el punto de partida según invitados, espacio y ritmo del evento.</p>
+            </li>
+            <li class="eventos-flow__step">
+              <div class="eventos-flow__head">
+                <span class="eventos-flow__icon" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M535.6 85.7C513.7 63.8 478.3 63.8 456.4 85.7L432 110.1L529.9 208L554.3 183.6C576.2 161.7 576.2 126.3 554.3 104.4L535.6 85.7zM236.4 305.7C230.3 311.8 225.6 319.3 222.9 327.6L193.3 416.4C190.4 425 192.7 434.5 199.1 441C205.5 447.5 215 449.7 223.7 446.8L312.5 417.2C320.7 414.5 328.2 409.8 334.4 403.7L496 241.9L398.1 144L236.4 305.7zM160 128C107 128 64 171 64 224L64 480C64 533 107 576 160 576L416 576C469 576 512 533 512 480L512 384C512 366.3 497.7 352 480 352C462.3 352 448 366.3 448 384L448 480C448 497.7 433.7 512 416 512L160 512C142.3 512 128 497.7 128 480L128 224C128 206.3 142.3 192 160 192L256 192C273.7 192 288 177.7 288 160C288 142.3 273.7 128 256 128L160 128z"/></svg>
+                </span>
+                <h3>Definimos el formato y el menú</h3>
+              </div>
+              <p>Ajustamos una propuesta que funcione bien para el ritmo y tamaño de tu evento.</p>
+            </li>
+            <li class="eventos-flow__step">
+              <div class="eventos-flow__head">
+                <span class="eventos-flow__icon" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M96 144C87.2 144 80 151.2 80 160L80 448C80 456.8 87.2 464 96 464L99.3 464C109.7 427.1 143.7 400 184 400C224.3 400 258.2 427.1 268.7 464L371.3 464C376.2 446.6 386.4 431.3 400 420.1L400 160C400 151.2 392.8 144 384 144L96 144zM99.3 512L96 512C60.7 512 32 483.3 32 448L32 160C32 124.7 60.7 96 96 96L384 96C419.3 96 448 124.7 448 160L448 192L503.4 192C520.4 192 536.7 198.7 548.7 210.7L589.3 251.3C601.3 263.3 608 279.6 608 296.6L608 448C608 483.3 579.3 512 544 512L540.7 512C530.3 548.9 496.3 576 456 576C415.7 576 381.8 548.9 371.3 512L268.7 512C258.3 548.9 224.3 576 184 576C143.7 576 109.8 548.9 99.3 512zM448 320L560 320L560 296.6C560 292.4 558.3 288.3 555.3 285.3L514.7 244.7C511.7 241.7 507.6 240 503.4 240L448 240L448 320zM448 368L448 400.4C450.6 400.2 453.3 400 456 400C496.3 400 530.2 427.1 540.7 464L544 464C552.8 464 560 456.8 560 448L560 368L448 368zM184 528C206.1 528 224 510.1 224 488C224 465.9 206.1 448 184 448C161.9 448 144 465.9 144 488C144 510.1 161.9 528 184 528zM456 528C478.1 528 496 510.1 496 488C496 465.9 478.1 448 456 448C433.9 448 416 465.9 416 488C416 510.1 433.9 528 456 528z"/></svg>
+                </span>
+                <h3>Llegamos con el equipo</h3>
+              </div>
+              <p>Montamos hornos portátiles y estación de servicio en el lugar.</p>
+            </li>
+            <li class="eventos-flow__step">
+              <div class="eventos-flow__head">
+                <span class="eventos-flow__icon" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M400-80v-80h520v80H400Zm40-120q0-81 51-141.5T620-416v-25q0-17 11.5-28.5T660-481q17 0 28.5 11.5T700-441v25q77 14 128.5 74.5T880-200H440Zm105-81h228q-19-27-48.5-43.5T660-341q-36 0-66 16.5T545-281Zm114 0ZM40-440v-440h240v58l280-78 320 100v40q0 50-35 85t-85 35h-80v24q0 25-14.5 45.5T628-541L358-440H40Zm80-80h80v-280h-80v280Zm160 0h64l232-85q11-4 17.5-13.5T600-640h-71l-117 38-24-76 125-42h247q9 0 22.5-6.5T796-742l-238-74-278 76v220Z"/></svg>
+                </span>
+                <h3>Horneamos y servimos en vivo</h3>
+              </div>
+              <p>Las pizzas salen al momento para mantener la energía, el aroma y la experiencia.</p>
+            </li>
+          </ol>
+
+          <div class="eventos-flow-gallery" aria-label="Vista previa de la galería de eventos">
+            <div class="eventos-collage" data-eventos-collage>
+              <button
+                class="eventos-collage__tile eventos-collage__tile--lead"
+                type="button"
+                data-eventos-tour-open
+                aria-label="Abrir galería de fotos de Pizza Party by Figata">
+                <img
+                  src="assets/eventos/collage/corito/corito-0.webp"
+                  alt="Pizza Party by Figata en la playa, vista general de la experiencia"
+                  loading="lazy"
+                  decoding="async">
+              </button>
+
+              <div class="eventos-collage__row">
+                <button
+                  class="eventos-collage__tile eventos-collage__tile--small"
+                  type="button"
+                  data-eventos-tour-open
+                  aria-label="Abrir galería de fotos de Pizza Party by Figata">
+                  <img
+                    src="assets/eventos/collage/corito/corito-7.webp"
+                    alt="Invitados compartiendo pizzas recién horneadas en evento Figata"
+                    loading="lazy"
+                    decoding="async">
+                </button>
+
+                <button
+                  class="eventos-collage__tile eventos-collage__tile--small eventos-collage__tile--more"
+                  type="button"
+                  data-eventos-tour-open
+                  aria-label="Ver todas las fotos de Pizza Party by Figata">
+                  <img
+                    src="assets/eventos/collage/corito/corito-4.webp"
+                    alt="Equipo Figata montando hornos portátiles para servicio en vivo"
+                    loading="lazy"
+                    decoding="async">
+                  <span class="eventos-collage__overlay" aria-hidden="true">
+                    <span class="eventos-collage__overlay-count" data-eventos-collage-more-count>+8 fotos</span>
+                    <span class="eventos-collage__overlay-label">Ver todas</span>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="eventos-section eventos-cotizador" id="cotiza-pizza-party" aria-labelledby="cotiza-pizza-party-title">
+      <div class="eventos-container">
+        <header class="eventos-section__header eventos-cotizador__header">
+          <h2 id="cotiza-pizza-party-title">Cotiza tu Pizza Party</h2>
+          <p class="eventos-cotizador__intro">
+            Elige la cantidad de pizzas, selecciona tus variedades y obtén una estimación clara del evento antes de escribirnos.
+          </p>
+        </header>
+
+        <div class="eventos-cotizador__layout" data-eventos-cotizador>
+          <div class="eventos-cotizador__utility-card">
+            <section class="eventos-cotizador__block eventos-cotizador__block--total" aria-labelledby="cotizador-total-title">
+              <div class="eventos-cotizador__block-head eventos-cotizador__block-head--inline">
+                <div class="eventos-cotizador__title-with-info">
+                  <h3 id="cotizador-total-title">Cantidad de pizzas</h3>
+                  <span class="eventos-cotizador__summary-info" data-eventos-info>
+                    <button
+                      class="eventos-cotizador__summary-info-toggle"
+                      id="eventos-total-info-toggle"
+                      type="button"
+                      aria-label="Más información sobre la cantidad de pizzas"
+                      aria-expanded="false"
+                      aria-controls="eventos-total-info-tooltip"
+                      data-eventos-info-toggle>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 -960 960 960"
+                        fill="currentColor"
+                        aria-hidden="true"
+                        focusable="false">
+                        <path d="M440-280h80v-240h-80v240Zm68.5-331.5Q520-623 520-640t-11.5-28.5Q497-680 480-680t-28.5 11.5Q440-657 440-640t11.5 28.5Q463-600 480-600t28.5-11.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/>
+                      </svg>
+                    </button>
+                    <span
+                      class="eventos-cotizador__summary-info-tooltip"
+                      id="eventos-total-info-tooltip"
+                      role="tooltip">
+                      <span class="eventos-cotizador__summary-info-title">
+                        <svg
+                          class="eventos-cotizador__summary-info-title-icon"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 640 640"
+                          aria-hidden="true"
+                          focusable="false">
+                          <path d="M320 64C334.7 64 348.2 72.1 355.2 85L571.2 485C577.9 497.4 577.6 512.4 570.4 524.5C563.2 536.6 550.1 544 536 544L104 544C89.9 544 76.8 536.6 69.6 524.5C62.4 512.4 62.1 497.4 68.8 485L284.8 85C291.8 72.1 305.3 64 320 64zM320 416C302.3 416 288 430.3 288 448C288 465.7 302.3 480 320 480C337.7 480 352 465.7 352 448C352 430.3 337.7 416 320 416zM320 224C301.8 224 287.3 239.5 288.6 257.7L296 361.7C296.9 374.2 307.4 384 319.9 384C332.5 384 342.9 374.3 343.8 361.7L351.2 257.7C352.5 239.5 338.1 224 319.8 224z"/>
+                        </svg>
+                        <span id="eventos-total-info-title">Cómo calculamos esta base</span>
+                      </span>
+                      <span class="eventos-cotizador__summary-info-copy" id="eventos-total-info-copy">
+                        Cada pizza cuesta $1,000 y el mínimo para esta modalidad es 20 pizzas. Cuando el pedido llega a 31 pizzas o más, aplicamos un descuento de $5,000 en el cargo de servicio pizza en casa, así ese cargo queda incluido.
+                      </span>
+                    </span>
+                  </span>
+                </div>
+                <div class="eventos-cotizador-stepper" role="group" aria-label="Cantidad total de pizzas">
+                  <button type="button" class="eventos-cotizador-stepper__btn" data-eventos-total-minus aria-label="Disminuir cantidad total de pizzas">
+                    <span class="eventos-cotizador-stepper__glyph" aria-hidden="true">−</span>
+                  </button>
+                  <span class="eventos-cotizador-stepper__qty" data-eventos-total-value aria-live="polite">20</span>
+                  <button type="button" class="eventos-cotizador-stepper__btn" data-eventos-total-plus aria-label="Aumentar cantidad total de pizzas">
+                    <span class="eventos-cotizador-stepper__glyph" aria-hidden="true">+</span>
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <section class="eventos-cotizador__block eventos-cotizador__block--variedades" aria-labelledby="cotizador-variedades-title">
+              <div class="eventos-cotizador__block-head eventos-cotizador__block-head--menu">
+                <div class="eventos-cotizador__title-with-info">
+                  <h3 id="cotizador-variedades-title">Selecciona tu menú</h3>
+                  <span class="eventos-cotizador__summary-info" data-eventos-info>
+                    <button
+                      class="eventos-cotizador__summary-info-toggle"
+                      id="eventos-menu-info-toggle"
+                      type="button"
+                      aria-label="Más información sobre las variedades del menú"
+                      aria-expanded="false"
+                      aria-controls="eventos-menu-info-tooltip"
+                      data-eventos-info-toggle>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 -960 960 960"
+                        fill="currentColor"
+                        aria-hidden="true"
+                        focusable="false">
+                        <path d="M440-280h80v-240h-80v240Zm68.5-331.5Q520-623 520-640t-11.5-28.5Q497-680 480-680t-28.5 11.5Q440-657 440-640t11.5 28.5Q463-600 480-600t28.5-11.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/>
+                      </svg>
+                    </button>
+                    <span
+                      class="eventos-cotizador__summary-info-tooltip"
+                      id="eventos-menu-info-tooltip"
+                      role="tooltip">
+                      <span class="eventos-cotizador__summary-info-title">
+                        <svg
+                          class="eventos-cotizador__summary-info-title-icon"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 640 640"
+                          aria-hidden="true"
+                          focusable="false">
+                          <path d="M320 64C334.7 64 348.2 72.1 355.2 85L571.2 485C577.9 497.4 577.6 512.4 570.4 524.5C563.2 536.6 550.1 544 536 544L104 544C89.9 544 76.8 536.6 69.6 524.5C62.4 512.4 62.1 497.4 68.8 485L284.8 85C291.8 72.1 305.3 64 320 64zM320 416C302.3 416 288 430.3 288 448C288 465.7 302.3 480 320 480C337.7 480 352 465.7 352 448C352 430.3 337.7 416 320 416zM320 224C301.8 224 287.3 239.5 288.6 257.7L296 361.7C296.9 374.2 307.4 384 319.9 384C332.5 384 342.9 374.3 343.8 361.7L351.2 257.7C352.5 239.5 338.1 224 319.8 224z"/>
+                        </svg>
+                        <span id="eventos-menu-info-title">Variedades incluidas</span>
+                      </span>
+                      <span class="eventos-cotizador__summary-info-copy" id="eventos-menu-info-copy">
+                        Esta modalidad trabaja con una selección curada para Pizza Party. Algunas variedades premium o especiales no están incluidas en este menú.
+                      </span>
+                    </span>
+                  </span>
+                </div>
+              </div>
+              <div class="eventos-cotizador__selector-actions">
+                <button type="button" class="preview-overlay__button preview-overlay__button--primary is-available eventos-cotizador__selector-btn" data-eventos-variety-open>
+                  Elegir variedades
+                </button>
+                <button
+                  type="button"
+                  class="preview-overlay__button preview-overlay__button--primary is-available eventos-cotizador__selector-random"
+                  data-eventos-variety-random
+                  aria-label="Generar selección aleatoria">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" aria-hidden="true" focusable="false"><path d="M467.8 98.4C479.8 93.4 493.5 96.2 502.7 105.3L566.7 169.3C572.7 175.3 576.1 183.4 576.1 191.9C576.1 200.4 572.7 208.5 566.7 214.5L502.7 278.5C493.5 287.7 479.8 290.4 467.8 285.4C455.8 280.4 448 268.9 448 256L448 224L416 224C405.9 224 396.4 228.7 390.4 236.8L358 280L318 226.7L339.2 198.4C357.3 174.2 385.8 160 416 160L448 160L448 128C448 115.1 455.8 103.4 467.8 98.4zM218 360L258 413.3L236.8 441.6C218.7 465.8 190.2 480 160 480L96 480C78.3 480 64 465.7 64 448C64 430.3 78.3 416 96 416L160 416C170.1 416 179.6 411.3 185.6 403.2L218 360zM502.6 534.6C493.4 543.8 479.7 546.5 467.7 541.5C455.7 536.5 448 524.9 448 512L448 480L416 480C385.8 480 357.3 465.8 339.2 441.6L185.6 236.8C179.6 228.7 170.1 224 160 224L96 224C78.3 224 64 209.7 64 192C64 174.3 78.3 160 96 160L160 160C190.2 160 218.7 174.2 236.8 198.4L390.4 403.2C396.4 411.3 405.9 416 416 416L448 416L448 384C448 371.1 455.8 359.4 467.8 354.4C479.8 349.4 493.5 352.2 502.7 361.3L566.7 425.3C572.7 431.3 576.1 439.4 576.1 447.9C576.1 456.4 572.7 464.5 566.7 470.5L502.7 534.5z"/></svg>
+                </button>
+              </div>
+              <p class="eventos-cotizador__selector-counter" data-eventos-variety-selection-counter aria-live="polite">0 de 5 seleccionadas</p>
+              <p class="eventos-cotizador__selected-empty" data-eventos-selected-empty>Selecciona hasta 5 variedades para definir tu menú.</p>
+              <div class="eventos-cotizador__selected-grid" data-eventos-selected-varieties></div>
+            </section>
+
+            <section class="eventos-cotizador__block eventos-cotizador__block--resumen" aria-labelledby="cotizador-resumen-title">
+              <div class="eventos-cotizador__block-head eventos-cotizador__block-head--summary">
+                <h3 id="cotizador-resumen-title">Resumen de estimación</h3>
+                <span class="eventos-cotizador__summary-info" data-eventos-info>
+                  <button
+                    class="eventos-cotizador__summary-info-toggle"
+                    id="eventos-summary-info-toggle"
+                    type="button"
+                    aria-label="Más información sobre esta estimación"
+                    aria-expanded="false"
+                    aria-controls="eventos-summary-info-tooltip"
+                    data-eventos-info-toggle>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 -960 960 960"
+                      fill="currentColor"
+                      aria-hidden="true"
+                      focusable="false">
+                      <path d="M440-280h80v-240h-80v240Zm68.5-331.5Q520-623 520-640t-11.5-28.5Q497-680 480-680t-28.5 11.5Q440-657 440-640t11.5 28.5Q463-600 480-600t28.5-11.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/>
+                    </svg>
+                  </button>
+                  <span
+                    class="eventos-cotizador__summary-info-tooltip"
+                    id="eventos-summary-info-tooltip"
+                    role="tooltip">
+                    <span class="eventos-cotizador__summary-info-title">
+                      <svg
+                        class="eventos-cotizador__summary-info-title-icon"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 640 640"
+                        aria-hidden="true"
+                        focusable="false">
+                        <path d="M320 64C334.7 64 348.2 72.1 355.2 85L571.2 485C577.9 497.4 577.6 512.4 570.4 524.5C563.2 536.6 550.1 544 536 544L104 544C89.9 544 76.8 536.6 69.6 524.5C62.4 512.4 62.1 497.4 68.8 485L284.8 85C291.8 72.1 305.3 64 320 64zM320 416C302.3 416 288 430.3 288 448C288 465.7 302.3 480 320 480C337.7 480 352 465.7 352 448C352 430.3 337.7 416 320 416zM320 224C301.8 224 287.3 239.5 288.6 257.7L296 361.7C296.9 374.2 307.4 384 319.9 384C332.5 384 342.9 374.3 343.8 361.7L351.2 257.7C352.5 239.5 338.1 224 319.8 224z"/>
+                      </svg>
+                      <span id="eventos-summary-info-title">Estimación referencial</span>
+                    </span>
+                    <span class="eventos-cotizador__summary-info-copy" id="eventos-summary-info-copy">
+                      La estimación es referencial y puede ajustarse según logística. Todos los precios están expresados en moneda local (RD).
+                    </span>
+                  </span>
+                </span>
+              </div>
+              <div class="eventos-cotizador-summary">
+                <dl class="eventos-cotizador-summary__list">
+                  <div class="eventos-cotizador-summary__row">
+                    <dt>Pizzas</dt>
+                    <dd data-eventos-summary-pizzas-line>20 × $1,000</dd>
+                  </div>
+                  <div class="eventos-cotizador-summary__row">
+                    <dt>Subtotal de pizzas</dt>
+                    <dd data-eventos-summary-subtotal>$20,000</dd>
+                  </div>
+                  <div class="eventos-cotizador-summary__row">
+                    <dt>Cargo servicio pizza en casa</dt>
+                    <dd data-eventos-summary-base-fee>$5,000</dd>
+                  </div>
+                  <div class="eventos-cotizador-summary__row">
+                    <dt>Servicio 10%</dt>
+                    <dd data-eventos-summary-service-fee>$2,000</dd>
+                  </div>
+                  <div class="eventos-cotizador-summary__row eventos-cotizador-summary__row--total">
+                    <dt>Total estimado</dt>
+                    <dd data-eventos-summary-total>$27,000</dd>
+                  </div>
+                </dl>
+              </div>
+            </section>
+
+          <div class="eventos-cotizador__cta">
+            <button type="button" class="cta-button btn-liquid-glass eventos-cotizador__whatsapp" data-eventos-whatsapp-cta disabled>
+              <span>Enviar esta estimación por WhatsApp</span>
+              <img src="assets/svg-icons/whatsapp.svg" alt="" aria-hidden="true">
+            </button>
+            <p class="eventos-cotizador__cta-hint" data-eventos-whatsapp-hint>
+              Puedes ajustar variedades o usar selección aleatoria antes de enviarla.
+            </p>
+          </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="eventos-section" id="ideal-para" aria-labelledby="ideal-para-title">
+      <div class="eventos-container">
+        <header class="eventos-section__header">
+          <h2 id="ideal-para-title">Ideal para</h2>
+        </header>
+
+        <ul class="eventos-ideal-list" role="list">
+          <li>Cumpleaños</li>
+          <li>Reuniones familiares</li>
+          <li>Eventos corporativos</li>
+          <li>Celebraciones privadas</li>
+          <li>Bodas íntimas</li>
+          <li>Juntes especiales</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="eventos-section eventos-faq" id="faq" aria-labelledby="faq-title">
+      <div class="eventos-container">
+        <header class="eventos-section__header">
+          <h2 id="faq-title">FAQ</h2>
+        </header>
+
+        <div class="eventos-faq__items">
+          <details>
+            <summary>¿Para cuántas personas funciona Pizza Party by Figata?</summary>
+            <p>Podemos ajustar la dinámica según el tamaño del evento. En la cotización te sugerimos el formato más eficiente para el número de invitados.</p>
+          </details>
+          <details>
+            <summary>¿Con cuánto tiempo debo reservar?</summary>
+            <p>Lo ideal es reservar con antelación para asegurar fecha y logística, especialmente en fines de semana.</p>
+          </details>
+          <details>
+            <summary>¿Se puede personalizar la selección de pizzas?</summary>
+            <p>Sí. Definimos un menú base contigo y adaptamos la selección a preferencias del grupo.</p>
+          </details>
+          <details>
+            <summary>¿Se mueven fuera de Santo Domingo?</summary>
+            <p>Sí, sujeto a disponibilidad y condiciones logísticas. Te confirmamos cobertura durante la coordinación.</p>
+          </details>
+          <details>
+            <summary>¿Incluyen setup completo para cocinar en vivo?</summary>
+            <p>Sí, llegamos con equipo portátil y flujo de trabajo para operar el servicio en sitio.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="eventos-section eventos-final-cta" id="reservar" aria-labelledby="cotizar-title">
+      <div class="eventos-container">
+        <div class="eventos-final-cta__panel">
+          <h2 id="cotizar-title">Cierre</h2>
+          <p>
+            Cuéntanos fecha, cantidad de invitados y tipo de celebración. Te ayudamos a armar
+            una propuesta clara para activar tu Pizza Party by Figata.
+          </p>
+          <a class="cta-button btn-liquid-glass eventos-final-cta__button" href="https://wa.me/18095550123?text=Hola%20Figata,%20quiero%20reservar%20Pizza%20Party" target="_blank" rel="noopener">
+            <span>Reservar / Cotizar</span>
+            <img src="assets/svg-icons/whatsapp.svg" alt="" aria-hidden="true">
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="eventos-variety-modal" data-eventos-variety-modal aria-hidden="true">
+    <div class="eventos-variety-modal__backdrop" data-eventos-variety-close aria-hidden="true"></div>
+    <section class="eventos-variety-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="eventos-variety-modal-title">
+      <header class="eventos-variety-modal__header">
+        <h2 id="eventos-variety-modal-title">Seleccionar pizzas</h2>
+        <button class="eventos-photo-tour__icon-btn" type="button" data-eventos-variety-close aria-label="Cerrar selector de variedades">
+          <span aria-hidden="true">✕</span>
+        </button>
+      </header>
+      <p class="eventos-variety-modal__intro">
+        Elige hasta 5 variedades para tu menú Pizza Party.
+      </p>
+      <p class="eventos-variety-modal__counter" data-eventos-variety-counter aria-live="polite">0 de 5 seleccionadas</p>
+      <p class="eventos-variety-modal__note">
+        <strong>Algunas variedades premium no están incluidas en esta modalidad.</strong>
+      </p>
+      <div class="eventos-variety-modal__grid" data-eventos-variety-grid></div>
+      <footer class="eventos-variety-modal__footer">
+        <button type="button" class="cta-button btn-liquid-glass eventos-variety-modal__done" data-eventos-variety-done>
+          Listo
+        </button>
+      </footer>
+    </section>
+  </div>
+
+  <div class="eventos-photo-tour" data-eventos-photo-tour aria-hidden="true">
+    <section class="eventos-photo-tour__sheet" data-scroll-indicator-container role="dialog" aria-modal="true" aria-labelledby="eventos-photo-tour-title">
+      <header class="eventos-photo-tour__header">
+        <button class="eventos-photo-tour__icon-btn" type="button" data-eventos-tour-close aria-label="Cerrar galería">
+          <span aria-hidden="true">✕</span>
+        </button>
+        <h2 id="eventos-photo-tour-title">Photo Tour</h2>
+        <span class="eventos-photo-tour__spacer" aria-hidden="true"></span>
+      </header>
+
+      <nav class="eventos-photo-tour__categories" data-eventos-tour-categories aria-label="Categorías de fotos"></nav>
+      <div class="eventos-photo-tour__content" data-eventos-tour-content></div>
+    </section>
+  </div>
+
+  <div class="eventos-photo-viewer" data-eventos-photo-viewer aria-hidden="true">
+    <div class="eventos-photo-viewer__header">
+      <span class="eventos-photo-tour__spacer" aria-hidden="true"></span>
+      <div class="eventos-photo-viewer__meta">
+        <p class="eventos-photo-viewer__section" data-eventos-viewer-section>Playa</p>
+        <p class="eventos-photo-viewer__counter" data-eventos-viewer-counter>1 de 1</p>
+      </div>
+      <button class="eventos-photo-tour__icon-btn" type="button" data-eventos-viewer-close aria-label="Cerrar foto">
+        <span aria-hidden="true">✕</span>
+      </button>
+    </div>
+    <div class="eventos-photo-viewer__stage" data-eventos-viewer-stage>
+      <div class="eventos-photo-viewer__track" data-eventos-viewer-track></div>
+    </div>
+  </div>
+
+  <script src="shared/public-paths.js" defer></script>
+  <script src="shared/public-navbar.js" defer></script>
+  <script src="js/navbar-collapse.js" defer></script>
+  <script src="js/eventos-page.js" defer></script>
+  <script src="shared/public-scroll-indicator.js" defer></script>
+</body>
+</html>

@@ -89,6 +89,7 @@
     if (linksRoot) {
       const fallbackLinks = [
         { label: 'Menú', url: '/menu/' },
+        { label: 'Eventos', url: '/eventos/' },
         { label: 'Nosotros', url: '#nosotros' },
         { label: 'Ubicación', url: '#ubicacion' },
         { label: 'Contacto', url: '#contacto' },
@@ -148,6 +149,18 @@
 
     if (ctaIconNode && ctaIcon) {
       ctaIconNode.setAttribute('src', toSiteUrl(ctaIcon));
+    }
+  };
+
+  const removeNavbarCta = (header) => {
+    if (!(header instanceof HTMLElement)) {
+      return;
+    }
+
+    const cta = header.querySelector('.cta-button--nav');
+
+    if (cta instanceof HTMLElement) {
+      cta.remove();
     }
   };
 
@@ -279,6 +292,7 @@
   };
 
   const mountIntoHost = async (host) => {
+    const shouldHideCta = host.hasAttribute('data-public-navbar-hide-cta');
     let sourceHeader = readCachedHeader();
 
     if (!sourceHeader) {
@@ -297,6 +311,10 @@
       }
     } catch (error) {
       console.warn(error);
+    }
+
+    if (shouldHideCta) {
+      removeNavbarCta(host);
     }
 
     host.removeAttribute('data-public-navbar-host');

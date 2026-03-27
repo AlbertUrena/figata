@@ -9,14 +9,15 @@
 The public site is a static multi-route surface served primarily by Cloudflare Pages, with Netlify/GitHub Pages fallback flows. It currently has:
 - Homepage: `index.html`
 - Full menu page: `menu/index.html` (`/menu/`)
+- Events landing page: `eventos/index.html` (`/eventos/`)
 
 There is no build step — the HTML, CSS, and JavaScript are deployed directly.
 
 | Aspect | Details |
 |--------|---------|
-| Entry points | `index.html` (homepage), `menu/index.html` (full menu page) |
+| Entry points | `index.html` (homepage), `menu/index.html` (full menu page), `eventos/index.html` (Pizza Party editorial landing) |
 | Styles | `styles.css` (~2,600 lines, 75KB) |
-| Scripts | 12 files in `js/` + shared runtime modules/assets in `shared/` + data loaders in `src/data/` |
+| Scripts | 13 files in `js/` + shared runtime modules/assets in `shared/` + data loaders in `src/data/` |
 | Data | Fetches from `data/*.json` at runtime |
 | Hosting | Cloudflare Pages runtime (primary) plus Netlify/GitHub Pages fallback for the public surface |
 
@@ -54,6 +55,15 @@ The page is structured as a single scrollable document. Major sections in `index
 | Route styles | `menu/menu-page.css` | Centered intro, Events-style top tabs, integrated search bar, responsive grid, detail subview |
 | Route script | `js/menu-page.js` | Runtime tab navigation, grouped category rendering, in-page search filter, bridge state for navbar sync |
 | Route navbar enhancer | `js/menu-page-navbar.js` | Two-stage sticky-menu transformation layered on top of the shared navbar |
+
+## Eventos Route Map (`/eventos/`)
+
+| Area | File | Purpose |
+|------|------|---------|
+| Route HTML | `eventos/index.html` | Pizza Party editorial landing page shell (hero video, storytelling sections, cotizador comercial, FAQ, CTA) |
+| Route styles | `eventos/eventos.css` | Mobile-first editorial layout, cotizador UI (stepper, resumen, modal), section rhythm, gallery, and FAQ styling |
+| Route script | `js/eventos-page.js` | Cotizador Pizza Party (fetch `data/menu.json`, exclusión automática top 5 más caras, selección manual/aleatoria de menú, resumen y CTA WhatsApp) + FAQ/media/navbar wiring |
+| Shared navbar runtime | `shared/public-navbar.js` | Mounts canonical homepage navbar and applies `data/home.json` link config on `/eventos/` |
 
 ---
 
@@ -109,9 +119,19 @@ Menu page (`menu/index.html`) loads:
 14. shared/public-scroll-indicator.js
 ```
 
+Eventos page (`eventos/index.html`) loads:
+
+```
+1. shared/public-paths.js
+2. shared/public-navbar.js
+3. js/navbar-collapse.js
+4. js/eventos-page.js
+5. shared/public-scroll-indicator.js
+```
+
 ### GitHub Pages Notes
 
-- `index.html` uses `<base href="./">` and `menu/index.html` uses `<base href="../">` so public assets and route links resolve correctly both at site root (`/`) and under the GitHub Pages project prefix (`/figata/`).
+- `index.html` uses `<base href="./">` and route pages such as `menu/index.html` / `eventos/index.html` use `<base href="../">` so public assets and route links resolve correctly both at site root (`/`) and under the GitHub Pages project prefix (`/figata/`).
 - `shared/public-paths.js` is the canonical helper for converting site-relative URLs and stripping the GitHub Pages project prefix from `window.location.pathname`.
 - `404.html` redirects GitHub Pages deep-link misses back into the public menu shell so `/menu/:item` still works after direct navigation or refresh.
 
@@ -169,6 +189,20 @@ Full menu page runtime controller for `/menu/`. Handles:
 - Supporting a reversible chevron override on desktop that returns to the collapsed normal navbar state
 - Omitting that chevron override on mobile so the sticky navbar can dedicate the left rail to brand/search space
 
+#### `js/eventos-page.js`
+`/eventos/` route enhancer. Handles:
+- Commercial cotizador section ("Cotiza tu Pizza Party")
+  - Fetches `data/menu.json` (via `shared/public-paths.js` route-safe paths)
+  - Builds variety selector from pizza categories, excludes the 5 highest-priced pizzas
+  - Enforces up to 5 selected varieties and seeds a default base selection
+  - Includes a random-selection action to quickly rotate example menu options
+  - Computes subtotal, minimum consumables adjustment, base service fee waiver logic, and 10% service over consumables
+  - Generates WhatsApp quote message with selected varieties and pricing breakdown
+- FAQ accordion behavior (single open item at a time)
+- Hero video autoplay fallback (enables controls when autoplay is blocked)
+- Menu-style navbar adaptation on mobile (burger button, animated icon, card menu panel, open/close states)
+- Storytelling gallery modal + photo viewer behavior
+
 #### `js/restaurant-config.js` (11KB, ~390 lines)
 Restaurant information display. Fetches `data/restaurant.json` and renders:
 - Opening hours display
@@ -202,6 +236,7 @@ Shared public navbar runtime module. Handles:
 - Capturing canonical navbar markup from homepage (`index.html`)
 - Caching canonical markup for reuse on multi-route pages
 - Mounting canonical navbar into route hosts (`data-public-navbar-host`)
+- Optional route-level CTA suppression via `data-public-navbar-hide-cta`
 - Route-aware URL normalization for non-home pages (`/#...` anchors and asset paths)
 
 #### `shared/public-scroll-indicator.js` + `shared/public-scroll-indicator.css`
@@ -336,6 +371,7 @@ js/menu-page.js fetches grouped category items for the 5 visible menu tabs
 | Add menu item | `data/menu.json` (add to section) | Also update `data/media.json`, `data/availability.json` |
 | Change menu card design | `js/mas-pedidas.js`, `styles.css` | Template in `index.html` at `#mas-pedidas-card-template` |
 | Change full menu page layout/navigation | `menu/index.html`, `menu/menu-page.css`, `js/menu-page.js` | Keep category/item order driven by `src/data/menu.js` APIs |
+| Change events landing layout/content | `eventos/index.html`, `eventos/eventos.css`, `js/eventos-page.js` | Keep one-service narrative focused on Pizza Party by Figata |
 | Modify navbar links | `data/home.json` (navbar.links) + `shared/public-navbar.js` | `home-config` sets labels/URLs; shared module mounts canonical navbar on secondary routes |
 | Change testimonials | `data/home.json` (testimonials.items) | Carousel in `js/testimonials.js` |
 | Add new section | `index.html` (add HTML), `styles.css` (add styles) | May need new JS file in `js/` |

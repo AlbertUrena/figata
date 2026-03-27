@@ -16,7 +16,7 @@
         { label: 'Menu', url: '/menu/' },
         { label: 'Nosotros', url: '#nosotros' },
         { label: 'FAQs', url: '#faqs' },
-        { label: 'Eventos', url: '#eventos' },
+        { label: 'Eventos', url: '/eventos/' },
       ],
     },
     {
@@ -350,6 +350,7 @@
     if (navLinksRoot) {
       const fallbackLinks = [
         { label: 'Menú', url: '/menu/' },
+        { label: 'Eventos', url: '/eventos/' },
         { label: 'Nosotros', url: '#nosotros' },
         { label: 'Ubicación', url: '#ubicacion' },
         { label: 'Contacto', url: '#contacto' },

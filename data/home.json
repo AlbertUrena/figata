@@ -125,6 +125,10 @@
         "url": "/menu/"
       },
       {
+        "label": "Eventos",
+        "url": "/eventos/"
+      },
+      {
         "label": "Nosotros",
         "url": "#nosotros"
       },
@@ -219,7 +223,7 @@
           },
           {
             "label": "Eventos",
-            "url": "#eventos"
+            "url": "/eventos/"
           }
         ]
       },

@@ -6,7 +6,7 @@
 
 **Figata** is a restaurant website for an Italian pizza & wine restaurant in Santo Domingo, Dominican Republic. The project has two main systems:
 
-1. **Public website** — A static HTML/CSS/JS site served in production by Cloudflare Pages and also deployable to Netlify or GitHub Pages for fallback/preview workflows. Customers see the menu, homepage, and restaurant info.
+1. **Public website** — A static HTML/CSS/JS site served in production by Cloudflare Pages and also deployable to Netlify or GitHub Pages for fallback/preview workflows. Customers see the homepage, menu, events landing page, and restaurant info.
 2. **Admin panel** — A custom single-page application at `/admin/app/` used by staff to manage menu items, ingredients, categories, homepage content, and publish changes.
 
 Both systems share a **data layer** (JSON files in `data/`) and are connected through a **publish pipeline** (Netlify serverless function that commits data changes via Git).
@@ -37,13 +37,17 @@ website-figata/
 ├── menu/
 │   ├── index.html             ← Public full menu page (`/menu/`)
 │   └── menu-page.css          ← Public full menu page styles
+├── eventos/
+│   ├── index.html             ← Public Pizza Party editorial landing (`/eventos/`)
+│   └── eventos.css            ← Events landing styles
 ├── styles.css                 ← Public site styles (~2,600 lines)
-├── js/                        ← Public site JavaScript (12 scripts)
+├── js/                        ← Public site JavaScript (13 scripts)
 │   ├── home-config.js            Fetches data/home.json, renders homepage sections
 │   ├── mas-pedidas.js            Menu rendering engine (largest: 34KB)
 │   ├── menu-route-transition.js  Home navbar `/menu/` transition handoff
 │   ├── menu-page.js              Full menu page renderer (Events-style top tabs + category grids)
 │   ├── menu-page-navbar.js       `/menu/` sticky-menu enhancer for the shared navbar
+│   ├── eventos-page.js           `/eventos/` enhancer (cotizador Pizza Party + modal variedades, FAQ, hero video, media rail, navbar burger/menu mobile)
 │   ├── restaurant-config.js      Restaurant info (hours, address, phone)
 │   ├── testimonials.js           Testimonials carousel
 │   ├── events-tabs.js            Events section tabs
@@ -144,6 +148,7 @@ Use this table to find the right starting point for common tasks:
 | Modify homepage sections | `js/home-config.js` | `data/home.json`, `docs/developers/data/data-layer.md` |
 | Change public menu display | `js/mas-pedidas.js` | `data/menu.json`, `data/media.json` |
 | Build/fix public full menu page | `menu/index.html`, `menu/menu-page.css`, `js/menu-page.js` | `js/menu-page-navbar.js`, `src/data/menu.js`, `src/data/media.js`, `data/categories.json` |
+| Build/fix public eventos landing page | `eventos/index.html`, `eventos/eventos.css`, `js/eventos-page.js` | `data/menu.json`, `shared/public-navbar.js`, `shared/public-paths.js` |
 | Reuse/fix public navbar across routes | `shared/public-navbar.js` | `index.html`, `menu/index.html`, `js/navbar-collapse.js` |
 | Edit restaurant info | `js/restaurant-config.js` | `data/restaurant.json` |
 | Work on admin panel | `docs/developers/admin/admin-panel.md` | `admin/app/app.js`, `admin/app/modules/` |

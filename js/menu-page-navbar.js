@@ -27,6 +27,10 @@
       subtitle: 'Carta y favoritos',
       thumbSrc: 'assets/navbar/menu-thumb.webp',
     },
+    eventos: {
+      subtitle: 'Pizza Party by Figata',
+      thumbSrc: 'assets/home/caja.webp',
+    },
     nosotros: {
       subtitle: 'Nuestra historia real',
       thumbSrc: 'assets/navbar/nosotros-thumb.webp',
