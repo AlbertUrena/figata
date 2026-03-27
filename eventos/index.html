@@ -385,8 +385,12 @@
             </section>
 
           <div class="eventos-cotizador__cta">
-            <button type="button" class="cta-button btn-liquid-glass eventos-cotizador__whatsapp" data-eventos-whatsapp-cta disabled>
-              <span>Enviar esta estimación por WhatsApp</span>
+            <button
+              type="button"
+              class="preview-overlay__button preview-overlay__button--primary is-available eventos-cotizador__whatsapp"
+              data-eventos-whatsapp-cta
+              disabled>
+              <span>Enviar cotización</span>
               <img src="assets/svg-icons/whatsapp.svg" alt="" aria-hidden="true">
             </button>
             <p class="eventos-cotizador__cta-hint" data-eventos-whatsapp-hint>
@@ -394,6 +398,29 @@
             </p>
           </div>
           </div>
+
+          <section class="eventos-cotizador__prebook" aria-labelledby="eventos-prebook-title">
+            <h3 id="eventos-prebook-title">
+              <span class="eventos-cotizador__prebook-heading-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" focusable="false">
+                  <path d="M320 64C334.7 64 348.2 72.1 355.2 85L571.2 485C577.9 497.4 577.6 512.4 570.4 524.5C563.2 536.6 550.1 544 536 544L104 544C89.9 544 76.8 536.6 69.6 524.5C62.4 512.4 62.1 497.4 68.8 485L284.8 85C291.8 72.1 305.3 64 320 64zM320 416C302.3 416 288 430.3 288 448C288 465.7 302.3 480 320 480C337.7 480 352 465.7 352 448C352 430.3 337.7 416 320 416zM320 224C301.8 224 287.3 239.5 288.6 257.7L296 361.7C296.9 374.2 307.4 384 319.9 384C332.5 384 342.9 374.3 343.8 361.7L351.2 257.7C352.5 239.5 338.1 224 319.8 224z"></path>
+                </svg>
+              </span>
+              <span>Antes de reservar</span>
+            </h3>
+            <p class="eventos-cotizador__prebook-intro">
+              Para confirmar la fecha y preparar el servicio correctamente, toma en cuenta lo siguiente:
+            </p>
+            <ul class="eventos-cotizador__prebook-list eventos-bullets" role="list">
+              <li>La fecha debe reservarse con al menos <strong>1 semana de anticipación</strong>.</li>
+              <li>Se requiere un <strong>depósito del 50%</strong> para bloquear la fecha.</li>
+              <li>El depósito es <strong>no reembolsable</strong>.</li>
+              <li>Debe haber espacio disponible para montar la mesa y los hornos.</li>
+              <li>La estimación final puede ajustarse según logística, montaje o ubicación.</li>
+              <li>Las variedades premium no están incluidas en esta modalidad.</li>
+            </ul>
+          </section>
+
         </div>
       </div>
     </section>
@@ -401,46 +428,104 @@
     <section class="eventos-section" id="ideal-para" aria-labelledby="ideal-para-title">
       <div class="eventos-container">
         <header class="eventos-section__header">
-          <h2 id="ideal-para-title">Ideal para</h2>
+          <h2 id="ideal-para-title">Ocasiones para compartir</h2>
         </header>
 
-        <ul class="eventos-ideal-list" role="list">
-          <li>Cumpleaños</li>
-          <li>Reuniones familiares</li>
-          <li>Eventos corporativos</li>
-          <li>Celebraciones privadas</li>
-          <li>Bodas íntimas</li>
-          <li>Juntes especiales</li>
-        </ul>
+        <div class="eventos-copy-stack eventos-ideal-copy">
+          <p>
+            Esta experiencia está pensada para reuniones donde compartir y comer algo hecho en vivo es parte importante del momento, como en:
+          </p>
+          <ul class="eventos-bullets eventos-ideal-list" role="list">
+            <li>Cumpleaños</li>
+            <li>Reuniones familiares</li>
+            <li>Eventos corporativos</li>
+            <li>Celebraciones privadas</li>
+            <li>Bodas íntimas</li>
+            <li>Juntes especiales</li>
+          </ul>
+        </div>
       </div>
     </section>
 
     <section class="eventos-section eventos-faq" id="faq" aria-labelledby="faq-title">
       <div class="eventos-container">
         <header class="eventos-section__header">
-          <h2 id="faq-title">FAQ</h2>
+          <h2 id="faq-title">Preguntas frecuentes</h2>
+          <p class="eventos-faq__intro">
+            ¿Tienes preguntas? ¡Tenemos respuestas! Hemos compilado una lista de respuestas para abordar tus preguntas más urgentes.
+          </p>
         </header>
 
         <div class="eventos-faq__items">
-          <details>
-            <summary>¿Para cuántas personas funciona Pizza Party by Figata?</summary>
-            <p>Podemos ajustar la dinámica según el tamaño del evento. En la cotización te sugerimos el formato más eficiente para el número de invitados.</p>
+          <details class="eventos-faq__item">
+            <summary>
+              <span class="eventos-faq__question">¿Para cuántas personas funciona?</span>
+              <span class="eventos-faq__icon" aria-hidden="true">
+                <span class="eventos-faq__icon-line eventos-faq__icon-line--vertical"></span>
+                <span class="eventos-faq__icon-line"></span>
+              </span>
+            </summary>
+            <div class="eventos-faq__answer">
+              <div class="eventos-faq__answer-inner">
+                <p>Podemos ajustar la dinámica según el tamaño del evento. En la cotización te sugerimos el formato más eficiente para el número de invitados.</p>
+              </div>
+            </div>
           </details>
-          <details>
-            <summary>¿Con cuánto tiempo debo reservar?</summary>
-            <p>Lo ideal es reservar con antelación para asegurar fecha y logística, especialmente en fines de semana.</p>
+          <details class="eventos-faq__item">
+            <summary>
+              <span class="eventos-faq__question">¿Con cuánto tiempo debo reservar?</span>
+              <span class="eventos-faq__icon" aria-hidden="true">
+                <span class="eventos-faq__icon-line eventos-faq__icon-line--vertical"></span>
+                <span class="eventos-faq__icon-line"></span>
+              </span>
+            </summary>
+            <div class="eventos-faq__answer">
+              <div class="eventos-faq__answer-inner">
+                <p>Lo ideal es reservar con antelación para asegurar fecha y logística, especialmente en fines de semana.</p>
+              </div>
+            </div>
           </details>
-          <details>
-            <summary>¿Se puede personalizar la selección de pizzas?</summary>
-            <p>Sí. Definimos un menú base contigo y adaptamos la selección a preferencias del grupo.</p>
+          <details class="eventos-faq__item">
+            <summary>
+              <span class="eventos-faq__question">¿Se puede personalizar el menú?</span>
+              <span class="eventos-faq__icon" aria-hidden="true">
+                <span class="eventos-faq__icon-line eventos-faq__icon-line--vertical"></span>
+                <span class="eventos-faq__icon-line"></span>
+              </span>
+            </summary>
+            <div class="eventos-faq__answer">
+              <div class="eventos-faq__answer-inner">
+                <p>Sí. Definimos un menú base contigo y adaptamos la selección a preferencias del grupo.</p>
+              </div>
+            </div>
           </details>
-          <details>
-            <summary>¿Se mueven fuera de Santo Domingo?</summary>
-            <p>Sí, sujeto a disponibilidad y condiciones logísticas. Te confirmamos cobertura durante la coordinación.</p>
+          <details class="eventos-faq__item">
+            <summary>
+              <span class="eventos-faq__question">¿Trabajan fuera de Santo Domingo?</span>
+              <span class="eventos-faq__icon" aria-hidden="true">
+                <span class="eventos-faq__icon-line eventos-faq__icon-line--vertical"></span>
+                <span class="eventos-faq__icon-line"></span>
+              </span>
+            </summary>
+            <div class="eventos-faq__answer">
+              <div class="eventos-faq__answer-inner">
+                <p>Sí, sujeto a disponibilidad y condiciones logísticas. Te confirmamos cobertura durante la coordinación.</p>
+              </div>
+            </div>
           </details>
-          <details>
-            <summary>¿Incluyen setup completo para cocinar en vivo?</summary>
-            <p>Sí, llegamos con equipo portátil y flujo de trabajo para operar el servicio en sitio.</p>
+          <details class="eventos-faq__item">
+            <summary>
+              <span class="eventos-faq__question">¿Incluyen setup para cocina en vivo?</span>
+              <span class="eventos-faq__icon" aria-hidden="true">
+                <span class="eventos-faq__icon-line eventos-faq__icon-line--vertical"></span>
+                <span class="eventos-faq__icon-line"></span>
+              </span>
+            </summary>
+            <div class="eventos-faq__answer">
+              <div class="eventos-faq__answer-inner">
+                <p>Sí, llegamos con equipo portátil y flujo de trabajo para operar el servicio en sitio.</p>
+              </div>
+            </div>
           </details>
         </div>
       </div>
@@ -465,27 +550,92 @@
 
   <div class="eventos-variety-modal" data-eventos-variety-modal aria-hidden="true">
     <div class="eventos-variety-modal__backdrop" data-eventos-variety-close aria-hidden="true"></div>
-    <section class="eventos-variety-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="eventos-variety-modal-title">
-      <header class="eventos-variety-modal__header">
-        <h2 id="eventos-variety-modal-title">Seleccionar pizzas</h2>
-        <button class="eventos-photo-tour__icon-btn" type="button" data-eventos-variety-close aria-label="Cerrar selector de variedades">
-          <span aria-hidden="true">✕</span>
-        </button>
-      </header>
-      <p class="eventos-variety-modal__intro">
-        Elige hasta 5 variedades para tu menú Pizza Party.
-      </p>
-      <p class="eventos-variety-modal__counter" data-eventos-variety-counter aria-live="polite">0 de 5 seleccionadas</p>
-      <p class="eventos-variety-modal__note">
-        <strong>Algunas variedades premium no están incluidas en esta modalidad.</strong>
-      </p>
-      <div class="eventos-variety-modal__grid" data-eventos-variety-grid></div>
-      <footer class="eventos-variety-modal__footer">
-        <button type="button" class="cta-button btn-liquid-glass eventos-variety-modal__done" data-eventos-variety-done>
-          Listo
-        </button>
-      </footer>
-    </section>
+    <div class="eventos-variety-modal__viewport" role="presentation">
+      <section
+        class="eventos-variety-modal__dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="eventos-variety-modal-title"
+        tabindex="-1">
+        <header class="eventos-variety-modal__header">
+          <p class="eventos-variety-modal__header-counter" data-eventos-variety-counter aria-live="polite">0 / 5</p>
+          <div class="eventos-variety-modal__header-copy">
+            <h2 id="eventos-variety-modal-title">Seleccionar pizzas</h2>
+          </div>
+          <button
+            class="eventos-variety-modal__close"
+            type="button"
+            data-eventos-variety-close
+            aria-label="Cerrar selector de variedades">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 640 640" fill="currentColor" focusable="false" aria-hidden="true">
+              <path d="M183.1 137.4C170.6 124.9 150.3 124.9 137.8 137.4C125.3 149.9 125.3 170.2 137.8 182.7L275.2 320L137.9 457.4C125.4 469.9 125.4 490.2 137.9 502.7C150.4 515.2 170.7 515.2 183.2 502.7L320.5 365.3L457.9 502.6C470.4 515.1 490.7 515.1 503.2 502.6C515.7 490.1 515.7 469.8 503.2 457.3L365.8 320L503.1 182.6C515.6 170.1 515.6 149.8 503.1 137.3C490.6 124.8 470.3 124.8 457.8 137.3L320.5 274.7L183.1 137.4z"></path>
+            </svg>
+          </button>
+        </header>
+
+        <div class="eventos-variety-modal__body">
+          <section class="eventos-variety-modal__section eventos-variety-modal__section--intro">
+            <p class="eventos-variety-modal__intro">
+              Elige hasta 5 variedades para tu menú.
+            </p>
+
+            <div
+              class="menu-page-search eventos-variety-modal__search"
+              data-eventos-variety-search
+              role="search"
+              aria-label="Buscar variedad para el menú">
+              <div class="menu-page-search__frame">
+                <label class="menu-page-search__field" for="eventos-variety-search-input">
+                  <span class="menu-page-search__icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="29" height="29" viewBox="0 0 640 640" fill="currentColor" focusable="false" aria-hidden="true">
+                      <path d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9 579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7 440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64 272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM272 416C351.5 416 416 351.5 416 272C416 192.5 351.5 128 272 128C192.5 128 128 192.5 128 272C128 351.5 192.5 416 272 416z"></path>
+                    </svg>
+                  </span>
+                  <span class="menu-page-search__input-shell">
+                    <input
+                      class="menu-page-search__input"
+                      id="eventos-variety-search-input"
+                      name="eventos-variety-search"
+                      data-eventos-variety-search-input
+                      type="search"
+                      aria-label="Buscar variedad para el menú"
+                      autocomplete="off"
+                      spellcheck="false"
+                      enterkeyhint="search">
+                    <span class="menu-page-search__helper" aria-hidden="true">
+                      <span class="menu-page-search__helper-prefix">Busca por</span>
+                      <span class="menu-page-search__helper-word">pizza</span>
+                    </span>
+                  </span>
+                  <button
+                    class="menu-page-search__clear"
+                    type="button"
+                    data-eventos-variety-search-clear
+                    aria-label="Limpiar búsqueda"
+                    aria-hidden="true"
+                    tabindex="-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 640 640" fill="currentColor" focusable="false" aria-hidden="true">
+                      <path d="M183.1 137.4C170.6 124.9 150.3 124.9 137.8 137.4C125.3 149.9 125.3 170.2 137.8 182.7L275.2 320L137.9 457.4C125.4 469.9 125.4 490.2 137.9 502.7C150.4 515.2 170.7 515.2 183.2 502.7L320.5 365.3L457.9 502.6C470.4 515.1 490.7 515.1 503.2 502.6C515.7 490.1 515.7 469.8 503.2 457.3L365.8 320L503.1 182.6C515.6 170.1 515.6 149.8 503.1 137.3C490.6 124.8 470.3 124.8 457.8 137.3L320.5 274.7L183.1 137.4z"></path>
+                    </svg>
+                  </button>
+                </label>
+              </div>
+            </div>
+
+            <div class="eventos-variety-modal__results" data-eventos-variety-grid aria-live="polite"></div>
+          </section>
+        </div>
+
+        <footer class="eventos-variety-modal__footer">
+          <button type="button" class="eventos-variety-modal__clear" data-eventos-variety-clear>
+            Limpiar
+          </button>
+          <button type="button" class="eventos-variety-modal__done" data-eventos-variety-done>
+            Aceptar
+          </button>
+        </footer>
+      </section>
+    </div>
   </div>
 
   <div class="eventos-photo-tour" data-eventos-photo-tour aria-hidden="true">

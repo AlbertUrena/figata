@@ -278,7 +278,15 @@
   const QUOTE_DEFAULT_TOTAL_PIZZAS = 20;
   const MENU_CART_PULSE_CLASS = 'is-menu-cart-pulse';
   const QUOTE_STEPPER_PULSE_MS = 320;
-  const WHATSAPP_QUOTE_PHONE = '18095550123';
+  const QUOTE_SHUFFLE_PULSE_CLASS = 'is-quote-shuffle-pulse';
+  const QUOTE_SHUFFLE_PULSE_MS = 560;
+  const QUOTE_SHUFFLE_BUSY_CLASS = 'is-shuffling';
+  const QUOTE_VIEW_TRANSITION_ROOT_ATTR = 'data-eventos-quote-view-transition';
+  const QUOTE_VIEW_TRANSITION_ROOT_ACTIVE = 'shuffle';
+  const QUOTE_VIEW_TRANSITION_CARD_NAME_PREFIX = 'eventos-quote-track-';
+  const QUOTE_VIEW_TRANSITION_MEDIA_SUFFIX = '-media';
+  const QUOTE_VIEW_TRANSITION_TITLE_SUFFIX = '-title';
+  const WHATSAPP_QUOTE_URL = 'https://wa.me/message/XQGQ7GEE2O5BD1';
   const QUOTE_CURRENCY_FORMATTER = new Intl.NumberFormat('es-DO', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
@@ -331,8 +339,12 @@
     quoteWhatsappHint: null,
     varietyModal: null,
     varietyModalCloseButtons: [],
+    varietyModalClearButton: null,
     varietyModalDoneButton: null,
     varietyModalCounter: null,
+    varietyModalSearchRoot: null,
+    varietyModalSearchInput: null,
+    varietyModalSearchClear: null,
     varietyModalGrid: null,
   };
 
@@ -353,11 +365,19 @@
     quoteVarietyModalOpen: false,
     quoteTotalPizzas: QUOTE_DEFAULT_TOTAL_PIZZAS,
     quoteVarieties: [],
+    quoteExcludedVarieties: [],
     quoteVarietyById: Object.create(null),
+    quoteDefaultPreviewVarietyIds: [],
     quoteSelectedVarietyIds: [],
+    quoteHasUserSelection: false,
+    quoteVarietySearchQuery: '',
     quoteLoadError: '',
+    quoteShuffleAnimating: false,
   };
   const quoteStepperPulseTimeoutByTarget = new WeakMap();
+  let quoteRandomPulseTimeoutId = 0;
+  let quoteShuffleTransitionTask = Promise.resolve();
+  let quoteVarietyCardTrackSequence = 0;
 
   const normalizeText = (value) => String(value || '').trim();
   const toLookupKey = (value) =>
@@ -365,6 +385,7 @@
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '');
+  const normalizeSearchQueryValue = (value) => toLookupKey(value).replace(/\s+/g, ' ').trim();
   const clamp01 = (value) => Math.min(1, Math.max(0, value));
   const formatDop = (value) => `$${QUOTE_CURRENCY_FORMATTER.format(Math.max(0, Math.round(value)))}`;
   const lerp = (start, end, progress) => start + (end - start) * progress;
@@ -883,18 +904,106 @@
 
   const initFaqAccordion = () => {
     const faqItems = Array.from(document.querySelectorAll('.eventos-faq details'));
+    const FAQ_PANEL_ANIMATION_MS = 740;
+    const closeTimers = new WeakMap();
+    const openFrameIds = new WeakMap();
+
+    const clearCloseTimer = (item) => {
+      const timerId = closeTimers.get(item);
+      if (typeof timerId === 'number') {
+        window.clearTimeout(timerId);
+        closeTimers.delete(item);
+      }
+    };
+
+    const clearOpenFrame = (item) => {
+      const frameId = openFrameIds.get(item);
+      if (typeof frameId === 'number') {
+        window.cancelAnimationFrame(frameId);
+        openFrameIds.delete(item);
+      }
+    };
+
+    const finalizeClosed = (item) => {
+      clearOpenFrame(item);
+      item.classList.remove('is-closing');
+      item.classList.remove('is-open');
+      item.open = false;
+    };
+
+    const closeItem = (item) => {
+      clearCloseTimer(item);
+      clearOpenFrame(item);
+
+      if (!item.open && !item.classList.contains('is-open')) {
+        finalizeClosed(item);
+        return;
+      }
+
+      // Keep details rendered during the collapse animation.
+      item.open = true;
+      item.classList.remove('is-open');
+      item.classList.add('is-closing');
+
+      const timerId = window.setTimeout(() => {
+        finalizeClosed(item);
+        closeTimers.delete(item);
+      }, FAQ_PANEL_ANIMATION_MS);
+
+      closeTimers.set(item, timerId);
+    };
+
+    const openItem = (item) => {
+      clearCloseTimer(item);
+      clearOpenFrame(item);
+
+      item.open = true;
+      item.classList.remove('is-closing');
+
+      if (item.classList.contains('is-open')) {
+        return;
+      }
+
+      const frameId = window.requestAnimationFrame(() => {
+        openFrameIds.delete(item);
+        if (item.classList.contains('is-closing')) {
+          return;
+        }
+        item.classList.add('is-open');
+      });
+      openFrameIds.set(item, frameId);
+    };
 
     faqItems.forEach((item) => {
-      item.addEventListener('toggle', () => {
-        if (!item.open) {
+      const summary = item.querySelector('summary');
+      if (!(summary instanceof HTMLElement)) {
+        return;
+      }
+
+      // Normalize initial state so repeated toggles animate consistently.
+      if (item.open) {
+        item.classList.add('is-open');
+      } else {
+        finalizeClosed(item);
+      }
+
+      summary.addEventListener('click', (event) => {
+        event.preventDefault();
+
+        const isOpen = item.classList.contains('is-open');
+        const isClosing = item.classList.contains('is-closing');
+
+        if (!isOpen || isClosing) {
+          faqItems.forEach((other) => {
+            if (other !== item) {
+              closeItem(other);
+            }
+          });
+          openItem(item);
           return;
         }
 
-        faqItems.forEach((other) => {
-          if (other !== item) {
-            other.open = false;
-          }
-        });
+        closeItem(item);
       });
     });
   };
@@ -1498,6 +1607,201 @@
     }
   };
 
+  const toQuoteViewTransitionName = (trackToken) => {
+    const normalizedToken = normalizeText(trackToken)
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, '-');
+    return `${QUOTE_VIEW_TRANSITION_CARD_NAME_PREFIX}${normalizedToken || 'item'}`;
+  };
+
+  const getNextQuoteCardTrackName = () => {
+    quoteVarietyCardTrackSequence += 1;
+    return toQuoteViewTransitionName(String(quoteVarietyCardTrackSequence));
+  };
+
+  const ensureQuoteVarietyCardTransitionTrack = (card) => {
+    if (!(card instanceof HTMLElement)) {
+      return '';
+    }
+
+    let trackName = normalizeText(card.dataset.eventosQuoteTrackName);
+    if (!trackName) {
+      trackName = getNextQuoteCardTrackName();
+      card.dataset.eventosQuoteTrackName = trackName;
+    }
+
+    card.style.viewTransitionName = trackName;
+    return trackName;
+  };
+
+  const setQuoteVarietyCardContent = (card, varietyId) => {
+    if (!(card instanceof HTMLElement)) {
+      return;
+    }
+
+    const variety = state.quoteVarietyById[varietyId];
+    if (!variety) {
+      return;
+    }
+
+    const mediaImage = card.querySelector('.eventos-cotizador-variety__media img');
+    const title = card.querySelector('.eventos-cotizador-variety__body h4');
+    if (!(mediaImage instanceof HTMLImageElement) || !(title instanceof HTMLElement)) {
+      return;
+    }
+
+    const trackName = ensureQuoteVarietyCardTransitionTrack(card);
+    if (trackName) {
+      mediaImage.style.viewTransitionName = `${trackName}${QUOTE_VIEW_TRANSITION_MEDIA_SUFFIX}`;
+      title.style.viewTransitionName = `${trackName}${QUOTE_VIEW_TRANSITION_TITLE_SUFFIX}`;
+    }
+
+    card.dataset.eventosSelectedVarietyId = variety.id;
+    mediaImage.src = variety.image;
+    mediaImage.alt = variety.name;
+    mediaImage.loading = 'eager';
+    mediaImage.decoding = 'async';
+    title.textContent = variety.name;
+  };
+
+  const preloadQuoteVarietyImages = async (varietyIds) => {
+    const ids = Array.isArray(varietyIds) ? varietyIds : [];
+    const tasks = ids.map((varietyId) => {
+      const variety = state.quoteVarietyById[varietyId];
+      if (!variety?.image) {
+        return Promise.resolve();
+      }
+
+      return new Promise((resolve) => {
+        const image = new Image();
+        image.src = variety.image;
+
+        if (image.complete) {
+          resolve();
+          return;
+        }
+
+        image.addEventListener('load', resolve, { once: true });
+        image.addEventListener('error', resolve, { once: true });
+      });
+    });
+
+    await Promise.all(tasks);
+  };
+
+  const createQuoteDerangedOrder = (length) => {
+    const size = Number(length) || 0;
+    const identity = Array.from({ length: size }, (_, index) => index);
+
+    if (size <= 1) {
+      return identity;
+    }
+
+    const candidate = [...identity];
+    let attempt = 0;
+    while (attempt < 48) {
+      for (let index = size - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [candidate[index], candidate[swapIndex]] = [candidate[swapIndex], candidate[index]];
+      }
+
+      const isDeranged = candidate.every((value, index) => value !== index);
+      if (isDeranged) {
+        return [...candidate];
+      }
+
+      attempt += 1;
+    }
+
+    return identity.map((_, index) => (index + 1) % size);
+  };
+
+  const canRunQuoteShuffleViewTransition = () =>
+    typeof document.startViewTransition === 'function' &&
+    !reducedMotionQuery.matches &&
+    refs.quoteSelectedGrid instanceof HTMLElement &&
+    refs.quoteSelectedGrid.childElementCount > 0;
+
+  const clearQuoteShuffleViewTransitionRuntime = () => {
+    root.removeAttribute(QUOTE_VIEW_TRANSITION_ROOT_ATTR);
+  };
+
+  const runQuoteShuffleViewTransition = async (updateFn) => {
+    if (typeof updateFn !== 'function') {
+      return;
+    }
+
+    const canAnimate = canRunQuoteShuffleViewTransition();
+    if (!canAnimate) {
+      updateFn();
+      return;
+    }
+
+    const runTransition = async () => {
+      const stillCanAnimate = canRunQuoteShuffleViewTransition();
+      if (!stillCanAnimate) {
+        updateFn();
+        return;
+      }
+
+      clearQuoteShuffleViewTransitionRuntime();
+      root.setAttribute(QUOTE_VIEW_TRANSITION_ROOT_ATTR, QUOTE_VIEW_TRANSITION_ROOT_ACTIVE);
+
+      let transition = null;
+      try {
+        transition = document.startViewTransition(() => updateFn());
+      } catch {
+        clearQuoteShuffleViewTransitionRuntime();
+        updateFn();
+        return;
+      }
+
+      try {
+        await Promise.resolve(transition?.finished);
+      } catch {
+        // Transition can be skipped by the browser; DOM update already happened.
+      } finally {
+        clearQuoteShuffleViewTransitionRuntime();
+      }
+    };
+
+    quoteShuffleTransitionTask = quoteShuffleTransitionTask
+      .catch(() => {})
+      .then(() => runTransition());
+
+    await quoteShuffleTransitionTask;
+  };
+
+  const setQuoteShuffleBusy = (nextBusy) => {
+    const isBusy = Boolean(nextBusy);
+    state.quoteShuffleAnimating = isBusy;
+
+    if (refs.quoteVarietyRandomButton instanceof HTMLButtonElement) {
+      refs.quoteVarietyRandomButton.classList.toggle(QUOTE_SHUFFLE_BUSY_CLASS, isBusy);
+      refs.quoteVarietyRandomButton.setAttribute('aria-busy', isBusy ? 'true' : 'false');
+    }
+  };
+
+  const pulseQuoteRandomButton = () => {
+    const button = refs.quoteVarietyRandomButton;
+    if (!(button instanceof HTMLButtonElement) || button.disabled) {
+      return;
+    }
+
+    if (quoteRandomPulseTimeoutId) {
+      window.clearTimeout(quoteRandomPulseTimeoutId);
+    }
+
+    button.classList.remove(QUOTE_SHUFFLE_PULSE_CLASS);
+    void button.getBoundingClientRect();
+    button.classList.add(QUOTE_SHUFFLE_PULSE_CLASS);
+
+    quoteRandomPulseTimeoutId = window.setTimeout(() => {
+      button.classList.remove(QUOTE_SHUFFLE_PULSE_CLASS);
+      quoteRandomPulseTimeoutId = 0;
+    }, QUOTE_SHUFFLE_PULSE_MS + 44);
+  };
+
   const getMenuDataPath = () => {
     if (publicPaths?.toSitePath) {
       return publicPaths.toSitePath('data/menu.json');
@@ -1512,7 +1816,7 @@
       totalPizzas > QUOTE_SERVICE_FEE_WAIVER_THRESHOLD ? 0 : QUOTE_BASE_SERVICE_FEE_DOP;
     const serviceFee = Math.round(subtotalPizzas * QUOTE_SERVICE_RATE);
     const totalEstimate = subtotalPizzas + baseServiceFee + serviceFee;
-    const selectedCount = state.quoteSelectedVarietyIds.length;
+    const selectedCount = getCommittedQuoteSelectionIds().length;
 
     return Object.freeze({
       totalPizzas,
@@ -1523,6 +1827,19 @@
       totalEstimate,
       selectedCount,
     });
+  };
+
+  const getCommittedQuoteSelectionIds = () =>
+    state.quoteHasUserSelection
+      ? state.quoteSelectedVarietyIds.slice(0, QUOTE_MAX_VARIETIES)
+      : [];
+
+  const getQuoteDisplaySourceIds = () => {
+    const committedIds = getCommittedQuoteSelectionIds();
+    if (committedIds.length) {
+      return committedIds;
+    }
+    return state.quoteDefaultPreviewVarietyIds.slice(0, QUOTE_MAX_VARIETIES);
   };
 
   const isQuoteReadyForWhatsapp = (breakdown) => breakdown.selectedCount > 0;
@@ -1559,8 +1876,21 @@
 
     syncPhotoBodyLockState();
 
-    if (shouldOpen && refs.varietyModalDoneButton instanceof HTMLButtonElement) {
-      refs.varietyModalDoneButton.focus();
+    if (shouldOpen) {
+      state.quoteVarietySearchQuery = '';
+      if (refs.varietyModalSearchInput instanceof HTMLInputElement) {
+        refs.varietyModalSearchInput.value = '';
+      }
+      renderQuoteVarietyModalOptions();
+
+      if (refs.varietyModalSearchInput instanceof HTMLInputElement) {
+        refs.varietyModalSearchInput.focus();
+        return;
+      }
+
+      if (refs.varietyModalDoneButton instanceof HTMLButtonElement) {
+        refs.varietyModalDoneButton.focus();
+      }
       return;
     }
 
@@ -1570,15 +1900,49 @@
   };
 
   const renderQuoteVarietyCounter = () => {
-    const count = state.quoteSelectedVarietyIds.length;
-    const content = `${count} de ${QUOTE_MAX_VARIETIES} seleccionadas`;
+    const committedCount = getCommittedQuoteSelectionIds().length;
+    const displayCount = getQuoteDisplaySourceIds().length;
 
     if (refs.quoteVarietySelectionCounter instanceof HTMLElement) {
-      refs.quoteVarietySelectionCounter.textContent = content;
+      refs.quoteVarietySelectionCounter.textContent = `${displayCount} de ${QUOTE_MAX_VARIETIES} seleccionadas`;
     }
     if (refs.varietyModalCounter instanceof HTMLElement) {
-      refs.varietyModalCounter.textContent = content;
+      refs.varietyModalCounter.textContent = `${committedCount} / ${QUOTE_MAX_VARIETIES}`;
     }
+
+    if (refs.varietyModalClearButton instanceof HTMLButtonElement) {
+      refs.varietyModalClearButton.disabled = committedCount === 0;
+    }
+  };
+
+  const syncQuoteVarietySearchControls = () => {
+    if (
+      !(refs.varietyModalSearchRoot instanceof HTMLElement) ||
+      !(refs.varietyModalSearchInput instanceof HTMLInputElement)
+    ) {
+      return;
+    }
+
+    const hasValue = Boolean(normalizeText(refs.varietyModalSearchInput.value));
+    refs.varietyModalSearchRoot.dataset.helperVisible = hasValue ? 'false' : 'true';
+
+    if (refs.varietyModalSearchClear instanceof HTMLButtonElement) {
+      refs.varietyModalSearchClear.classList.toggle('is-visible', hasValue);
+      refs.varietyModalSearchClear.setAttribute('aria-hidden', hasValue ? 'false' : 'true');
+      refs.varietyModalSearchClear.tabIndex = hasValue ? 0 : -1;
+    }
+  };
+
+  const getVisibleQuoteVarieties = (sourceList) => {
+    const items = Array.isArray(sourceList) ? sourceList : [];
+    const normalizedQuery = normalizeSearchQueryValue(state.quoteVarietySearchQuery);
+    if (!normalizedQuery) {
+      return items;
+    }
+
+    return items.filter((variety) =>
+      normalizeSearchQueryValue(variety.searchText || variety.name).includes(normalizedQuery)
+    );
   };
 
   const renderQuoteVarietyModalOptions = () => {
@@ -1587,6 +1951,7 @@
     }
 
     refs.varietyModalGrid.replaceChildren();
+    syncQuoteVarietySearchControls();
 
     if (!state.quoteVarieties.length) {
       const emptyState = document.createElement('p');
@@ -1596,35 +1961,160 @@
       return;
     }
 
-    const selectedCount = state.quoteSelectedVarietyIds.length;
-    state.quoteVarieties.forEach((variety) => {
-      const isSelected = state.quoteSelectedVarietyIds.includes(variety.id);
-      const selectionCapReached = selectedCount >= QUOTE_MAX_VARIETIES;
+    const visibleVarieties = getVisibleQuoteVarieties(state.quoteVarieties);
+    const visibleExcludedVarieties = getVisibleQuoteVarieties(state.quoteExcludedVarieties);
+    const selectedIds = getCommittedQuoteSelectionIds();
+    const selectedCount = selectedIds.length;
+    const selectionCapReached = selectedCount >= QUOTE_MAX_VARIETIES;
+
+    const buildVarietyOption = (variety, options = {}) => {
+      const { unavailable = false } = options;
+      const isSelected = !unavailable && selectedIds.includes(variety.id);
+      const isCapBlocked = !unavailable && !isSelected && selectionCapReached;
+
+      const item = document.createElement('li');
+      item.className = 'eventos-variety-modal__item-row';
 
       const option = document.createElement('button');
       option.type = 'button';
       option.className = 'eventos-variety-option';
       option.dataset.eventosVarietyId = variety.id;
       option.classList.toggle('is-selected', isSelected);
+      option.classList.toggle('is-unavailable', unavailable);
+      option.classList.toggle('is-cap-blocked', isCapBlocked);
       option.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+      option.dataset.selected = isSelected ? 'true' : 'false';
 
-      if (!isSelected && selectionCapReached) {
+      if (unavailable || isCapBlocked) {
         option.disabled = true;
       }
 
+      const selectedIndicator = document.createElement('span');
+      selectedIndicator.className = 'eventos-variety-option__selected-indicator';
+      selectedIndicator.setAttribute('aria-hidden', 'true');
+
+      const selectedIndicatorIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      selectedIndicatorIcon.setAttribute('viewBox', '0 0 640 640');
+      selectedIndicatorIcon.setAttribute('focusable', 'false');
+
+      const selectedIndicatorPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      selectedIndicatorPath.setAttribute(
+        'd',
+        'M530.8 134.1C545.1 144.5 548.3 164.5 537.9 178.8L281.9 530.8C276.4 538.4 267.9 543.1 258.5 543.9C249.1 544.7 240 541.2 233.4 534.6L105.4 406.6C92.9 394.1 92.9 373.8 105.4 361.3C117.9 348.8 138.2 348.8 150.7 361.3L252.2 462.8L486.2 141.1C496.6 126.8 516.6 123.6 530.9 134z'
+      );
+      selectedIndicatorIcon.appendChild(selectedIndicatorPath);
+      selectedIndicator.appendChild(selectedIndicatorIcon);
+
+      const media = document.createElement('div');
+      media.className = 'eventos-variety-option__media';
+
       const image = document.createElement('img');
+      image.className = 'eventos-variety-option__image';
       image.src = variety.image;
       image.alt = '';
       image.loading = 'lazy';
       image.decoding = 'async';
+      media.appendChild(image);
 
-      const label = document.createElement('span');
-      label.className = 'eventos-variety-option__name';
-      label.textContent = variety.name;
+      const body = document.createElement('div');
+      body.className = 'eventos-variety-option__body';
 
-      option.append(image, label);
-      refs.varietyModalGrid.appendChild(option);
+      const title = document.createElement('p');
+      title.className = 'eventos-variety-option__title';
+      title.textContent = variety.name;
+
+      const summary = document.createElement('p');
+      summary.className = 'eventos-variety-option__summary';
+      summary.textContent = normalizeText(variety.description);
+
+      body.append(title, summary);
+      option.append(selectedIndicator, media, body);
+      item.appendChild(option);
+      return item;
+    };
+
+    if (visibleVarieties.length) {
+      const list = document.createElement('ul');
+      list.className = 'eventos-variety-modal__list';
+      list.setAttribute('role', 'list');
+      visibleVarieties.forEach((variety) => {
+        list.appendChild(buildVarietyOption(variety));
+      });
+      refs.varietyModalGrid.appendChild(list);
+    }
+
+    if (visibleExcludedVarieties.length) {
+      const excludedSection = document.createElement('section');
+      excludedSection.className = 'eventos-variety-modal__excluded';
+      excludedSection.setAttribute('aria-label', 'Variedades premium fuera de esta modalidad');
+
+      const excludedTitle = document.createElement('h2');
+      excludedTitle.className = 'eventos-variety-modal__excluded-title';
+      excludedTitle.textContent = 'Fuera del plan';
+
+      const excludedSubtitle = document.createElement('p');
+      excludedSubtitle.className = 'eventos-variety-modal__excluded-subtitle';
+      excludedSubtitle.textContent = 'Estas opciones especiales quedan excluidas';
+
+      const excludedList = document.createElement('ul');
+      excludedList.className = 'eventos-variety-modal__list eventos-variety-modal__list--excluded';
+      excludedList.setAttribute('role', 'list');
+      visibleExcludedVarieties.forEach((variety) => {
+        excludedList.appendChild(buildVarietyOption(variety, { unavailable: true }));
+      });
+
+      excludedSection.append(excludedTitle, excludedSubtitle, excludedList);
+      refs.varietyModalGrid.appendChild(excludedSection);
+    }
+
+    if (!visibleVarieties.length && !visibleExcludedVarieties.length) {
+      const emptyState = document.createElement('p');
+      emptyState.className = 'eventos-variety-modal__empty';
+      const query = normalizeText(state.quoteVarietySearchQuery);
+      emptyState.textContent = query
+        ? `No encontramos variedades para “${query}”.`
+        : 'No encontramos variedades disponibles ahora mismo.';
+      refs.varietyModalGrid.appendChild(emptyState);
+    }
+  };
+
+  const syncQuoteVarietyModalOptionStates = () => {
+    if (!(refs.varietyModalGrid instanceof HTMLElement)) {
+      return false;
+    }
+
+    const optionButtons = Array.from(
+      refs.varietyModalGrid.querySelectorAll('.eventos-variety-option')
+    ).filter((node) => node instanceof HTMLButtonElement);
+    if (!optionButtons.length) {
+      return false;
+    }
+
+    const selectedIds = new Set(getCommittedQuoteSelectionIds());
+    const selectionCapReached = selectedIds.size >= QUOTE_MAX_VARIETIES;
+
+    optionButtons.forEach((option) => {
+      const isUnavailable = option.classList.contains('is-unavailable');
+      if (isUnavailable) {
+        option.disabled = true;
+        option.classList.remove('is-selected');
+        option.classList.remove('is-cap-blocked');
+        option.dataset.selected = 'false';
+        option.setAttribute('aria-pressed', 'false');
+        return;
+      }
+
+      const varietyId = option.dataset.eventosVarietyId || '';
+      const isSelected = Boolean(varietyId && selectedIds.has(varietyId));
+      const isCapBlocked = !isSelected && selectionCapReached;
+      option.classList.toggle('is-selected', isSelected);
+      option.classList.toggle('is-cap-blocked', isCapBlocked);
+      option.dataset.selected = isSelected ? 'true' : 'false';
+      option.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+      option.disabled = isCapBlocked;
     });
+
+    return true;
   };
 
   const renderQuoteTotal = (breakdown) => {
@@ -1647,30 +2137,25 @@
 
     const card = document.createElement('article');
     card.className = 'eventos-cotizador-variety';
-    card.dataset.eventosSelectedVarietyId = variety.id;
 
     const media = document.createElement('div');
     media.className = 'eventos-cotizador-variety__media';
     const image = document.createElement('img');
-    image.src = variety.image;
-    image.alt = variety.name;
-    image.loading = 'eager';
-    image.decoding = 'async';
     media.appendChild(image);
 
     const body = document.createElement('div');
     body.className = 'eventos-cotizador-variety__body';
 
     const title = document.createElement('h4');
-    title.textContent = variety.name;
 
     body.append(title);
     card.append(media, body);
+    setQuoteVarietyCardContent(card, variety.id);
     return card;
   };
 
   const getQuoteDisplayVarietyIds = () => {
-    const selectedIds = state.quoteSelectedVarietyIds.slice(0, QUOTE_MAX_VARIETIES);
+    const selectedIds = getQuoteDisplaySourceIds();
     if (selectedIds.length !== QUOTE_MAX_VARIETIES) {
       return selectedIds;
     }
@@ -1698,9 +2183,10 @@
       return;
     }
 
-    const hasVarieties = state.quoteSelectedVarietyIds.length > 0;
+    const displaySourceIds = getQuoteDisplaySourceIds();
+    const hasVarieties = displaySourceIds.length > 0;
     refs.quoteSelectedEmpty.hidden = hasVarieties;
-    refs.quoteSelectedGrid.dataset.selectedCount = String(state.quoteSelectedVarietyIds.length);
+    refs.quoteSelectedGrid.dataset.selectedCount = String(displaySourceIds.length);
 
     if (!hasVarieties) {
       if (refs.quoteSelectedGrid.childElementCount > 0) {
@@ -1741,6 +2227,7 @@
       if (!card) {
         return;
       }
+      setQuoteVarietyCardContent(card, varietyId);
       refs.quoteSelectedGrid.appendChild(card);
       existingCardsById.delete(varietyId);
     });
@@ -1783,7 +2270,7 @@
   };
 
   const buildQuoteWhatsappMessage = (breakdown) => {
-    const varietyLines = state.quoteSelectedVarietyIds
+    const varietyLines = getCommittedQuoteSelectionIds()
       .map((varietyId) => {
         const variety = state.quoteVarietyById[varietyId];
         if (!variety) {
@@ -1794,22 +2281,24 @@
       .filter(Boolean);
 
     const baseFeeLine = breakdown.baseServiceFeeWaived
-      ? `Incluido (antes ${formatDop(QUOTE_BASE_SERVICE_FEE_DOP)})`
+      ? 'Incluido'
       : formatDop(breakdown.baseServiceFee);
 
     const lines = [
-      'Hola Figata, quiero continuar con esta estimación de Pizza Party:',
+      'Hola, quiero cotizar un Pizza Party 🍕',
       '',
-      `Total de pizzas: ${breakdown.totalPizzas}`,
-      'Variedades:',
+      'Resumen de mi estimación:',
+      `• Total de pizzas: ${breakdown.totalPizzas}`,
+      '• Variedades elegidas:',
       ...varietyLines,
       '',
-      `Subtotal de pizzas: ${formatDop(breakdown.subtotalPizzas)}`,
-      `Cargo servicio pizza en casa: ${baseFeeLine}`,
-      `Servicio 10%: ${formatDop(breakdown.serviceFee)}`,
-      `Total estimado: ${formatDop(breakdown.totalEstimate)}`,
+      'Monto estimado:',
+      `• Subtotal pizzas: ${formatDop(breakdown.subtotalPizzas)}`,
+      `• Cargo por servicio: ${baseFeeLine}`,
+      `• Servicio 10%: ${formatDop(breakdown.serviceFee)}`,
+      `• Total estimado: ${formatDop(breakdown.totalEstimate)}`,
       '',
-      'Quedo atento para validar fecha, logística y confirmar disponibilidad.',
+      'Quiero confirmar disponibilidad y próximos pasos.',
     ];
     return lines.join('\n');
   };
@@ -1843,7 +2332,9 @@
     const breakdown = getQuoteBreakdown();
     renderQuoteTotal(breakdown);
     renderQuoteVarietyCounter();
-    renderQuoteVarietyModalOptions();
+    if (state.quoteVarietyModalOpen && !syncQuoteVarietyModalOptionStates()) {
+      renderQuoteVarietyModalOptions();
+    }
     renderQuoteSelectedVarieties();
     renderQuoteSummary(breakdown);
     renderQuoteWhatsappState(breakdown);
@@ -1858,8 +2349,9 @@
   };
 
   const removeQuoteVariety = (varietyId) => {
-    const nextIds = state.quoteSelectedVarietyIds.filter((id) => id !== varietyId);
+    const nextIds = getCommittedQuoteSelectionIds().filter((id) => id !== varietyId);
     state.quoteSelectedVarietyIds = nextIds;
+    state.quoteHasUserSelection = true;
     renderQuoteCalculator();
   };
 
@@ -1868,16 +2360,18 @@
       return;
     }
 
-    if (state.quoteSelectedVarietyIds.includes(varietyId)) {
+    const selectedIds = getCommittedQuoteSelectionIds();
+    if (selectedIds.includes(varietyId)) {
       removeQuoteVariety(varietyId);
       return;
     }
 
-    if (state.quoteSelectedVarietyIds.length >= QUOTE_MAX_VARIETIES) {
+    if (selectedIds.length >= QUOTE_MAX_VARIETIES) {
       return;
     }
 
-    state.quoteSelectedVarietyIds = [...state.quoteSelectedVarietyIds, varietyId];
+    state.quoteSelectedVarietyIds = [...selectedIds, varietyId];
+    state.quoteHasUserSelection = true;
     renderQuoteCalculator();
   };
 
@@ -1896,6 +2390,95 @@
     return pool.slice(0, maxCount).map((item) => item.id);
   };
 
+  const shuffleQuoteSelection = async () => {
+    if (!state.quoteVarieties.length || state.quoteShuffleAnimating) {
+      return;
+    }
+
+    const selectedCardNodes =
+      refs.quoteSelectedGrid instanceof HTMLElement
+        ? Array.from(refs.quoteSelectedGrid.children).filter(
+            (node) => node instanceof HTMLElement
+          )
+        : [];
+    const selectedCardCount = selectedCardNodes.length;
+    const nextSelectionCount = Math.max(
+      1,
+      Math.min(
+        QUOTE_MAX_VARIETIES,
+        selectedCardCount || state.quoteSelectedVarietyIds.length || QUOTE_DEFAULT_SELECTION_COUNT
+      )
+    );
+    const derangedOrder = createQuoteDerangedOrder(selectedCardNodes.length);
+    const reorderedCards = derangedOrder.map((index) => selectedCardNodes[index]);
+    let nextSelectionIds = getRandomQuoteSelectionIds(nextSelectionCount);
+
+    if (reorderedCards.length && reorderedCards.length === nextSelectionIds.length) {
+      const oldVarietyIdsByIncomingSlot = reorderedCards.map((card) =>
+        normalizeText(card.dataset.eventosSelectedVarietyId)
+      );
+      let attempt = 0;
+      while (
+        attempt < 24 &&
+        nextSelectionIds.some(
+          (varietyId, index) => normalizeText(varietyId) === oldVarietyIdsByIncomingSlot[index]
+        )
+      ) {
+        nextSelectionIds = getRandomQuoteSelectionIds(nextSelectionCount);
+        attempt += 1;
+      }
+    }
+
+    setQuoteShuffleBusy(true);
+    pulseQuoteRandomButton();
+
+    try {
+      await preloadQuoteVarietyImages(nextSelectionIds);
+
+      if (
+        !(refs.quoteSelectedGrid instanceof HTMLElement) ||
+        !selectedCardNodes.length ||
+        selectedCardNodes.length !== nextSelectionIds.length
+      ) {
+        await runQuoteShuffleViewTransition(() => {
+          setQuoteSelection(nextSelectionIds);
+        });
+        return;
+      }
+
+      await runQuoteShuffleViewTransition(() => {
+        reorderedCards.forEach((card) => {
+          refs.quoteSelectedGrid.appendChild(card);
+        });
+
+        reorderedCards.forEach((card, index) => {
+          const varietyId = nextSelectionIds[index];
+          setQuoteVarietyCardContent(card, varietyId);
+        });
+
+        state.quoteSelectedVarietyIds = nextSelectionIds.slice(0, QUOTE_MAX_VARIETIES);
+        state.quoteHasUserSelection = state.quoteSelectedVarietyIds.length > 0;
+        refs.quoteSelectedGrid.dataset.selectedCount = String(state.quoteSelectedVarietyIds.length);
+
+        const hasVarieties = state.quoteSelectedVarietyIds.length > 0;
+        if (refs.quoteSelectedEmpty instanceof HTMLElement) {
+          refs.quoteSelectedEmpty.hidden = hasVarieties;
+        }
+
+        renderQuoteVarietyCounter();
+        if (state.quoteVarietyModalOpen && !syncQuoteVarietyModalOptionStates()) {
+          renderQuoteVarietyModalOptions();
+        }
+
+        const breakdown = getQuoteBreakdown();
+        renderQuoteSummary(breakdown);
+        renderQuoteWhatsappState(breakdown);
+      });
+    } finally {
+      setQuoteShuffleBusy(false);
+    }
+  };
+
   const setQuoteSelection = (ids) => {
     const uniqueIds = [];
     const seen = new Set();
@@ -1907,6 +2490,13 @@
       uniqueIds.push(id);
     });
     state.quoteSelectedVarietyIds = uniqueIds.slice(0, QUOTE_MAX_VARIETIES);
+    state.quoteHasUserSelection = state.quoteSelectedVarietyIds.length > 0;
+    renderQuoteCalculator();
+  };
+
+  const clearQuoteSelection = () => {
+    state.quoteSelectedVarietyIds = [];
+    state.quoteHasUserSelection = true;
     renderQuoteCalculator();
   };
 
@@ -1943,6 +2533,15 @@
             name,
             image,
             price: Math.round(price),
+            description: normalizeText(
+              item?.description ||
+                item?.descriptionShort ||
+                item?.descriptionLong ||
+                item?.summary ||
+                item?.sensory_profile?.summary ||
+                ''
+            ),
+            searchText: normalizeSearchQueryValue(name),
           })
         );
       });
@@ -1958,10 +2557,13 @@
     const available = candidates
       .filter((item) => !excludedIds.has(item.id))
       .sort((a, b) => a.name.localeCompare(b.name, 'es'));
+    const excluded = candidates
+      .filter((item) => excludedIds.has(item.id))
+      .sort((a, b) => a.name.localeCompare(b.name, 'es'));
 
     return Object.freeze({
       available,
-      excludedIds,
+      excluded,
     });
   };
 
@@ -1996,8 +2598,12 @@
     refs.quoteWhatsappHint = document.querySelector('[data-eventos-whatsapp-hint]');
     refs.varietyModal = document.querySelector('[data-eventos-variety-modal]');
     refs.varietyModalCloseButtons = Array.from(document.querySelectorAll('[data-eventos-variety-close]'));
+    refs.varietyModalClearButton = document.querySelector('[data-eventos-variety-clear]');
     refs.varietyModalDoneButton = document.querySelector('[data-eventos-variety-done]');
     refs.varietyModalCounter = document.querySelector('[data-eventos-variety-counter]');
+    refs.varietyModalSearchRoot = document.querySelector('[data-eventos-variety-search]');
+    refs.varietyModalSearchInput = document.querySelector('[data-eventos-variety-search-input]');
+    refs.varietyModalSearchClear = document.querySelector('[data-eventos-variety-search-clear]');
     refs.varietyModalGrid = document.querySelector('[data-eventos-variety-grid]');
 
     if (
@@ -2008,6 +2614,9 @@
       !(refs.quoteSelectedGrid instanceof HTMLElement) ||
       !(refs.quoteWhatsappButton instanceof HTMLButtonElement) ||
       !(refs.varietyModal instanceof HTMLElement) ||
+      !(refs.varietyModalSearchRoot instanceof HTMLElement) ||
+      !(refs.varietyModalSearchInput instanceof HTMLInputElement) ||
+      !(refs.varietyModalSearchClear instanceof HTMLButtonElement) ||
       !(refs.varietyModalGrid instanceof HTMLElement)
     ) {
       return;
@@ -2032,11 +2641,8 @@
     });
 
     refs.quoteVarietyRandomButton.addEventListener('click', () => {
-      if (!state.quoteVarieties.length) {
-        return;
-      }
-      setQuoteSelection(getRandomQuoteSelectionIds(QUOTE_DEFAULT_SELECTION_COUNT));
       closeQuoteInfoTooltips();
+      void shuffleQuoteSelection();
     });
 
     refs.quoteRoot.addEventListener('click', (event) => {
@@ -2075,11 +2681,54 @@
       });
     });
 
+    if (refs.varietyModalClearButton instanceof HTMLButtonElement) {
+      refs.varietyModalClearButton.addEventListener('click', () => {
+        clearQuoteSelection();
+      });
+    }
+
     if (refs.varietyModalDoneButton instanceof HTMLButtonElement) {
       refs.varietyModalDoneButton.addEventListener('click', () => {
         setQuoteVarietyModalOpen(false);
       });
     }
+
+    refs.varietyModalSearchInput.addEventListener('input', () => {
+      state.quoteVarietySearchQuery = normalizeText(refs.varietyModalSearchInput.value);
+      renderQuoteVarietyModalOptions();
+    });
+
+    refs.varietyModalSearchInput.addEventListener('search', () => {
+      state.quoteVarietySearchQuery = normalizeText(refs.varietyModalSearchInput.value);
+      renderQuoteVarietyModalOptions();
+    });
+
+    refs.varietyModalSearchInput.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') {
+        return;
+      }
+
+      if (!normalizeText(refs.varietyModalSearchInput.value)) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      refs.varietyModalSearchInput.value = '';
+      state.quoteVarietySearchQuery = '';
+      renderQuoteVarietyModalOptions();
+    });
+
+    refs.varietyModalSearchClear.addEventListener('click', (event) => {
+      event.preventDefault();
+      refs.varietyModalSearchInput.value = '';
+      state.quoteVarietySearchQuery = '';
+      renderQuoteVarietyModalOptions();
+
+      if (document.activeElement === refs.varietyModalSearchInput) {
+        refs.varietyModalSearchInput.blur();
+      }
+    });
 
     refs.varietyModalGrid.addEventListener('click', (event) => {
       const target = event.target;
@@ -2094,7 +2743,15 @@
       if (!varietyId) {
         return;
       }
+      const isPointerInteraction = event.detail > 0;
       toggleQuoteVarietySelection(varietyId);
+      if (isPointerInteraction) {
+        window.requestAnimationFrame(() => {
+          if (document.activeElement === option) {
+            option.blur();
+          }
+        });
+      }
     });
 
     document.addEventListener('keydown', (event) => {
@@ -2125,9 +2782,8 @@
       }
 
       const message = buildQuoteWhatsappMessage(breakdown);
-      const whatsappUrl = `https://wa.me/${WHATSAPP_QUOTE_PHONE}?text=${encodeURIComponent(
-        message
-      )}`;
+      const separator = WHATSAPP_QUOTE_URL.includes('?') ? '&' : '?';
+      const whatsappUrl = `${WHATSAPP_QUOTE_URL}${separator}text=${encodeURIComponent(message)}`;
       window.open(whatsappUrl, '_blank', 'noopener');
     });
 
@@ -2136,12 +2792,16 @@
     loadQuoteVarieties()
       .then((result) => {
         state.quoteVarieties = result.available;
+        state.quoteExcludedVarieties = result.excluded;
         state.quoteVarietyById = result.available.reduce((lookup, item) => {
           lookup[item.id] = item;
           return lookup;
         }, Object.create(null));
+        state.quoteDefaultPreviewVarietyIds = getDefaultQuoteSelectionIds();
+        state.quoteSelectedVarietyIds = [];
+        state.quoteHasUserSelection = false;
         state.quoteLoadError = '';
-        setQuoteSelection(getDefaultQuoteSelectionIds());
+        renderQuoteCalculator();
 
         refs.quoteVarietyOpenButton.disabled = false;
         refs.quoteVarietyRandomButton.disabled = false;
