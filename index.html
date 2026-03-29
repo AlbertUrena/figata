@@ -30,7 +30,7 @@
   <script id="restaurant-jsonld" type="application/ld+json"></script>
   <link rel="icon" type="image/png" href="assets/favicon.png">
   <link rel="preload" as="image" href="assets/home/seamless-bg.webp" fetchpriority="high" data-hero-preload>
-  <link rel="stylesheet" href="styles.css?v=delivery-sheet-v6">
+  <link rel="stylesheet" href="styles.css?v=virtual-tour-v7">
   <link rel="stylesheet" href="shared/public-scroll-indicator.css">
 </head>
 <body class="home-page-body">
@@ -231,13 +231,21 @@
             </figure>
           </div>
 
-          <article class="home-ambiente-mobile__hero home-ambiente-mobile__hero--parallax" data-home-ambiente-parallax aria-label="Recorrido virtual 360 grados">
+          <button
+            class="home-ambiente-mobile__hero home-ambiente-mobile__hero--parallax home-ambiente-mobile__hero-trigger"
+            type="button"
+            data-home-ambiente-parallax
+            data-home-virtual-tour-open
+            aria-label="Abrir recorrido virtual 360 grados"
+            aria-haspopup="dialog"
+            aria-controls="home-virtual-tour-modal"
+          >
             <img class="home-ambiente-mobile__hero-image" data-home-ambiente-parallax-image src="assets/eventos/collage/corito/corito-1.webp" alt="Vista del ambiente de Figata para recorrido virtual" loading="lazy" decoding="async">
             <div class="home-ambiente-mobile__hero-overlay">
               <img class="home-ambiente-mobile__hero-icon" src="assets/home/360-icon.webp" alt="" aria-hidden="true" loading="lazy" decoding="async">
               <p class="home-ambiente-mobile__hero-title">Tour virtual</p>
             </div>
-          </article>
+          </button>
         </div>
       </section>
 
@@ -426,6 +434,48 @@
             <p class="delivery-note delivery-sheet__note">Gracias por compartir tu experiencia con nosotros</p>
           </div>
         </div>
+      </section>
+    </div>
+
+    <div
+      class="home-virtual-tour-modal"
+      id="home-virtual-tour-modal"
+      data-home-virtual-tour-modal
+      hidden
+    >
+      <button
+        class="home-virtual-tour-modal__backdrop"
+        type="button"
+        aria-label="Cerrar tour virtual"
+        data-home-virtual-tour-close
+      ></button>
+
+      <section
+        class="home-virtual-tour-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Tour virtual de Figata"
+        tabindex="-1"
+      >
+        <button
+          class="home-virtual-tour-modal__close"
+          type="button"
+          aria-label="Cerrar tour virtual"
+          data-home-virtual-tour-close
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+
+        <iframe
+          class="home-virtual-tour-modal__frame"
+          data-home-virtual-tour-iframe
+          data-home-virtual-tour-src="https://my.matterport.com/show?play=1&lang=en-US&m=XvpiJpihutS"
+          title="Tour virtual de Figata"
+          loading="lazy"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allow="fullscreen; xr-spatial-tracking; gyroscope; accelerometer"
+          allowfullscreen
+        ></iframe>
       </section>
     </div>
 
@@ -665,7 +715,7 @@
               <div class="footer-newsletter">
                 <p class="footer-col-title" data-home-footer-column-title="2">Cont&aacute;ctanos</p>
                 <p class="footer-muted footer-newsletter-copy">
-                  ¿Tienes una pregunta? Escríbenos a nuestro WhatsApp
+                  ¿Tienes una pregunta? Escribenos a nuestro WhatsApp
                 </p>
                 <form class="footer-form" action="#" method="post">
                   <img class="footer-form-icon" src="assets/svg-icons/hash.svg" alt="" aria-hidden="true">
@@ -761,7 +811,7 @@
   <script src="src/data/ingredients.js" defer></script>
   <script src="src/ui/ingredient-icon-row.js" defer></script>
   <script src="js/home-lazy-images.js" defer></script>
-  <script src="js/home-config.js?v=delivery-sheet-v7" defer></script>
+  <script src="js/home-config.js?v=virtual-tour-v10" defer></script>
   <script src="js/mas-pedidas.js" defer></script>
   <script src="js/testimonials.js" defer></script>
   <script src="js/events-tabs.js?v=3" defer></script>

@@ -4,6 +4,9 @@
   const DELIVERY_ICON_MIN_SIZE = 16;
   const DELIVERY_ICON_MAX_SIZE = 64;
   const DELIVERY_SHEET_EXIT_MS = 460;
+  const HOME_VIRTUAL_TOUR_EXIT_MS = 280;
+  const HOME_VIRTUAL_TOUR_FALLBACK_URL =
+    'https://my.matterport.com/show?play=1&lang=en-US&m=XvpiJpihutS';
   const DELIVERY_SHEET_DRAG_ACTIVATE_THRESHOLD = 12;
   const DELIVERY_SHEET_DRAG_CLOSE_THRESHOLD = 90;
   const DELIVERY_SHEET_DRAG_MAX_OFFSET = 180;
@@ -1098,6 +1101,149 @@ Personas:`;
     });
   };
 
+  const initHomeVirtualTour = () => {
+    const trigger = document.querySelector('[data-home-virtual-tour-open]');
+    const modal = document.querySelector('[data-home-virtual-tour-modal]');
+    const panel = modal?.querySelector('.home-virtual-tour-modal__panel');
+    const iframe = modal?.querySelector('[data-home-virtual-tour-iframe]');
+    const closeControls = modal
+      ? Array.from(modal.querySelectorAll('[data-home-virtual-tour-close]'))
+      : [];
+    let closeTimerId = 0;
+    let restoreFocusNode = null;
+
+    if (
+      !(trigger instanceof HTMLElement) ||
+      !(modal instanceof HTMLElement) ||
+      !(panel instanceof HTMLElement) ||
+      !(iframe instanceof HTMLIFrameElement)
+    ) {
+      return;
+    }
+
+    if (modal.parentElement !== document.body) {
+      document.body.appendChild(modal);
+    }
+
+    const clearCloseTimer = () => {
+      if (closeTimerId) {
+        window.clearTimeout(closeTimerId);
+        closeTimerId = 0;
+      }
+    };
+
+    const resolveTourUrl = () => {
+      const configuredUrl = normalizeTextValue(iframe.dataset.homeVirtualTourSrc);
+      return configuredUrl || HOME_VIRTUAL_TOUR_FALLBACK_URL;
+    };
+
+    const syncDocumentState = () => {
+      document.body.classList.toggle('home-virtual-tour-open', !modal.hidden);
+    };
+
+    const setFrameSource = () => {
+      const nextUrl = resolveTourUrl();
+      if (!nextUrl) {
+        return;
+      }
+
+      if (iframe.getAttribute('src') !== nextUrl) {
+        iframe.setAttribute('src', nextUrl);
+      }
+    };
+
+    const clearFrameSource = () => {
+      iframe.removeAttribute('src');
+    };
+
+    const finishClose = ({ restoreFocus = true } = {}) => {
+      clearCloseTimer();
+      modal.hidden = true;
+      modal.classList.remove('is-open');
+      syncDocumentState();
+      clearFrameSource();
+
+      if (restoreFocus && restoreFocusNode instanceof HTMLElement) {
+        restoreFocusNode.focus();
+      }
+
+      restoreFocusNode = null;
+    };
+
+    const closeModal = ({ restoreFocus = true, immediate = false } = {}) => {
+      if (modal.hidden) {
+        return;
+      }
+
+      clearCloseTimer();
+      modal.classList.remove('is-open');
+      syncDocumentState();
+
+      if (immediate || reducedMotionQuery.matches) {
+        finishClose({ restoreFocus });
+        return;
+      }
+
+      closeTimerId = window.setTimeout(() => {
+        finishClose({ restoreFocus });
+      }, HOME_VIRTUAL_TOUR_EXIT_MS);
+    };
+
+    const openModal = (fallbackTrigger) => {
+      if (window.innerWidth > 1023 || !modal.hidden) {
+        return;
+      }
+
+      clearCloseTimer();
+      restoreFocusNode =
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : fallbackTrigger;
+
+      setFrameSource();
+      modal.hidden = false;
+      syncDocumentState();
+
+      window.requestAnimationFrame(() => {
+        if (!modal.hidden) {
+          modal.classList.add('is-open');
+          panel.focus({ preventScroll: true });
+        }
+      });
+    };
+
+    trigger.addEventListener('click', (event) => {
+      event.preventDefault();
+      openModal(trigger);
+    });
+
+    closeControls.forEach((control) => {
+      if (!(control instanceof HTMLElement)) {
+        return;
+      }
+
+      control.addEventListener('click', (event) => {
+        event.preventDefault();
+        closeModal();
+      });
+    });
+
+    window.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' || modal.hidden) {
+        return;
+      }
+
+      event.preventDefault();
+      closeModal();
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 1023 && !modal.hidden) {
+        closeModal({ restoreFocus: false, immediate: true });
+      }
+    });
+  };
+
   const applyTestimonials = (testimonials) => {
     const section = document.getElementById('testimonials');
 
@@ -1428,18 +1574,7 @@ Personas:`;
       document.querySelector('[data-restaurant-contact-form]') ||
       document.querySelector('.footer-form');
     if (contactCopy) {
-      const phone = normalizeTextValue(restaurant?.phone);
-      const hasWhatsapp = Boolean(normalizeTextValue(restaurant?.whatsapp));
-      const parts = [];
-      if (phone) {
-        parts.push(`Telefono: ${phone}`);
-      }
-      if (hasWhatsapp) {
-        parts.push('WhatsApp disponible');
-      }
-      if (parts.length) {
-        setText(contactCopy, parts.join(' · '));
-      }
+      setText(contactCopy, '¿Tienes una pregunta? Escribenos a nuestro WhatsApp');
     }
 
     if (contactForm instanceof HTMLFormElement) {
@@ -1512,12 +1647,7 @@ Personas:`;
         return;
       }
 
-      if (window.innerWidth <= 1023) {
-        window.location.href = composedUrl;
-        return;
-      }
-
-      window.open(composedUrl, '_blank', 'noopener,noreferrer');
+      window.open(composedUrl, '_blank', 'noopener');
     });
 
     reserveButton.dataset.heroReserveWhatsappBound = 'true';
@@ -1691,6 +1821,7 @@ Personas:`;
       });
       initMobileLocationCard();
       initAmbienteParallax();
+      initHomeVirtualTour();
     } catch (error) {
       console.error('[home-config] No se pudo aplicar data/home.json.', error);
     }

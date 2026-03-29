@@ -18,7 +18,6 @@
   const MOBILE_ROW_CLONE_ATTR = "data-testimonials-row-autoscroll-clone";
   const MOBILE_ROW_CARD_SELECTOR = ".card-wrapper";
   const ROW_AUTOSCROLL_SPEED_PX_PER_SECOND = 22;
-  const ROW_AUTOSCROLL_MAX_DELTA_SECONDS = 0.05;
   const ROW_AUTOSCROLL_MAX_TRACK_COPIES = 8;
   const ROW_AUTOSCROLL_RESIZE_EPSILON_PX = 1;
 
@@ -157,10 +156,8 @@
   };
   let testimonials = normalizeTestimonials(FALLBACK_TESTIMONIALS);
 
-  let rowAutoScrollRafId = 0;
   let rowAutoScrollStates = [];
   let rowAutoScrollCleanup = [];
-  let rowAutoScrollLastTs = 0;
   let lastRenderLayoutSignature = "";
 
   const getDesktopColumnCount = () => {
@@ -293,17 +290,19 @@
   };
 
   const getRowCyclePhase = (state) => {
-    const cycleWidthPx = state?.cycleWidthPx;
-    if (!Number.isFinite(cycleWidthPx) || !(cycleWidthPx > 0)) {
+    const durationSeconds = Number.isFinite(state?.durationSeconds) ? state.durationSeconds : 0;
+    if (!(durationSeconds > 0)) {
       return 0;
     }
 
-    const offsetPx = Number.isFinite(state?.offsetPx) ? state.offsetPx : 0;
-    if (state.direction < 0) {
-      return normalizeRowCyclePhase(-offsetPx / cycleWidthPx);
-    }
-
-    return normalizeRowCyclePhase((offsetPx + cycleWidthPx) / cycleWidthPx);
+    const startedAtMs = Number.isFinite(state?.animationStartedAtMs)
+      ? state.animationStartedAtMs
+      : 0;
+    const nowMs =
+      typeof performance !== "undefined" && typeof performance.now === "function"
+        ? performance.now()
+        : Date.now();
+    return normalizeRowCyclePhase((nowMs - startedAtMs) / (durationSeconds * 1000));
   };
 
   const createRowAutoScrollClone = (card) => {
@@ -335,52 +334,46 @@
     return clone;
   };
 
-  const wrapRowOffset = (state) => {
-    const cycleWidthPx = state?.cycleWidthPx;
-    if (!Number.isFinite(cycleWidthPx) || !(cycleWidthPx > 0)) {
-      return;
-    }
-
-    if (state.direction < 0) {
-      while (state.offsetPx <= -cycleWidthPx) {
-        state.offsetPx += cycleWidthPx;
-      }
-      while (state.offsetPx > 0) {
-        state.offsetPx -= cycleWidthPx;
-      }
-      return;
-    }
-
-    while (state.offsetPx >= 0) {
-      state.offsetPx -= cycleWidthPx;
-    }
-    while (state.offsetPx < -cycleWidthPx) {
-      state.offsetPx += cycleWidthPx;
-    }
-  };
-
-  const applyRowOffset = (state) => {
-    const track = state?.track;
+  const clearRowAutoScrollTrackStyles = (track) => {
     if (!(track instanceof HTMLElement)) {
       return;
     }
 
-    track.style.transform = `translate3d(${state.offsetPx.toFixed(3)}px, 0, 0)`;
+    track.style.transform = "";
+    track.style.willChange = "";
+    track.style.animationDelay = "";
+    track.style.removeProperty("--home-rail-cycle-width");
+    track.style.removeProperty("--home-rail-duration");
   };
 
-  const setRowOffsetFromPhase = (state, phase) => {
+  const applyRowAutoScrollAnimation = (state, phase = 0) => {
+    const track = state?.track;
     const cycleWidthPx = state?.cycleWidthPx;
-    if (!Number.isFinite(cycleWidthPx) || !(cycleWidthPx > 0)) {
-      state.offsetPx = 0;
+    if (!(track instanceof HTMLElement) || !(cycleWidthPx > 0)) {
+      return;
+    }
+
+    const durationSeconds = cycleWidthPx / ROW_AUTOSCROLL_SPEED_PX_PER_SECOND;
+    if (!(durationSeconds > 0)) {
+      clearRowAutoScrollTrackStyles(track);
+      state.durationSeconds = 0;
+      state.animationStartedAtMs = 0;
       return;
     }
 
     const safePhase = normalizeRowCyclePhase(phase);
-    state.offsetPx =
-      state.direction < 0
-        ? -safePhase * cycleWidthPx
-        : (safePhase - 1) * cycleWidthPx;
-    wrapRowOffset(state);
+    const nowMs =
+      typeof performance !== "undefined" && typeof performance.now === "function"
+        ? performance.now()
+        : Date.now();
+
+    state.durationSeconds = durationSeconds;
+    state.animationStartedAtMs = nowMs - safePhase * durationSeconds * 1000;
+
+    track.style.transform = "";
+    track.style.animationDelay = `${(-safePhase * durationSeconds).toFixed(3)}s`;
+    track.style.setProperty("--home-rail-cycle-width", `${cycleWidthPx.toFixed(3)}px`);
+    track.style.setProperty("--home-rail-duration", `${durationSeconds.toFixed(3)}s`);
   };
 
   const syncRowAutoScrollState = (state, { preserveOffset = false } = {}) => {
@@ -415,7 +408,8 @@
     if (sourceCards.length < 2) {
       state.track = null;
       state.cycleWidthPx = 0;
-      state.offsetPx = 0;
+      state.durationSeconds = 0;
+      state.animationStartedAtMs = 0;
       state.rowWidthPx = getElementWidthPx(row);
       return false;
     }
@@ -431,7 +425,8 @@
       row.replaceChildren(...sourceCards);
       state.track = null;
       state.cycleWidthPx = 0;
-      state.offsetPx = 0;
+      state.durationSeconds = 0;
+      state.animationStartedAtMs = 0;
       state.rowWidthPx = getElementWidthPx(row);
       return false;
     }
@@ -452,14 +447,7 @@
     state.track = track;
     state.cycleWidthPx = cycleWidthPx;
     state.rowWidthPx = getElementWidthPx(row);
-    if (shouldPreserveOffset) {
-      setRowOffsetFromPhase(state, previousPhase);
-    } else {
-      state.offsetPx = state.direction > 0 ? -cycleWidthPx : 0;
-      wrapRowOffset(state);
-    }
-    track.style.willChange = "transform";
-    applyRowOffset(state);
+    applyRowAutoScrollAnimation(state, shouldPreserveOffset ? previousPhase : 0);
     return true;
   };
 
@@ -493,18 +481,10 @@
   };
 
   const stopRowAutoScroll = () => {
-    if (rowAutoScrollRafId) {
-      cancelAnimationFrame(rowAutoScrollRafId);
-      rowAutoScrollRafId = 0;
-    }
-
     rowAutoScrollStates.forEach((state) => {
       const row = state?.row;
       const track = state?.track;
-      if (track instanceof HTMLElement) {
-        track.style.transform = "";
-        track.style.willChange = "";
-      }
+      clearRowAutoScrollTrackStyles(track);
       if (!(row instanceof HTMLElement)) {
         return;
       }
@@ -532,54 +512,6 @@
     });
     rowAutoScrollCleanup = [];
     rowAutoScrollStates = [];
-    rowAutoScrollLastTs = 0;
-  };
-
-  const runRowAutoScrollFrame = (timestamp) => {
-    rowAutoScrollRafId = 0;
-
-    if (!rowAutoScrollStates.length) {
-      return;
-    }
-
-    if (!rowAutoScrollLastTs) {
-      rowAutoScrollLastTs = timestamp;
-    }
-
-    const deltaSeconds = Math.min(
-      Math.max((timestamp - rowAutoScrollLastTs) / 1000, 0),
-      ROW_AUTOSCROLL_MAX_DELTA_SECONDS
-    );
-    rowAutoScrollLastTs = timestamp;
-
-    if (deltaSeconds > 0) {
-      rowAutoScrollStates.forEach((state) => {
-        const { row, track, direction } = state;
-        if (
-          !(row instanceof HTMLElement) ||
-          !(track instanceof HTMLElement) ||
-          !row.isConnected ||
-          !track.isConnected ||
-          row.hidden
-        ) {
-          return;
-        }
-
-        const delta = ROW_AUTOSCROLL_SPEED_PX_PER_SECOND * deltaSeconds;
-        state.offsetPx += direction * delta;
-        wrapRowOffset(state);
-        applyRowOffset(state);
-      });
-    }
-
-    rowAutoScrollRafId = requestAnimationFrame(runRowAutoScrollFrame);
-  };
-
-  const requestRowAutoScrollFrame = () => {
-    if (rowAutoScrollRafId) {
-      return;
-    }
-    rowAutoScrollRafId = requestAnimationFrame(runRowAutoScrollFrame);
   };
 
   const startRowAutoScroll = (rows) => {
@@ -607,10 +539,11 @@
         row,
         track: null,
         direction: index === 0 ? -1 : 1,
-        offsetPx: 0,
         gapPx: getRowGapPx(row),
         cycleWidthPx: 0,
         rowWidthPx: 0,
+        durationSeconds: 0,
+        animationStartedAtMs: 0,
       };
 
       if (syncRowAutoScrollState(state)) {
@@ -624,22 +557,9 @@
 
     rowAutoScrollStates = states;
 
-    const onVisibilityChange = () => {
-      if (!document.hidden) {
-        rowAutoScrollLastTs = 0;
-      }
-    };
-
     const onObservedSizeChange = () => {
-      if (syncChangedRowAutoScrollStates()) {
-        rowAutoScrollLastTs = 0;
-      }
+      syncChangedRowAutoScrollStates();
     };
-
-    document.addEventListener("visibilitychange", onVisibilityChange);
-    rowAutoScrollCleanup.push(() =>
-      document.removeEventListener("visibilitychange", onVisibilityChange)
-    );
 
     if ("ResizeObserver" in window) {
       const resizeObserver = new ResizeObserver(onObservedSizeChange);
@@ -655,9 +575,6 @@
         window.removeEventListener("resize", onObservedSizeChange)
       );
     }
-
-    rowAutoScrollLastTs = 0;
-    requestRowAutoScrollFrame();
   };
 
   const ensureDesktopColumnsMounted = () => {
