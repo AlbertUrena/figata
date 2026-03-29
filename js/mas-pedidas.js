@@ -792,6 +792,7 @@
   const stopRowAutoScroll = () => {
     rowAutoScrollStates.forEach((state) => {
       const row = state?.row;
+      cancelRowAutoScrollAnimation(state);
       const track = state?.track;
       clearRowAutoScrollTrackStyles(track);
       if (row instanceof HTMLElement) {
@@ -882,19 +883,16 @@
   };
 
   const getRowCyclePhase = (state) => {
-    const durationSeconds = Number.isFinite(state?.durationSeconds) ? state.durationSeconds : 0;
-    if (!(durationSeconds > 0)) {
+    const durationMs = Number.isFinite(state?.durationMs) ? state.durationMs : 0;
+    if (!(durationMs > 0)) {
       return 0;
     }
 
-    const startedAtMs = Number.isFinite(state?.animationStartedAtMs)
-      ? state.animationStartedAtMs
-      : 0;
-    const nowMs =
-      typeof performance !== "undefined" && typeof performance.now === "function"
-        ? performance.now()
-        : Date.now();
-    return normalizeRowCyclePhase((nowMs - startedAtMs) / (durationSeconds * 1000));
+    const currentTimeMs =
+      state?.animation && typeof state.animation.currentTime === "number"
+        ? state.animation.currentTime
+        : 0;
+    return normalizeRowCyclePhase(currentTimeMs / durationMs);
   };
 
   const createRowAutoScrollClone = (card) => {
@@ -926,6 +924,21 @@
     return clone;
   };
 
+  const cancelRowAutoScrollAnimation = (state) => {
+    const animation = state?.animation;
+    if (!animation || typeof animation.cancel !== "function") {
+      state.animation = null;
+      return;
+    }
+
+    try {
+      animation.cancel();
+    } catch (_) {
+      // no-op
+    }
+    state.animation = null;
+  };
+
   const clearRowAutoScrollTrackStyles = (track) => {
     if (!(track instanceof HTMLElement)) {
       return;
@@ -934,6 +947,12 @@
     track.style.transform = "";
     track.style.willChange = "";
     track.style.animationDelay = "";
+    track.style.animationDirection = "";
+    track.style.animationDuration = "";
+    track.style.animationFillMode = "";
+    track.style.animationIterationCount = "";
+    track.style.animationName = "";
+    track.style.animationTimingFunction = "";
     track.style.removeProperty("--home-rail-cycle-width");
     track.style.removeProperty("--home-rail-duration");
   };
@@ -945,27 +964,53 @@
       return;
     }
 
-    const durationSeconds = cycleWidthPx / ROW_AUTOSCROLL_SPEED_PX_PER_SECOND;
-    if (!(durationSeconds > 0)) {
+    cancelRowAutoScrollAnimation(state);
+
+    const durationMs = (cycleWidthPx / ROW_AUTOSCROLL_SPEED_PX_PER_SECOND) * 1000;
+    if (!(durationMs > 0)) {
       clearRowAutoScrollTrackStyles(track);
-      state.durationSeconds = 0;
-      state.animationStartedAtMs = 0;
+      state.durationMs = 0;
       return;
     }
 
     const safePhase = normalizeRowCyclePhase(phase);
-    const nowMs =
-      typeof performance !== "undefined" && typeof performance.now === "function"
-        ? performance.now()
-        : Date.now();
+    state.durationMs = durationMs;
+    track.style.willChange = "transform";
 
-    state.durationSeconds = durationSeconds;
-    state.animationStartedAtMs = nowMs - safePhase * durationSeconds * 1000;
+    if (typeof track.animate === "function") {
+      const animation = track.animate(
+        [
+          { transform: "translate3d(0, 0, 0)" },
+          { transform: `translate3d(${-cycleWidthPx.toFixed(3)}px, 0, 0)` },
+        ],
+        {
+          duration: durationMs,
+          easing: "linear",
+          iterations: Infinity,
+          fill: "both",
+          direction: state.direction < 0 ? "normal" : "reverse",
+        }
+      );
 
-    track.style.transform = "";
-    track.style.animationDelay = `${(-safePhase * durationSeconds).toFixed(3)}s`;
+      if (typeof animation.pause === "function") {
+        animation.pause();
+      }
+      animation.currentTime = safePhase * durationMs;
+      if (typeof animation.play === "function") {
+        animation.play();
+      }
+      state.animation = animation;
+      return;
+    }
+
+    track.style.animationName = "home-rail-marquee";
+    track.style.animationDuration = `${(durationMs / 1000).toFixed(3)}s`;
+    track.style.animationTimingFunction = "linear";
+    track.style.animationIterationCount = "infinite";
+    track.style.animationFillMode = "both";
+    track.style.animationDirection = state.direction < 0 ? "normal" : "reverse";
+    track.style.animationDelay = `${(-safePhase * durationMs / 1000).toFixed(3)}s`;
     track.style.setProperty("--home-rail-cycle-width", `${cycleWidthPx.toFixed(3)}px`);
-    track.style.setProperty("--home-rail-duration", `${durationSeconds.toFixed(3)}s`);
   };
 
   const syncRowAutoScrollState = (state, { preserveOffset = false } = {}) => {
@@ -985,6 +1030,7 @@
       existingTrack instanceof HTMLElement &&
       existingTrack.classList.contains(ROW_AUTOSCROLL_TRACK_CLASS)
     ) {
+      cancelRowAutoScrollAnimation(state);
       const sourceCards = Array.from(existingTrack.children).filter(
         (node) =>
           node instanceof HTMLElement &&
@@ -1000,8 +1046,8 @@
     if (sourceCards.length < 2) {
       state.track = null;
       state.cycleWidthPx = 0;
-      state.durationSeconds = 0;
-      state.animationStartedAtMs = 0;
+      state.durationMs = 0;
+      state.animation = null;
       state.rowWidthPx = getElementWidthPx(row);
       return false;
     }
@@ -1017,8 +1063,8 @@
       row.replaceChildren(...sourceCards);
       state.track = null;
       state.cycleWidthPx = 0;
-      state.durationSeconds = 0;
-      state.animationStartedAtMs = 0;
+      state.durationMs = 0;
+      state.animation = null;
       state.rowWidthPx = getElementWidthPx(row);
       return false;
     }
@@ -1100,8 +1146,8 @@
         gapPx: getRowGapPx(row),
         cycleWidthPx: 0,
         rowWidthPx: 0,
-        durationSeconds: 0,
-        animationStartedAtMs: 0,
+        durationMs: 0,
+        animation: null,
       };
 
       if (syncRowAutoScrollState(state)) {

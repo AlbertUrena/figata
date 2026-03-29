@@ -3474,15 +3474,6 @@ body.home-page-body.home-virtual-tour-open {
     width: max-content;
     min-width: 100%;
     transform: translateX(0);
-    animation-name: home-rail-marquee;
-    animation-duration: var(--home-rail-duration, 1s);
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-    animation-fill-mode: both;
-  }
-
-  #testimonials.testimonials-section .testimonials-mobile-row--bottom .testimonials-mobile-row-track {
-    animation-direction: reverse;
   }
 
   #testimonials.testimonials-section .card-wrapper {
@@ -3929,11 +3920,6 @@ body.home-page-body.home-virtual-tour-open {
     width: max-content;
     min-width: 100%;
     transform: translateX(0);
-    animation-name: home-rail-marquee;
-    animation-duration: var(--home-rail-duration, 1s);
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-    animation-fill-mode: both;
   }
 
   body.home-page-body #mas-pedidas .mas-pedidas__row--top {
@@ -3946,10 +3932,6 @@ body.home-page-body.home-virtual-tour-open {
 
   body.home-page-body #mas-pedidas .mas-pedidas__row--bottom {
     padding-top: 0;
-  }
-
-  body.home-page-body #mas-pedidas .mas-pedidas__row--bottom .mas-pedidas__row-track {
-    animation-direction: reverse;
   }
 
   body.home-page-body #mas-pedidas .mas-pedidas__row::-webkit-scrollbar {
@@ -4125,14 +4107,6 @@ body.home-page-body.home-virtual-tour-open {
   body.home-page-body #mas-pedidas .mas-pedidas-card__button:active {
     filter: none;
     transform: none;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    #testimonials.testimonials-section .testimonials-mobile-row-track,
-    body.home-page-body #mas-pedidas .mas-pedidas__row-track {
-      animation: none !important;
-      transform: translateX(0);
-    }
   }
 
   body.home-page-body #horarios {
