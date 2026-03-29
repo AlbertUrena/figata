@@ -2703,12 +2703,10 @@ html.page-reload-transition main {
   font-family: "Montserrat", "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
-.delivery-sheet[data-state="opening"] .delivery-sheet__backdrop,
 .delivery-sheet[data-state="open"] .delivery-sheet__backdrop {
   opacity: 1;
 }
 
-.delivery-sheet[data-state="opening"] .delivery-sheet__panel,
 .delivery-sheet[data-state="open"] .delivery-sheet__panel {
   transform: translateY(0);
 }
@@ -6094,109 +6092,6 @@ body.home-page-body.delivery-sheet-open {
 
 .events-card-video[hidden] {
   display: none;
-}
-
-.bottom-blur-overlay {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 100px;
-  z-index: 8;
-  pointer-events: none;
-  opacity: 1;
-}
-
-.top-blur-overlay {
-  position: fixed;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 100px;
-  z-index: 8;
-  pointer-events: none;
-  opacity: 1;
-  transform: scaleY(-1);
-  transform-origin: center;
-}
-
-.bottom-blur-overlay__stack {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-}
-
-.bottom-blur-overlay__layer {
-  opacity: 1;
-  position: absolute;
-  inset: 0;
-  border-radius: 0;
-  pointer-events: none;
-  will-change: auto;
-}
-
-.bottom-blur-overlay__layer:nth-child(1) {
-  z-index: 1;
-  -webkit-mask-image: linear-gradient(rgba(0, 0, 0, 0) 0%, rgb(0, 0, 0) 12.5%, rgb(0, 0, 0) 25%, rgba(0, 0, 0, 0) 37.5%);
-  mask-image: linear-gradient(rgba(0, 0, 0, 0) 0%, rgb(0, 0, 0) 12.5%, rgb(0, 0, 0) 25%, rgba(0, 0, 0, 0) 37.5%);
-  -webkit-backdrop-filter: blur(0.0546875px);
-  backdrop-filter: blur(0.0546875px);
-}
-
-.bottom-blur-overlay__layer:nth-child(2) {
-  z-index: 2;
-  -webkit-mask-image: linear-gradient(rgba(0, 0, 0, 0) 12.5%, rgb(0, 0, 0) 25%, rgb(0, 0, 0) 37.5%, rgba(0, 0, 0, 0) 50%);
-  mask-image: linear-gradient(rgba(0, 0, 0, 0) 12.5%, rgb(0, 0, 0) 25%, rgb(0, 0, 0) 37.5%, rgba(0, 0, 0, 0) 50%);
-  -webkit-backdrop-filter: blur(0.109375px);
-  backdrop-filter: blur(0.109375px);
-}
-
-.bottom-blur-overlay__layer:nth-child(3) {
-  z-index: 3;
-  -webkit-mask-image: linear-gradient(rgba(0, 0, 0, 0) 25%, rgb(0, 0, 0) 37.5%, rgb(0, 0, 0) 50%, rgba(0, 0, 0, 0) 62.5%);
-  mask-image: linear-gradient(rgba(0, 0, 0, 0) 25%, rgb(0, 0, 0) 37.5%, rgb(0, 0, 0) 50%, rgba(0, 0, 0, 0) 62.5%);
-  -webkit-backdrop-filter: blur(0.21875px);
-  backdrop-filter: blur(0.21875px);
-}
-
-.bottom-blur-overlay__layer:nth-child(4) {
-  z-index: 4;
-  -webkit-mask-image: linear-gradient(rgba(0, 0, 0, 0) 37.5%, rgb(0, 0, 0) 50%, rgb(0, 0, 0) 62.5%, rgba(0, 0, 0, 0) 75%);
-  mask-image: linear-gradient(rgba(0, 0, 0, 0) 37.5%, rgb(0, 0, 0) 50%, rgb(0, 0, 0) 62.5%, rgba(0, 0, 0, 0) 75%);
-  -webkit-backdrop-filter: blur(0.4375px);
-  backdrop-filter: blur(0.4375px);
-}
-
-.bottom-blur-overlay__layer:nth-child(5) {
-  z-index: 5;
-  -webkit-mask-image: linear-gradient(rgba(0, 0, 0, 0) 50%, rgb(0, 0, 0) 62.5%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 87.5%);
-  mask-image: linear-gradient(rgba(0, 0, 0, 0) 50%, rgb(0, 0, 0) 62.5%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 87.5%);
-  -webkit-backdrop-filter: blur(0.875px);
-  backdrop-filter: blur(0.875px);
-}
-
-.bottom-blur-overlay__layer:nth-child(6) {
-  z-index: 6;
-  -webkit-mask-image: linear-gradient(rgba(0, 0, 0, 0) 62.5%, rgb(0, 0, 0) 75%, rgb(0, 0, 0) 87.5%, rgba(0, 0, 0, 0) 100%);
-  mask-image: linear-gradient(rgba(0, 0, 0, 0) 62.5%, rgb(0, 0, 0) 75%, rgb(0, 0, 0) 87.5%, rgba(0, 0, 0, 0) 100%);
-  -webkit-backdrop-filter: blur(1.75px);
-  backdrop-filter: blur(1.75px);
-}
-
-.bottom-blur-overlay__layer:nth-child(7) {
-  z-index: 7;
-  -webkit-mask-image: linear-gradient(rgba(0, 0, 0, 0) 75%, rgb(0, 0, 0) 87.5%, rgb(0, 0, 0) 100%);
-  mask-image: linear-gradient(rgba(0, 0, 0, 0) 75%, rgb(0, 0, 0) 87.5%, rgb(0, 0, 0) 100%);
-  -webkit-backdrop-filter: blur(3.5px);
-  backdrop-filter: blur(3.5px);
-}
-
-.bottom-blur-overlay__layer:nth-child(8) {
-  z-index: 8;
-  -webkit-mask-image: linear-gradient(rgba(0, 0, 0, 0) 87.5%, rgb(0, 0, 0) 100%);
-  mask-image: linear-gradient(rgba(0, 0, 0, 0) 87.5%, rgb(0, 0, 0) 100%);
-  -webkit-backdrop-filter: blur(7px);
-  backdrop-filter: blur(7px);
 }
 
 @media (max-width: 900px) {

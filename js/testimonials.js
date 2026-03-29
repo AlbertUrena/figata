@@ -20,6 +20,7 @@
   const ROW_AUTOSCROLL_SPEED_PX_PER_SECOND = 22;
   const ROW_AUTOSCROLL_MAX_DELTA_SECONDS = 0.05;
   const ROW_AUTOSCROLL_MAX_TRACK_COPIES = 8;
+  const ROW_AUTOSCROLL_RESIZE_EPSILON_PX = 1;
 
   const createMediaQueryList = (query) =>
     typeof window.matchMedia === "function"
@@ -160,6 +161,7 @@
   let rowAutoScrollStates = [];
   let rowAutoScrollCleanup = [];
   let rowAutoScrollLastTs = 0;
+  let lastRenderLayoutSignature = "";
 
   const getDesktopColumnCount = () => {
     const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
@@ -170,6 +172,9 @@
 
     return 3;
   };
+
+  const getRenderLayoutSignature = () =>
+    mobileRowMedia.matches ? "mobile" : `desktop-${getDesktopColumnCount()}`;
 
   const createStars = (container, rating) => {
     if (!container) {
@@ -251,6 +256,15 @@
     return width > 0 ? width : 0;
   };
 
+  const getElementWidthPx = (element) => {
+    if (!(element instanceof HTMLElement)) {
+      return 0;
+    }
+
+    const width = element.getBoundingClientRect().width || element.clientWidth || 0;
+    return width > 0 ? width : 0;
+  };
+
   const getRowCycleWidthPx = (cards, gapPx) => {
     if (!Array.isArray(cards) || cards.length < 2) {
       return 0;
@@ -263,6 +277,33 @@
 
     const safeGap = Number.isFinite(gapPx) ? gapPx : 0;
     return totalWidth + safeGap * cards.length;
+  };
+
+  const normalizeRowCyclePhase = (value) => {
+    if (!Number.isFinite(value)) {
+      return 0;
+    }
+
+    let safeValue = value % 1;
+    if (safeValue < 0) {
+      safeValue += 1;
+    }
+
+    return safeValue;
+  };
+
+  const getRowCyclePhase = (state) => {
+    const cycleWidthPx = state?.cycleWidthPx;
+    if (!Number.isFinite(cycleWidthPx) || !(cycleWidthPx > 0)) {
+      return 0;
+    }
+
+    const offsetPx = Number.isFinite(state?.offsetPx) ? state.offsetPx : 0;
+    if (state.direction < 0) {
+      return normalizeRowCyclePhase(-offsetPx / cycleWidthPx);
+    }
+
+    return normalizeRowCyclePhase((offsetPx + cycleWidthPx) / cycleWidthPx);
   };
 
   const createRowAutoScrollClone = (card) => {
@@ -327,11 +368,32 @@
     track.style.transform = `translate3d(${state.offsetPx.toFixed(3)}px, 0, 0)`;
   };
 
-  const syncRowAutoScrollState = (state) => {
+  const setRowOffsetFromPhase = (state, phase) => {
+    const cycleWidthPx = state?.cycleWidthPx;
+    if (!Number.isFinite(cycleWidthPx) || !(cycleWidthPx > 0)) {
+      state.offsetPx = 0;
+      return;
+    }
+
+    const safePhase = normalizeRowCyclePhase(phase);
+    state.offsetPx =
+      state.direction < 0
+        ? -safePhase * cycleWidthPx
+        : (safePhase - 1) * cycleWidthPx;
+    wrapRowOffset(state);
+  };
+
+  const syncRowAutoScrollState = (state, { preserveOffset = false } = {}) => {
     const row = state?.row;
     if (!(row instanceof HTMLElement)) {
       return false;
     }
+
+    const shouldPreserveOffset =
+      preserveOffset === true &&
+      Number.isFinite(state?.cycleWidthPx) &&
+      state.cycleWidthPx > 0;
+    const previousPhase = shouldPreserveOffset ? getRowCyclePhase(state) : 0;
 
     const existingTrack = row.firstElementChild;
     if (
@@ -354,6 +416,7 @@
       state.track = null;
       state.cycleWidthPx = 0;
       state.offsetPx = 0;
+      state.rowWidthPx = getElementWidthPx(row);
       return false;
     }
 
@@ -369,6 +432,7 @@
       state.track = null;
       state.cycleWidthPx = 0;
       state.offsetPx = 0;
+      state.rowWidthPx = getElementWidthPx(row);
       return false;
     }
 
@@ -387,11 +451,45 @@
 
     state.track = track;
     state.cycleWidthPx = cycleWidthPx;
-    state.offsetPx = state.direction > 0 ? -cycleWidthPx : 0;
-    wrapRowOffset(state);
+    state.rowWidthPx = getElementWidthPx(row);
+    if (shouldPreserveOffset) {
+      setRowOffsetFromPhase(state, previousPhase);
+    } else {
+      state.offsetPx = state.direction > 0 ? -cycleWidthPx : 0;
+      wrapRowOffset(state);
+    }
     track.style.willChange = "transform";
     applyRowOffset(state);
     return true;
+  };
+
+  const hasRowWidthChanged = (state) => {
+    const nextWidthPx = getElementWidthPx(state?.row);
+    if (!(nextWidthPx > 0)) {
+      return false;
+    }
+
+    const previousWidthPx = Number.isFinite(state?.rowWidthPx) ? state.rowWidthPx : 0;
+    return (
+      !(previousWidthPx > 0) ||
+      Math.abs(nextWidthPx - previousWidthPx) > ROW_AUTOSCROLL_RESIZE_EPSILON_PX
+    );
+  };
+
+  const syncChangedRowAutoScrollStates = () => {
+    let didSync = false;
+
+    rowAutoScrollStates.forEach((state) => {
+      if (!hasRowWidthChanged(state)) {
+        return;
+      }
+
+      if (syncRowAutoScrollState(state, { preserveOffset: true })) {
+        didSync = true;
+      }
+    });
+
+    return didSync;
   };
 
   const stopRowAutoScroll = () => {
@@ -512,6 +610,7 @@
         offsetPx: 0,
         gapPx: getRowGapPx(row),
         cycleWidthPx: 0,
+        rowWidthPx: 0,
       };
 
       if (syncRowAutoScrollState(state)) {
@@ -531,19 +630,31 @@
       }
     };
 
-    const onResize = () => {
-      rowAutoScrollStates.forEach((state) => {
-        syncRowAutoScrollState(state);
-      });
-      rowAutoScrollLastTs = 0;
+    const onObservedSizeChange = () => {
+      if (syncChangedRowAutoScrollStates()) {
+        rowAutoScrollLastTs = 0;
+      }
     };
 
     document.addEventListener("visibilitychange", onVisibilityChange);
-    window.addEventListener("resize", onResize, { passive: true });
     rowAutoScrollCleanup.push(() =>
       document.removeEventListener("visibilitychange", onVisibilityChange)
     );
-    rowAutoScrollCleanup.push(() => window.removeEventListener("resize", onResize));
+
+    if ("ResizeObserver" in window) {
+      const resizeObserver = new ResizeObserver(onObservedSizeChange);
+      rowAutoScrollStates.forEach((state) => {
+        if (state?.row instanceof HTMLElement) {
+          resizeObserver.observe(state.row);
+        }
+      });
+      rowAutoScrollCleanup.push(() => resizeObserver.disconnect());
+    } else {
+      window.addEventListener("resize", onObservedSizeChange, { passive: true });
+      rowAutoScrollCleanup.push(() =>
+        window.removeEventListener("resize", onObservedSizeChange)
+      );
+    }
 
     rowAutoScrollLastTs = 0;
     requestRowAutoScrollFrame();
@@ -631,6 +742,8 @@
   };
 
   const render = () => {
+    lastRenderLayoutSignature = getRenderLayoutSignature();
+
     if (mobileRowMedia.matches) {
       renderMobileRows();
       return;
@@ -665,8 +778,16 @@
     });
   };
 
-  window.addEventListener("resize", requestRender, { passive: true });
-  window.addEventListener("orientationchange", requestRender, { passive: true });
+  const handleLayoutResize = () => {
+    if (getRenderLayoutSignature() === lastRenderLayoutSignature) {
+      return;
+    }
+
+    requestRender();
+  };
+
+  window.addEventListener("resize", handleLayoutResize, { passive: true });
+  window.addEventListener("orientationchange", handleLayoutResize, { passive: true });
   window.addEventListener("load", requestRender, { once: true });
   bindMediaChange(mobileRowMedia, requestRender);
   bindMediaChange(reduceMotionMedia, requestRender);

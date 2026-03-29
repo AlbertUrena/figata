@@ -4,6 +4,7 @@
   const DELIVERY_ICON_MIN_SIZE = 16;
   const DELIVERY_ICON_MAX_SIZE = 64;
   const DELIVERY_SHEET_EXIT_MS = 460;
+  const DELIVERY_SHEET_DRAG_ACTIVATE_THRESHOLD = 12;
   const DELIVERY_SHEET_DRAG_CLOSE_THRESHOLD = 90;
   const DELIVERY_SHEET_DRAG_MAX_OFFSET = 180;
   const FOOTER_SOCIAL_KEYS = ['instagram', 'tiktok', 'tripadvisor'];
@@ -826,13 +827,15 @@
     const panel = sheet.querySelector('.delivery-sheet__panel');
     const closeButton = sheet.querySelector('[data-delivery-sheet-close]');
     const backdrop = sheet.querySelector('[data-delivery-sheet-backdrop]');
-    const handle = sheet.querySelector('[data-delivery-sheet-handle]');
     const optionLinks = Array.from(sheet.querySelectorAll('[data-delivery-sheet-option]'));
     let closeTimerId = 0;
     let restoreFocusNode = null;
+    let dragStartX = 0;
     let dragStartY = 0;
     let dragOffset = 0;
-    let isDragging = false;
+    let isTrackingDrag = false;
+    let isDragGesture = false;
+    let suppressOptionClickUntil = 0;
 
     const clearCloseTimer = () => {
       if (closeTimerId) {
@@ -862,9 +865,12 @@
       }
 
       restoreFocusNode = null;
+      dragStartX = 0;
       dragStartY = 0;
       dragOffset = 0;
-      isDragging = false;
+      isTrackingDrag = false;
+      isDragGesture = false;
+      suppressOptionClickUntil = 0;
     };
 
     const closeSheet = ({ restoreFocus = true, immediate = false } = {}) => {
@@ -908,21 +914,32 @@
       setDocumentState();
 
       window.requestAnimationFrame(() => {
-        sheet.setAttribute('data-state', 'open');
+        window.requestAnimationFrame(() => {
+          if (!sheet.hidden && sheet.getAttribute('data-state') === 'opening') {
+            sheet.setAttribute('data-state', 'open');
+          }
+        });
       });
     };
 
     const finishDrag = () => {
-      if (!isDragging || !(panel instanceof HTMLElement)) {
+      if (!isTrackingDrag || !(panel instanceof HTMLElement)) {
         return;
       }
 
-      const shouldClose = dragOffset > DELIVERY_SHEET_DRAG_CLOSE_THRESHOLD;
-      isDragging = false;
+      const shouldClose = isDragGesture && dragOffset > DELIVERY_SHEET_DRAG_CLOSE_THRESHOLD;
+      const draggedPanel = isDragGesture && dragOffset > 0;
+      isTrackingDrag = false;
+      isDragGesture = false;
+      dragStartX = 0;
       dragStartY = 0;
       dragOffset = 0;
       panel.style.transition = '';
       panel.style.transform = '';
+
+      if (draggedPanel) {
+        suppressOptionClickUntil = Date.now() + 260;
+      }
 
       if (shouldClose) {
         closeSheet({ restoreFocus: false });
@@ -947,43 +964,70 @@
     }
 
     optionLinks.forEach((link) => {
-      link.addEventListener('click', () => {
+      link.addEventListener('click', (event) => {
+        if (Date.now() < suppressOptionClickUntil) {
+          event.preventDefault();
+          return;
+        }
+
         closeSheet({ restoreFocus: false, immediate: true });
       });
     });
 
-    if (handle instanceof HTMLElement && panel instanceof HTMLElement) {
-      handle.addEventListener(
+    if (panel instanceof HTMLElement) {
+      panel.addEventListener(
         'touchstart',
         (event) => {
           if (sheet.hidden || event.touches.length !== 1) {
             return;
           }
 
-          isDragging = true;
+          isTrackingDrag = true;
+          isDragGesture = false;
+          dragStartX = event.touches[0].clientX;
           dragStartY = event.touches[0].clientY;
           dragOffset = 0;
-          panel.style.transition = 'none';
         },
         { passive: true }
       );
 
-      handle.addEventListener(
+      panel.addEventListener(
         'touchmove',
         (event) => {
-          if (!isDragging || event.touches.length !== 1) {
+          if (!isTrackingDrag || event.touches.length !== 1) {
             return;
           }
 
+          const currentX = event.touches[0].clientX;
           const currentY = event.touches[0].clientY;
-          dragOffset = Math.max(0, Math.min(currentY - dragStartY, DELIVERY_SHEET_DRAG_MAX_OFFSET));
+          const deltaX = Math.abs(currentX - dragStartX);
+          const deltaY = currentY - dragStartY;
+
+          if (!isDragGesture) {
+            if (deltaY <= 0 || deltaY < DELIVERY_SHEET_DRAG_ACTIVATE_THRESHOLD) {
+              return;
+            }
+
+            if (deltaX > deltaY) {
+              return;
+            }
+
+            isDragGesture = true;
+            panel.style.transition = 'none';
+          }
+
+          dragOffset = Math.max(0, Math.min(deltaY, DELIVERY_SHEET_DRAG_MAX_OFFSET));
           panel.style.transform = `translateY(${dragOffset}px)`;
+
+          if (event.cancelable) {
+            event.preventDefault();
+          }
         },
-        { passive: true }
+        { passive: false }
       );
 
-      handle.addEventListener('touchend', finishDrag);
-      handle.addEventListener('touchcancel', finishDrag);
+      panel.addEventListener('touchend', finishDrag);
+      panel.addEventListener('touchcancel', finishDrag);
     }
 
     window.addEventListener('keydown', (event) => {
