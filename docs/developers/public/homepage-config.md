@@ -32,6 +32,7 @@ The script is a single IIFE that:
 | `applyHero(hero, fallback)` | Hero | Title, subtitle, background image (with preload + fallback), CTA buttons |
 | `applyNavbar(navbar)` | Navbar | Navigation links (rebuilt from config), CTA button with icon |
 | `applyPopular(popular)` | Featured Items | Title and subtitle only (cards rendered by `mas-pedidas.js`) |
+| `applyMobileHours(mobileHours)` | Horarios (mobile) | Title, subtitle, weekly rows, realtime "hoy" status chips, weekly/date overrides + reasons |
 | `applyDelivery(delivery)` | Delivery | Title, subtitle, platform links + icons |
 | `applyTestimonials(testimonials)` | Testimonials | Title and subtitle (carousel rendered by `testimonials.js`) |
 | `applyEventsPreview(events)` | Events | Title, subtitle, tab items (up to limit), tab rail spacers |
@@ -53,6 +54,7 @@ Both must be `true` for the section to display. Some sections have additional co
 | Hero | `sections.hero` |
 | Navbar | `sections.navbar` |
 | Popular | `sections.popular` |
+| Horarios (mobile) | `sections.hours` AND `mobileHours.enabled` AND has renderable rows |
 | Delivery | `sections.delivery` |
 | Testimonials | `sections.testimonials` AND `testimonials.enabled` |
 | Events | `sections.events` AND `eventsPreview.enabled` AND has renderable items |
@@ -95,6 +97,7 @@ Quick reference of top-level keys consumed by `home-config.js`:
 | `hero` | `applyHero()` | Hero editor |
 | `navbar` | `applyNavbar()` | Navbar editor |
 | `popular` | `applyPopular()` | Featured Items editor |
+| `mobileHours` | `applyMobileHours()` | Homepage hours section |
 | `delivery` | `applyDelivery()` | Delivery editor |
 | `testimonials` | `applyTestimonials()` | Testimonials editor |
 | `eventsPreview` | `applyEventsPreview()` | Events editor |

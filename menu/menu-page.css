@@ -4186,6 +4186,28 @@ html[data-account-card-vt="active"]::view-transition-new(menu-account-toast) {
   letter-spacing: 0.01em;
 }
 
+.menu-page-detail__section-title--with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--menu-detail-space-2);
+}
+
+.menu-page-detail__section-title-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1lh;
+  height: 1lh;
+  color: #e3e3e3;
+}
+
+.menu-page-detail__section-title-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
 .menu-page-detail__section-heading {
   display: grid;
   gap: var(--menu-detail-space-1-5);

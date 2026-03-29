@@ -13,10 +13,10 @@ The menu system has two public surfaces:
 | Component | File | Lines | Purpose |
 |-----------|------|------:|---------|
 | **Menu renderer** | `js/mas-pedidas.js` | 1,022 | Card grid, preview overlay, cover transition animations |
-| **Shared public navbar loader** | `shared/public-navbar.js` | ~250 | Mounts canonical homepage navbar on `/menu/` |
+| **Shared public navbar loader** | `shared/public-navbar.js` | ~250 | Mounts and defends canonical homepage navbar on `/menu/` |
 | **Full menu page shell** | `menu/index.html` | ~170 | Intro, top tabs shell, search/filter controls, filter modal shell, card template, detail subview shell |
 | **Full menu page runtime** | `js/menu-page.js` | ~650 | Events-style tabs, grouped section rendering, inline search filter, draft/apply filter modal wiring, URL-driven detail subview, bridge state |
-| **Menu navbar enhancer** | `js/menu-page-navbar.js` | ~500 | Two-stage sticky-menu transformation inside the shared navbar |
+| **Menu navbar enhancer** | `js/menu-page-navbar.js` | ~500 | Two-stage sticky-menu transformation inside the shared navbar, with canonical-header repair before enhancement |
 | **Full menu page styles** | `menu/menu-page.css` | ~560 | Centered intro, top tab sizing, integrated search bar, responsive grid, detail subview styling |
 | **Card template** | `index.html` (`#mas-pedidas-card-template`) | ~20 | HTML template cloned for each card |
 | **Menu data generator** | `src/data/menu.js` | 660 | In-browser generator exposing `getFeaturedMenuItems()`, `getMenuItemsByCategory()`, and `getSensoryProfileSchema()` |
@@ -50,7 +50,7 @@ js/mas-pedidas.js
 ```
 Menu page route loads (/menu/)
     ↓
-shared/public-navbar.js → mounts canonical navbar from homepage source
+shared/public-navbar.js → mounts canonical navbar from homepage source and rejects route-mutated variants
     ↓
 src/data/menu.js      → getMenuItemsByCategory()
 src/data/media.js     → media variants + editorial gallery auto-detection + prefetch helpers
@@ -66,6 +66,7 @@ js/menu-page.js
     ↓
 js/menu-page-navbar.js
     ├── waits for shared navbar + menu bridge
+    ├── repairs/remounts a clean canonical shared navbar if the host was contaminated
     ├── preserves stage-1 collapse from js/navbar-collapse.js
     └── swaps collapsed navbar content into sticky-menu mode after controls leave viewport
 ```
@@ -105,6 +106,7 @@ The route is item-driven but uses a fixed top-level navigation grouping:
 ### Sticky Navbar Layer
 
 - The sticky layer lives inside the shared navbar mounted by `shared/public-navbar.js`; there is no second route-local navbar.
+- Shared-navbar invariant: route-only wrappers such as `.navbar__brand-slot`, `.navbar__center-shell`, `.navbar__menu-tools`, `.navbar__mobile-actions`, and `.navbar__mobile-menu-panel` must never become the cached/shared source.
 - `js/menu-page.js` exposes `window.FigataMenuPage` so the sticky layer can reuse the active category state, scroll navigation, and search query.
 - On desktop, the sticky chevron toggles between:
   - compact sticky-menu mode

@@ -177,8 +177,6 @@
           "slug": "focaccia-rellena",
           "category": "entradas",
           "subcategory": "",
-          "descriptionShort": "Focaccia caliente rellena de mortadella, stracciatella y pesto.",
-          "descriptionLong": "",
           "price": 750,
           "ingredients": [
             "mortadella",
@@ -186,11 +184,18 @@
             "pesto_de_albahaca"
           ],
           "image": "assets/menu/entradas/focaccia-rellena.webp",
-          "featured": true,
+          "featured": false,
           "allergen_overrides": {
             "add": [
               "gluten"
             ]
+          },
+          "description": "Focaccia caliente rellena de mortadella, stracciatella y pesto.",
+          "detail_editorial": {
+            "section_visibility": {
+              "pairings": false,
+              "story": false
+            }
           }
         }
       ]

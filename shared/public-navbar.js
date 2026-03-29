@@ -62,6 +62,143 @@
     return template.content.querySelector('header.site-header');
   };
 
+  const copyAttributes = (source, target, { skip = [] } = {}) => {
+    if (!(source instanceof HTMLElement) || !(target instanceof HTMLElement)) {
+      return;
+    }
+
+    Array.from(source.attributes).forEach((attribute) => {
+      if (skip.includes(attribute.name)) {
+        return;
+      }
+
+      target.setAttribute(attribute.name, attribute.value);
+    });
+  };
+
+  const hasChildWithClass = (parent, className) => {
+    if (!(parent instanceof HTMLElement) || !className) {
+      return false;
+    }
+
+    return Array.from(parent.children).some(
+      (child) => child instanceof HTMLElement && child.classList.contains(className)
+    );
+  };
+
+  const isCanonicalHeader = (header) => {
+    if (!(header instanceof HTMLElement)) {
+      return false;
+    }
+
+    const navbar = header.querySelector('.navbar');
+    const navInner = navbar?.querySelector('.navbar__inner');
+
+    if (!(navbar instanceof HTMLElement) || !(navInner instanceof HTMLElement)) {
+      return false;
+    }
+
+    if (
+      header.querySelector('.navbar__brand-slot') ||
+      header.querySelector('.navbar__center-shell') ||
+      header.querySelector('.navbar__menu-tools') ||
+      header.querySelector('.navbar__mobile-actions') ||
+      header.querySelector('.navbar__mobile-menu-panel') ||
+      navbar.classList.contains('navbar--menu-route')
+    ) {
+      return false;
+    }
+
+    return (
+      hasChildWithClass(navInner, 'navbar__brand') &&
+      hasChildWithClass(navInner, 'navbar__links') &&
+      hasChildWithClass(navInner, 'navbar__actions')
+    );
+  };
+
+  const stripRouteVariantNodes = (node) => {
+    if (!(node instanceof HTMLElement)) {
+      return;
+    }
+
+    node.querySelectorAll(
+      '.navbar__brand-slot, .navbar__center-shell, .navbar__menu-tools, .navbar__mobile-actions, .navbar__mobile-menu-panel, .navbar__menu-mode-toggle'
+    ).forEach((routeNode) => {
+      routeNode.remove();
+    });
+
+    node.querySelectorAll('[data-burger-state], [data-icon-type]').forEach((routeNode) => {
+      routeNode.removeAttribute('data-burger-state');
+      routeNode.removeAttribute('data-icon-type');
+    });
+  };
+
+  const toCanonicalHeaderSnapshot = (header) => {
+    if (!(header instanceof HTMLElement)) {
+      return null;
+    }
+
+    if (isCanonicalHeader(header)) {
+      const snapshot = header.cloneNode(true);
+      snapshot.removeAttribute('data-public-navbar-host');
+      snapshot.removeAttribute('data-public-navbar-mounted');
+      snapshot.removeAttribute('data-eventos-burger-nav');
+      snapshot.removeAttribute('data-eventos-burger-ready');
+      snapshot.removeAttribute('data-menu-mobile-nav');
+      return snapshot;
+    }
+
+    const sourceNavbar = header.querySelector('.navbar');
+    const sourceNavInner = sourceNavbar?.querySelector('.navbar__inner');
+    const sourceBrand = sourceNavInner?.querySelector('.navbar__brand');
+    const sourceLinks = sourceNavInner?.querySelector('.navbar__links');
+    const sourceActions = sourceNavInner?.querySelector('.navbar__actions');
+
+    if (
+      !(sourceNavbar instanceof HTMLElement) ||
+      !(sourceNavInner instanceof HTMLElement) ||
+      !(sourceBrand instanceof HTMLElement) ||
+      !(sourceLinks instanceof HTMLElement) ||
+      !(sourceActions instanceof HTMLElement)
+    ) {
+      return null;
+    }
+
+    const snapshot = document.createElement('header');
+    copyAttributes(header, snapshot, {
+      skip: [
+        'data-public-navbar-host',
+        'data-public-navbar-mounted',
+        'data-eventos-burger-nav',
+        'data-eventos-burger-ready',
+        'data-menu-mobile-nav',
+      ],
+    });
+    snapshot.className = 'site-header';
+
+    const navbarClone = document.createElement(sourceNavbar.tagName.toLowerCase());
+    copyAttributes(sourceNavbar, navbarClone, { skip: ['class'] });
+    navbarClone.className = 'navbar';
+
+    const navInnerClone = document.createElement(sourceNavInner.tagName.toLowerCase());
+    copyAttributes(sourceNavInner, navInnerClone, { skip: ['class'] });
+    navInnerClone.className = 'navbar__inner';
+
+    const brandClone = sourceBrand.cloneNode(true);
+    const linksClone = sourceLinks.cloneNode(true);
+    const actionsClone = sourceActions.cloneNode(true);
+
+    stripRouteVariantNodes(brandClone);
+    stripRouteVariantNodes(linksClone);
+    stripRouteVariantNodes(actionsClone);
+
+    navInnerClone.append(brandClone, linksClone, actionsClone);
+    navbarClone.appendChild(navInnerClone);
+    snapshot.appendChild(navbarClone);
+
+    return isCanonicalHeader(snapshot) ? snapshot : null;
+  };
+
   const normalizeText = (value) => String(value || '').trim();
 
   const toNavbarHref = (value) => {
@@ -223,19 +360,26 @@
       }
 
       const header = parseHeaderFromHtml(cached);
-      return header && header.querySelector('.navbar') ? header : null;
+      const snapshot = toCanonicalHeaderSnapshot(header);
+
+      if (!snapshot) {
+        window.localStorage.removeItem(STORAGE_KEY);
+      }
+
+      return snapshot;
     } catch (error) {
       return null;
     }
   };
 
   const cacheHeader = (header) => {
-    if (!(header instanceof HTMLElement)) {
+    const snapshot = toCanonicalHeaderSnapshot(header);
+
+    if (!(snapshot instanceof HTMLElement)) {
       return;
     }
 
     try {
-      const snapshot = header.cloneNode(true);
       normalizeMediaUrls(snapshot);
       window.localStorage.setItem(STORAGE_KEY, snapshot.outerHTML);
     } catch (error) {
@@ -282,23 +426,35 @@
     }
 
     const html = await response.text();
-    const header = parseHeaderFromHtml(html);
+    const header = toCanonicalHeaderSnapshot(parseHeaderFromHtml(html));
 
-    if (!header || !header.querySelector('.navbar')) {
+    if (!header || !isCanonicalHeader(header)) {
       throw new Error('[public-navbar] Header canonical no encontrado.');
     }
 
     return header;
   };
 
-  const mountIntoHost = async (host) => {
-    const shouldHideCta = host.hasAttribute('data-public-navbar-hide-cta');
-    let sourceHeader = readCachedHeader();
+  const getCanonicalHeader = async ({ forceFresh = false } = {}) => {
+    let sourceHeader = forceFresh ? null : readCachedHeader();
 
     if (!sourceHeader) {
       sourceHeader = await fetchHomeHeader();
       cacheHeader(sourceHeader);
     }
+
+    const snapshot = toCanonicalHeaderSnapshot(sourceHeader);
+
+    if (!snapshot) {
+      throw new Error('[public-navbar] No se pudo reconstruir un header canónico.');
+    }
+
+    return snapshot;
+  };
+
+  const mountIntoHost = async (host) => {
+    const shouldHideCta = host.hasAttribute('data-public-navbar-hide-cta');
+    const sourceHeader = await getCanonicalHeader();
 
     normalizeForRoute(sourceHeader);
     importHeaderChildren(host, sourceHeader);
@@ -323,7 +479,7 @@
   const captureCanonicalHeader = () => {
     const currentHeader = document.querySelector('header.site-header');
 
-    if (!currentHeader || !currentHeader.querySelector('.navbar')) {
+    if (!currentHeader || !isCanonicalHeader(currentHeader)) {
       return;
     }
 
@@ -355,6 +511,30 @@
 
   window.FigataPublicNavbar = {
     whenReady: () => readyPromise,
+    isCanonicalHeader: (target) => {
+      const candidate =
+        target instanceof HTMLElement
+          ? target
+          : document.querySelector('header.site-header');
+      return isCanonicalHeader(candidate);
+    },
+    ensureCanonicalHost: async (target) => {
+      const host =
+        target instanceof HTMLElement
+          ? target
+          : document.querySelector('header.site-header');
+
+      if (!(host instanceof HTMLElement)) {
+        return false;
+      }
+
+      if (isCanonicalHeader(host)) {
+        return true;
+      }
+
+      await mountIntoHost(host);
+      return isCanonicalHeader(host);
+    },
     refreshFromDom: () => {
       captureCanonicalHeader();
     },

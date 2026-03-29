@@ -183,6 +183,48 @@
     );
   };
 
+  const hasDirectChildWithClass = (parent, className) => {
+    if (!(parent instanceof HTMLElement)) {
+      return false;
+    }
+
+    return Array.from(parent.children).some(
+      (child) => child instanceof HTMLElement && child.classList.contains(className)
+    );
+  };
+
+  const isCanonicalSharedNavbar = () => {
+    const publicNavbarApi = window.FigataPublicNavbar;
+
+    if (publicNavbarApi && typeof publicNavbarApi.isCanonicalHeader === 'function') {
+      return publicNavbarApi.isCanonicalHeader(header);
+    }
+
+    const currentNavbar = header.querySelector('.navbar');
+    const currentNavInner = currentNavbar?.querySelector('.navbar__inner');
+
+    if (!(currentNavbar instanceof HTMLElement) || !(currentNavInner instanceof HTMLElement)) {
+      return false;
+    }
+
+    if (
+      currentNavbar.classList.contains('navbar--menu-route') ||
+      header.querySelector('.navbar__brand-slot') ||
+      header.querySelector('.navbar__center-shell') ||
+      header.querySelector('.navbar__menu-tools') ||
+      header.querySelector('.navbar__mobile-actions') ||
+      header.querySelector('.navbar__mobile-menu-panel')
+    ) {
+      return false;
+    }
+
+    return (
+      hasDirectChildWithClass(currentNavInner, 'navbar__brand') &&
+      hasDirectChildWithClass(currentNavInner, 'navbar__links') &&
+      hasDirectChildWithClass(currentNavInner, 'navbar__actions')
+    );
+  };
+
   const normalizeText = (value) => String(value || '').trim();
   const toLookupKey = (value) =>
     normalizeText(value)
@@ -462,7 +504,18 @@
       if (entryConfig?.badgeLabel) {
         const badge = document.createElement('span');
         badge.className = 'navbar__mobile-menu-badge';
-        badge.textContent = entryConfig.badgeLabel;
+        const badgeIcon = document.createElement('span');
+        badgeIcon.className = 'navbar__mobile-menu-badge-icon';
+        badgeIcon.setAttribute('aria-hidden', 'true');
+        badgeIcon.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" focusable="false" aria-hidden="true">
+            <path d="m80-80 200-560 360 360L80-80Zm132-132 282-100-182-182-100 282Zm370-246-42-42 224-224q32-32 77-32t77 32l24 24-42 42-24-24q-14-14-35-14t-35 14L582-458ZM422-618l-42-42 24-24q14-14 14-34t-14-34l-26-26 42-42 26 26q32 32 32 76t-32 76l-24 24Zm80 80-42-42 144-144q14-14 14-35t-14-35l-64-64 42-42 64 64q32 32 32 77t-32 77L502-538Zm160 160-42-42 64-64q32-32 77-32t77 32l64 64-42 42-64-64q-14-14-35-14t-35 14l-64 64ZM212-212Z"/>
+          </svg>
+        `;
+        const badgeLabel = document.createElement('span');
+        badgeLabel.className = 'navbar__mobile-menu-badge-label';
+        badgeLabel.textContent = entryConfig.badgeLabel;
+        badge.append(badgeIcon, badgeLabel);
         titleRow.appendChild(badge);
       }
 
@@ -2398,6 +2451,40 @@
     applyUiState();
   };
 
+  const waitForPublicNavbar = async () => {
+    const publicNavbarApi = window.FigataPublicNavbar;
+
+    if (!publicNavbarApi || typeof publicNavbarApi.whenReady !== 'function') {
+      return;
+    }
+
+    await publicNavbarApi.whenReady();
+  };
+
+  const ensureCanonicalSharedNavbar = async () => {
+    if (isCanonicalSharedNavbar()) {
+      return true;
+    }
+
+    const publicNavbarApi = window.FigataPublicNavbar;
+
+    if (
+      publicNavbarApi &&
+      typeof publicNavbarApi.ensureCanonicalHost === 'function'
+    ) {
+      try {
+        const repaired = await publicNavbarApi.ensureCanonicalHost(header);
+        if (repaired) {
+          return true;
+        }
+      } catch (error) {
+        console.warn(error);
+      }
+    }
+
+    return isCanonicalSharedNavbar();
+  };
+
   const waitForMenuState = async () => {
     const menuApi = window.FigataMenuPage;
 
@@ -2411,7 +2498,17 @@
 
   void (async () => {
     try {
+      await waitForPublicNavbar();
+      const hasCanonicalNavbar = await ensureCanonicalSharedNavbar();
       state.menuState = await waitForMenuState();
+
+      if (!hasCanonicalNavbar) {
+        console.warn(
+          '[menu-page-navbar] Navbar compartido no canónico; se omitió el sticky enhancer para evitar una regresión.'
+        );
+        return;
+      }
+
       buildChrome();
       bindObservers();
 

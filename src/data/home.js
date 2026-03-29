@@ -88,6 +88,17 @@
     'margherita_sbagliata',
     'vulcano',
   ];
+  const HOURS_DAY_ORDER = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+  const HOURS_RANGE_PATTERN = /^(\d{2}):(\d{2})-(\d{2}):(\d{2})$/;
+  const DEFAULT_MOBILE_HOURS_WEEK = {
+    mon: null,
+    tue: null,
+    wed: '17:00-23:00',
+    thu: '17:00-23:00',
+    fri: '17:00-23:00',
+    sat: '17:00-23:00',
+    sun: '12:00-23:00',
+  };
 
   const DEFAULT_EVENTS_ITEMS = [
     {
@@ -196,6 +207,30 @@
       featuredIds: DEFAULT_FEATURED_IDS.slice(),
       limit: DEFAULT_POPULAR_LIMIT,
     },
+    mobileHours: {
+      enabled: true,
+      title: 'Horarios',
+      subtitle: 'Revisa cuándo estamos abiertos y si hay\ncambios en el servicio',
+      timezone: 'America/Santo_Domingo',
+      openSoonMinutes: 60,
+      closeSoonMinutes: 60,
+      baseWeek: {
+        ...DEFAULT_MOBILE_HOURS_WEEK,
+      },
+      weeklyOverrides: [],
+      dateOverrides: [],
+      labels: {
+        openNow: 'Abierto',
+        opensSoon: 'Por abrir',
+        closesSoon: 'Por cerrar',
+        closedToday: 'Cerrado',
+        specialHours: 'Especial',
+        willOpenLater: 'Abriremos',
+        noService: 'Sin servicio',
+        closed: 'Cerrado',
+        today: 'Hoy',
+      },
+    },
     eventsPreview: {
       enabled: true,
       title: 'Eventos en Figata',
@@ -253,6 +288,7 @@
       navbar: true,
       hero: true,
       popular: true,
+      hours: true,
       events: true,
       delivery: true,
       announcements: true,
@@ -337,6 +373,113 @@
     return Math.max(DELIVERY_ICON_MIN_SIZE, Math.min(DELIVERY_ICON_MAX_SIZE, numeric));
   };
 
+  const isValidHoursRange = (value) => {
+    const normalized = normalizeText(value);
+    const match = HOURS_RANGE_PATTERN.exec(normalized);
+
+    if (!match) {
+      return false;
+    }
+
+    const start = Number(match[1]) * 60 + Number(match[2]);
+    const end = Number(match[3]) * 60 + Number(match[4]);
+
+    return start >= 0 && end > start && end <= 24 * 60;
+  };
+
+  const normalizeHoursRangeValue = (value, fallback = null) => {
+    if (value === null) {
+      return null;
+    }
+
+    const normalized = normalizeText(value);
+    if (!normalized) {
+      return fallback;
+    }
+
+    const lower = normalized.toLowerCase();
+    if (lower === 'cerrado' || lower === 'closed') {
+      return null;
+    }
+
+    return isValidHoursRange(normalized) ? normalized : fallback;
+  };
+
+  const normalizeMobileHoursWeek = (inputWeek, fallbackWeek) => {
+    const safeInput = inputWeek && typeof inputWeek === 'object' ? inputWeek : {};
+    const safeFallback = fallbackWeek && typeof fallbackWeek === 'object'
+      ? fallbackWeek
+      : DEFAULT_MOBILE_HOURS_WEEK;
+    const normalizedWeek = {};
+
+    HOURS_DAY_ORDER.forEach((dayKey) => {
+      const fallbackValue = safeFallback[dayKey] ?? null;
+      normalizedWeek[dayKey] = normalizeHoursRangeValue(safeInput[dayKey], fallbackValue);
+    });
+
+    return normalizedWeek;
+  };
+
+  const normalizeWeeklyHoursOverrides = (inputOverrides) => {
+    if (!Array.isArray(inputOverrides)) {
+      return [];
+    }
+
+    return inputOverrides
+      .map((entry) => {
+        if (!entry || typeof entry !== 'object') {
+          return null;
+        }
+
+        const day = normalizeText(entry.day).toLowerCase();
+        if (!HOURS_DAY_ORDER.includes(day)) {
+          return null;
+        }
+
+        const closed = typeof entry.closed === 'boolean' ? entry.closed : false;
+        const hours = closed ? null : normalizeHoursRangeValue(entry.hours, null);
+
+        return {
+          day,
+          closed,
+          hours,
+          reason: normalizeText(entry.reason),
+          special: typeof entry.special === 'boolean' ? entry.special : true,
+        };
+      })
+      .filter(Boolean);
+  };
+
+  const normalizeDateHoursOverrides = (inputOverrides) => {
+    if (!Array.isArray(inputOverrides)) {
+      return [];
+    }
+
+    return inputOverrides
+      .map((entry) => {
+        if (!entry || typeof entry !== 'object') {
+          return null;
+        }
+
+        const date = normalizeText(entry.date);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+          return null;
+        }
+
+        const closed = typeof entry.closed === 'boolean' ? entry.closed : false;
+        const hours = closed ? null : normalizeHoursRangeValue(entry.hours, null);
+
+        return {
+          date,
+          closed,
+          hours,
+          reason: normalizeText(entry.reason),
+          special: typeof entry.special === 'boolean' ? entry.special : true,
+        };
+      })
+      .filter(Boolean);
+  };
+
   const normalizeTestimonialsStars = (value, fallback = TESTIMONIAL_STARS_MAX) => {
     const numeric = Math.round(normalizeNumber(value, fallback));
     if (!Number.isFinite(numeric)) {
@@ -399,6 +542,39 @@
       subtitle: normalizeText(popularInput?.subtitle) || fallback.subtitle,
       featuredIds: normalizeStringArray(popularInput?.featuredIds),
       limit: normalizePositiveInt(popularInput?.limit, fallback.limit),
+    };
+  };
+
+  const normalizeMobileHours = (mobileHoursInput) => {
+    const fallback = DEFAULT_HOME.mobileHours;
+    const labelsInput = mobileHoursInput?.labels && typeof mobileHoursInput.labels === 'object'
+      ? mobileHoursInput.labels
+      : {};
+
+    return {
+      enabled: normalizeBoolean(mobileHoursInput?.enabled, fallback.enabled),
+      title: normalizeText(mobileHoursInput?.title) || fallback.title,
+      subtitle: normalizeText(mobileHoursInput?.subtitle) || fallback.subtitle,
+      timezone: normalizeText(mobileHoursInput?.timezone) || fallback.timezone,
+      openSoonMinutes: normalizePositiveInt(mobileHoursInput?.openSoonMinutes, fallback.openSoonMinutes),
+      closeSoonMinutes: normalizePositiveInt(
+        mobileHoursInput?.closeSoonMinutes,
+        fallback.closeSoonMinutes
+      ),
+      baseWeek: normalizeMobileHoursWeek(mobileHoursInput?.baseWeek, fallback.baseWeek),
+      weeklyOverrides: normalizeWeeklyHoursOverrides(mobileHoursInput?.weeklyOverrides),
+      dateOverrides: normalizeDateHoursOverrides(mobileHoursInput?.dateOverrides),
+      labels: {
+        openNow: normalizeText(labelsInput.openNow) || fallback.labels.openNow,
+        opensSoon: normalizeText(labelsInput.opensSoon) || fallback.labels.opensSoon,
+        closesSoon: normalizeText(labelsInput.closesSoon) || fallback.labels.closesSoon,
+        closedToday: normalizeText(labelsInput.closedToday) || fallback.labels.closedToday,
+        specialHours: normalizeText(labelsInput.specialHours) || fallback.labels.specialHours,
+        willOpenLater: normalizeText(labelsInput.willOpenLater) || fallback.labels.willOpenLater,
+        noService: normalizeText(labelsInput.noService) || fallback.labels.noService,
+        closed: normalizeText(labelsInput.closed) || fallback.labels.closed,
+        today: normalizeText(labelsInput.today) || fallback.labels.today,
+      },
     };
   };
 
@@ -619,6 +795,10 @@
       ),
       hero: normalizeBoolean(sectionsInput?.hero, fallback.hero),
       popular: normalizeBoolean(sectionsInput?.popular, fallback.popular),
+      hours: normalizeBoolean(
+        sectionsInput?.hours,
+        normalizeBoolean(sectionsInput?.horarios, fallback.hours)
+      ),
       events: normalizeBoolean(sectionsInput?.events, fallback.events),
       delivery: normalizeBoolean(sectionsInput?.delivery, fallback.delivery),
       announcements: normalizeBoolean(
@@ -644,6 +824,7 @@
       navbar,
       hero: normalizeHero(source?.hero),
       popular: normalizePopular(source?.popular),
+      mobileHours: normalizeMobileHours(source?.mobileHours),
       eventsPreview: normalizeEventsPreview(source?.eventsPreview),
       delivery: normalizeDelivery(source?.delivery),
       reservation: {
@@ -795,6 +976,47 @@
       menuIds,
       normalized.popular.limit,
       warnings
+    );
+
+    if (!normalized.mobileHours || typeof normalized.mobileHours !== 'object') {
+      warnings.push('mobileHours invalido. Se aplico fallback interno.');
+      normalized.mobileHours = normalizeMobileHours(null);
+    }
+
+    if (!normalizeText(normalized.mobileHours.title)) {
+      warnings.push('mobileHours.title vacio. Se uso fallback.');
+      normalized.mobileHours.title = DEFAULT_HOME.mobileHours.title;
+    }
+
+    if (!normalizeText(normalized.mobileHours.subtitle)) {
+      warnings.push('mobileHours.subtitle vacio. Se uso fallback.');
+      normalized.mobileHours.subtitle = DEFAULT_HOME.mobileHours.subtitle;
+    }
+
+    if (!normalizeText(normalized.mobileHours.timezone)) {
+      warnings.push('mobileHours.timezone vacio. Se uso fallback America/Santo_Domingo.');
+      normalized.mobileHours.timezone = DEFAULT_HOME.mobileHours.timezone;
+    }
+
+    normalized.mobileHours.openSoonMinutes = normalizePositiveInt(
+      normalized.mobileHours.openSoonMinutes,
+      DEFAULT_HOME.mobileHours.openSoonMinutes
+    );
+
+    normalized.mobileHours.closeSoonMinutes = normalizePositiveInt(
+      normalized.mobileHours.closeSoonMinutes,
+      DEFAULT_HOME.mobileHours.closeSoonMinutes
+    );
+
+    normalized.mobileHours.baseWeek = normalizeMobileHoursWeek(
+      normalized.mobileHours.baseWeek,
+      DEFAULT_HOME.mobileHours.baseWeek
+    );
+    normalized.mobileHours.weeklyOverrides = normalizeWeeklyHoursOverrides(
+      normalized.mobileHours.weeklyOverrides
+    );
+    normalized.mobileHours.dateOverrides = normalizeDateHoursOverrides(
+      normalized.mobileHours.dateOverrides
     );
 
     normalized.eventsPreview.limit = normalizePositiveInt(

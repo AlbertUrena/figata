@@ -269,6 +269,48 @@ Controls all dynamic sections of the public homepage.
     "featuredIds": ["margherita", "diavola", ...],   // menu item ids
     "limit": 8
   },
+  "mobileHours": {
+    "enabled": true,
+    "title": "Horarios",
+    "subtitle": "...",
+    "timezone": "America/Santo_Domingo",
+    "openSoonMinutes": 60,
+    "closeSoonMinutes": 60,
+    "baseWeek": {
+      "mon": null,               // null = cerrado
+      "tue": "12:00-22:00",      // "HH:MM-HH:MM"
+      ...
+    },
+    "weeklyOverrides": [
+      {
+        "day": "fri",            // mon..sun
+        "closed": false,
+        "hours": "17:00-23:00",
+        "reason": "Horario ajustado por evento privado",
+        "special": true
+      }
+    ],
+    "dateOverrides": [
+      {
+        "date": "2026-04-12",    // YYYY-MM-DD
+        "closed": true,
+        "hours": null,
+        "reason": "Cerrado por mantenimiento",
+        "special": true
+      }
+    ],
+    "labels": {
+      "openNow": "Abierto",
+      "opensSoon": "Por abrir",
+      "closesSoon": "Por cerrar",
+      "closedToday": "Cerrado",
+      "specialHours": "Especial",
+      "willOpenLater": "Abriremos",
+      "noService": "Sin servicio",
+      "closed": "Cerrado",
+      "today": "Hoy"
+    }
+  },
   "menu_page": {
     "hero": { "title": "...", "subtitle": "..." },
     "search": {
@@ -367,6 +409,8 @@ Controls all dynamic sections of the public homepage.
 ```
 
 **Read by:** `js/home-config.js` (public site) and admin home editor
+
+`home.mobileHours` is rendered into the mobile-only homepage section `#horarios` and supports realtime status + weekly/date overrides.
 
 The public menu catalog/detail route (`/menu/`) reads both global blocks:
 - `home.menu_page.*` (catalog/listing copy owner, edited in `Pages > Menú`)

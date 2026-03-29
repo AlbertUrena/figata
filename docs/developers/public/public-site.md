@@ -80,21 +80,22 @@ Homepage (`index.html`) scripts are loaded with `defer` and execute in order aft
 4.  js/reload-cover.js          — Entry/reload cover transition
 5.  shared/public-navbar.js     — Captures canonical navbar markup for cross-route reuse
 6.  js/navbar-collapse.js       — Navbar collapse/expand animation controller
-7.  shared/menu-traits.js       — Trait/badge runtime helpers
-8.  shared/menu-allergens.js    — Allergen runtime helpers
-9.  shared/menu-sensory.js      — Structured sensory profile schema/normalizer
-10. src/data/media.js           — Media data loader
-11. src/data/menu.js            — Menu data loader
-12. src/data/home.js            — Home data loader
-13. src/data/restaurant.js      — Restaurant data loader
-14. src/data/ingredients.js     — Ingredients data loader
-15. src/ui/ingredient-icon-row.js — Ingredient icon row component
-16. js/home-lazy-images.js      — Lazy image loading (IntersectionObserver)
-17. js/home-config.js           — Homepage section rendering (hero, delivery, footer, etc.)
-18. js/mas-pedidas.js           — Featured menu renderer + preview transition consumer
-19. js/testimonials.js          — Testimonials carousel
-20. js/events-tabs.js           — Events tabbed section
-21. shared/public-scroll-indicator.js — Native root-scroll progress meter
+7.  js/eventos-page.js          — Applies the burger-nav variant only on pages that explicitly opt in, while the editorial/cotizador features stay scoped to `/eventos/`
+8.  shared/menu-traits.js       — Trait/badge runtime helpers
+9.  shared/menu-allergens.js    — Allergen runtime helpers
+10. shared/menu-sensory.js      — Structured sensory profile schema/normalizer
+11. src/data/media.js           — Media data loader
+12. src/data/menu.js            — Menu data loader
+13. src/data/home.js            — Home data loader
+14. src/data/restaurant.js      — Restaurant data loader
+15. src/data/ingredients.js     — Ingredients data loader
+16. src/ui/ingredient-icon-row.js — Ingredient icon row component
+17. js/home-lazy-images.js      — Lazy image loading (IntersectionObserver)
+18. js/home-config.js           — Homepage section rendering (hero, delivery, footer, etc.)
+19. js/mas-pedidas.js           — Featured menu renderer + preview transition consumer
+20. js/testimonials.js          — Testimonials carousel
+21. js/events-tabs.js           — Events tabbed section
+22. shared/public-scroll-indicator.js — Native root-scroll progress meter
 ```
 
 Additionally loaded (non-deferred):
@@ -183,6 +184,7 @@ Full menu page runtime controller for `/menu/`. Handles:
 #### `js/menu-page-navbar.js`
 `/menu/`-only navbar enhancer. Handles:
 - Waiting for the shared navbar mount plus `window.FigataMenuPage.whenReady()`
+- Repairing the mounted shared navbar back to canonical structure before building sticky menu chrome
 - Preserving the existing navbar collapse threshold as stage 1
 - Activating a second sticky-menu transformation only after `.menu-page-controls` fully clears the fixed header
 - Swapping navbar links/CTA for compact menu tabs plus search/filter tools inside the same navbar shell
@@ -200,7 +202,7 @@ Full menu page runtime controller for `/menu/`. Handles:
   - Generates WhatsApp quote message with selected varieties and pricing breakdown
 - FAQ accordion behavior (single open item at a time)
 - Hero video autoplay fallback (enables controls when autoplay is blocked)
-- Menu-style navbar adaptation on mobile (burger button, animated icon, card menu panel, open/close states)
+- Menu-style navbar adaptation on mobile (burger button, animated icon, card menu panel, open/close states) only on pages that explicitly opt into that navbar variant, and only after a shared-navbar host has mounted when applicable
 - Storytelling gallery modal + photo viewer behavior
 
 #### `js/restaurant-config.js` (11KB, ~390 lines)
@@ -238,6 +240,7 @@ Shared public navbar runtime module. Handles:
 - Mounting canonical navbar into route hosts (`data-public-navbar-host`)
 - Optional route-level CTA suppression via `data-public-navbar-hide-cta`
 - Route-aware URL normalization for non-home pages (`/#...` anchors and asset paths)
+- Rejecting route-mutated navbar DOM when reading/writing cache and exposing a repair path so route enhancers can remount a clean canonical header before applying route-only chrome
 
 #### `shared/public-scroll-indicator.js` + `shared/public-scroll-indicator.css`
 Shared public scroll meter enhancement. Handles:

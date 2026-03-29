@@ -12,6 +12,29 @@
     return;
   }
 
+  const MOBILE_ROW_QUERY = "(max-width: 760px)";
+  const MOBILE_ROW_CLASS = "testimonials-mobile-row";
+  const MOBILE_ROW_TRACK_CLASS = "testimonials-mobile-row-track";
+  const MOBILE_ROW_CLONE_ATTR = "data-testimonials-row-autoscroll-clone";
+  const MOBILE_ROW_CARD_SELECTOR = ".card-wrapper";
+  const ROW_AUTOSCROLL_SPEED_PX_PER_SECOND = 22;
+  const ROW_AUTOSCROLL_MAX_DELTA_SECONDS = 0.05;
+  const ROW_AUTOSCROLL_MAX_TRACK_COPIES = 8;
+
+  const createMediaQueryList = (query) =>
+    typeof window.matchMedia === "function"
+      ? window.matchMedia(query)
+      : {
+          matches: false,
+          addEventListener() {},
+          removeEventListener() {},
+          addListener() {},
+          removeListener() {},
+        };
+
+  const mobileRowMedia = createMediaQueryList(MOBILE_ROW_QUERY);
+  const reduceMotionMedia = createMediaQueryList("(prefers-reduced-motion: reduce)");
+
   const TESTIMONIALS_LIMIT = 9;
   const FALLBACK_TESTIMONIALS = [
     {
@@ -133,12 +156,13 @@
   };
   let testimonials = normalizeTestimonials(FALLBACK_TESTIMONIALS);
 
-  const getColumnCount = () => {
-    const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+  let rowAutoScrollRafId = 0;
+  let rowAutoScrollStates = [];
+  let rowAutoScrollCleanup = [];
+  let rowAutoScrollLastTs = 0;
 
-    if (viewportWidth <= 760) {
-      return 1;
-    }
+  const getDesktopColumnCount = () => {
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
 
     if (viewportWidth <= 1200) {
       return 2;
@@ -177,14 +201,15 @@
 
   const createCard = (item) => {
     const node = template.content.cloneNode(true);
-    const card = node.querySelector(".card");
-    const text = node.querySelector(".card-text");
-    const avatar = node.querySelector(".avatar");
-    const name = node.querySelector(".user-name");
-    const role = node.querySelector(".user-role");
-    const stars = node.querySelector(".stars");
+    const wrapper = node.querySelector(".card-wrapper");
+    const card = wrapper?.querySelector(".card");
+    const text = wrapper?.querySelector(".card-text");
+    const avatar = wrapper?.querySelector(".avatar");
+    const name = wrapper?.querySelector(".user-name");
+    const role = wrapper?.querySelector(".user-role");
+    const stars = wrapper?.querySelector(".stars");
 
-    if (!card || !text || !avatar || !name || !role || !stars) {
+    if (!(wrapper instanceof HTMLElement) || !card || !text || !avatar || !name || !role || !stars) {
       return null;
     }
 
@@ -204,11 +229,338 @@
       avatar.appendChild(image);
     }
 
-    return node;
+    return wrapper;
   };
 
-  const render = () => {
-    const columnCount = Math.min(getColumnCount(), columns.length);
+  const getRowGapPx = (row) => {
+    if (!(row instanceof HTMLElement)) {
+      return 0;
+    }
+
+    const styles = window.getComputedStyle(row);
+    const gap = parseFloat(styles.columnGap || styles.gap || "0");
+    return Number.isFinite(gap) ? gap : 0;
+  };
+
+  const getCardWidthPx = (card) => {
+    if (!(card instanceof HTMLElement)) {
+      return 0;
+    }
+
+    const width = card.getBoundingClientRect().width || card.offsetWidth || 0;
+    return width > 0 ? width : 0;
+  };
+
+  const getRowCycleWidthPx = (cards, gapPx) => {
+    if (!Array.isArray(cards) || cards.length < 2) {
+      return 0;
+    }
+
+    const totalWidth = cards.reduce((sum, card) => sum + getCardWidthPx(card), 0);
+    if (!(totalWidth > 0)) {
+      return 0;
+    }
+
+    const safeGap = Number.isFinite(gapPx) ? gapPx : 0;
+    return totalWidth + safeGap * cards.length;
+  };
+
+  const createRowAutoScrollClone = (card) => {
+    if (!(card instanceof HTMLElement)) {
+      return null;
+    }
+
+    const clone = card.cloneNode(true);
+    if (!(clone instanceof HTMLElement)) {
+      return null;
+    }
+
+    clone.setAttribute(MOBILE_ROW_CLONE_ATTR, "true");
+    clone.setAttribute("aria-hidden", "true");
+    if ("inert" in clone) {
+      clone.inert = true;
+    }
+
+    clone.querySelectorAll("a, button, input, select, textarea, [tabindex]").forEach((element) => {
+      if (!(element instanceof HTMLElement)) {
+        return;
+      }
+      element.setAttribute("tabindex", "-1");
+      if ("disabled" in element) {
+        element.disabled = true;
+      }
+    });
+
+    return clone;
+  };
+
+  const wrapRowOffset = (state) => {
+    const cycleWidthPx = state?.cycleWidthPx;
+    if (!Number.isFinite(cycleWidthPx) || !(cycleWidthPx > 0)) {
+      return;
+    }
+
+    if (state.direction < 0) {
+      while (state.offsetPx <= -cycleWidthPx) {
+        state.offsetPx += cycleWidthPx;
+      }
+      while (state.offsetPx > 0) {
+        state.offsetPx -= cycleWidthPx;
+      }
+      return;
+    }
+
+    while (state.offsetPx >= 0) {
+      state.offsetPx -= cycleWidthPx;
+    }
+    while (state.offsetPx < -cycleWidthPx) {
+      state.offsetPx += cycleWidthPx;
+    }
+  };
+
+  const applyRowOffset = (state) => {
+    const track = state?.track;
+    if (!(track instanceof HTMLElement)) {
+      return;
+    }
+
+    track.style.transform = `translate3d(${state.offsetPx.toFixed(3)}px, 0, 0)`;
+  };
+
+  const syncRowAutoScrollState = (state) => {
+    const row = state?.row;
+    if (!(row instanceof HTMLElement)) {
+      return false;
+    }
+
+    const existingTrack = row.firstElementChild;
+    if (
+      existingTrack instanceof HTMLElement &&
+      existingTrack.classList.contains(MOBILE_ROW_TRACK_CLASS)
+    ) {
+      const sourceCards = Array.from(existingTrack.children).filter(
+        (node) =>
+          node instanceof HTMLElement &&
+          node.matches(MOBILE_ROW_CARD_SELECTOR) &&
+          !node.hasAttribute(MOBILE_ROW_CLONE_ATTR)
+      );
+      row.replaceChildren(...sourceCards);
+    }
+
+    const sourceCards = Array.from(row.children).filter(
+      (node) => node instanceof HTMLElement && node.matches(MOBILE_ROW_CARD_SELECTOR)
+    );
+    if (sourceCards.length < 2) {
+      state.track = null;
+      state.cycleWidthPx = 0;
+      state.offsetPx = 0;
+      return false;
+    }
+
+    const track = document.createElement("div");
+    track.className = MOBILE_ROW_TRACK_CLASS;
+    sourceCards.forEach((card) => track.appendChild(card));
+    row.replaceChildren(track);
+
+    state.gapPx = getRowGapPx(row);
+    const cycleWidthPx = getRowCycleWidthPx(sourceCards, state.gapPx);
+    if (!(cycleWidthPx > 0)) {
+      row.replaceChildren(...sourceCards);
+      state.track = null;
+      state.cycleWidthPx = 0;
+      state.offsetPx = 0;
+      return false;
+    }
+
+    const minTrackWidthPx = (row.getBoundingClientRect().width || row.clientWidth || 0) + cycleWidthPx;
+    let copies = 1;
+
+    while (track.scrollWidth < minTrackWidthPx - 0.5 && copies < ROW_AUTOSCROLL_MAX_TRACK_COPIES) {
+      sourceCards.forEach((card) => {
+        const clone = createRowAutoScrollClone(card);
+        if (clone) {
+          track.appendChild(clone);
+        }
+      });
+      copies += 1;
+    }
+
+    state.track = track;
+    state.cycleWidthPx = cycleWidthPx;
+    state.offsetPx = state.direction > 0 ? -cycleWidthPx : 0;
+    wrapRowOffset(state);
+    track.style.willChange = "transform";
+    applyRowOffset(state);
+    return true;
+  };
+
+  const stopRowAutoScroll = () => {
+    if (rowAutoScrollRafId) {
+      cancelAnimationFrame(rowAutoScrollRafId);
+      rowAutoScrollRafId = 0;
+    }
+
+    rowAutoScrollStates.forEach((state) => {
+      const row = state?.row;
+      const track = state?.track;
+      if (track instanceof HTMLElement) {
+        track.style.transform = "";
+        track.style.willChange = "";
+      }
+      if (!(row instanceof HTMLElement)) {
+        return;
+      }
+      const mountedTrack = row.firstElementChild;
+      if (
+        mountedTrack instanceof HTMLElement &&
+        mountedTrack.classList.contains(MOBILE_ROW_TRACK_CLASS)
+      ) {
+        const sourceCards = Array.from(mountedTrack.children).filter(
+          (node) =>
+            node instanceof HTMLElement &&
+            node.matches(MOBILE_ROW_CARD_SELECTOR) &&
+            !node.hasAttribute(MOBILE_ROW_CLONE_ATTR)
+        );
+        row.replaceChildren(...sourceCards);
+      }
+    });
+
+    rowAutoScrollCleanup.forEach((dispose) => {
+      try {
+        dispose();
+      } catch (_) {
+        // no-op
+      }
+    });
+    rowAutoScrollCleanup = [];
+    rowAutoScrollStates = [];
+    rowAutoScrollLastTs = 0;
+  };
+
+  const runRowAutoScrollFrame = (timestamp) => {
+    rowAutoScrollRafId = 0;
+
+    if (!rowAutoScrollStates.length) {
+      return;
+    }
+
+    if (!rowAutoScrollLastTs) {
+      rowAutoScrollLastTs = timestamp;
+    }
+
+    const deltaSeconds = Math.min(
+      Math.max((timestamp - rowAutoScrollLastTs) / 1000, 0),
+      ROW_AUTOSCROLL_MAX_DELTA_SECONDS
+    );
+    rowAutoScrollLastTs = timestamp;
+
+    if (deltaSeconds > 0) {
+      rowAutoScrollStates.forEach((state) => {
+        const { row, track, direction } = state;
+        if (
+          !(row instanceof HTMLElement) ||
+          !(track instanceof HTMLElement) ||
+          !row.isConnected ||
+          !track.isConnected ||
+          row.hidden
+        ) {
+          return;
+        }
+
+        const delta = ROW_AUTOSCROLL_SPEED_PX_PER_SECOND * deltaSeconds;
+        state.offsetPx += direction * delta;
+        wrapRowOffset(state);
+        applyRowOffset(state);
+      });
+    }
+
+    rowAutoScrollRafId = requestAnimationFrame(runRowAutoScrollFrame);
+  };
+
+  const requestRowAutoScrollFrame = () => {
+    if (rowAutoScrollRafId) {
+      return;
+    }
+    rowAutoScrollRafId = requestAnimationFrame(runRowAutoScrollFrame);
+  };
+
+  const startRowAutoScroll = (rows) => {
+    stopRowAutoScroll();
+
+    if (!mobileRowMedia.matches || reduceMotionMedia.matches || !Array.isArray(rows)) {
+      return;
+    }
+
+    const states = [];
+
+    rows.forEach((row, index) => {
+      if (!(row instanceof HTMLElement) || row.hidden) {
+        return;
+      }
+
+      const cards = Array.from(row.children).filter(
+        (node) => node instanceof HTMLElement && node.matches(MOBILE_ROW_CARD_SELECTOR)
+      );
+      if (cards.length < 2) {
+        return;
+      }
+
+      const state = {
+        row,
+        track: null,
+        direction: index === 0 ? -1 : 1,
+        offsetPx: 0,
+        gapPx: getRowGapPx(row),
+        cycleWidthPx: 0,
+      };
+
+      if (syncRowAutoScrollState(state)) {
+        states.push(state);
+      }
+    });
+
+    if (!states.length) {
+      return;
+    }
+
+    rowAutoScrollStates = states;
+
+    const onVisibilityChange = () => {
+      if (!document.hidden) {
+        rowAutoScrollLastTs = 0;
+      }
+    };
+
+    const onResize = () => {
+      rowAutoScrollStates.forEach((state) => {
+        syncRowAutoScrollState(state);
+      });
+      rowAutoScrollLastTs = 0;
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("resize", onResize, { passive: true });
+    rowAutoScrollCleanup.push(() =>
+      document.removeEventListener("visibilitychange", onVisibilityChange)
+    );
+    rowAutoScrollCleanup.push(() => window.removeEventListener("resize", onResize));
+
+    rowAutoScrollLastTs = 0;
+    requestRowAutoScrollFrame();
+  };
+
+  const ensureDesktopColumnsMounted = () => {
+    const hasAllColumnsMounted = columns.every((column) => column.parentElement === grid);
+    if (!hasAllColumnsMounted) {
+      grid.replaceChildren(...columns);
+    }
+  };
+
+  const renderDesktop = () => {
+    stopRowAutoScroll();
+    ensureDesktopColumnsMounted();
+
+    const columnCount = Math.min(getDesktopColumnCount(), columns.length);
     const fragments = columns.map(() => document.createDocumentFragment());
 
     columns.forEach((column, index) => {
@@ -251,26 +603,77 @@
     }
   };
 
-  let resizeFrame = 0;
+  const renderMobileRows = () => {
+    const topRow = document.createElement("div");
+    topRow.className = `${MOBILE_ROW_CLASS} ${MOBILE_ROW_CLASS}--top`;
 
-  window.addEventListener(
-    "resize",
-    () => {
-      if (resizeFrame) {
-        cancelAnimationFrame(resizeFrame);
+    const bottomRow = document.createElement("div");
+    bottomRow.className = `${MOBILE_ROW_CLASS} ${MOBILE_ROW_CLASS}--bottom`;
+
+    const splitIndex = Math.ceil(testimonials.length / 2);
+
+    testimonials.forEach((item, index) => {
+      const card = createCard(item);
+      if (!card) {
+        return;
       }
 
-      resizeFrame = requestAnimationFrame(() => {
-        resizeFrame = 0;
-        render();
-      });
-    },
-    { passive: true }
-  );
+      const row = index < splitIndex ? topRow : bottomRow;
+      row.appendChild(card);
+    });
+
+    topRow.hidden = topRow.childElementCount === 0;
+    bottomRow.hidden = bottomRow.childElementCount === 0;
+    grid.style.removeProperty("--testimonials-columns");
+    grid.replaceChildren(topRow, bottomRow);
+
+    startRowAutoScroll([topRow, bottomRow]);
+  };
+
+  const render = () => {
+    if (mobileRowMedia.matches) {
+      renderMobileRows();
+      return;
+    }
+
+    renderDesktop();
+  };
+
+  const bindMediaChange = (mediaQueryList, callback) => {
+    if (!mediaQueryList || typeof callback !== "function") {
+      return;
+    }
+
+    if (typeof mediaQueryList.addEventListener === "function") {
+      mediaQueryList.addEventListener("change", callback);
+      return;
+    }
+
+    if (typeof mediaQueryList.addListener === "function") {
+      mediaQueryList.addListener(callback);
+    }
+  };
+
+  let renderFrame = 0;
+  const requestRender = () => {
+    if (renderFrame) {
+      return;
+    }
+    renderFrame = requestAnimationFrame(() => {
+      renderFrame = 0;
+      render();
+    });
+  };
+
+  window.addEventListener("resize", requestRender, { passive: true });
+  window.addEventListener("orientationchange", requestRender, { passive: true });
+  window.addEventListener("load", requestRender, { once: true });
+  bindMediaChange(mobileRowMedia, requestRender);
+  bindMediaChange(reduceMotionMedia, requestRender);
 
   const init = async () => {
     testimonials = await loadTestimonialsFromHome();
-    render();
+    requestRender();
   };
 
   void init();

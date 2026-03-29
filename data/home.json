@@ -21,11 +21,11 @@
       "quattro_formaggi_truffle",
       "pan_ciabatta",
       "tiramisu",
-      "focaccia_rellena",
       "margherita_sbagliata",
       "filetti",
       "diavola",
-      "margherita"
+      "margherita",
+      "salsiccia_vino_miele"
     ],
     "limit": 8
   },
@@ -61,19 +61,19 @@
     "title": "Figata en tu casa",
     "subtitle": "Pide por nuestras plataformas oficiales y recibe la pizza recien horneada donde estes, o para llevar.",
     "links": {
-      "pedidosya": "#",
-      "ubereats": "#",
+      "pedidosya": "https://www.pedidosya.com.do/restaurantes/santo-domingo-este/figata-pizza--wine-6e476d9c-0566-454d-9aee-7214ab252d8d-menu",
+      "ubereats": "https://www.ubereats.com/do/store/figata-pizza-%26-wine/xMEOF-BQWI-8XhYrgbY9rQ?srsltid=AfmBOooliggv8s3ofA_Jd0oBhg0rKPWvtlzeyzAAyLm13Ue6tChHGAWM",
       "takeout": "",
       "whatsapp": ""
     },
     "platforms": {
       "pedidosya": {
-        "url": "#",
+        "url": "https://www.pedidosya.com.do/restaurantes/santo-domingo-este/figata-pizza--wine-6e476d9c-0566-454d-9aee-7214ab252d8d-menu",
         "icon": "assets/svg-icons/pedidosya.svg",
         "iconSize": 40
       },
       "ubereats": {
-        "url": "#",
+        "url": "https://www.ubereats.com/do/store/figata-pizza-%26-wine/xMEOF-BQWI-8XhYrgbY9rQ?srsltid=AfmBOooliggv8s3ofA_Jd0oBhg0rKPWvtlzeyzAAyLm13Ue6tChHGAWM",
         "icon": "assets/svg-icons/uber-eats.svg",
         "iconSize": 32
       },
@@ -125,10 +125,6 @@
         "url": "/menu/"
       },
       {
-        "label": "Eventos",
-        "url": "/eventos/"
-      },
-      {
         "label": "Nosotros",
         "url": "#nosotros"
       },
@@ -145,7 +141,7 @@
   "testimonials": {
     "enabled": true,
     "title": "Historias que nacen en nuestra mesa",
-    "subtitle": "Clientes que volvieron por la masa, el fuego y el ambiente de Figata.",
+    "subtitle": "Clientes que volvieron por la masa, el fuego y\nel ambiente de Figata.",
     "items": [
       {
         "name": "Awilda Suero",
@@ -218,10 +214,6 @@
             "url": "#nosotros"
           },
           {
-            "label": "FAQs",
-            "url": "#faqs"
-          },
-          {
             "label": "Eventos",
             "url": "/eventos/"
           }
@@ -232,15 +224,15 @@
         "links": [
           {
             "label": "Instagram",
-            "url": ""
+            "url": "https://www.instagram.com/pizzafigata/"
           },
           {
             "label": "TikTok",
-            "url": ""
+            "url": "https://www.tiktok.com/@pizzafigata"
           },
           {
             "label": "Trip Advisor",
-            "url": ""
+            "url": "https://www.tripadvisor.es/Restaurant_Review-g13199011-d32990362-Reviews-Figata_Pizza_Wine-Santo_Domingo_Este_Santo_Domingo_Province_Dominican_Republic.html"
           }
         ]
       },
@@ -254,9 +246,9 @@
       "url": "#ubicacion"
     },
     "socials": {
-      "instagram": "",
-      "tiktok": "",
-      "tripadvisor": ""
+      "instagram": "https://www.instagram.com/pizzafigata/",
+      "tiktok": "https://www.tiktok.com/@pizzafigata",
+      "tripadvisor": "https://www.tripadvisor.es/Restaurant_Review-g13199011-d32990362-Reviews-Figata_Pizza_Wine-Santo_Domingo_Este_Santo_Domingo_Province_Dominican_Republic.html"
     },
     "note": ""
   },

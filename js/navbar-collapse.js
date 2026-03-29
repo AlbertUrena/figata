@@ -9,6 +9,8 @@
   const brandText = document.querySelector(".navbar__brand-text");
   const links = document.querySelector(".navbar__links");
   const actions = document.querySelector(".navbar__actions");
+  const heroMedia = hero ? hero.querySelector(".hero__media") : null;
+  const heroTitle = hero ? hero.querySelector(".hero__title") : null;
 
   if (!header || !navbar || !navInner) {
     return;
@@ -194,28 +196,69 @@
     hasFallbackScrollThreshold = true;
   };
 
+  const getThresholdAnchor = () => {
+    if (!hero) {
+      return null;
+    }
+
+    if (isMobileViewport() && heroMedia instanceof HTMLElement) {
+      return heroMedia;
+    }
+
+    return hero;
+  };
+
   const ensureSentinel = () => {
-    if (sentinel && sentinel.isConnected) {
+    const anchor = getThresholdAnchor();
+    if (!(anchor instanceof HTMLElement)) {
+      return null;
+    }
+
+    if (sentinel && sentinel.isConnected && sentinel.parentElement === anchor) {
       return sentinel;
     }
 
-    sentinel = document.createElement("div");
-    sentinel.dataset.navCollapseSentinel = "true";
-    sentinel.setAttribute("aria-hidden", "true");
-    sentinel.style.position = "absolute";
-    sentinel.style.left = "0";
-    sentinel.style.right = "0";
-    sentinel.style.height = "1px";
-    sentinel.style.pointerEvents = "none";
+    if (!sentinel) {
+      sentinel = document.createElement("div");
+      sentinel.dataset.navCollapseSentinel = "true";
+      sentinel.setAttribute("aria-hidden", "true");
+      sentinel.style.position = "absolute";
+      sentinel.style.left = "0";
+      sentinel.style.right = "0";
+      sentinel.style.height = "1px";
+      sentinel.style.pointerEvents = "none";
+    }
 
-    hero.appendChild(sentinel);
+    anchor.appendChild(sentinel);
     return sentinel;
   };
 
   const placeSentinel = () => {
     const el = ensureSentinel();
-    const offset = Math.max(0, Math.round(getNavbarHeight() + THRESHOLD_OFFSET));
+    if (!el) {
+      return;
+    }
+    const mobileTitleThresholdAvailable =
+      isMobileViewport() &&
+      heroMedia instanceof HTMLElement &&
+      heroTitle instanceof HTMLElement;
 
+    if (mobileTitleThresholdAvailable) {
+      const heroRect = heroMedia.getBoundingClientRect();
+      const titleRect = heroTitle.getBoundingClientRect();
+      const titleTopWithinHero = titleRect.top - heroRect.top;
+      const collapsePoint = Math.max(
+        0,
+        Math.round(titleTopWithinHero - getNavbarHeight())
+      );
+
+      el.style.top = `${collapsePoint}px`;
+      el.style.bottom = "auto";
+      return;
+    }
+
+    const offset = Math.max(0, Math.round(getNavbarHeight() + THRESHOLD_OFFSET));
+    el.style.top = "auto";
     el.style.bottom = `${offset}px`;
   };
 
@@ -331,6 +374,16 @@
 
     if (isForcedMobileCollapse()) {
       return true;
+    }
+
+    if (
+      isMobileViewport() &&
+      heroMedia instanceof HTMLElement &&
+      heroTitle instanceof HTMLElement
+    ) {
+      const headerBottom = header.getBoundingClientRect().bottom;
+      const titleTop = heroTitle.getBoundingClientRect().top;
+      return headerBottom >= titleTop;
     }
 
     if (hero) {

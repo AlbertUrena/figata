@@ -14,6 +14,8 @@ const TESTIMONIALS_STARS_MIN = 1;
 const TESTIMONIALS_STARS_MAX = 5;
 const FOOTER_COLUMNS_COUNT = 3;
 const FOOTER_LINKS_LIMIT = 8;
+const HOURS_DAY_ORDER = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+const HOURS_RANGE_PATTERN = /^(\d{2}):(\d{2})-(\d{2}):(\d{2})$/;
 
 const readJson = (filePath, label) => {
   try {
@@ -69,6 +71,22 @@ const assertStringIfDefined = (value, message) => {
   }
 };
 
+const isValidHoursRange = (value) => {
+  if (!isNonEmptyString(value)) {
+    return false;
+  }
+
+  const match = HOURS_RANGE_PATTERN.exec(value.trim());
+  if (!match) {
+    return false;
+  }
+
+  const start = Number(match[1]) * 60 + Number(match[2]);
+  const end = Number(match[3]) * 60 + Number(match[4]);
+
+  return start >= 0 && end > start && end <= 24 * 60;
+};
+
 const home = readJson(homePath, 'data/home.json');
 const menu = readJson(menuPath, 'data/menu.json');
 
@@ -76,6 +94,7 @@ if (home && menu) {
   const requiredTopLevel = [
     'hero',
     'popular',
+    'mobileHours',
     'menu_page',
     'menu_detail_editorial',
     'eventsPreview',
@@ -160,6 +179,104 @@ if (home && menu) {
     }
   } else {
     errors.push('popular debe ser un objeto.');
+  }
+
+  if (isObject(home.mobileHours)) {
+    assert(
+      typeof home.mobileHours.enabled === 'boolean',
+      'mobileHours.enabled debe ser boolean.'
+    );
+    assert(isNonEmptyString(home.mobileHours.title), 'mobileHours.title es requerido.');
+    assert(isNonEmptyString(home.mobileHours.subtitle), 'mobileHours.subtitle es requerido.');
+    assert(isNonEmptyString(home.mobileHours.timezone), 'mobileHours.timezone es requerido.');
+    assert(
+      Number.isFinite(Number(home.mobileHours.openSoonMinutes)) &&
+        Number(home.mobileHours.openSoonMinutes) > 0,
+      'mobileHours.openSoonMinutes debe ser número mayor que 0.'
+    );
+    assert(
+      Number.isFinite(Number(home.mobileHours.closeSoonMinutes)) &&
+        Number(home.mobileHours.closeSoonMinutes) > 0,
+      'mobileHours.closeSoonMinutes debe ser número mayor que 0.'
+    );
+    assert(isObject(home.mobileHours.baseWeek), 'mobileHours.baseWeek debe ser objeto.');
+
+    if (isObject(home.mobileHours.baseWeek)) {
+      HOURS_DAY_ORDER.forEach((dayKey) => {
+        assert(dayKey in home.mobileHours.baseWeek, `mobileHours.baseWeek.${dayKey} es requerido.`);
+        const value = home.mobileHours.baseWeek[dayKey];
+        const isClosed = value === null || value === 'Cerrado' || value === 'closed';
+        assert(
+          isClosed || isValidHoursRange(value),
+          `mobileHours.baseWeek.${dayKey} debe ser null/"Cerrado" o rango HH:MM-HH:MM.`
+        );
+      });
+    }
+
+    if ('weeklyOverrides' in home.mobileHours) {
+      assert(
+        Array.isArray(home.mobileHours.weeklyOverrides),
+        'mobileHours.weeklyOverrides debe ser array.'
+      );
+      if (Array.isArray(home.mobileHours.weeklyOverrides)) {
+        home.mobileHours.weeklyOverrides.forEach((entry, index) => {
+          assert(
+            isObject(entry),
+            `mobileHours.weeklyOverrides[${index}] debe ser objeto.`
+          );
+          if (!isObject(entry)) return;
+
+          assert(
+            HOURS_DAY_ORDER.includes(entry.day),
+            `mobileHours.weeklyOverrides[${index}].day debe ser uno de: ${HOURS_DAY_ORDER.join(', ')}.`
+          );
+          assert(
+            typeof entry.closed === 'boolean',
+            `mobileHours.weeklyOverrides[${index}].closed debe ser boolean.`
+          );
+
+          if (entry.closed === false) {
+            assert(
+              isValidHoursRange(entry.hours),
+              `mobileHours.weeklyOverrides[${index}].hours debe ser rango HH:MM-HH:MM cuando closed=false.`
+            );
+          }
+        });
+      }
+    }
+
+    if ('dateOverrides' in home.mobileHours) {
+      assert(
+        Array.isArray(home.mobileHours.dateOverrides),
+        'mobileHours.dateOverrides debe ser array.'
+      );
+      if (Array.isArray(home.mobileHours.dateOverrides)) {
+        home.mobileHours.dateOverrides.forEach((entry, index) => {
+          assert(
+            isObject(entry),
+            `mobileHours.dateOverrides[${index}] debe ser objeto.`
+          );
+          if (!isObject(entry)) return;
+
+          assert(
+            /^\d{4}-\d{2}-\d{2}$/.test(entry.date || ''),
+            `mobileHours.dateOverrides[${index}].date debe tener formato YYYY-MM-DD.`
+          );
+          assert(
+            typeof entry.closed === 'boolean',
+            `mobileHours.dateOverrides[${index}].closed debe ser boolean.`
+          );
+          if (entry.closed === false) {
+            assert(
+              isValidHoursRange(entry.hours),
+              `mobileHours.dateOverrides[${index}].hours debe ser rango HH:MM-HH:MM cuando closed=false.`
+            );
+          }
+        });
+      }
+    }
+  } else {
+    errors.push('mobileHours debe ser un objeto.');
   }
 
   if (isObject(home.eventsPreview)) {
@@ -702,7 +819,7 @@ if (home && menu) {
   }
 
   if (isObject(home.sections)) {
-    ['navbar', 'hero', 'popular', 'events', 'delivery', 'reservation', 'testimonials', 'footer'].forEach((key) => {
+    ['navbar', 'hero', 'popular', 'hours', 'events', 'delivery', 'reservation', 'testimonials', 'footer'].forEach((key) => {
       assert(typeof home.sections[key] === 'boolean', `sections.${key} debe ser boolean.`);
     });
 

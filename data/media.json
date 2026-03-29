@@ -1,7 +1,7 @@
 {
   "version": 2,
   "schema": "figata.media.v2",
-  "updatedAt": "2026-03-25T15:27:45.070Z",
+  "updatedAt": "2026-03-28T20:35:43.855Z",
   "updatedBy": "admin-app",
   "notes": "Mapa oficial de media por item. Si una variante falta, el frontend aplica fallback controlado.",
   "items": {
@@ -117,7 +117,11 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "card": "assets/menu/entradas/focaccia-rellena.webp",
+      "modal": "assets/menu/entradas/focaccia-rellena.webp",
+      "hover": "",
+      "gallery": []
     },
     "margherita": {
       "source": "assets/menu/pizzas/clasica/margherita.webp",

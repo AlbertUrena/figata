@@ -42,6 +42,12 @@
   const PAGE_PUSH_Y_PX = -200;
   const COVER_EXIT_Y_PERCENT = -100.2;
   const HOME_FEATURED_LIMIT = 8;
+  const MOBILE_ROW_CAROUSEL_QUERY = "(max-width: 1023px)";
+  const ROW_AUTOSCROLL_SPEED_PX_PER_SECOND = 42;
+  const ROW_AUTOSCROLL_MAX_DELTA_SECONDS = 0.05;
+  const ROW_AUTOSCROLL_CLONE_ATTR = "data-row-autoscroll-clone";
+  const ROW_AUTOSCROLL_TRACK_CLASS = "mas-pedidas__row-track";
+  const ROW_AUTOSCROLL_MAX_TRACK_COPIES = 8;
   const COVER_COLOR = "#143f2b";
   const POWER3_OUT_EASING = "cubic-bezier(0.215, 0.61, 0.355, 1)";
 
@@ -202,6 +208,11 @@
   const previewTransitionPath = previewTransitionCover.querySelector(".preview-transition-cover__bg");
   const pagePushTarget = document.querySelector("main");
   let previewInfoAnimations = [];
+  const mobileRowCarouselMedia = window.matchMedia(MOBILE_ROW_CAROUSEL_QUERY);
+  let rowAutoScrollRafId = 0;
+  let rowAutoScrollStates = [];
+  let rowAutoScrollCleanup = [];
+  let rowAutoScrollLastTs = 0;
 
   const formatNumber = (value) => Number(value.toFixed(2));
 
@@ -675,6 +686,72 @@
       (item && (item.description || item.descriptionLong || item.descriptionShort)) || ""
     ).trim();
 
+  const groupThousandsWithDot = (amount) =>
+    String(amount).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+  const normalizePriceStringToNumber = (rawValue) => {
+    const raw = String(rawValue || "").trim();
+    if (!raw) {
+      return NaN;
+    }
+
+    let normalized = raw.replace(/[^\d.,-]/g, "");
+    if (!normalized) {
+      return NaN;
+    }
+
+    const hasComma = normalized.includes(",");
+    const hasDot = normalized.includes(".");
+
+    if (hasComma && hasDot) {
+      const lastComma = normalized.lastIndexOf(",");
+      const lastDot = normalized.lastIndexOf(".");
+      const decimalSeparator = lastComma > lastDot ? "," : ".";
+      const groupSeparator = decimalSeparator === "," ? "." : ",";
+
+      normalized = normalized.split(groupSeparator).join("");
+      if (decimalSeparator === ",") {
+        normalized = normalized.replace(",", ".");
+      }
+    } else if (hasComma) {
+      const parts = normalized.split(",");
+      if (parts.length === 2 && parts[1].length <= 2) {
+        normalized = `${parts[0]}.${parts[1]}`;
+      } else {
+        normalized = parts.join("");
+      }
+    } else if (hasDot) {
+      const parts = normalized.split(".");
+      if (!(parts.length === 2 && parts[1].length <= 2)) {
+        normalized = parts.join("");
+      }
+    }
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : NaN;
+  };
+
+  const formatHomePrice = (item) => {
+    const numericPrice =
+      Number.isFinite(Number(item?.price))
+        ? Number(item.price)
+        : normalizePriceStringToNumber(item?.priceFormatted);
+
+    if (Number.isFinite(numericPrice)) {
+      const rounded = Math.max(0, Math.round(numericPrice));
+      return `$${groupThousandsWithDot(rounded)}`;
+    }
+
+    const fallback = String(item?.priceFormatted || "").trim();
+    if (!fallback) {
+      return "";
+    }
+
+    return fallback
+      .replace(/^\s*RD\$/i, "$")
+      .replace(/([.,]\d{1,2})\s*$/, "");
+  };
+
   const toCardViewModel = (item, media) => ({
     id: item.id,
     slug: item.slug,
@@ -683,7 +760,7 @@
     previewDescription: resolveItemDescriptionText(item),
     ingredients: Array.isArray(item.ingredients) ? item.ingredients : [],
     reviews: item.reviews || "",
-    price: item.priceFormatted || "",
+    price: formatHomePrice(item),
     image: media.card || "",
     hoverImage: media.hover || "",
     modalImage: media.modal || media.card || "",
@@ -713,6 +790,435 @@
     Array.isArray(value)
       ? value.map((id) => String(id || "").trim()).filter(Boolean)
       : [];
+
+  const stopRowAutoScroll = () => {
+    if (rowAutoScrollRafId) {
+      cancelAnimationFrame(rowAutoScrollRafId);
+      rowAutoScrollRafId = 0;
+    }
+
+    rowAutoScrollStates.forEach((state) => {
+      const row = state?.row;
+      const track = state?.track;
+      if (track instanceof HTMLElement) {
+        track.style.transform = "";
+        track.style.willChange = "";
+      }
+      if (row instanceof HTMLElement) {
+        const mountedTrack = row.firstElementChild;
+        if (
+          mountedTrack instanceof HTMLElement &&
+          mountedTrack.classList.contains(ROW_AUTOSCROLL_TRACK_CLASS)
+        ) {
+          const sourceCards = Array.from(mountedTrack.children).filter(
+            (node) =>
+              node instanceof HTMLElement &&
+              node.classList.contains("mas-pedidas-card") &&
+              !node.hasAttribute(ROW_AUTOSCROLL_CLONE_ATTR)
+          );
+          row.replaceChildren(...sourceCards);
+        }
+      }
+    });
+
+    rowAutoScrollCleanup.forEach((dispose) => {
+      try {
+        dispose();
+      } catch (_) {
+        // no-op
+      }
+    });
+    rowAutoScrollCleanup = [];
+    rowAutoScrollStates = [];
+    rowAutoScrollLastTs = 0;
+  };
+
+  const getRowGapPx = (row) => {
+    if (!(row instanceof HTMLElement)) {
+      return 0;
+    }
+
+    const styles = window.getComputedStyle(row);
+    const gap = parseFloat(styles.columnGap || styles.gap || "0");
+    return Number.isFinite(gap) ? gap : 0;
+  };
+
+  const getCardWidthPx = (card) => {
+    if (!(card instanceof HTMLElement)) {
+      return 0;
+    }
+
+    const width = card.getBoundingClientRect().width || card.offsetWidth || 0;
+    if (!(width > 0)) {
+      return 0;
+    }
+
+    return width;
+  };
+
+  const getRowCycleWidthPx = (cards, gapPx) => {
+    if (!Array.isArray(cards) || cards.length < 2) {
+      return 0;
+    }
+
+    const totalWidth = cards.reduce((sum, card) => sum + getCardWidthPx(card), 0);
+    if (!(totalWidth > 0)) {
+      return 0;
+    }
+
+    const safeGap = Number.isFinite(gapPx) ? gapPx : 0;
+    return totalWidth + safeGap * cards.length;
+  };
+
+  const createRowAutoScrollClone = (card) => {
+    if (!(card instanceof HTMLElement)) {
+      return null;
+    }
+
+    const clone = card.cloneNode(true);
+    if (!(clone instanceof HTMLElement)) {
+      return null;
+    }
+
+    clone.setAttribute(ROW_AUTOSCROLL_CLONE_ATTR, "true");
+    clone.setAttribute("aria-hidden", "true");
+    if ("inert" in clone) {
+      clone.inert = true;
+    }
+    clone.querySelectorAll("a, button, input, select, textarea, [tabindex]").forEach((element) => {
+      if (!(element instanceof HTMLElement)) {
+        return;
+      }
+
+      element.setAttribute("tabindex", "-1");
+      if ("disabled" in element) {
+        element.disabled = true;
+      }
+    });
+
+    return clone;
+  };
+
+  const wrapRowOffset = (state) => {
+    const cycleWidthPx = state?.cycleWidthPx;
+    if (!Number.isFinite(cycleWidthPx) || !(cycleWidthPx > 0)) {
+      return;
+    }
+
+    if (state.direction < 0) {
+      while (state.offsetPx <= -cycleWidthPx) {
+        state.offsetPx += cycleWidthPx;
+      }
+
+      while (state.offsetPx > 0) {
+        state.offsetPx -= cycleWidthPx;
+      }
+      return;
+    }
+
+    while (state.offsetPx >= 0) {
+      state.offsetPx -= cycleWidthPx;
+    }
+
+    while (state.offsetPx < -cycleWidthPx) {
+      state.offsetPx += cycleWidthPx;
+    }
+  };
+
+  const applyRowOffset = (state) => {
+    const track = state?.track;
+    if (!(track instanceof HTMLElement)) {
+      return;
+    }
+
+    track.style.transform = `translate3d(${state.offsetPx.toFixed(3)}px, 0, 0)`;
+  };
+
+  const syncRowAutoScrollState = (state) => {
+    const row = state?.row;
+    if (!(row instanceof HTMLElement)) {
+      return false;
+    }
+
+    const existingTrack = row.firstElementChild;
+    if (
+      existingTrack instanceof HTMLElement &&
+      existingTrack.classList.contains(ROW_AUTOSCROLL_TRACK_CLASS)
+    ) {
+      const sourceCards = Array.from(existingTrack.children).filter(
+        (node) =>
+          node instanceof HTMLElement &&
+          node.classList.contains("mas-pedidas-card") &&
+          !node.hasAttribute(ROW_AUTOSCROLL_CLONE_ATTR)
+      );
+      row.replaceChildren(...sourceCards);
+    }
+
+    const sourceCards = Array.from(row.children).filter(
+      (node) => node instanceof HTMLElement && node.classList.contains("mas-pedidas-card")
+    );
+    if (sourceCards.length < 2) {
+      state.track = null;
+      state.cycleWidthPx = 0;
+      state.offsetPx = 0;
+      return false;
+    }
+
+    const track = document.createElement("div");
+    track.className = ROW_AUTOSCROLL_TRACK_CLASS;
+    sourceCards.forEach((card) => track.appendChild(card));
+    row.replaceChildren(track);
+
+    state.gapPx = getRowGapPx(row);
+    const cycleWidthPx = getRowCycleWidthPx(sourceCards, state.gapPx);
+    if (!(cycleWidthPx > 0)) {
+      row.replaceChildren(...sourceCards);
+      state.track = null;
+      state.cycleWidthPx = 0;
+      state.offsetPx = 0;
+      return false;
+    }
+
+    const minTrackWidthPx = (row.getBoundingClientRect().width || row.clientWidth || 0) + cycleWidthPx;
+    let copies = 1;
+
+    while (track.scrollWidth < minTrackWidthPx - 0.5 && copies < ROW_AUTOSCROLL_MAX_TRACK_COPIES) {
+      sourceCards.forEach((card) => {
+        const clone = createRowAutoScrollClone(card);
+        if (clone) {
+          track.appendChild(clone);
+        }
+      });
+      copies += 1;
+    }
+
+    state.track = track;
+    state.cycleWidthPx = cycleWidthPx;
+    state.offsetPx = state.direction > 0 ? -cycleWidthPx : 0;
+    wrapRowOffset(state);
+    track.style.willChange = "transform";
+    applyRowOffset(state);
+    return true;
+  };
+
+  const runRowAutoScrollFrame = (timestamp) => {
+    rowAutoScrollRafId = 0;
+
+    if (!rowAutoScrollStates.length) {
+      return;
+    }
+
+    if (!rowAutoScrollLastTs) {
+      rowAutoScrollLastTs = timestamp;
+    }
+
+    const deltaSeconds = Math.min(
+      Math.max((timestamp - rowAutoScrollLastTs) / 1000, 0),
+      ROW_AUTOSCROLL_MAX_DELTA_SECONDS
+    );
+    rowAutoScrollLastTs = timestamp;
+
+    if (deltaSeconds > 0) {
+      rowAutoScrollStates.forEach((state) => {
+        const { row, track, direction } = state;
+        if (
+          !(row instanceof HTMLElement) ||
+          !(track instanceof HTMLElement) ||
+          !row.isConnected ||
+          !track.isConnected ||
+          row.hidden
+        ) {
+          return;
+        }
+
+        const delta = ROW_AUTOSCROLL_SPEED_PX_PER_SECOND * deltaSeconds;
+        state.offsetPx += direction * delta;
+        wrapRowOffset(state);
+        applyRowOffset(state);
+      });
+    }
+
+    rowAutoScrollRafId = requestAnimationFrame(runRowAutoScrollFrame);
+  };
+
+  const requestRowAutoScrollFrame = () => {
+    if (rowAutoScrollRafId) {
+      return;
+    }
+
+    rowAutoScrollRafId = requestAnimationFrame(runRowAutoScrollFrame);
+  };
+
+  const startRowAutoScroll = (rows) => {
+    stopRowAutoScroll();
+
+    if (!mobileRowCarouselMedia.matches || !Array.isArray(rows) || rows.length === 0) {
+      return;
+    }
+
+    const states = [];
+
+    rows.forEach((row, index) => {
+      if (!(row instanceof HTMLElement) || row.hidden) {
+        return;
+      }
+
+      const cards = Array.from(row.children).filter(
+        (node) => node instanceof HTMLElement && node.classList.contains("mas-pedidas-card")
+      );
+      if (cards.length < 2) {
+        return;
+      }
+
+      const state = {
+        row,
+        track: null,
+        direction: index === 0 ? -1 : 1,
+        offsetPx: 0,
+        gapPx: getRowGapPx(row),
+        cycleWidthPx: 0,
+      };
+
+      if (syncRowAutoScrollState(state)) {
+        states.push(state);
+      }
+    });
+
+    if (!states.length) {
+      return;
+    }
+
+    rowAutoScrollStates = states;
+
+    const onMediaChange = () => {
+      if (!mobileRowCarouselMedia.matches) {
+        if (rowAutoScrollRafId) {
+          cancelAnimationFrame(rowAutoScrollRafId);
+          rowAutoScrollRafId = 0;
+        }
+        rowAutoScrollLastTs = 0;
+        rowAutoScrollStates.forEach((state) => {
+          const row = state?.row;
+          const track = state?.track;
+          if (track instanceof HTMLElement) {
+            track.style.transform = "";
+            track.style.willChange = "";
+          }
+          if (row instanceof HTMLElement) {
+            const mountedTrack = row.firstElementChild;
+            if (
+              mountedTrack instanceof HTMLElement &&
+              mountedTrack.classList.contains(ROW_AUTOSCROLL_TRACK_CLASS)
+            ) {
+              const sourceCards = Array.from(mountedTrack.children).filter(
+                (node) =>
+                  node instanceof HTMLElement &&
+                  node.classList.contains("mas-pedidas-card") &&
+                  !node.hasAttribute(ROW_AUTOSCROLL_CLONE_ATTR)
+              );
+              row.replaceChildren(...sourceCards);
+            }
+          }
+        });
+        return;
+      }
+
+      rowAutoScrollStates.forEach((state) => {
+        syncRowAutoScrollState(state);
+      });
+      rowAutoScrollLastTs = 0;
+      requestRowAutoScrollFrame();
+    };
+
+    const onVisibilityChange = () => {
+      if (!document.hidden) {
+        rowAutoScrollLastTs = 0;
+      }
+    };
+
+    const onResize = () => {
+      rowAutoScrollStates.forEach((state) => {
+        syncRowAutoScrollState(state);
+      });
+      rowAutoScrollLastTs = 0;
+    };
+
+    if (typeof mobileRowCarouselMedia.addEventListener === "function") {
+      mobileRowCarouselMedia.addEventListener("change", onMediaChange);
+      rowAutoScrollCleanup.push(() =>
+        mobileRowCarouselMedia.removeEventListener("change", onMediaChange)
+      );
+    } else if (typeof mobileRowCarouselMedia.addListener === "function") {
+      mobileRowCarouselMedia.addListener(onMediaChange);
+      rowAutoScrollCleanup.push(() => mobileRowCarouselMedia.removeListener(onMediaChange));
+    }
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("resize", onResize, { passive: true });
+    rowAutoScrollCleanup.push(() =>
+      document.removeEventListener("visibilitychange", onVisibilityChange)
+    );
+    rowAutoScrollCleanup.push(() => window.removeEventListener("resize", onResize));
+
+    rowAutoScrollLastTs = 0;
+    requestRowAutoScrollFrame();
+  };
+
+  const bindRowCardInteractions = (rows, cardById) => {
+    if (!Array.isArray(rows) || !(cardById instanceof Map)) {
+      return;
+    }
+
+    rows.forEach((row) => {
+      if (!(row instanceof HTMLElement)) {
+        return;
+      }
+
+      row.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) {
+          return;
+        }
+
+        const button = target.closest(".mas-pedidas-card__button");
+        if (!(button instanceof HTMLButtonElement) || !row.contains(button)) {
+          return;
+        }
+
+        const article = button.closest(".mas-pedidas-card");
+        const cardId = article?.dataset?.cardId || "";
+        const card = cardById.get(cardId);
+        if (!card) {
+          return;
+        }
+
+        void openPreview(card);
+      });
+
+      row.addEventListener("pointerover", (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) {
+          return;
+        }
+
+        const article = target.closest(".mas-pedidas-card");
+        if (!(article instanceof HTMLElement) || !row.contains(article)) {
+          return;
+        }
+
+        const cardId = article.dataset.cardId || "";
+        if (!cardId || article.dataset.prefetchDone === "1") {
+          return;
+        }
+
+        article.dataset.prefetchDone = "1";
+
+        if (mediaApi?.prefetch) {
+          mediaApi.prefetch(cardId, "modal");
+        }
+      });
+    });
+  };
 
   const resolvePopularSelection = async () => {
     const fallback = {
@@ -745,6 +1251,8 @@
   };
 
   const renderFeaturedCards = async () => {
+    stopRowAutoScroll();
+
     let featuredItems = [];
     const selection = await resolvePopularSelection();
 
@@ -768,11 +1276,18 @@
 
     featuredItems = featuredItems.slice(0, HOME_FEATURED_LIMIT);
 
-    const fragment = document.createDocumentFragment();
+    const topRow = document.createElement("div");
+    topRow.className = "mas-pedidas__row mas-pedidas__row--top";
 
-    featuredItems.forEach((item) => {
+    const bottomRow = document.createElement("div");
+    bottomRow.className = "mas-pedidas__row mas-pedidas__row--bottom";
+    const cardById = new Map();
+    const splitIndex = Math.ceil(featuredItems.length / 2);
+
+    featuredItems.forEach((item, index) => {
       const mediaAssets = resolveItemMedia(item);
       const card = toCardViewModel(item, mediaAssets);
+      cardById.set(card.id, card);
       const node = template.content.cloneNode(true);
       const article = node.querySelector(".mas-pedidas-card");
       const mediaContainer = node.querySelector(".mas-pedidas-card__media");
@@ -800,6 +1315,7 @@
       description.textContent = card.description;
       price.textContent = card.price;
       article.classList.toggle("is-unavailable", !card.available);
+      article.dataset.cardId = card.id;
 
       const detailsLabel = detailsButton.querySelector("span");
       if (detailsLabel) {
@@ -846,24 +1362,16 @@
         mediaContainer.classList.add("is-empty");
       }
 
-      detailsButton.addEventListener("click", () => {
-        void openPreview(card);
-      });
-
-      article.addEventListener(
-        "pointerenter",
-        () => {
-          if (mediaApi?.prefetch) {
-            mediaApi.prefetch(card.id, "modal");
-          }
-        },
-        { once: true }
-      );
-
-      fragment.appendChild(node);
+      const targetRow = index < splitIndex ? topRow : bottomRow;
+      targetRow.appendChild(node);
     });
 
-    grid.replaceChildren(fragment);
+    const renderedRows = [topRow, bottomRow];
+    topRow.hidden = topRow.childElementCount === 0;
+    bottomRow.hidden = bottomRow.childElementCount === 0;
+    grid.replaceChildren(topRow, bottomRow);
+    bindRowCardInteractions(renderedRows, cardById);
+    startRowAutoScroll(renderedRows);
     preloadFeaturedModalImages(featuredItems);
   };
 

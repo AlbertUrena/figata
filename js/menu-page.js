@@ -392,6 +392,24 @@
     aromatico: 'assets/menu/editorial/iconos/aromatico.webp',
     intensidad: 'assets/menu/editorial/iconos/intenso.webp',
   });
+  const DETAIL_SECTION_ICON_CONFIGS = Object.freeze({
+    history: Object.freeze({
+      viewBox: '0 -960 960 960',
+      path:
+        'M440-278v-394q-41-24-87-36t-93-12q-36 0-71.5 7T120-692v396q35-12 69.5-18t70.5-6q47 0 91.5 10.5T440-278Zm40 118q-48-38-104-59t-116-21q-42 0-82.5 11T100-198q-21 11-40.5-1T40-234v-482q0-11 5.5-21T62-752q46-24 96-36t102-12q74 0 126 17t112 52q11 6 16.5 14t5.5 21v418q44-21 88.5-31.5T700-320q36 0 70.5 6t69.5 18v-481q15 5 29.5 11t28.5 14q11 5 16.5 15t5.5 21v482q0 23-19.5 35t-40.5 1q-37-20-77.5-31T700-240q-60 0-116 21t-104 59Zm140-240v-440l120-40v440l-120 40Zm-340-99Z',
+      fill: 'currentColor',
+    }),
+    sensory: Object.freeze({
+      viewBox: '0 0 24 24',
+      path:
+        'M8.46447 15.5355C6.51185 13.5829 6.51185 10.4171 8.46447 8.46447M5.63592 18.364C2.1212 14.8493 2.1212 9.15077 5.63592 5.63605M15.5355 15.5355C17.4881 13.5829 17.4881 10.4171 15.5355 8.46447M18.364 18.364C21.8788 14.8493 21.8788 9.15077 18.364 5.63605M13 12.0001C13 12.5523 12.5523 13.0001 12 13.0001C11.4477 13.0001 11 12.5523 11 12.0001C11 11.4478 11.4477 11.0001 12 11.0001C12.5523 11.0001 13 11.4478 13 12.0001Z',
+      fill: 'none',
+      stroke: 'currentColor',
+      strokeWidth: '2',
+      strokeLinecap: 'round',
+      strokeLinejoin: 'round',
+    }),
+  });
   const DETAIL_SENSORY_AXIS_TOOLTIP_COPY = Object.freeze({
     dulce: Object.freeze({
       title: 'Dulzor',
@@ -792,6 +810,128 @@
   const isMobileCardViewport = () => MOBILE_CARD_QUERY.matches;
 
   const normalizeText = (value) => String(value || '').trim();
+  const resolveDetailPairingsTitleIconConfig = () => {
+    if (!(detailPairingTemplate instanceof HTMLTemplateElement)) {
+      return null;
+    }
+
+    const svgNode = detailPairingTemplate.content.querySelector(
+      '.menu-page-detail__pairing-icon svg'
+    );
+    if (!(svgNode instanceof Element)) {
+      return null;
+    }
+
+    const pathNode = svgNode.querySelector('path');
+    if (!(pathNode instanceof Element)) {
+      return null;
+    }
+
+    const path = normalizeText(pathNode.getAttribute('d'));
+    if (!path) {
+      return null;
+    }
+
+    return Object.freeze({
+      viewBox: normalizeText(svgNode.getAttribute('viewBox')) || '0 0 24 24',
+      path,
+      fill: normalizeText(pathNode.getAttribute('fill')) || 'currentColor',
+      stroke: normalizeText(pathNode.getAttribute('stroke')),
+      strokeWidth: normalizeText(pathNode.getAttribute('stroke-width')),
+      strokeLinecap: normalizeText(pathNode.getAttribute('stroke-linecap')),
+      strokeLinejoin: normalizeText(pathNode.getAttribute('stroke-linejoin')),
+      transform: normalizeText(pathNode.getAttribute('transform')),
+      iconColor: 'currentColor',
+    });
+  };
+  const detailPairingsTitleIconConfig = resolveDetailPairingsTitleIconConfig();
+  const setDetailSectionTitleWithIcon = ({ titleNode, titleText, iconConfig }) => {
+    if (!(titleNode instanceof HTMLElement)) {
+      return;
+    }
+
+    const resolvedIconConfig =
+      iconConfig &&
+      typeof iconConfig === 'object' &&
+      !Array.isArray(iconConfig)
+        ? iconConfig
+        : {};
+    const iconPath = normalizeText(resolvedIconConfig.path);
+
+    if (!iconPath) {
+      titleNode.classList.remove('menu-page-detail__section-title--with-icon');
+      titleNode.textContent = normalizeText(titleText);
+      return;
+    }
+
+    titleNode.classList.add('menu-page-detail__section-title--with-icon');
+
+    const labelNode = document.createElement('span');
+    labelNode.textContent = normalizeText(titleText);
+
+    const iconNode = document.createElement('span');
+    iconNode.className = 'menu-page-detail__section-title-icon';
+    iconNode.setAttribute('aria-hidden', 'true');
+    const iconColor = normalizeText(resolvedIconConfig.iconColor);
+    if (iconColor) {
+      iconNode.style.color = iconColor;
+    }
+
+    const iconSvg = document.createElementNS(DETAIL_SENSORY_RADAR_SVG_NS, 'svg');
+    iconSvg.setAttribute('viewBox', normalizeText(resolvedIconConfig.viewBox) || '0 -960 960 960');
+    iconSvg.setAttribute('width', '24px');
+    iconSvg.setAttribute('height', '24px');
+    iconSvg.setAttribute('focusable', 'false');
+    iconSvg.setAttribute('aria-hidden', 'true');
+
+    const iconPathNode = document.createElementNS(DETAIL_SENSORY_RADAR_SVG_NS, 'path');
+    iconPathNode.setAttribute('d', iconPath);
+    if (normalizeText(resolvedIconConfig.fill)) {
+      iconPathNode.setAttribute('fill', normalizeText(resolvedIconConfig.fill));
+    }
+    if (normalizeText(resolvedIconConfig.stroke)) {
+      iconPathNode.setAttribute('stroke', normalizeText(resolvedIconConfig.stroke));
+    }
+    if (normalizeText(resolvedIconConfig.strokeWidth)) {
+      iconPathNode.setAttribute('stroke-width', normalizeText(resolvedIconConfig.strokeWidth));
+    }
+    if (normalizeText(resolvedIconConfig.strokeLinecap)) {
+      iconPathNode.setAttribute('stroke-linecap', normalizeText(resolvedIconConfig.strokeLinecap));
+    }
+    if (normalizeText(resolvedIconConfig.strokeLinejoin)) {
+      iconPathNode.setAttribute(
+        'stroke-linejoin',
+        normalizeText(resolvedIconConfig.strokeLinejoin)
+      );
+    }
+    if (normalizeText(resolvedIconConfig.transform)) {
+      iconPathNode.setAttribute('transform', normalizeText(resolvedIconConfig.transform));
+    }
+    iconSvg.appendChild(iconPathNode);
+    iconNode.appendChild(iconSvg);
+    titleNode.replaceChildren(labelNode, iconNode);
+  };
+  const setDetailPairingsSectionTitle = (titleText) => {
+    setDetailSectionTitleWithIcon({
+      titleNode: detailPairingsTitle,
+      titleText,
+      iconConfig: detailPairingsTitleIconConfig,
+    });
+  };
+  const setDetailSensorySectionTitle = (titleText) => {
+    setDetailSectionTitleWithIcon({
+      titleNode: detailSensoryTitle,
+      titleText,
+      iconConfig: DETAIL_SECTION_ICON_CONFIGS.sensory,
+    });
+  };
+  const setDetailHistorySectionTitle = (titleText) => {
+    setDetailSectionTitleWithIcon({
+      titleNode: detailHistoryTitle,
+      titleText,
+      iconConfig: DETAIL_SECTION_ICON_CONFIGS.history,
+    });
+  };
   const resolveItemDescriptionText = (item) =>
     normalizeText(item?.description) ||
     normalizeText(item?.descriptionLong) ||
@@ -5506,11 +5646,10 @@
 
   const applyDetailEditorialCopyToDom = () => {
     const copy = menuDetailEditorialCopy || MENU_DETAIL_EDITORIAL_COPY_DEFAULTS;
-    if (detailSensoryTitle instanceof HTMLElement) {
-      detailSensoryTitle.textContent =
-        normalizeText(copy?.sensory?.sectionTitle) ||
-        DETAIL_DEFAULT_SECTION_COPY.sensoryTitle;
-    }
+    setDetailSensorySectionTitle(
+      normalizeText(copy?.sensory?.sectionTitle) ||
+        DETAIL_DEFAULT_SECTION_COPY.sensoryTitle
+    );
     if (detailSensorySubtitle instanceof HTMLElement) {
       const subtitle =
         normalizeText(copy?.sensory?.subtitle) ||
@@ -5534,21 +5673,19 @@
         normalizeText(copy?.sensory?.comparisonClearLabel) ||
         DETAIL_DEFAULT_SECTION_COPY.sensoryComparisonClear;
     }
-    if (detailPairingsTitle instanceof HTMLElement) {
-      detailPairingsTitle.textContent =
-        normalizeText(copy?.pairings?.sectionTitle) ||
-        DETAIL_DEFAULT_SECTION_COPY.pairingsTitle;
-    }
+    setDetailPairingsSectionTitle(
+      normalizeText(copy?.pairings?.sectionTitle) ||
+        DETAIL_DEFAULT_SECTION_COPY.pairingsTitle
+    );
     if (detailPairingsSubtitle instanceof HTMLElement) {
       detailPairingsSubtitle.textContent =
         normalizeText(copy?.pairings?.sectionSubtitle) ||
         DETAIL_DEFAULT_PAIRING_CONTENT.subtitle;
     }
-    if (detailHistoryTitle instanceof HTMLElement) {
-      detailHistoryTitle.textContent =
-        normalizeText(copy?.story?.sectionTitle) ||
-        DETAIL_DEFAULT_SECTION_COPY.storyTitle;
-    }
+    setDetailHistorySectionTitle(
+      normalizeText(copy?.story?.sectionTitle) ||
+        DETAIL_DEFAULT_SECTION_COPY.storyTitle
+    );
     if (compareModalTitle instanceof HTMLElement) {
       compareModalTitle.textContent =
         normalizeText(copy?.compareModal?.title) ||
@@ -8816,20 +8953,18 @@
       return;
     }
 
-    if (detailHistoryTitle instanceof HTMLElement) {
-      detailHistoryTitle.textContent =
-        normalizeText(menuDetailEditorialCopy?.story?.sectionTitle) ||
-        DETAIL_DEFAULT_SECTION_COPY.storyTitle;
-    }
+    setDetailHistorySectionTitle(
+      normalizeText(menuDetailEditorialCopy?.story?.sectionTitle) ||
+        DETAIL_DEFAULT_SECTION_COPY.storyTitle
+    );
     renderDetailStoryBodyFromText(story.body);
   };
 
   const clearDetailStoryContent = () => {
-    if (detailHistoryTitle instanceof HTMLElement) {
-      detailHistoryTitle.textContent =
-        normalizeText(menuDetailEditorialCopy?.story?.sectionTitle) ||
-        DETAIL_DEFAULT_SECTION_COPY.storyTitle;
-    }
+    setDetailHistorySectionTitle(
+      normalizeText(menuDetailEditorialCopy?.story?.sectionTitle) ||
+        DETAIL_DEFAULT_SECTION_COPY.storyTitle
+    );
     renderDetailStoryBodyFromText('');
   };
 

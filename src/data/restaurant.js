@@ -25,8 +25,8 @@
     brand: 'Figata',
     tagline: 'Autentica pizza napolitana con maridajes de vino',
     currency: 'DOP',
-    phone: '+1 809-000-0000',
-    whatsapp: 'https://wa.me/18090000000',
+    phone: '+1 (809) 524-5117',
+    whatsapp: 'https://wa.me/18095245117',
     reservationUrl: '#reservar',
     googleMapsUrl:
       'https://maps.google.com/?q=Calle+Costa+Rica+142%2C+Alma+Rosa+1%2C+Santo+Domingo+Este',
@@ -196,6 +196,9 @@
 
   const normalizeRestaurant = (restaurantInput = null) => {
     const source = isObject(restaurantInput) ? restaurantInput : {};
+    const contact = isObject(source.contact) ? source.contact : {};
+    const links = isObject(source.links) ? source.links : {};
+    const location = isObject(source.location) ? source.location : {};
 
     return {
       version: Number.isFinite(Number(source.version)) ? Number(source.version) : DEFAULT_RESTAURANT.version,
@@ -206,10 +209,13 @@
       brand: normalizeText(source.brand) || DEFAULT_RESTAURANT.brand,
       tagline: normalizeText(source.tagline) || DEFAULT_RESTAURANT.tagline,
       currency: normalizeUpper(source.currency) || DEFAULT_RESTAURANT.currency,
-      phone: normalizeText(source.phone) || DEFAULT_RESTAURANT.phone,
-      whatsapp: normalizeLink(source.whatsapp, DEFAULT_RESTAURANT.whatsapp),
-      reservationUrl: normalizeLink(source.reservationUrl, DEFAULT_RESTAURANT.reservationUrl),
-      googleMapsUrl: normalizeLink(source.googleMapsUrl, DEFAULT_RESTAURANT.googleMapsUrl),
+      phone: normalizeText(source.phone) || normalizeText(contact.phone) || DEFAULT_RESTAURANT.phone,
+      whatsapp: normalizeLink(source.whatsapp || contact.whatsapp, DEFAULT_RESTAURANT.whatsapp),
+      reservationUrl: normalizeLink(
+        source.reservationUrl || links.reservationUrl,
+        DEFAULT_RESTAURANT.reservationUrl
+      ),
+      googleMapsUrl: normalizeLink(source.googleMapsUrl || location.mapsUrl, DEFAULT_RESTAURANT.googleMapsUrl),
       address: normalizeAddress(source.address, DEFAULT_RESTAURANT.address),
       openingHours: normalizeOpeningHours(source.openingHours, DEFAULT_RESTAURANT.openingHours),
       openingHoursExceptions: Array.isArray(source.openingHoursExceptions)
