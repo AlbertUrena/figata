@@ -2784,6 +2784,21 @@ html.page-reload-transition main {
   flex: 0 1 auto;
 }
 
+.delivery-sheet--reviews .delivery-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delivery-sheet--reviews .delivery-action__icon {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 34px;
+  object-fit: contain;
+}
+
 body.home-page-body.delivery-sheet-open {
   overflow: hidden;
 }
@@ -3232,6 +3247,7 @@ body.home-page-body.delivery-sheet-open {
     --testimonials-mobile-row-gap: 10px;
     --testimonials-mobile-card-gap: 12px;
     --testimonials-mobile-row-edge-fade: 10px;
+    --testimonials-mobile-row-fade-rgb: 25 25 25;
     width: 100%;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -3249,27 +3265,42 @@ body.home-page-body.delivery-sheet-open {
     display: flex;
     align-items: stretch;
     gap: var(--testimonials-mobile-card-gap);
+    position: relative;
+    isolation: isolate;
     width: 100%;
     overflow: hidden;
     box-sizing: border-box;
     padding: 4px 0;
     touch-action: pan-y;
-    -webkit-mask-image: linear-gradient(
+  }
+
+  #testimonials.testimonials-section .testimonials-mobile-row::before,
+  #testimonials.testimonials-section .testimonials-mobile-row::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: var(--testimonials-mobile-row-edge-fade);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  #testimonials.testimonials-section .testimonials-mobile-row::before {
+    left: 0;
+    background: linear-gradient(
       to right,
-      transparent 0,
-      #000 var(--testimonials-mobile-row-edge-fade),
-      #000 calc(100% - var(--testimonials-mobile-row-edge-fade)),
-      transparent 100%
+      rgb(var(--testimonials-mobile-row-fade-rgb) / 1) 0%,
+      rgb(var(--testimonials-mobile-row-fade-rgb) / 0) 100%
     );
-    mask-image: linear-gradient(
-      to right,
-      transparent 0,
-      #000 var(--testimonials-mobile-row-edge-fade),
-      #000 calc(100% - var(--testimonials-mobile-row-edge-fade)),
-      transparent 100%
+  }
+
+  #testimonials.testimonials-section .testimonials-mobile-row::after {
+    right: 0;
+    background: linear-gradient(
+      to left,
+      rgb(var(--testimonials-mobile-row-fade-rgb) / 1) 0%,
+      rgb(var(--testimonials-mobile-row-fade-rgb) / 0) 100%
     );
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
   }
 
   #testimonials.testimonials-section .testimonials-mobile-row--top {
@@ -3284,6 +3315,8 @@ body.home-page-body.delivery-sheet-open {
     display: flex;
     align-items: stretch;
     gap: var(--testimonials-mobile-card-gap);
+    position: relative;
+    z-index: 1;
     flex: 0 0 auto;
     width: max-content;
     min-width: 100%;
@@ -3697,6 +3730,7 @@ body.home-page-body.delivery-sheet-open {
     --home-mobile-grid-gutter: calc(0.875rem * var(--home-mobile-card-reduce));
     --home-mobile-grid-row-gap: 0px;
     --home-mobile-row-edge-fade: 6px;
+    --home-mobile-row-fade-rgb: 25 25 25;
     --home-mobile-row-shadow-bleed: 10px;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -3713,36 +3747,21 @@ body.home-page-body.delivery-sheet-open {
     display: flex;
     align-items: stretch;
     gap: var(--home-mobile-grid-gutter);
+    position: relative;
+    isolation: isolate;
     width: 100%;
     padding: 22px 0 22px;
     box-sizing: border-box;
     overflow: hidden;
     touch-action: pan-y;
-    transform: translate3d(0, 0, 0);
-    will-change: transform;
-    backface-visibility: hidden;
-    -webkit-mask-image: linear-gradient(
-      to right,
-      transparent 0,
-      #000 var(--home-mobile-row-edge-fade),
-      #000 calc(100% - var(--home-mobile-row-edge-fade)),
-      transparent 100%
-    );
-    mask-image: linear-gradient(
-      to right,
-      transparent 0,
-      #000 var(--home-mobile-row-edge-fade),
-      #000 calc(100% - var(--home-mobile-row-edge-fade)),
-      transparent 100%
-    );
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
   }
 
   body.home-page-body #mas-pedidas .mas-pedidas__row-track {
     display: flex;
     align-items: stretch;
     gap: var(--home-mobile-grid-gutter);
+    position: relative;
+    z-index: 1;
     flex: 0 0 auto;
     width: max-content;
     min-width: 100%;
@@ -3766,8 +3785,31 @@ body.home-page-body.delivery-sheet-open {
 
   body.home-page-body #mas-pedidas .mas-pedidas__row::before,
   body.home-page-body #mas-pedidas .mas-pedidas__row::after {
-    content: none;
-    flex: 0 0 0;
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: var(--home-mobile-row-edge-fade);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  body.home-page-body #mas-pedidas .mas-pedidas__row::before {
+    left: 0;
+    background: linear-gradient(
+      to right,
+      rgb(var(--home-mobile-row-fade-rgb) / 1) 0%,
+      rgb(var(--home-mobile-row-fade-rgb) / 0) 100%
+    );
+  }
+
+  body.home-page-body #mas-pedidas .mas-pedidas__row::after {
+    right: 0;
+    background: linear-gradient(
+      to left,
+      rgb(var(--home-mobile-row-fade-rgb) / 1) 0%,
+      rgb(var(--home-mobile-row-fade-rgb) / 0) 100%
+    );
   }
 
   body.home-page-body #mas-pedidas .mas-pedidas-card {

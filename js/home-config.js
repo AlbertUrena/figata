@@ -44,6 +44,11 @@
   const HOME_LOCATION_WAZE_URL =
     'https://ul.waze.com/ul?ll=18.49227723%2C-69.86180305&navigate=yes&zoom=17&utm_campaign=default&utm_source=waze_website&utm_medium=lm_share_location';
   const HOME_LOCATION_GOOGLE_MAPS_URL = 'https://maps.app.goo.gl/Yg2cgWZvZxaHmWkMA';
+  const HERO_RESERVE_WHATSAPP_MESSAGE = `Hola, me gustaría reservar una mesa. ¿Me ayudan con la disponibilidad?
+
+Fecha:
+Hora:
+Personas:`;
   const HOURS_DAY_ORDER = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
   const HOURS_DAY_DISPLAY_ORDER = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
   const HOURS_DAY_LABELS = {
@@ -812,11 +817,19 @@
     });
   };
 
-  const initDeliverySheet = () => {
-    const sheet = document.querySelector('[data-delivery-sheet]');
-    const trigger = document.querySelector('.hero-mobile-action--delivery');
+  const initBottomSheet = ({
+    sheetSelector,
+    triggerSelector,
+    backdropSelector,
+    closeButtonSelector,
+    optionSelector,
+  }) => {
+    const sheet = document.querySelector(sheetSelector);
+    const triggers = Array.from(document.querySelectorAll(triggerSelector)).filter(
+      (node) => node instanceof HTMLElement
+    );
 
-    if (!(sheet instanceof HTMLElement) || !(trigger instanceof HTMLElement)) {
+    if (!(sheet instanceof HTMLElement) || !triggers.length) {
       return;
     }
 
@@ -825,9 +838,9 @@
     }
 
     const panel = sheet.querySelector('.delivery-sheet__panel');
-    const closeButton = sheet.querySelector('[data-delivery-sheet-close]');
-    const backdrop = sheet.querySelector('[data-delivery-sheet-backdrop]');
-    const optionLinks = Array.from(sheet.querySelectorAll('[data-delivery-sheet-option]'));
+    const closeButton = closeButtonSelector ? sheet.querySelector(closeButtonSelector) : null;
+    const backdrop = backdropSelector ? sheet.querySelector(backdropSelector) : null;
+    const optionLinks = optionSelector ? Array.from(sheet.querySelectorAll(optionSelector)) : [];
     let closeTimerId = 0;
     let restoreFocusNode = null;
     let dragStartX = 0;
@@ -845,8 +858,15 @@
     };
 
     const setDocumentState = () => {
-      const isOpen = !sheet.hidden && sheet.getAttribute('data-state') !== 'closing';
-      document.body.classList.toggle('delivery-sheet-open', isOpen);
+      const hasOpenSheet = Array.from(
+        document.querySelectorAll('[data-bottom-sheet-root]')
+      ).some(
+        (node) =>
+          node instanceof HTMLElement &&
+          !node.hidden &&
+          node.getAttribute('data-state') !== 'closing'
+      );
+      document.body.classList.toggle('delivery-sheet-open', hasOpenSheet);
     };
 
     const finishClose = ({ restoreFocus = true } = {}) => {
@@ -892,22 +912,28 @@
       }, DELIVERY_SHEET_EXIT_MS);
     };
 
-    const openSheet = () => {
+    const openSheet = (fallbackTrigger) => {
       clearCloseTimer();
+
+      if (window.innerWidth > 1023) {
+        return;
+      }
 
       if (!sheet.hidden && sheet.getAttribute('data-state') === 'open') {
         return;
       }
 
-      const hasVisibleOption = optionLinks.some((element) => !element.hidden);
-      if (!hasVisibleOption) {
+      const hasVisibleOption = optionLinks.some(
+        (element) => element instanceof HTMLElement && !element.hidden
+      );
+      if (optionLinks.length && !hasVisibleOption) {
         return;
       }
 
       restoreFocusNode =
         document.activeElement instanceof HTMLElement
           ? document.activeElement
-          : trigger;
+          : fallbackTrigger;
 
       sheet.hidden = false;
       sheet.setAttribute('data-state', 'opening');
@@ -946,9 +972,11 @@
       }
     };
 
-    trigger.addEventListener('click', (event) => {
-      event.preventDefault();
-      openSheet();
+    triggers.forEach((trigger) => {
+      trigger.addEventListener('click', (event) => {
+        event.preventDefault();
+        openSheet(trigger);
+      });
     });
 
     if (closeButton instanceof HTMLElement) {
@@ -964,6 +992,10 @@
     }
 
     optionLinks.forEach((link) => {
+      if (!(link instanceof HTMLElement)) {
+        return;
+      }
+
       link.addEventListener('click', (event) => {
         if (Date.now() < suppressOptionClickUntil) {
           event.preventDefault();
@@ -1043,6 +1075,26 @@
       if (window.innerWidth > 1023 && !sheet.hidden) {
         closeSheet({ restoreFocus: false, immediate: true });
       }
+    });
+  };
+
+  const initDeliverySheet = () => {
+    initBottomSheet({
+      sheetSelector: '[data-delivery-sheet]',
+      triggerSelector: '.hero-mobile-action--delivery',
+      backdropSelector: '[data-delivery-sheet-backdrop]',
+      closeButtonSelector: '[data-delivery-sheet-close]',
+      optionSelector: '[data-delivery-sheet-option]',
+    });
+  };
+
+  const initTestimonialsSheet = () => {
+    initBottomSheet({
+      sheetSelector: '[data-reviews-sheet]',
+      triggerSelector: '[data-reviews-sheet-trigger]',
+      backdropSelector: '[data-reviews-sheet-backdrop]',
+      closeButtonSelector: '[data-reviews-sheet-close]',
+      optionSelector: '[data-reviews-sheet-option]',
     });
   };
 
@@ -1423,6 +1475,54 @@
     footerShell.setAttribute('data-home-footer-note', footer?.note || '');
   };
 
+  const bindHeroMobileReserveAction = (restaurant) => {
+    const reserveButton = document.querySelector('.hero-mobile-action--reserve');
+
+    if (!(reserveButton instanceof HTMLButtonElement)) {
+      return;
+    }
+
+    const whatsappUrl = resolveWhatsappComposeUrl(
+      normalizeTextValue(restaurant?.whatsapp),
+      HERO_RESERVE_WHATSAPP_MESSAGE
+    );
+
+    reserveButton.dataset.whatsappComposeUrl = whatsappUrl;
+    if (whatsappUrl) {
+      reserveButton.removeAttribute('aria-disabled');
+    } else {
+      reserveButton.setAttribute('aria-disabled', 'true');
+    }
+    reserveButton.classList.toggle('is-static', !whatsappUrl);
+
+    if (reserveButton.dataset.heroReserveWhatsappBound === 'true') {
+      return;
+    }
+
+    reserveButton.addEventListener('click', (event) => {
+      event.preventDefault();
+
+      const target = event.currentTarget;
+      if (!(target instanceof HTMLButtonElement)) {
+        return;
+      }
+
+      const composedUrl = normalizeTextValue(target.dataset.whatsappComposeUrl);
+      if (!composedUrl) {
+        return;
+      }
+
+      if (window.innerWidth <= 1023) {
+        window.location.href = composedUrl;
+        return;
+      }
+
+      window.open(composedUrl, '_blank', 'noopener,noreferrer');
+    });
+
+    reserveButton.dataset.heroReserveWhatsappBound = 'true';
+  };
+
   const initMobileLocationCard = () => {
     const locationCardSlot = document.querySelector('[data-home-location-card-slot]');
     const locationCard = document.querySelector('.footer-banner');
@@ -1576,8 +1676,10 @@
       const hoursFlags = applyMobileHours(home.mobileHours);
       applyDelivery(home.delivery);
       initDeliverySheet();
+      initTestimonialsSheet();
       applyTestimonials(home.testimonials);
       applyFooter(home.footer, restaurant);
+      bindHeroMobileReserveAction(restaurant);
 
       const eventsFlags = applyEventsPreview(home.eventsPreview);
       const announcementFlags = applyAnnouncements(home.announcements);

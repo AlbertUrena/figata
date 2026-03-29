@@ -30,7 +30,7 @@
   <script id="restaurant-jsonld" type="application/ld+json"></script>
   <link rel="icon" type="image/png" href="assets/favicon.png">
   <link rel="preload" as="image" href="assets/home/seamless-bg.webp" fetchpriority="high" data-hero-preload>
-  <link rel="stylesheet" href="styles.css?v=delivery-sheet-v5">
+  <link rel="stylesheet" href="styles.css?v=delivery-sheet-v6">
   <link rel="stylesheet" href="shared/public-scroll-indicator.css">
 </head>
 <body class="home-page-body">
@@ -313,7 +313,7 @@
       </div>
     </section>
 
-    <div class="delivery-sheet" data-delivery-sheet hidden>
+    <div class="delivery-sheet" data-delivery-sheet data-bottom-sheet-root hidden>
       <button
         class="delivery-sheet__backdrop"
         type="button"
@@ -359,6 +359,76 @@
       </section>
     </div>
 
+    <div class="delivery-sheet delivery-sheet--reviews" data-reviews-sheet data-bottom-sheet-root hidden>
+      <button
+        class="delivery-sheet__backdrop"
+        type="button"
+        aria-label="Cerrar selector para compartir experiencia"
+        data-reviews-sheet-backdrop
+      ></button>
+
+      <section
+        class="delivery-sheet__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reviews-sheet-title"
+        aria-describedby="reviews-sheet-copy"
+      >
+        <div class="delivery-sheet__body">
+          <div class="delivery-sheet__handle-row">
+            <span class="delivery-sheet__handle" aria-hidden="true"></span>
+          </div>
+
+          <div class="delivery-sheet__content">
+            <h2 class="delivery-title delivery-sheet__title" id="reviews-sheet-title">Déjanos tu reseña</h2>
+            <p class="delivery-subtitle delivery-sheet__subtitle" id="reviews-sheet-copy">
+              Tu experiencia ayuda a otros a descubrir Figata y a nosotros a seguir mejorando. Elige una plataforma para compartirla.
+            </p>
+
+            <div class="delivery-actions delivery-sheet__actions" role="group" aria-label="Plataformas para compartir experiencia">
+              <a
+                class="delivery-action delivery-sheet__action"
+                href="https://g.page/r/CQl6EGcfe-RuEBM/review"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Compartir en Google Reviews"
+                data-reviews-sheet-option
+              >
+                <img
+                  class="delivery-action__icon"
+                  src="assets/home/google-reviews.webp"
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                  decoding="async"
+                >
+              </a>
+
+              <a
+                class="delivery-action delivery-sheet__action"
+                href="https://www.tripadvisor.com.mx/UserReviewEdit-d32990362?m=68676"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Compartir en Tripadvisor"
+                data-reviews-sheet-option
+              >
+                <img
+                  class="delivery-action__icon"
+                  src="assets/home/tripadvisor-logo.svg"
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                  decoding="async"
+                >
+              </a>
+            </div>
+
+            <p class="delivery-note delivery-sheet__note">Gracias por compartir tu experiencia con nosotros</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
     <section id="testimonials" class="testimonials-section" aria-label="Testimonials">
       <div class="testimonials-shell">
         <div class="testimonials-container">
@@ -399,6 +469,7 @@
                   type="button"
                   class="action-handler icon-wrapper aap-text-icon-control"
                   data-testid="testimonials-aap-cta"
+                  data-reviews-sheet-trigger
                 >
                   <span class="icon-copy" style="transform: translate3d(0,0,0) scale(0.5);">Comparte tu experiencia</span>
                   <span class="icon icon-after aap-text-icon-control__icon" aria-hidden="true" style="transform: translate3d(0px, -18px, 0px) scale(0); width: 36px;">
@@ -690,7 +761,7 @@
   <script src="src/data/ingredients.js" defer></script>
   <script src="src/ui/ingredient-icon-row.js" defer></script>
   <script src="js/home-lazy-images.js" defer></script>
-  <script src="js/home-config.js?v=delivery-sheet-v4" defer></script>
+  <script src="js/home-config.js?v=delivery-sheet-v7" defer></script>
   <script src="js/mas-pedidas.js" defer></script>
   <script src="js/testimonials.js" defer></script>
   <script src="js/events-tabs.js?v=3" defer></script>
