@@ -1,6 +1,6 @@
 # Static asset caching
 /assets/*
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=0, must-revalidate
 
 /js/*
   Cache-Control: public, max-age=0, must-revalidate
@@ -33,10 +33,10 @@
   Cache-Control: public, max-age=0, must-revalidate
 
 /fonts/*
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=0, must-revalidate
 
 /assets/fonts/*
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=0, must-revalidate
 
 # Data should always be fresh after publish.
 /data/*.json

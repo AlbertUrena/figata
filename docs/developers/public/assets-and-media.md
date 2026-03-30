@@ -214,13 +214,12 @@ Cloudflare Pages caching rules (from `_headers`) and Netlify fallback rules (`ne
 
 | Path | Cache behavior |
 |------|---------------|
-| `/assets/*`, `/fonts/*`, `/assets/fonts/*` | `max-age=31536000, immutable` (1 year, safe for media/font files) |
-| `/js/*`, `/shared/*`, `/src/*`, `/styles.css`, `/menu/menu-page.css`, `/eventos/eventos.css`, `/admin/app/*.css`, `/admin/app/*.js`, `/admin/app/modules/*` | `max-age=0, must-revalidate` (always check for the latest runtime/code copy) |
+| `/assets/*`, `/fonts/*`, `/assets/fonts/*`, `/js/*`, `/shared/*`, `/src/*`, `/styles.css`, `/menu/menu-page.css`, `/eventos/eventos.css`, `/admin/app/*.css`, `/admin/app/*.js`, `/admin/app/modules/*` | `max-age=0, must-revalidate` (always check for the latest file before reusing cache) |
 | `/data/*.json` | `max-age=0, must-revalidate` (always fresh) |
 
-Public HTML routes also append explicit `?v=` query params to CSS/JS references. That gives each deploy a clean URL for browsers that previously cached an older runtime copy.
+The public routes intentionally avoid manual `?v=` cache-busting suffixes. Cache freshness comes from HTTP revalidation, not from ad-hoc version strings sprinkled through HTML.
 
-Because media files stay cached aggressively, **changing an existing image** still requires changing the filename or adding a cache-busting query parameter. Adding a new image with a new filename works immediately.
+Because the repo serves original file paths directly without fingerprinting, changing an existing image, font, CSS file, or script should be reflected on the next revalidation without renaming files.
 
 ---
 

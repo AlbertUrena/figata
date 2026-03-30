@@ -140,7 +140,7 @@ Eventos page (`eventos/index.html`) loads:
 
 - `_redirects` defines the `/menu/:item` rewrite behavior used by Cloudflare Pages so deep links load the menu shell directly.
 - Because Cloudflare redirects are evaluated before static file lookup, the route file includes an explicit static pass-through for `/menu/menu-page.css` before dynamic `/menu/:item` rules.
-- `_headers` keeps fingerprintless JS/CSS/runtime modules on `must-revalidate`, leaves media/fonts on immutable caching, and relies on explicit `?v=` bumps in the public HTML when route assets change.
+- `_headers` keeps every repo-served runtime asset on `must-revalidate`, including media and fonts, so deploys do not depend on manual cache-busting query params.
 
 ### Script Responsibilities
 
