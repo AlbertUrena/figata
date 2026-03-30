@@ -2592,6 +2592,22 @@
     --menu-mobile-top-inset: max(0px, env(safe-area-inset-top, 0px));
     --navbar-height: calc(76px + var(--menu-mobile-top-inset));
   }
+
+  .eventos-main {
+    padding-top: 0;
+  }
+
+  .eventos-hero {
+    position: relative;
+    margin-top: calc(var(--navbar-height) * -1);
+    padding-top: calc(var(--navbar-height) + 26px);
+    background: #191919;
+  }
+
+  .eventos-hero__content {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
