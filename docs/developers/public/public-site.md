@@ -53,7 +53,7 @@ The page is structured as a single scrollable document. Major sections in `index
 | Shared scroll meter | `shared/public-scroll-indicator.css`, `shared/public-scroll-indicator.js` | Hides the root scrollbar and renders a fixed overlay progress indicator while preserving native document scroll |
 | Route HTML | `menu/index.html` | Full menu page shell + templates |
 | Route styles | `menu/menu-page.css` | Centered intro, Events-style top tabs, integrated search bar, responsive grid, detail subview |
-| Route script | `js/menu-page.js` | Runtime tab navigation, grouped category rendering, in-page search filter, bridge state for navbar sync, and mobile Safari viewport priming for notch-safe top painting |
+| Route script | `js/menu-page.js` | Runtime tab navigation, grouped category rendering, in-page search filter, bridge state for navbar sync, and mobile Safari viewport priming via the filter-modal overlay path for notch-safe top painting |
 | Route navbar enhancer | `js/menu-page-navbar.js` | Two-stage sticky-menu transformation layered on top of the shared navbar |
 
 ## Eventos Route Map (`/eventos/`)
@@ -179,7 +179,7 @@ Full menu page runtime controller for `/menu/`. Handles:
 - Scroll-synced active category state
 - Dynamic item detail subview via URL (`/menu/<id>`) with browser back/forward
 - Rendering the structured sensory profile section in detail view when `item.sensory_profile` is available, including an editorial subtitle under the section heading, a compact right-aligned Radar/Bars toggle on the same heading row (radar by default), icon-based radar axes in place of text labels, shared tap/focus icon tooltips across radar axes and bars X-axis icons (axis guidance + 5-second auto-dismiss), a consolidated Bars visualization (vertical bars, Y scale 1–10, icon-only X axis, shared accent color with value-based opacity), plus a smoothed radar area without per-axis point markers and a subtle stroke halo
-- Priming iPhone Safari after initial render, `pageshow`, and list/detail transitions so `/menu/` keeps the intended top painting under the notch without relying on modal open/close side effects
+- Priming iPhone Safari after initial render, `pageshow`, and list/detail transitions by briefly mounting the filter-modal overlay invisibly, so `/menu/` keeps the intended top painting under the notch without requiring a user-triggered filter open/close
 - Exposing `window.FigataMenuPage` so route-local enhancers can sync category state and search without duplicating logic
 
 #### `js/menu-page-navbar.js`

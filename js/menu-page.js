@@ -275,8 +275,10 @@
     mobileSafariUserAgent
   );
   const isMobileSafari = isAppleTouchDevice && isWebKitEngine && !isNonSafariIOSBrowser;
+  const VIEWPORT_PRIME_MS = 420;
   let viewportPrimeFrameId = 0;
   let viewportPrimeResetFrameId = 0;
+  let viewportPrimeTimeoutId = 0;
 
   const clearViewportPrimeFrames = () => {
     if (viewportPrimeFrameId) {
@@ -288,6 +290,11 @@
       window.cancelAnimationFrame(viewportPrimeResetFrameId);
       viewportPrimeResetFrameId = 0;
     }
+
+    if (viewportPrimeTimeoutId) {
+      window.clearTimeout(viewportPrimeTimeoutId);
+      viewportPrimeTimeoutId = 0;
+    }
   };
 
   const removeViewportPrime = () => {
@@ -295,6 +302,17 @@
     document.documentElement.classList.remove(VIEWPORT_PRIME_CLASS);
     if (menuPageBody instanceof HTMLElement) {
       menuPageBody.classList.remove(VIEWPORT_PRIME_CLASS);
+    }
+
+    if (filterDialog instanceof HTMLElement) {
+      filterDialog.removeAttribute('inert');
+      filterDialog.removeAttribute('aria-hidden');
+    }
+
+    if (filterModal instanceof HTMLElement && filterModal.getAttribute('data-prime') === 'true') {
+      filterModal.hidden = true;
+      filterModal.removeAttribute('data-prime');
+      filterModal.removeAttribute('data-state');
     }
   };
 
@@ -304,16 +322,37 @@
       return;
     }
 
+    if (filterModal instanceof HTMLElement && !filterModal.hidden && filterModal.getAttribute('data-prime') !== 'true') {
+      return;
+    }
+
     removeViewportPrime();
     document.documentElement.classList.add(VIEWPORT_PRIME_CLASS);
     menuPageBody.classList.add(VIEWPORT_PRIME_CLASS);
 
+    if (filterModal instanceof HTMLElement) {
+      filterModal.hidden = false;
+      filterModal.setAttribute('data-prime', 'true');
+      filterModal.setAttribute('data-state', 'open');
+    }
+
+    if (filterDialog instanceof HTMLElement) {
+      filterDialog.setAttribute('inert', '');
+      filterDialog.setAttribute('aria-hidden', 'true');
+    }
+
     viewportPrimeFrameId = window.requestAnimationFrame(() => {
       viewportPrimeFrameId = 0;
+      if (filterModal instanceof HTMLElement) {
+        void filterModal.getBoundingClientRect();
+      }
+      window.FigataScrollIndicators?.refresh?.();
       viewportPrimeResetFrameId = window.requestAnimationFrame(() => {
         viewportPrimeResetFrameId = 0;
-        document.documentElement.classList.remove(VIEWPORT_PRIME_CLASS);
-        menuPageBody.classList.remove(VIEWPORT_PRIME_CLASS);
+        viewportPrimeTimeoutId = window.setTimeout(() => {
+          viewportPrimeTimeoutId = 0;
+          removeViewportPrime();
+        }, VIEWPORT_PRIME_MS);
       });
     });
   };
