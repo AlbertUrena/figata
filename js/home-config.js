@@ -6,7 +6,7 @@
   const DELIVERY_SHEET_EXIT_MS = 460;
   const HOME_VIRTUAL_TOUR_EXIT_MS = 280;
   const HOME_VIRTUAL_TOUR_FALLBACK_URL =
-    'https://my.matterport.com/show?play=1&lang=en-US&m=XvpiJpihutS';
+    'https://my.matterport.com/show/?m=kQYnyMKF3RS&play=1&tour=3&ts=3&hl=0&pin=0';
   const DELIVERY_SHEET_DRAG_ACTIVATE_THRESHOLD = 12;
   const DELIVERY_SHEET_DRAG_CLOSE_THRESHOLD = 90;
   const DELIVERY_SHEET_DRAG_MAX_OFFSET = 180;
@@ -691,7 +691,8 @@ Personas:`;
       const row = document.createElement('article');
       row.className = 'horarios-mobile__row';
       row.setAttribute('role', 'listitem');
-      const isMutedClosedRow = isClosed && !isToday && !hasOverride;
+      const isRegularClosedDay = isClosed && !hasOverride;
+      const isMutedClosedRow = isRegularClosedDay;
       if (isToday) {
         row.classList.add('horarios-mobile__row--today');
       }
@@ -740,7 +741,7 @@ Personas:`;
         const hoursInline = document.createElement('span');
         hoursInline.className = 'horarios-mobile__hours-inline';
 
-        if (!isToday) {
+        if (!isToday || isRegularClosedDay) {
           const closedIconWrap = document.createElement('span');
           closedIconWrap.className = 'horarios-mobile__closed-indicator';
           closedIconWrap.appendChild(
@@ -751,7 +752,7 @@ Personas:`;
 
         const hoursText = document.createElement('span');
         hoursText.className = 'horarios-mobile__hours-text';
-        hoursText.textContent = isMutedClosedRow ? labels.noService : labels.closed;
+        hoursText.textContent = isRegularClosedDay ? labels.noService : labels.closed;
         hoursInline.appendChild(hoursText);
         hoursNode.appendChild(hoursInline);
       } else {
