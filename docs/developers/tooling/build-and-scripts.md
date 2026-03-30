@@ -177,7 +177,7 @@ Cloudflare Pages uses root-level flat files in the publish output:
 | File | Purpose |
 |------|---------|
 | `_redirects` | Handles deep-link rewrites for `/menu/:item` to `menu/index.html` while preserving static menu CSS requests |
-| `_headers` | Sets cache policy for long-lived static assets and no-cache behavior for `data/*.json` |
+| `_headers` | Keeps media/fonts immutable while forcing JS/CSS/runtime files and `data/*.json` to revalidate |
 
 These files are versioned so Cloudflare behavior stays reproducible across deploys.
 

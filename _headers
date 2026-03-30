@@ -3,25 +3,34 @@
   Cache-Control: public, max-age=31536000, immutable
 
 /js/*
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=0, must-revalidate
+
+/shared/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/src/*
+  Cache-Control: public, max-age=0, must-revalidate
 
 /styles.css
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=0, must-revalidate
 
 /menu/menu-page.css
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=0, must-revalidate
+
+/eventos/eventos.css
+  Cache-Control: public, max-age=0, must-revalidate
 
 /admin/app/*.css
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=0, must-revalidate
 
 /admin/app/*.js
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=0, must-revalidate
 
 /admin/app/modules/*
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=0, must-revalidate
 
 /admin/app/modules/panels/*
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=0, must-revalidate
 
 /fonts/*
   Cache-Control: public, max-age=31536000, immutable

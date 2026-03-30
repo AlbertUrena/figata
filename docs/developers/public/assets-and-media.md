@@ -214,10 +214,13 @@ Cloudflare Pages caching rules (from `_headers`) and Netlify fallback rules (`ne
 
 | Path | Cache behavior |
 |------|---------------|
-| `/assets/*`, `/js/*`, `/styles.css`, `/menu/menu-page.css` | `max-age=31536000, immutable` (1 year, aggressive caching) |
+| `/assets/*`, `/fonts/*`, `/assets/fonts/*` | `max-age=31536000, immutable` (1 year, safe for media/font files) |
+| `/js/*`, `/shared/*`, `/src/*`, `/styles.css`, `/menu/menu-page.css`, `/eventos/eventos.css`, `/admin/app/*.css`, `/admin/app/*.js`, `/admin/app/modules/*` | `max-age=0, must-revalidate` (always check for the latest runtime/code copy) |
 | `/data/*.json` | `max-age=0, must-revalidate` (always fresh) |
 
-Since assets are cached aggressively, **changing an existing image** requires changing the filename or adding a cache-busting query parameter. Adding a new image with a new filename works immediately.
+Public HTML routes also append explicit `?v=` query params to CSS/JS references. That gives each deploy a clean URL for browsers that previously cached an older runtime copy.
+
+Because media files stay cached aggressively, **changing an existing image** still requires changing the filename or adding a cache-busting query parameter. Adding a new image with a new filename works immediately.
 
 ---
 
