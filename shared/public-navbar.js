@@ -392,6 +392,14 @@
       return;
     }
 
+    const brandLink = header.querySelector('.navbar__brand[href]');
+    if (brandLink instanceof HTMLAnchorElement) {
+      const homeHref = publicPaths?.toSitePath
+        ? publicPaths.toSitePath('./')
+        : '/';
+      brandLink.setAttribute('href', homeHref || '/');
+    }
+
     header.querySelectorAll('a[href]').forEach((link) => {
       const href = link.getAttribute('href');
 

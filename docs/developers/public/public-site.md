@@ -186,7 +186,7 @@ Full menu page runtime controller for `/menu/`. Handles:
 `/menu/`-only navbar enhancer. Handles:
 - Waiting for the shared navbar mount plus `window.FigataMenuPage.whenReady()`
 - Repairing the mounted shared navbar back to canonical structure before building sticky menu chrome
-- Preserving the existing navbar collapse threshold as stage 1
+- Preserving the existing desktop collapse threshold as stage 1, while mobile keeps the navbar in the compact collapsed state from first paint
 - Activating a second sticky-menu transformation only after `.menu-page-controls` fully clears the fixed header
 - Swapping navbar links/CTA for compact menu tabs plus search/filter tools inside the same navbar shell
 - Supporting a reversible chevron override on desktop that returns to the collapsed normal navbar state
@@ -240,7 +240,7 @@ Shared public navbar runtime module. Handles:
 - Caching canonical markup for reuse on multi-route pages
 - Mounting canonical navbar into route hosts (`data-public-navbar-host`)
 - Optional route-level CTA suppression via `data-public-navbar-hide-cta`
-- Route-aware URL normalization for non-home pages (`/#...` anchors and asset paths)
+- Route-aware URL normalization for non-home pages (home logo returns to `/`, sectional links keep `/#...` anchors, and asset paths stay route-safe)
 - Rejecting route-mutated navbar DOM when reading/writing cache and exposing a repair path so route enhancers can remount a clean canonical header before applying route-only chrome
 
 #### `shared/public-scroll-indicator.js` + `shared/public-scroll-indicator.css`
@@ -259,6 +259,7 @@ Navbar collapse animation controller:
 - Uses hero sentinel to toggle `html.nav--collapsed` on homepage scroll
 - Animates collapse progress with spring motion (`--nav-collapse` CSS variables)
 - Supports non-hero routes via `data-nav-collapse-threshold="<px>"` on the page root/body
+- Keeps the public navbar in the compact collapsed state across mobile viewports, while desktop retains the scroll-driven collapse behavior
 
 #### `js/reload-cover.js` (6KB, ~170 lines)
 Reload overlay animation:

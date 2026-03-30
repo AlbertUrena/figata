@@ -67,7 +67,7 @@ js/menu-page.js
 js/menu-page-navbar.js
     ├── waits for shared navbar + menu bridge
     ├── repairs/remounts a clean canonical shared navbar if the host was contaminated
-    ├── preserves stage-1 collapse from js/navbar-collapse.js
+    ├── preserves stage-1 desktop collapse from js/navbar-collapse.js
     └── swaps collapsed navbar content into sticky-menu mode after controls leave viewport
 ```
 
@@ -93,7 +93,7 @@ The route is item-driven but uses a fixed top-level navigation grouping:
 - The allergen chips in that modal use canonical allergen IDs (`gluten`, `milk`, `nuts`, `fish`) and filter against the derived runtime `item.allergens`
 - The price range slider and the `Mostrar X platos` counter update against the current drafts in real time, while `Limpiar` resets drafts only
 - While searching, category grouping is replaced by a single unified results grid; if nothing matches, the page shows a single global empty state
-- The shared navbar keeps its existing manual collapse threshold as stage 1
+- The shared navbar keeps its existing manual collapse threshold as stage 1 on desktop; mobile stays in the compact collapsed state
 - After the full `.menu-page-controls` block clears the fixed header, stage 2 transforms that same navbar into a sticky compact menu navigator
 - Mobile: same top tabs visual system, allowed to overflow horizontally instead of using a drawer
 - Active category can update from scroll position

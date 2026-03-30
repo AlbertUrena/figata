@@ -364,8 +364,7 @@
     (window.innerWidth || root.clientWidth || 0) <= MOBILE_BREAKPOINT;
 
   const isForcedMobileCollapse = () =>
-    isMobileViewport() &&
-    root.getAttribute(FORCE_COLLAPSED_MOBILE_ATTR) === "true";
+    isMobileViewport();
 
   const shouldCollapse = () => {
     if (isMenuRouteViewTransitionActive()) {

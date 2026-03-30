@@ -4,6 +4,17 @@
   <meta charset="UTF-8">
   <base href="../">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script>
+    (function () {
+      try {
+        if (window.matchMedia && window.matchMedia("(max-width: 820px)").matches) {
+          document.documentElement.classList.add("nav--collapsed");
+        }
+      } catch (_error) {
+        // Ignore early viewport detection failures.
+      }
+    })();
+  </script>
   <title>Menú | Figata Pizza &amp; Wine</title>
   <script>
     (function () {
