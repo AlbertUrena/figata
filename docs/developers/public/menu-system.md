@@ -96,7 +96,7 @@ The route is item-driven but uses a fixed top-level navigation grouping:
 - The shared navbar now treats compact mobile mode as the canonical public behavior from first paint, while desktop keeps the manual collapse threshold as stage 1
 - After the full `.menu-page-controls` block clears the fixed header, stage 2 transforms that same navbar into a sticky compact menu navigator
 - Mobile: same top tabs visual system, allowed to overflow horizontally instead of using a drawer
-- Mobile detail view does not reveal or hide the navbar on scroll anymore; it keeps a stable account-only shell so the notch treatment stays seamless while item content is open
+- Mobile detail view does not reveal or hide the navbar on scroll anymore; it keeps only a stable top-right account button so the notch treatment stays seamless while item content is open
 - Active category can update from scroll position
 - Each category section renders its own title and item grid
 - Item detail uses a dynamic route (`/menu/<id>`) inside the same page shell (no modal, no per-item HTML files)

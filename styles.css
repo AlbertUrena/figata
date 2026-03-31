@@ -4910,8 +4910,32 @@ body.home-page-body.home-virtual-tour-open {
   }
 
   .site-header[data-menu-detail-nav="account-only"] {
-    pointer-events: auto;
+    pointer-events: none;
     transform: translateY(0);
+  }
+
+  .site-header[data-menu-detail-nav="account-only"] .navbar {
+    justify-content: flex-end;
+    padding-inline: 14px;
+  }
+
+  .site-header[data-menu-detail-nav="account-only"] .navbar--menu-route .navbar__inner {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+    height: auto;
+    margin-inline: 0;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    transform: none;
+    overflow: visible;
   }
 
   .site-header[data-menu-detail-nav="account-only"] .navbar--menu-route .navbar__brand-slot,
@@ -4923,13 +4947,31 @@ body.home-page-body.home-virtual-tour-open {
   }
 
   .site-header[data-menu-detail-nav="account-only"] .navbar--menu-route .navbar__actions {
-    width: max-content;
-    min-width: max-content;
-    justify-self: end;
+    width: auto;
+    min-width: 0;
+    justify-self: auto;
+    pointer-events: auto;
   }
 
   .site-header[data-menu-detail-nav="account-only"] .navbar--menu-route .navbar__mobile-actions {
+    display: inline-flex;
     gap: 0;
+    pointer-events: auto;
+  }
+
+  .site-header[data-menu-detail-nav="account-only"] .navbar--menu-route .navbar__mobile-action--account {
+    color: rgba(240, 239, 237, 0.92);
+    background: rgba(14, 12, 10, 0.56);
+    box-shadow:
+      0 10px 24px rgba(0, 0, 0, 0.3),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(18px) saturate(1.06);
+    -webkit-backdrop-filter: blur(18px) saturate(1.06);
+  }
+
+  .site-header[data-menu-detail-nav="account-only"] .navbar--menu-route .navbar__mobile-action--account:hover,
+  .site-header[data-menu-detail-nav="account-only"] .navbar--menu-route .navbar__mobile-action--account:focus-visible {
+    background: rgba(14, 12, 10, 0.64);
   }
 
   .hero {

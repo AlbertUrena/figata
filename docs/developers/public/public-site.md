@@ -194,7 +194,7 @@ Full menu page runtime controller for `/menu/`. Handles:
 - Swapping navbar links/CTA for compact menu tabs plus search/filter tools inside the same navbar shell
 - Supporting a reversible chevron override on desktop that returns to the collapsed normal navbar state
 - Omitting that chevron override on mobile so the sticky navbar can dedicate the left rail to brand/search space
-- Locking mobile detail view into a stable `account-only` navbar mode so the shell stays mounted without reveal-on-scroll behavior and only the account action remains visible
+- Locking mobile detail view into a stable `account-only` top-right account button so no navbar shell reveals on scroll and only the account action remains visible
 
 #### `js/eventos-page.js`
 `/eventos/` route enhancer. Handles:
