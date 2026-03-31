@@ -93,7 +93,7 @@ The route is item-driven but uses a fixed top-level navigation grouping:
 - The allergen chips in that modal use canonical allergen IDs (`gluten`, `milk`, `nuts`, `fish`) and filter against the derived runtime `item.allergens`
 - The price range slider and the `Mostrar X platos` counter update against the current drafts in real time, while `Limpiar` resets drafts only
 - While searching, category grouping is replaced by a single unified results grid; if nothing matches, the page shows a single global empty state
-- The shared navbar keeps its existing manual collapse threshold as stage 1 on desktop; mobile stays in the compact collapsed state
+- The shared navbar now treats compact mobile mode as the canonical public behavior from first paint, while desktop keeps the manual collapse threshold as stage 1
 - After the full `.menu-page-controls` block clears the fixed header, stage 2 transforms that same navbar into a sticky compact menu navigator
 - Mobile: same top tabs visual system, allowed to overflow horizontally instead of using a drawer
 - Active category can update from scroll position

@@ -49,11 +49,12 @@ The page is structured as a single scrollable document. Major sections in `index
 
 | Area | File | Purpose |
 |------|------|---------|
+| Head bootstrap | `shared/public-navbar-bootstrap.js` | Seeds the compact mobile navbar state before route CSS paints |
 | Shared navbar runtime | `shared/public-navbar.js` | Mounts canonical homepage navbar on `/menu/` and normalizes route URLs |
 | Shared scroll meter | `shared/public-scroll-indicator.css`, `shared/public-scroll-indicator.js` | Hides the root scrollbar and renders a fixed overlay progress indicator while preserving native document scroll |
 | Route HTML | `menu/index.html` | Full menu page shell + templates |
 | Route styles | `menu/menu-page.css` | Centered intro, Events-style top tabs, integrated search bar, responsive grid, detail subview |
-| Route script | `js/menu-page.js` | Runtime tab navigation, grouped category rendering, in-page search filter, bridge state for navbar sync, and mobile Safari viewport priming via the filter-modal overlay path for notch-safe top painting |
+| Route script | `js/menu-page.js` | Runtime tab navigation, grouped category rendering, in-page search filter, bridge state for navbar sync, and detail/list routing |
 | Route navbar enhancer | `js/menu-page-navbar.js` | Two-stage sticky-menu transformation layered on top of the shared navbar |
 
 ## Eventos Route Map (`/eventos/`)
@@ -99,11 +100,13 @@ Homepage (`index.html`) scripts are loaded with `defer` and execute in order aft
 ```
 
 Additionally loaded (non-deferred):
+- `shared/public-navbar-bootstrap.js` — synchronous head bootstrap that seeds the compact mobile navbar before first paint
 - `netlify-identity-widget.js` from CDN — for admin redirect handling
 
 Menu page (`menu/index.html`) loads:
 
 ```
+head. shared/public-navbar-bootstrap.js
 1. shared/public-paths.js
 2. shared/public-navbar.js
 3. shared/figata-cover-transition.js
@@ -123,6 +126,7 @@ Menu page (`menu/index.html`) loads:
 Eventos page (`eventos/index.html`) loads:
 
 ```
+head. shared/public-navbar-bootstrap.js
 1. shared/public-paths.js
 2. shared/public-navbar.js
 3. js/navbar-collapse.js
@@ -179,7 +183,6 @@ Full menu page runtime controller for `/menu/`. Handles:
 - Scroll-synced active category state
 - Dynamic item detail subview via URL (`/menu/<id>`) with browser back/forward
 - Rendering the structured sensory profile section in detail view when `item.sensory_profile` is available, including an editorial subtitle under the section heading, a compact right-aligned Radar/Bars toggle on the same heading row (radar by default), icon-based radar axes in place of text labels, shared tap/focus icon tooltips across radar axes and bars X-axis icons (axis guidance + 5-second auto-dismiss), a consolidated Bars visualization (vertical bars, Y scale 1–10, icon-only X axis, shared accent color with value-based opacity), plus a smoothed radar area without per-axis point markers and a subtle stroke halo
-- Priming iPhone Safari after initial render, `pageshow`, and list/detail transitions by briefly mounting the filter-modal overlay invisibly, so `/menu/` keeps the intended top painting under the notch without requiring a user-triggered filter open/close
 - Exposing `window.FigataMenuPage` so route-local enhancers can sync category state and search without duplicating logic
 
 #### `js/menu-page-navbar.js`
@@ -252,6 +255,12 @@ Shared public scroll meter enhancement. Handles:
 - Revealing the meter while the user scrolls and fading it out after a short idle delay
 - Recomputing thumb size/position on resize and document height changes via `ResizeObserver`
 - Staying out of the way of existing locked-scroll overlay states such as homepage previews and `/menu/` filters
+
+#### `shared/public-navbar-bootstrap.js`
+Synchronous public head bootstrap:
+- Runs before route styles on `index.html`, `/menu/`, and `/eventos/`
+- Seeds `html.nav--collapsed` immediately on mobile breakpoints so the public navbar paints in its compact state from first paint
+- Leaves desktop expansion to `js/navbar-collapse.js`
 
 #### `js/navbar-collapse.js` (9KB, ~270 lines)
 Navbar collapse animation controller:

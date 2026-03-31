@@ -295,11 +295,6 @@ body.menu-page-body.menu-filters-open {
   overflow: hidden;
 }
 
-html.menu-page-root.menu-viewport-prime,
-body.menu-page-body.menu-viewport-prime {
-  overflow: hidden;
-}
-
 .menu-page-body {
   background: var(--figata-bg);
   overflow-x: clip;
@@ -329,11 +324,6 @@ body.menu-page-body.menu-viewport-prime {
   background: rgba(9, 9, 12, 0.1);
   -webkit-backdrop-filter: blur(4px) saturate(0.96);
   backdrop-filter: blur(4px) saturate(0.96);
-}
-
-.menu-page-body.menu-viewport-prime::before {
-  opacity: 0.001;
-  background: rgba(9, 9, 12, 0.001);
 }
 
 .site-header {
@@ -1247,10 +1237,6 @@ body.menu-page-body.menu-filters-open .menu-page-main {
   pointer-events: auto;
 }
 
-.menu-filter-modal[data-prime="true"] {
-  pointer-events: none;
-}
-
 .menu-filter-modal__backdrop {
   position: absolute;
   inset: 0;
@@ -1309,25 +1295,11 @@ body.menu-page-body.menu-filters-open .menu-page-main {
   backdrop-filter: blur(4px) saturate(0.96);
 }
 
-.menu-filter-modal[data-prime="true"] .menu-filter-modal__backdrop {
-  opacity: 0.001;
-  background: rgba(9, 9, 12, 0.001);
-  -webkit-backdrop-filter: blur(0.001px) saturate(1);
-  backdrop-filter: blur(0.001px) saturate(1);
-}
-
 .menu-filter-modal[data-state="opening"] .menu-filter-modal__dialog,
 .menu-filter-modal[data-state="open"] .menu-filter-modal__dialog {
   transform: translateY(0) scale(1);
   opacity: 1;
   filter: blur(0px);
-}
-
-.menu-filter-modal[data-prime="true"] .menu-filter-modal__dialog {
-  opacity: 0;
-  filter: blur(0px);
-  transform: translateY(0) scale(1);
-  visibility: hidden;
 }
 
 .menu-filter-modal[data-state="closing"] .menu-filter-modal__backdrop {

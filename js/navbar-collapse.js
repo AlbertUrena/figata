@@ -18,7 +18,6 @@
 
   const COLLAPSED_CLASS = "nav--collapsed";
   const MOBILE_BREAKPOINT = 820;
-  const FORCE_COLLAPSED_MOBILE_ATTR = "data-nav-force-collapsed-mobile";
   const MENU_ROUTE_VIEW_TRANSITION_ROOT_ATTR = "data-menu-route-vt";
   const THRESHOLD_OFFSET = 462;
   const fallbackThresholdRaw =
@@ -269,7 +268,7 @@
     root.getAttribute(MENU_ROUTE_VIEW_TRANSITION_ROOT_ATTR) === "active";
 
   const shouldSnapMenuRouteCollapsed = () =>
-    isForcedMobileCollapse() || isMenuRouteViewTransitionActive();
+    isMobileViewport() || isMenuRouteViewTransitionActive();
 
   const setCollapsed = (collapsed) => {
     const next = Boolean(collapsed);
@@ -363,15 +362,12 @@
   const isMobileViewport = () =>
     (window.innerWidth || root.clientWidth || 0) <= MOBILE_BREAKPOINT;
 
-  const isForcedMobileCollapse = () =>
-    isMobileViewport();
-
   const shouldCollapse = () => {
     if (isMenuRouteViewTransitionActive()) {
       return true;
     }
 
-    if (isForcedMobileCollapse()) {
+    if (isMobileViewport()) {
       return true;
     }
 
@@ -466,10 +462,7 @@
     });
     rootAttrObserver.observe(root, {
       attributes: true,
-      attributeFilter: [
-        FORCE_COLLAPSED_MOBILE_ATTR,
-        MENU_ROUTE_VIEW_TRANSITION_ROOT_ATTR,
-      ],
+      attributeFilter: [MENU_ROUTE_VIEW_TRANSITION_ROOT_ATTR],
     });
   }
 

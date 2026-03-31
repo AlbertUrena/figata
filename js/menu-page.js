@@ -265,97 +265,6 @@
   );
   const detailQuantityValue = document.getElementById('menu-detail-qty-value');
   const menuPageBody = document.body;
-  const VIEWPORT_PRIME_CLASS = 'menu-viewport-prime';
-  const mobileSafariUserAgent = String(window.navigator.userAgent || '');
-  const isAppleTouchDevice =
-    /iP(?:hone|ad|od)/i.test(mobileSafariUserAgent) ||
-    (window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1);
-  const isWebKitEngine = /WebKit/i.test(mobileSafariUserAgent);
-  const isNonSafariIOSBrowser = /CriOS|FxiOS|EdgiOS|OPiOS|DuckDuckGo|YaBrowser|Instagram|FBAN|FBAV/i.test(
-    mobileSafariUserAgent
-  );
-  const isMobileSafari = isAppleTouchDevice && isWebKitEngine && !isNonSafariIOSBrowser;
-  const VIEWPORT_PRIME_MS = 420;
-  let viewportPrimeFrameId = 0;
-  let viewportPrimeResetFrameId = 0;
-  let viewportPrimeTimeoutId = 0;
-
-  const clearViewportPrimeFrames = () => {
-    if (viewportPrimeFrameId) {
-      window.cancelAnimationFrame(viewportPrimeFrameId);
-      viewportPrimeFrameId = 0;
-    }
-
-    if (viewportPrimeResetFrameId) {
-      window.cancelAnimationFrame(viewportPrimeResetFrameId);
-      viewportPrimeResetFrameId = 0;
-    }
-
-    if (viewportPrimeTimeoutId) {
-      window.clearTimeout(viewportPrimeTimeoutId);
-      viewportPrimeTimeoutId = 0;
-    }
-  };
-
-  const removeViewportPrime = () => {
-    clearViewportPrimeFrames();
-    document.documentElement.classList.remove(VIEWPORT_PRIME_CLASS);
-    if (menuPageBody instanceof HTMLElement) {
-      menuPageBody.classList.remove(VIEWPORT_PRIME_CLASS);
-    }
-
-    if (filterDialog instanceof HTMLElement) {
-      filterDialog.removeAttribute('inert');
-      filterDialog.removeAttribute('aria-hidden');
-    }
-
-    if (filterModal instanceof HTMLElement && filterModal.getAttribute('data-prime') === 'true') {
-      filterModal.hidden = true;
-      filterModal.removeAttribute('data-prime');
-      filterModal.removeAttribute('data-state');
-    }
-  };
-
-  const scheduleViewportPrime = () => {
-    if (!isMobileSafari || !MOBILE_CARD_QUERY.matches || !(menuPageBody instanceof HTMLElement)) {
-      removeViewportPrime();
-      return;
-    }
-
-    if (filterModal instanceof HTMLElement && !filterModal.hidden && filterModal.getAttribute('data-prime') !== 'true') {
-      return;
-    }
-
-    removeViewportPrime();
-    document.documentElement.classList.add(VIEWPORT_PRIME_CLASS);
-    menuPageBody.classList.add(VIEWPORT_PRIME_CLASS);
-
-    if (filterModal instanceof HTMLElement) {
-      filterModal.hidden = false;
-      filterModal.setAttribute('data-prime', 'true');
-      filterModal.setAttribute('data-state', 'open');
-    }
-
-    if (filterDialog instanceof HTMLElement) {
-      filterDialog.setAttribute('inert', '');
-      filterDialog.setAttribute('aria-hidden', 'true');
-    }
-
-    viewportPrimeFrameId = window.requestAnimationFrame(() => {
-      viewportPrimeFrameId = 0;
-      if (filterModal instanceof HTMLElement) {
-        void filterModal.getBoundingClientRect();
-      }
-      window.FigataScrollIndicators?.refresh?.();
-      viewportPrimeResetFrameId = window.requestAnimationFrame(() => {
-        viewportPrimeResetFrameId = 0;
-        viewportPrimeTimeoutId = window.setTimeout(() => {
-          viewportPrimeTimeoutId = 0;
-          removeViewportPrime();
-        }, VIEWPORT_PRIME_MS);
-      });
-    });
-  };
 
   if (isAdminPreviewMode) {
     document.documentElement.classList.add('menu-admin-preview');
@@ -11411,7 +11320,6 @@
 
     scheduleActiveCategoryUpdate();
     emitBridgeState();
-    scheduleViewportPrime();
   };
 
   const showDetailView = () => {
@@ -11426,7 +11334,6 @@
     listView.hidden = true;
     detailView.hidden = false;
     emitBridgeState();
-    scheduleViewportPrime();
   };
 
   const applyAdminPreviewUpdatePayload = async (payload = {}) => {
@@ -12672,12 +12579,6 @@
     });
   });
 
-  window.addEventListener('pageshow', (event) => {
-    if (event.persisted) {
-      scheduleViewportPrime();
-    }
-  });
-
   if (isAdminPreviewMode) {
     window.addEventListener('message', handleAdminPreviewBridgeMessage);
     bindAdminPreviewSectionNavigation();
@@ -12779,7 +12680,6 @@
       syncSearchHelperWidth();
       syncSearchControls();
       await renderRouteFromLocation();
-      scheduleViewportPrime();
       if (adminPreviewSurface === ADMIN_PREVIEW_SURFACE_MODAL) {
         openAdminPreviewModalSurface({
           modalKey: adminPreviewModalActive,

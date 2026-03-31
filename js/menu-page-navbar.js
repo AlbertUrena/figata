@@ -50,7 +50,6 @@
   const MOBILE_BREAKPOINT = 820;
   const MOBILE_MENU_PANEL_ID = 'navbar-mobile-menu-panel';
   const MOBILE_MENU_CLOSE_COMMIT_MS = 460;
-  const FORCE_COLLAPSED_MOBILE_ATTR = 'data-nav-force-collapsed-mobile';
   const DETAIL_NAV_REVEAL_SCROLL_Y = 125;
   const BURGER_ANIMATION_MS = 240;
   const MOBILE_SEARCH_OPEN_GAP_PX = 14;
@@ -117,7 +116,6 @@
     tabsViewportImmediate: false,
     mobileMenuOpen: false,
     mobileMenuCloseCommitTimerId: 0,
-    mobileMenuForceCollapsed: false,
     mobileSearchWidthSyncFrameId: 0,
     mobileSearchLastAppliedWidth: 0,
     burgerAnimationFrameId: 0,
@@ -350,8 +348,6 @@
     const detailNavHidden = header.dataset.menuDetailNav === 'hidden';
     const mobileActionsInteractive = isMobile && !detailNavHidden;
     const shouldOpen = Boolean(nextOpen) && mobileActionsInteractive;
-    const navbarCurrentlyCollapsed = root.classList.contains('nav--collapsed');
-    const wasMenuOpen = state.mobileMenuOpen;
     const previousNavPhase = normalizeText(header.dataset.menuMobileNav);
     const clearCloseCommitTimer = () => {
       if (state.mobileMenuCloseCommitTimerId) {
@@ -372,13 +368,7 @@
         }
       }, MOBILE_MENU_CLOSE_COMMIT_MS);
     };
-    if (shouldOpen && !wasMenuOpen) {
-      state.mobileMenuForceCollapsed = isMobile && !navbarCurrentlyCollapsed;
-    } else if (!shouldOpen && wasMenuOpen && state.mobileMenuForceCollapsed) {
-      state.mobileMenuForceCollapsed = false;
-    }
     state.mobileMenuOpen = shouldOpen;
-    syncMobileForcedCollapsedState();
 
     if (shouldOpen) {
       clearCloseCommitTimer();
@@ -433,28 +423,6 @@
 
     if (!shouldOpen && restoreFocus && refs.mobileMenuButton instanceof HTMLButtonElement) {
       refs.mobileMenuButton.focus();
-    }
-  };
-
-  const syncMobileForcedCollapsedState = () => {
-    const shouldForceCollapsed = Boolean(
-      isMobileViewport() &&
-      (
-        state.menuState?.isListViewVisible === false ||
-        state.mobileMenuForceCollapsed
-      )
-    );
-    const forceCollapsedNow =
-      root.getAttribute(FORCE_COLLAPSED_MOBILE_ATTR) === 'true';
-
-    if (shouldForceCollapsed === forceCollapsedNow) {
-      return;
-    }
-
-    if (shouldForceCollapsed) {
-      root.setAttribute(FORCE_COLLAPSED_MOBILE_ATTR, 'true');
-    } else {
-      root.removeAttribute(FORCE_COLLAPSED_MOBILE_ATTR);
     }
   };
 
@@ -1556,8 +1524,6 @@
     if (!(refs.chevronButton instanceof HTMLButtonElement)) {
       return;
     }
-
-    syncMobileForcedCollapsedState();
 
     if (!state.menuState?.isListViewVisible) {
       state.suppressAutoSticky = false;

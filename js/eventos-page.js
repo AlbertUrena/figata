@@ -4,7 +4,6 @@
   const MOBILE_BREAKPOINT = 820;
   const MOBILE_MENU_PANEL_ID = 'navbar-mobile-menu-panel';
   const MOBILE_MENU_CLOSE_COMMIT_MS = 460;
-  const FORCE_COLLAPSED_MOBILE_ATTR = 'data-nav-force-collapsed-mobile';
   const BURGER_ANIMATION_MS = 240;
   const PHOTO_TOUR_CLOSE_MS = 430;
   const PHOTO_VIEWER_CLOSE_MS = 300;
@@ -766,21 +765,6 @@
     state.burgerAnimationFrameId = window.requestAnimationFrame(step);
   };
 
-  const syncMobileForcedCollapsedState = () => {
-    const shouldForceCollapsed = Boolean(isMobileViewport() && state.mobileMenuOpen);
-    const forceCollapsedNow = root.getAttribute(FORCE_COLLAPSED_MOBILE_ATTR) === 'true';
-
-    if (shouldForceCollapsed === forceCollapsedNow) {
-      return;
-    }
-
-    if (shouldForceCollapsed) {
-      root.setAttribute(FORCE_COLLAPSED_MOBILE_ATTR, 'true');
-    } else {
-      root.removeAttribute(FORCE_COLLAPSED_MOBILE_ATTR);
-    }
-  };
-
   const setMobileMenuOpen = (nextOpen, { restoreFocus = false } = {}) => {
     if (!(refs.header instanceof HTMLElement)) {
       return;
@@ -812,7 +796,6 @@
     };
 
     state.mobileMenuOpen = shouldOpen;
-    syncMobileForcedCollapsedState();
 
     if (shouldOpen) {
       clearCloseCommitTimer();
@@ -921,7 +904,6 @@
       if (!isMobileViewport() && state.mobileMenuOpen) {
         setMobileMenuOpen(false);
       }
-      syncMobileForcedCollapsedState();
     };
 
     window.addEventListener('resize', closeOnDesktop, { passive: true });

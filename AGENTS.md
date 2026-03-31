@@ -79,6 +79,7 @@ website-figata/
 │   ├── menu-allergens.js         Menu allergen derivation + validation engine
 │   ├── menu-sensory.js           Structured sensory profile schema + validation engine
 │   ├── public-paths.js           Shared site-base/path helper for root + GitHub Pages subpath hosting
+│   ├── public-navbar-bootstrap.js Synchronous head bootstrap for the compact mobile public navbar state
 │   ├── public-navbar.js          Canonical public navbar loader/cache bridge for multi-route pages
 │   ├── public-scroll-indicator.css Overlay root scrollbar hide + progress meter styles
 │   ├── public-scroll-indicator.js  Native-scroll progress meter runtime for public routes
@@ -238,6 +239,8 @@ Admin modules must load **before** `app.js` in `admin/app/index.html`. Current o
 
 Shared runtime helpers used by traits/validation must load before their consumers:
 `shared/menu-traits.js` + `shared/menu-allergens.js` + `shared/menu-sensory.js` → contracts/data loaders → feature scripts.
+
+On public routes, `shared/public-navbar-bootstrap.js` must load synchronously in the page `<head>` before route styles so mobile first paint starts in the compact navbar state.
 
 On public routes, `shared/public-paths.js` must load before other route scripts that resolve site-relative URLs or parse the current pathname.
 
