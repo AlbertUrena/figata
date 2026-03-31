@@ -4896,7 +4896,8 @@ body.home-page-body.home-virtual-tour-open {
   }
 
   .site-header[data-menu-detail-nav] {
-    will-change: transform;
+    will-change: auto;
+    transition: none;
   }
 
   .site-header[data-menu-detail-nav="hidden"] {
@@ -4916,17 +4917,17 @@ body.home-page-body.home-virtual-tour-open {
 
   .site-header[data-menu-detail-nav="account-only"] .navbar {
     justify-content: flex-end;
-    padding-inline: 14px;
+    padding-inline: 0;
   }
 
   .site-header[data-menu-detail-nav="account-only"] .navbar--menu-route .navbar__inner {
     display: flex;
     justify-content: flex-end;
     align-items: flex-start;
-    width: auto;
+    width: 0;
     min-width: 0;
     min-height: 0;
-    height: auto;
+    height: 0;
     margin-inline: 0;
     padding: 0;
     background: transparent;
@@ -4947,31 +4948,20 @@ body.home-page-body.home-virtual-tour-open {
   }
 
   .site-header[data-menu-detail-nav="account-only"] .navbar--menu-route .navbar__actions {
-    width: auto;
+    width: 0;
     min-width: 0;
     justify-self: auto;
-    pointer-events: auto;
+    pointer-events: none;
   }
 
   .site-header[data-menu-detail-nav="account-only"] .navbar--menu-route .navbar__mobile-actions {
-    display: inline-flex;
+    display: none;
     gap: 0;
-    pointer-events: auto;
+    pointer-events: none;
   }
 
   .site-header[data-menu-detail-nav="account-only"] .navbar--menu-route .navbar__mobile-action--account {
-    color: rgba(240, 239, 237, 0.92);
-    background: rgba(14, 12, 10, 0.56);
-    box-shadow:
-      0 10px 24px rgba(0, 0, 0, 0.3),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(18px) saturate(1.06);
-    -webkit-backdrop-filter: blur(18px) saturate(1.06);
-  }
-
-  .site-header[data-menu-detail-nav="account-only"] .navbar--menu-route .navbar__mobile-action--account:hover,
-  .site-header[data-menu-detail-nav="account-only"] .navbar--menu-route .navbar__mobile-action--account:focus-visible {
-    background: rgba(14, 12, 10, 0.64);
+    display: none;
   }
 
   .hero {

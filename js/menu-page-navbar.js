@@ -157,6 +157,7 @@
     mobileMenuButton: null,
     mobileMenuPanel: null,
     mobileMenuLinks: [],
+    detailAccountSlot: null,
     sentinel: null,
   };
 
@@ -188,6 +189,71 @@
     return Array.from(parent.children).some(
       (child) => child instanceof HTMLElement && child.classList.contains(className)
     );
+  };
+
+  const getDetailMediaRoot = () => document.getElementById('menu-detail-media');
+
+  const ensureDetailAccountSlot = () => {
+    const detailMedia = getDetailMediaRoot();
+
+    if (!(detailMedia instanceof HTMLElement)) {
+      return null;
+    }
+
+    let slot = refs.detailAccountSlot;
+
+    if (!(slot instanceof HTMLElement) || !detailMedia.contains(slot)) {
+      slot = detailMedia.querySelector('.menu-page-detail__account-slot');
+    }
+
+    if (!(slot instanceof HTMLElement)) {
+      slot = document.createElement('div');
+      slot.className = 'menu-page-detail__account-slot';
+      detailMedia.appendChild(slot);
+    }
+
+    refs.detailAccountSlot = slot;
+    return slot;
+  };
+
+  const syncDetailAccountMount = (detailAccountOnly) => {
+    const accountButton = refs.mobileAccountButton;
+
+    if (!(accountButton instanceof HTMLButtonElement)) {
+      return;
+    }
+
+    const shouldMountInDetail = detailAccountOnly && isMobileViewport();
+
+    if (shouldMountInDetail) {
+      const slot = ensureDetailAccountSlot();
+
+      if (slot instanceof HTMLElement) {
+        if (accountButton.parentElement !== slot) {
+          slot.appendChild(accountButton);
+        }
+
+        accountButton.classList.add('menu-page-detail__account-button');
+        return;
+      }
+    }
+
+    if (
+      refs.mobileActions instanceof HTMLElement &&
+      accountButton.parentElement !== refs.mobileActions
+    ) {
+      refs.mobileActions.appendChild(accountButton);
+    }
+
+    accountButton.classList.remove('menu-page-detail__account-button');
+
+    if (
+      refs.detailAccountSlot instanceof HTMLElement &&
+      !refs.detailAccountSlot.hasChildNodes()
+    ) {
+      refs.detailAccountSlot.remove();
+      refs.detailAccountSlot = null;
+    }
   };
 
   const isCanonicalSharedNavbar = () => {
@@ -1598,6 +1664,7 @@
     header.dataset.menuStickySearch = searchOpen ? 'open' : 'closed';
     header.dataset.menuStickyManual = state.suppressAutoSticky ? 'true' : 'false';
     header.dataset.menuDetailNav = detailAccountOnly ? 'account-only' : 'visible';
+    syncDetailAccountMount(detailAccountOnly);
 
     if (navbar instanceof HTMLElement) {
       navbar.inert = !detailNavVisible;

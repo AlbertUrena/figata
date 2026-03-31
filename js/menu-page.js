@@ -85,6 +85,7 @@
   const FILTER_MODAL_FOOTER_SHADOW_EPSILON = 2;
   const SEARCH_EMPTY_ART_PATH = 'assets/home/no-result.webp';
   const DETAIL_EDITORIAL_HERO_QUERY = window.matchMedia('(max-width: 767px)');
+  const MENU_ROUTE_MOBILE_QUERY = window.matchMedia('(max-width: 820px)');
   const MOBILE_CARD_QUERY = window.matchMedia('(max-width: 1023px)');
   const MENU_GROUPS = [
     {
@@ -5932,9 +5933,13 @@
     }
 
     const normalizedDirection = normalizeMenuRouteTransitionDirection(direction);
+    const suppressBackTransitionOnMobile =
+      normalizedDirection === MENU_ROUTE_VIEW_TRANSITION_BACK &&
+      MENU_ROUTE_MOBILE_QUERY.matches;
     const canAnimate =
       animate &&
       normalizedDirection !== 'none' &&
+      !suppressBackTransitionOnMobile &&
       !reducedMotionQuery.matches &&
       supportsMenuRouteViewTransition();
 

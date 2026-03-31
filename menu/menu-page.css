@@ -3567,6 +3567,49 @@ html[data-account-card-vt="active"]::view-transition-new(menu-account-toast) {
   overflow: visible;
 }
 
+.menu-page-detail__account-slot {
+  position: absolute;
+  top: var(--menu-detail-space-3);
+  right: var(--menu-detail-space-3);
+  z-index: 3;
+}
+
+.menu-page-detail__account-button {
+  width: var(--menu-detail-size-back-button);
+  height: var(--menu-detail-size-back-button);
+  padding: 0;
+  border: 1px solid var(--menu-detail-color-border-medium);
+  border-radius: var(--menu-detail-radius-pill);
+  background: var(--menu-detail-color-glass-back-bg);
+  -webkit-backdrop-filter: blur(18px) saturate(1.06);
+  backdrop-filter: blur(18px) saturate(1.06);
+  color: var(--menu-detail-color-glass-back-text);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: var(--menu-detail-shadow-glass-control);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.menu-page-detail__account-button:hover,
+.menu-page-detail__account-button:focus-visible {
+  color: var(--menu-detail-color-text-primary);
+  border-color: var(--menu-detail-color-border-strong);
+}
+
+.menu-page-detail__account-button:active {
+  transform: translateY(1px);
+}
+
+.menu-page-detail__account-button svg {
+  display: block;
+  width: var(--menu-detail-size-back-icon);
+  height: var(--menu-detail-size-back-icon);
+}
+
 .menu-page-detail__back-label {
   position: absolute;
   width: 1px;
@@ -5934,6 +5977,16 @@ html[data-account-card-vt="active"]::view-transition-new(menu-account-toast) {
   .menu-page-detail__back {
     top: var(--menu-detail-space-7-5);
     left: var(--menu-detail-space-3-75);
+    width: var(--menu-detail-size-back-button-mobile);
+    height: var(--menu-detail-size-back-button-mobile);
+  }
+
+  .menu-page-detail__account-slot {
+    top: var(--menu-detail-space-7-5);
+    right: var(--menu-detail-space-3-75);
+  }
+
+  .menu-page-detail__account-button {
     width: var(--menu-detail-size-back-button-mobile);
     height: var(--menu-detail-size-back-button-mobile);
   }
