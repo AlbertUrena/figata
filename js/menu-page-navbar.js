@@ -50,7 +50,6 @@
   const MOBILE_BREAKPOINT = 820;
   const MOBILE_MENU_PANEL_ID = 'navbar-mobile-menu-panel';
   const MOBILE_MENU_CLOSE_COMMIT_MS = 460;
-  const DETAIL_NAV_REVEAL_SCROLL_Y = 125;
   const BURGER_ANIMATION_MS = 240;
   const MOBILE_SEARCH_OPEN_GAP_PX = 14;
   const MOBILE_SEARCH_OPEN_MIN_WIDTH = 184;
@@ -345,9 +344,9 @@
 
   const setMobileMenuOpen = (nextOpen, { restoreFocus = false } = {}) => {
     const isMobile = isMobileViewport();
-    const detailNavHidden = header.dataset.menuDetailNav === 'hidden';
-    const mobileActionsInteractive = isMobile && !detailNavHidden;
-    const shouldOpen = Boolean(nextOpen) && mobileActionsInteractive;
+    const detailAccountOnly = header.dataset.menuDetailNav === 'account-only';
+    const mobileMenuAvailable = isMobile && !detailAccountOnly;
+    const shouldOpen = Boolean(nextOpen) && mobileMenuAvailable;
     const previousNavPhase = normalizeText(header.dataset.menuMobileNav);
     const clearCloseCommitTimer = () => {
       if (state.mobileMenuCloseCommitTimerId) {
@@ -406,7 +405,11 @@
         'aria-label',
         shouldOpen ? 'Cerrar navegación principal' : 'Abrir navegación principal'
       );
-      refs.mobileMenuButton.tabIndex = mobileActionsInteractive ? 0 : -1;
+      refs.mobileMenuButton.tabIndex = mobileMenuAvailable ? 0 : -1;
+      refs.mobileMenuButton.setAttribute(
+        'aria-hidden',
+        mobileMenuAvailable ? 'false' : 'true'
+      );
       if (rebuiltBurgerIcon || burgerStateChanged) {
         syncBurgerAnimation(shouldOpen, { animate: !rebuiltBurgerIcon });
       }
@@ -1553,11 +1556,8 @@
     const searchOpen = stickyActive && state.stickySearchOpen;
     const isMobile = isMobileViewport();
     const isListViewVisible = state.menuState?.isListViewVisible !== false;
-    const detailNavVisible = !(
-      isMobile &&
-      !isListViewVisible &&
-      window.scrollY < DETAIL_NAV_REVEAL_SCROLL_Y
-    );
+    const detailAccountOnly = isMobile && !isListViewVisible;
+    const detailNavVisible = true;
     const desktopSearchOpen = searchOpen && !isMobile;
     const mobileSearchOpen = searchOpen && isMobile;
     const activeElement = document.activeElement;
@@ -1597,25 +1597,26 @@
     header.dataset.menuStickyMode = stickyActive ? 'sticky' : 'default';
     header.dataset.menuStickySearch = searchOpen ? 'open' : 'closed';
     header.dataset.menuStickyManual = state.suppressAutoSticky ? 'true' : 'false';
-    header.dataset.menuDetailNav = detailNavVisible ? 'visible' : 'hidden';
+    header.dataset.menuDetailNav = detailAccountOnly ? 'account-only' : 'visible';
 
     if (navbar instanceof HTMLElement) {
       navbar.inert = !detailNavVisible;
     }
 
-    if (!detailNavVisible || !isMobile || searchOpen) {
+    if (detailAccountOnly || !isMobile || searchOpen) {
       setMobileMenuOpen(false);
     } else {
       setMobileMenuOpen(state.mobileMenuOpen);
     }
-    const mobileActionsInteractive = isMobile && detailNavVisible;
+    const mobileActionsVisible = isMobile && detailNavVisible;
+    const mobileAuxActionsVisible = isMobile && !detailAccountOnly;
 
     if (refs.mobileActions instanceof HTMLElement) {
-      refs.mobileActions.inert = !mobileActionsInteractive;
+      refs.mobileActions.inert = !mobileActionsVisible;
     }
 
     if (refs.mobileSearchButton instanceof HTMLButtonElement) {
-      const mobileSearchVisible = mobileActionsInteractive && stickyActive;
+      const mobileSearchVisible = mobileAuxActionsVisible && stickyActive;
       refs.mobileSearchButton.tabIndex = mobileSearchVisible ? 0 : -1;
       refs.mobileSearchButton.setAttribute('aria-hidden', mobileSearchVisible ? 'false' : 'true');
       refs.mobileSearchButton.setAttribute(
@@ -1627,7 +1628,7 @@
     }
 
     if (refs.mobileSearchTool instanceof HTMLElement) {
-      const mobileSearchVisible = mobileActionsInteractive && stickyActive;
+      const mobileSearchVisible = mobileAuxActionsVisible && stickyActive;
       refs.mobileSearchTool.setAttribute('aria-hidden', mobileSearchVisible ? 'false' : 'true');
       refs.mobileSearchTool.inert = !mobileSearchVisible;
     }
@@ -1646,10 +1647,14 @@
     }
 
     if (refs.mobileAccountButton instanceof HTMLButtonElement) {
-      refs.mobileAccountButton.tabIndex = mobileActionsInteractive ? 0 : -1;
+      refs.mobileAccountButton.tabIndex = mobileActionsVisible ? 0 : -1;
       refs.mobileAccountButton.setAttribute(
         'aria-disabled',
-        mobileActionsInteractive ? 'false' : 'true'
+        mobileActionsVisible ? 'false' : 'true'
+      );
+      refs.mobileAccountButton.setAttribute(
+        'aria-hidden',
+        mobileActionsVisible ? 'false' : 'true'
       );
       refs.mobileAccountButton.setAttribute(
         'aria-expanded',
@@ -1693,8 +1698,17 @@
     positionCompactPill();
 
     if (!searchOpen && activeInsideCompactSearch) {
-      if (isMobile && refs.mobileSearchButton instanceof HTMLButtonElement) {
+      if (
+        isMobile &&
+        !detailAccountOnly &&
+        refs.mobileSearchButton instanceof HTMLButtonElement
+      ) {
         refs.mobileSearchButton.focus();
+      } else if (
+        isMobile &&
+        refs.mobileAccountButton instanceof HTMLButtonElement
+      ) {
+        refs.mobileAccountButton.focus();
       } else if (refs.searchButton instanceof HTMLButtonElement) {
         refs.searchButton.focus();
       }
@@ -1718,7 +1732,7 @@
     }
 
     if (
-      !mobileActionsInteractive &&
+      !mobileActionsVisible &&
       activeElement instanceof HTMLElement &&
       refs.mobileActions instanceof HTMLElement &&
       refs.mobileActions.contains(activeElement)

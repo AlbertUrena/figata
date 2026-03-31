@@ -4909,6 +4909,29 @@ body.home-page-body.home-virtual-tour-open {
     transform: translateY(0);
   }
 
+  .site-header[data-menu-detail-nav="account-only"] {
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .site-header[data-menu-detail-nav="account-only"] .navbar--menu-route .navbar__brand-slot,
+  .site-header[data-menu-detail-nav="account-only"] .navbar--menu-route .navbar__center-shell,
+  .site-header[data-menu-detail-nav="account-only"] .navbar--menu-route .navbar__mobile-search-tool,
+  .site-header[data-menu-detail-nav="account-only"] .navbar--menu-route .navbar__mobile-action--burger,
+  .site-header[data-menu-detail-nav="account-only"] .navbar--menu-route .navbar__mobile-menu-panel {
+    display: none;
+  }
+
+  .site-header[data-menu-detail-nav="account-only"] .navbar--menu-route .navbar__actions {
+    width: max-content;
+    min-width: max-content;
+    justify-self: end;
+  }
+
+  .site-header[data-menu-detail-nav="account-only"] .navbar--menu-route .navbar__mobile-actions {
+    gap: 0;
+  }
+
   .hero {
     padding-top: calc(var(--navbar-height) + 44px);
     padding-bottom: 56px;
