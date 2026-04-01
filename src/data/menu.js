@@ -528,11 +528,9 @@
     const mediaApi = window.FigataData?.media || null;
 
     if (mediaApi?.loadMediaStore) {
-      try {
-        await mediaApi.loadMediaStore();
-      } catch (error) {
+      void mediaApi.loadMediaStore().catch((error) => {
         console.warn('[menu] No se pudo cargar media.json; se usaran campos legacy de imagen.', error);
-      }
+      });
     }
 
     const [menu, categoriesJson, availabilityJson, ingredientsJson] = await Promise.all([

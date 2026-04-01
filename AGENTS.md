@@ -44,7 +44,7 @@ website-figata/
 ├── js/                        ← Public site JavaScript (13 scripts)
 │   ├── home-config.js            Fetches data/home.json, renders homepage sections
 │   ├── mas-pedidas.js            Menu rendering engine (largest: 34KB)
-│   ├── menu-route-transition.js  Home navbar `/menu/` transition handoff
+│   ├── menu-route-transition.js  Shared public route-transition handoff for home/menu/eventos
 │   ├── menu-page.js              Full menu page renderer (Events-style top tabs + category grids)
 │   ├── menu-page-navbar.js       `/menu/` sticky-menu enhancer for the shared navbar
 │   ├── eventos-page.js           `/eventos/` enhancer (cotizador Pizza Party + modal variedades, FAQ, hero video, media rail, navbar burger/menu mobile)
@@ -245,7 +245,10 @@ On public routes, `shared/public-navbar-bootstrap.js` must load synchronously in
 On public routes, `shared/public-paths.js` must load before other route scripts that resolve site-relative URLs or parse the current pathname.
 
 On `/menu/`, route scripts must load in this order:
-`shared/public-paths.js` → `shared/public-navbar.js` → `js/navbar-collapse.js` → `js/menu-page.js` → `js/menu-page-navbar.js`
+`shared/public-paths.js` → `shared/public-navbar.js` → `shared/figata-cover-transition.js` → `js/menu-route-transition.js` → `js/reload-cover.js` → `js/navbar-collapse.js` → `js/menu-page.js` → `js/menu-page-navbar.js`
+
+On `/eventos/`, route scripts must load in this order:
+`shared/public-paths.js` → `shared/public-navbar.js` → `shared/figata-cover-transition.js` → `js/menu-route-transition.js` → `js/reload-cover.js` → `js/navbar-collapse.js` → `js/eventos-page.js`
 
 The shared public scroll indicator is optional and should be loaded after the route's primary public scripts so it can measure the final document scroll state without affecting route initialization:
 `shared/public-scroll-indicator.css` in the page `<head>` and `shared/public-scroll-indicator.js` near the end of the public script list.

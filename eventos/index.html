@@ -6,6 +6,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <script src="shared/public-navbar-bootstrap.js"></script>
   <title>Eventos | Pizza Party by Figata</title>
+  <script>
+    (function () {
+      var navEntry =
+        window.performance &&
+        window.performance.getEntriesByType &&
+        window.performance.getEntriesByType("navigation")[0];
+      var navType = navEntry && navEntry.type ? navEntry.type : null;
+      var shouldRunCover =
+        navType === "navigate" ||
+        navType === "reload" ||
+        (!navType &&
+          window.performance &&
+          window.performance.navigation &&
+          (window.performance.navigation.type === 0 ||
+            window.performance.navigation.type === 1));
+
+      if (shouldRunCover) {
+        document.documentElement.classList.add("page-reload-transition");
+      }
+    })();
+  </script>
   <meta name="description" content="Pizza Party by Figata: llevamos hornos portátiles y cocinamos pizza en vivo para tu evento.">
   <link rel="icon" type="image/png" href="assets/favicon.png">
   <link rel="stylesheet" href="styles.css">
@@ -13,6 +34,13 @@
   <link rel="stylesheet" href="shared/public-scroll-indicator.css">
 </head>
 <body class="eventos-page-body" data-nav-collapse-threshold="460" data-nav-collapse-target=".eventos-chip">
+  <div class="reload-transition-cover" aria-hidden="true">
+    <svg class="reload-transition-cover__svg" viewBox="0 0 1366 768" preserveAspectRatio="none" focusable="false" aria-hidden="true">
+      <path class="reload-transition-cover__bg" d="M0 0L0 0c683 0 683 0 1366 0l0 0v768H0V0z"></path>
+      <path class="reload-transition-cover__morph-leave" d="M1366,768L1366,768C1040.2,660.1,348.6,657.8,0,768l0,0V0h1366V768z"></path>
+      <path class="reload-transition-cover__morph-enter" d="M0.5,82.1L0.5,82.1c353-103.9,1015-114.8,1366,0l0,0l0,685.9H0.5L0.5,82.1z"></path>
+    </svg>
+  </div>
   <header class="site-header" data-public-navbar-host data-public-navbar-hide-cta data-eventos-burger-nav data-menu-mobile-nav="closed">
     <nav class="navbar" aria-label="Navegación principal">
       <div class="navbar__inner">
@@ -673,6 +701,9 @@
 
   <script src="shared/public-paths.js" defer></script>
   <script src="shared/public-navbar.js" defer></script>
+  <script src="shared/figata-cover-transition.js" defer></script>
+  <script src="js/menu-route-transition.js" defer></script>
+  <script src="js/reload-cover.js" defer></script>
   <script src="js/navbar-collapse.js" defer></script>
   <script src="js/eventos-page.js" defer></script>
   <script src="shared/public-scroll-indicator.js" defer></script>

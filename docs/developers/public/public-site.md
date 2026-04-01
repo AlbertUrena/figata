@@ -77,7 +77,7 @@ Homepage (`index.html`) scripts are loaded with `defer` and execute in order aft
 ```
 1.  shared/public-paths.js      — Shared site-base helper for root + GitHub Pages subpath hosting
 2.  shared/figata-cover-transition.js — Shared transition engine
-3.  js/menu-route-transition.js — Navbar `/menu/` transition handoff (home only)
+3.  js/menu-route-transition.js — Shared public route handoff for home/menu/eventos links and CTAs
 4.  js/reload-cover.js          — Entry/reload cover transition
 5.  shared/public-navbar.js     — Captures canonical navbar markup for cross-route reuse
 6.  js/navbar-collapse.js       — Navbar collapse/expand animation controller
@@ -110,17 +110,18 @@ head. shared/public-navbar-bootstrap.js
 1. shared/public-paths.js
 2. shared/public-navbar.js
 3. shared/figata-cover-transition.js
-4. js/reload-cover.js
-5. js/navbar-collapse.js
-6. shared/menu-traits.js
-7. shared/menu-allergens.js
-8. shared/menu-sensory.js
-9. src/data/media.js
-10. src/data/menu.js
-11. src/data/ingredients.js
-12. js/menu-page.js
-13. js/menu-page-navbar.js
-14. shared/public-scroll-indicator.js
+4. js/menu-route-transition.js
+5. js/reload-cover.js
+6. js/navbar-collapse.js
+7. shared/menu-traits.js
+8. shared/menu-allergens.js
+9. shared/menu-sensory.js
+10. src/data/media.js
+11. src/data/menu.js
+12. src/data/ingredients.js
+13. js/menu-page.js
+14. js/menu-page-navbar.js
+15. shared/public-scroll-indicator.js
 ```
 
 Eventos page (`eventos/index.html`) loads:
@@ -129,9 +130,12 @@ Eventos page (`eventos/index.html`) loads:
 head. shared/public-navbar-bootstrap.js
 1. shared/public-paths.js
 2. shared/public-navbar.js
-3. js/navbar-collapse.js
-4. js/eventos-page.js
-5. shared/public-scroll-indicator.js
+3. shared/figata-cover-transition.js
+4. js/menu-route-transition.js
+5. js/reload-cover.js
+6. js/navbar-collapse.js
+7. js/eventos-page.js
+8. shared/public-scroll-indicator.js
 ```
 
 ### GitHub Pages Notes
@@ -275,13 +279,14 @@ Navbar collapse animation controller:
 Reload overlay animation:
 - Uses `shared/figata-cover-transition.js` as the single transition engine
 - Plays exit phase on page entry/reload
+- On route handoff, adds a preview-style content rise reveal on the destination page so cross-route navigation feels closer to the homepage `Detalles` modal
 - Supports route handoff via `sessionStorage` (`figata:route-transition`)
 
 #### `js/menu-route-transition.js`
-Menu route transition binder:
-- Intercepts only the navbar link to `/menu/` on home
+Public route transition binder:
+- Intercepts managed cross-route public links between home, `/menu/`, and `/eventos/`
 - Plays transition enter phase in origin
-- Sets handoff flag for destination exit phase
+- Sets a structured handoff payload for destination exit phase
 - Ignores modified clicks (`cmd/ctrl`, `_blank`, etc.)
 
 #### `shared/figata-cover-transition.js`

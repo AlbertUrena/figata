@@ -50,15 +50,18 @@ js/mas-pedidas.js
 ```
 Menu page route loads (/menu/)
     ↓
+menu/index.html         → mobile-only initial catalog seed mounts the first real 2-column section shell before deferred route scripts run
+    ↘
 shared/public-navbar.js → mounts canonical navbar from homepage source and rejects route-mutated variants
-    ↓
+    ↘
 src/data/menu.js      → getMenuItemsByCategory()
 src/data/media.js     → media variants + editorial gallery auto-detection + prefetch helpers
 shared/menu-allergens.js → derived `item.allergens` for detail view + allergen filter exclusion
 shared/menu-sensory.js → exposes the fixed 8-axis sensory schema for detail-view sensory visualizations
     ↓
 js/menu-page.js
-    ├── renderMenu()                 ← renders 5 grouped tabs + items
+    ├── renderMenu()                 ← starts without waiting for the shared navbar and renders 5 grouped tabs + items
+    ├── renderMobileCatalogShell()   ← mobile-only: replaces the seeded shell with the full real 2-column catalog shell, then hydrates cards top-down in place
     ├── renderFilterModalShell()     ← hydrates the `/menu/` filter modal placeholders from runtime counts
     ├── updateActiveCategoryByScroll() ← scroll-synced active category state
     ├── scrollToCategory()           ← offset-aware scroll navigation
@@ -89,10 +92,14 @@ The route is item-driven but uses a fixed top-level navigation grouping:
 - The pizza subtype tabs use that same draft/apply flow: `Todas` leaves the catalog untouched, while `Clásicas` and `De autor` collapse the visible catalog to only that pizza source
 - The `Dieta` cards also write into drafts only and evaluate against the derived runtime `item.dietary` traits; selecting both `Vegetariana` and `Vegana` uses OR semantics
 - The organoleptic chips also stay in drafts until apply and filter against runtime `item.experience_tags`; selecting multiple chips uses OR semantics
+- The organoleptic chip icons now load on demand on the first filter-modal open, so the initial `/menu/` render no longer pulls `ingredients.json` just to paint those chips
+- The price range slider and modal shell now initialize after first paint, so the initial list render is no longer blocked by modal-only setup
 - Structured detail-view sensory profiles live separately in runtime `item.sensory_profile`; they do not replace the organoleptic filter tags
 - The allergen chips in that modal use canonical allergen IDs (`gluten`, `milk`, `nuts`, `fish`) and filter against the derived runtime `item.allergens`
 - The price range slider and the `Mostrar X platos` counter update against the current drafts in real time, while `Limpiar` resets drafts only
 - While searching, category grouping is replaced by a single unified results grid; if nothing matches, the page shows a single global empty state
+- Mobile browse-only cold loads now seed the first visible catalog grid immediately from the HTML shell, hide the standalone loading text, and then let `js/menu-page.js` replace that seed with the full real catalog shell before hydrating cards in DOM order from top to bottom
+- Desktop keeps the existing full render path; the mobile skeleton/progressive fill flow does not run there
 - The shared navbar now treats compact mobile mode as the canonical public behavior from first paint, while desktop keeps the manual collapse threshold as stage 1
 - After the full `.menu-page-controls` block clears the fixed header, stage 2 transforms that same navbar into a sticky compact menu navigator
 - Mobile: same top tabs visual system, allowed to overflow horizontally instead of using a drawer
@@ -120,6 +127,8 @@ The route is item-driven but uses a fixed top-level navigation grouping:
 - Reuses `.mas-pedidas-card` structure and CTA hierarchy
 - Maintains premium dark visual language with route-local spacing rules
 - Uses full-page grid targets: 4 columns desktop, 2 columns mobile
+- On `/menu/`, hover media stays desktop-only (`(hover: hover) and (pointer: fine)`); mobile cards never prepare or request hover images
+- On mobile browse-only cold loads, the first visible section is seeded immediately with the real `.mas-pedidas-card` structure in skeleton state, then the full catalog shell is mounted and hydrated row-by-row; no alternate card design or duplicate grid system is used
 
 ---
 

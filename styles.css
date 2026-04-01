@@ -4276,6 +4276,11 @@ body.home-page-body.home-virtual-tour-open {
     opacity: 0.55;
   }
 
+  body.home-page-body #horarios .horarios-mobile__row--today.horarios-mobile__row--muted-closed .horarios-mobile__day,
+  body.home-page-body #horarios .horarios-mobile__row--today.horarios-mobile__row--muted-closed .horarios-mobile__day-icon {
+    opacity: 1;
+  }
+
   body.home-page-body #horarios .horarios-mobile__chip {
     display: inline-flex;
     align-items: center;

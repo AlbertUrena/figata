@@ -87,6 +87,12 @@
   const DETAIL_EDITORIAL_HERO_QUERY = window.matchMedia('(max-width: 767px)');
   const MENU_ROUTE_MOBILE_QUERY = window.matchMedia('(max-width: 820px)');
   const MOBILE_CARD_QUERY = window.matchMedia('(max-width: 1023px)');
+  const CARD_HOVER_MEDIA_QUERY = window.matchMedia('(hover: hover) and (pointer: fine)');
+  const CARD_IMAGE_PRIORITY_COUNT = 4;
+  const MOBILE_PROGRESSIVE_CARD_BATCH_SIZE = 2;
+  const NON_CRITICAL_MENU_TASK_TIMEOUT_MS = 900;
+  const INITIAL_MOBILE_SEED_CARD_COUNT = 4;
+  const INITIAL_MOBILE_CATALOG_SEED_ATTR = 'data-initial-mobile-catalog-seed';
   const MENU_GROUPS = [
     {
       id: 'entradas',
@@ -715,6 +721,7 @@
     tabsBound: false,
     searchTransitionToken: 0,
     searchTransitioning: false,
+    catalogRenderToken: 0,
     filterModalOpen: false,
     accountModalOpen: false,
     compareModalOpen: false,
@@ -727,6 +734,7 @@
     compareSearchQuery: '',
     globalPriceMin: 0,
     globalPriceMax: 0,
+    priceRangeInitialized: false,
   };
   const ADMIN_PREVIEW_MESSAGE_READY = 'figata-admin-preview:ready';
   const ADMIN_PREVIEW_MESSAGE_UPDATE = 'figata-admin-preview:update-detail';
@@ -773,6 +781,7 @@
   let menuRouteViewTransitionTask = Promise.resolve();
   let lastRenderedRouteItemId = '';
   let organolepticIconsPromise = null;
+  let organolepticIconsResolved = false;
   let homeMenuDetailContextPromise = null;
   let organolepticIconPathsByProfileId = new Map();
   let searchHelperTimerId = 0;
@@ -810,6 +819,8 @@
 
   const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   const isMobileCardViewport = () => MOBILE_CARD_QUERY.matches;
+  const supportsCardHoverMedia = () =>
+    CARD_HOVER_MEDIA_QUERY.matches && !MENU_ROUTE_MOBILE_QUERY.matches;
 
   const normalizeText = (value) => String(value || '').trim();
   const resolveDetailPairingsTitleIconConfig = () => {
@@ -4691,6 +4702,15 @@
     bindPriceField(labelMax, maxInput, minInput, false);
 
     renderPriceDistribution();
+    state.priceRangeInitialized = true;
+  };
+
+  const ensureFilterModalRuntimeReady = () => {
+    if (!state.priceRangeInitialized) {
+      initPriceRange();
+    }
+
+    renderFilterModalShell();
   };
 
   const renderFilterModalShell = () => {
@@ -5174,7 +5194,8 @@
     }
 
     loadDraftFiltersFromApplied();
-    renderFilterModalShell();
+    ensureFilterModalRuntimeReady();
+    ensureOrganolepticIconsForFilterModal();
 
     if (!filterModal.hidden && state.filterModalOpen) {
       return;
@@ -5819,6 +5840,7 @@
     }
 
     if (!ingredientsApi?.loadIngredientsStore) {
+      organolepticIconsResolved = true;
       organolepticIconsPromise = Promise.resolve(organolepticIconPathsByProfileId);
       return organolepticIconsPromise;
     }
@@ -5837,23 +5859,31 @@
             ])
             .filter(([, iconPath]) => Boolean(iconPath))
         );
+        organolepticIconsResolved = true;
 
         return organolepticIconPathsByProfileId;
       })
       .catch((error) => {
         console.warn('[menu-page] No se pudieron cargar los iconos organolépticos.', error);
         organolepticIconPathsByProfileId = new Map();
+        organolepticIconsResolved = true;
         return organolepticIconPathsByProfileId;
       });
 
     return organolepticIconsPromise;
   };
 
-  loadOrganolepticIconPaths().then(() => {
-    if (state.itemsById.size > 0) {
-      renderOrganolepticProfiles();
-    }
-  });
+  const ensureOrganolepticIconsForFilterModal = () => {
+    const shouldRefreshModal = !organolepticIconsResolved;
+
+    return loadOrganolepticIconPaths().then((iconPathsByProfileId) => {
+      if (shouldRefreshModal && state.filterModalOpen) {
+        renderFilterModalShell();
+      }
+
+      return iconPathsByProfileId;
+    });
+  };
 
   const getRouteItemIdFromPathname = (pathname = window.location.pathname) => {
     const normalizedPath = normalizeText(
@@ -10236,18 +10266,20 @@
     });
   };
 
-  const createCard = (card) => {
-    const node = cardTemplate.content.cloneNode(true);
-    const article = node.querySelector('.mas-pedidas-card');
-    const mediaContainer = node.querySelector('.mas-pedidas-card__media');
-    const baseImage = node.querySelector('.mas-pedidas-card__image--base');
-    const hoverImage = node.querySelector('.mas-pedidas-card__image--hover');
-    const title = node.querySelector('.mas-pedidas-card__title');
-    const description = node.querySelector('.mas-pedidas-card__description');
-    const metaRow = node.querySelector('.mas-pedidas-card__meta-row');
-    const meta = node.querySelector('.mas-pedidas-card__meta');
-    const price = node.querySelector('.mas-pedidas-card__price');
-    const cardActionButton = node.querySelector('.mas-pedidas-card__button');
+  const getCardParts = (root) => {
+    const article =
+      root instanceof HTMLElement && root.classList.contains('mas-pedidas-card')
+        ? root
+        : root.querySelector('.mas-pedidas-card');
+    const mediaContainer = root.querySelector('.mas-pedidas-card__media');
+    const baseImage = root.querySelector('.mas-pedidas-card__image--base');
+    const hoverImage = root.querySelector('.mas-pedidas-card__image--hover');
+    const title = root.querySelector('.mas-pedidas-card__title');
+    const description = root.querySelector('.mas-pedidas-card__description');
+    const metaRow = root.querySelector('.mas-pedidas-card__meta-row');
+    const meta = root.querySelector('.mas-pedidas-card__meta');
+    const price = root.querySelector('.mas-pedidas-card__price');
+    const cardActionButton = root.querySelector('.mas-pedidas-card__button');
 
     if (
       !(article instanceof HTMLElement) ||
@@ -10261,74 +10293,82 @@
       !(price instanceof HTMLElement) ||
       !(cardActionButton instanceof HTMLButtonElement)
     ) {
-      return document.createDocumentFragment();
+      return null;
     }
 
+    return {
+      article,
+      mediaContainer,
+      baseImage,
+      hoverImage,
+      title,
+      description,
+      metaRow,
+      meta,
+      price,
+      cardActionButton,
+    };
+  };
+
+  const syncCardInteractionState = (
+    { article, cardActionButton },
+    nextCard,
+    { skeleton = false } = {}
+  ) => {
     const mobileCardInteractive = isMobileCardViewport();
+    const isInteractive = !skeleton;
 
-    title.textContent = card.title;
-    description.textContent = card.description || '';
-    price.textContent = formatCardPrice(card.price);
-    meta.textContent = normalizeText(card.meta);
-    metaRow.hidden = !meta.textContent;
-    article.dataset.menuItemId = normalizeText(card.id);
-    article.classList.toggle('is-unavailable', !card.available);
-    article.classList.toggle('has-meta', !metaRow.hidden);
-    mediaContainer.classList.remove('is-empty');
-    article.classList.toggle('is-mobile-interactive', mobileCardInteractive);
+    article.classList.toggle('is-mobile-interactive', isInteractive && mobileCardInteractive);
+    article.classList.toggle('is-skeleton', skeleton);
+    article.setAttribute('data-card-state', skeleton ? 'skeleton' : 'ready');
 
-    if (mobileCardInteractive) {
+    if (skeleton) {
+      article.setAttribute('aria-hidden', 'true');
+    } else {
+      article.removeAttribute('aria-hidden');
+    }
+
+    if (isInteractive && mobileCardInteractive) {
       article.setAttribute('role', 'button');
       article.tabIndex = 0;
-      article.setAttribute('aria-label', `Ver ${card.title}`);
+      article.setAttribute('aria-label', `Ver ${nextCard.title}`);
     } else {
       article.removeAttribute('role');
       article.removeAttribute('tabindex');
       article.removeAttribute('aria-label');
     }
 
-    if (card.image) {
-      baseImage.src = card.image;
-      baseImage.alt = card.imageAlt || card.title;
-      baseImage.loading = 'lazy';
-      baseImage.decoding = 'async';
-      baseImage.hidden = false;
+    cardActionButton.disabled = skeleton;
+    cardActionButton.tabIndex = skeleton ? -1 : 0;
+    cardActionButton.setAttribute('aria-hidden', skeleton ? 'true' : 'false');
+  };
 
-      if (card.hoverImage && card.hoverImage !== card.image) {
-        hoverImage.src = card.hoverImage;
-        hoverImage.alt = '';
-        hoverImage.hidden = false;
-        article.classList.add('has-hover-image');
-      } else {
-        hoverImage.hidden = true;
-        hoverImage.removeAttribute('src');
-        article.classList.remove('has-hover-image');
-      }
-    } else {
-      baseImage.hidden = true;
-      baseImage.removeAttribute('src');
-      hoverImage.hidden = true;
-      hoverImage.removeAttribute('src');
-      mediaContainer.classList.add('is-empty');
-      article.classList.remove('has-hover-image');
+  const bindCardInteractions = (
+    { article, baseImage, hoverImage, cardActionButton },
+    nextCard
+  ) => {
+    if (article.dataset.cardInteractionsBound === 'true') {
+      return;
     }
+
+    article.dataset.cardInteractionsBound = 'true';
 
     cardActionButton.addEventListener('click', (event) => {
       if (isMobileCardViewport()) {
         event.preventDefault();
         event.stopPropagation();
 
-        if (card.available === false) {
-          openDetailFromListCard(card.id);
+        if (nextCard.available === false) {
+          openDetailFromListCard(nextCard.id);
           return;
         }
 
         const sourceImage = resolveCardAddSourceImage(baseImage, hoverImage);
-        void runMenuCartVisualAdd(sourceImage, card.id);
+        void runMenuCartVisualAdd(sourceImage, nextCard.id);
         return;
       }
 
-      openDetailFromListCard(card.id);
+      openDetailFromListCard(nextCard.id);
     });
 
     cardActionButton.addEventListener('keydown', (event) => {
@@ -10343,13 +10383,13 @@
       event.preventDefault();
       event.stopPropagation();
 
-      if (card.available === false) {
-        openDetailFromListCard(card.id);
+      if (nextCard.available === false) {
+        openDetailFromListCard(nextCard.id);
         return;
       }
 
       const sourceImage = resolveCardAddSourceImage(baseImage, hoverImage);
-      void runMenuCartVisualAdd(sourceImage, card.id);
+      void runMenuCartVisualAdd(sourceImage, nextCard.id);
     });
 
     article.addEventListener('click', (event) => {
@@ -10362,7 +10402,7 @@
         return;
       }
 
-      openDetailFromListCard(card.id);
+      openDetailFromListCard(nextCard.id);
     });
 
     article.addEventListener('keydown', (event) => {
@@ -10375,18 +10415,134 @@
       }
 
       event.preventDefault();
-      openDetailFromListCard(card.id);
+      openDetailFromListCard(nextCard.id);
     });
 
     article.addEventListener(
       'pointerenter',
       () => {
         if (mediaApi?.prefetch) {
-          mediaApi.prefetch(card.id, 'modal');
+          mediaApi.prefetch(nextCard.id, 'modal');
         }
       },
       { once: true }
     );
+  };
+
+  const populateCardNode = (
+    {
+      article,
+      mediaContainer,
+      baseImage,
+      hoverImage,
+      title,
+      description,
+      metaRow,
+      meta,
+      price,
+      cardActionButton,
+    },
+    nextCard,
+    {
+      prioritizeImage: shouldPrioritizeImage = false,
+      skeleton = false,
+    } = {}
+  ) => {
+    const allowHoverImage = supportsCardHoverMedia();
+
+    title.textContent = nextCard.title;
+    description.textContent = nextCard.description || '';
+    price.textContent = formatCardPrice(nextCard.price);
+    meta.textContent = normalizeText(nextCard.meta);
+    metaRow.hidden = !meta.textContent;
+    article.dataset.menuItemId = normalizeText(nextCard.id);
+    article.classList.toggle('is-unavailable', !nextCard.available);
+    article.classList.toggle('has-meta', !metaRow.hidden);
+    mediaContainer.classList.remove('is-empty');
+
+    syncCardInteractionState(
+      { article, cardActionButton },
+      nextCard,
+      { skeleton }
+    );
+
+    if (skeleton) {
+      mediaContainer.classList.remove('is-media-loading');
+      baseImage.hidden = true;
+      baseImage.removeAttribute('src');
+      baseImage.removeAttribute('fetchpriority');
+      hoverImage.hidden = true;
+      hoverImage.removeAttribute('src');
+      return;
+    }
+
+    if (nextCard.image) {
+      const clearMediaLoading = () => {
+        mediaContainer.classList.remove('is-media-loading');
+      };
+
+      mediaContainer.classList.add('is-media-loading');
+      baseImage.alt = nextCard.imageAlt || nextCard.title;
+      baseImage.loading = shouldPrioritizeImage ? 'eager' : 'lazy';
+      baseImage.fetchPriority = shouldPrioritizeImage ? 'high' : 'auto';
+      baseImage.setAttribute('fetchpriority', shouldPrioritizeImage ? 'high' : 'auto');
+      baseImage.decoding = 'async';
+      baseImage.hidden = false;
+      baseImage.addEventListener('load', clearMediaLoading, { once: true });
+      baseImage.addEventListener('error', clearMediaLoading, { once: true });
+      baseImage.src = nextCard.image;
+
+      if (baseImage.complete) {
+        clearMediaLoading();
+      }
+
+      if (allowHoverImage && nextCard.hoverImage && nextCard.hoverImage !== nextCard.image) {
+        hoverImage.src = nextCard.hoverImage;
+        hoverImage.alt = '';
+        hoverImage.loading = 'lazy';
+        hoverImage.decoding = 'async';
+        hoverImage.hidden = false;
+        article.classList.add('has-hover-image');
+      } else {
+        hoverImage.hidden = true;
+        hoverImage.removeAttribute('src');
+        article.classList.remove('has-hover-image');
+      }
+    } else {
+      mediaContainer.classList.remove('is-media-loading');
+      baseImage.hidden = true;
+      baseImage.removeAttribute('src');
+      baseImage.removeAttribute('fetchpriority');
+      hoverImage.hidden = true;
+      hoverImage.removeAttribute('src');
+      mediaContainer.classList.add('is-empty');
+      article.classList.remove('has-hover-image');
+    }
+
+    bindCardInteractions(
+      { article, baseImage, hoverImage, cardActionButton },
+      nextCard
+    );
+  };
+
+  const hydrateCardNode = (article, item, options = {}) => {
+    const parts = getCardParts(article);
+    if (!parts) {
+      return;
+    }
+
+    populateCardNode(parts, toCardViewModel(item), options);
+  };
+
+  const createCard = (card, { prioritizeImage = false, skeleton = false } = {}) => {
+    const node = cardTemplate.content.cloneNode(true);
+    const parts = getCardParts(node);
+
+    if (!parts) {
+      return document.createDocumentFragment();
+    }
+
+    populateCardNode(parts, card, { prioritizeImage, skeleton });
 
     return node;
   };
@@ -10432,7 +10588,7 @@
     art.src = toAbsoluteAssetPath(SEARCH_EMPTY_ART_PATH);
     art.alt = '';
     art.decoding = 'async';
-    art.loading = 'eager';
+    art.loading = 'lazy';
 
     const title = document.createElement('h2');
     title.className = 'menu-page-search-empty__title';
@@ -10455,12 +10611,37 @@
     return node;
   };
 
-  const createCategoryGrid = (items = []) => {
+  const createCategoryGrid = (
+    items = [],
+    {
+      prioritizeFirstItems = 0,
+      skeleton = false,
+      hydrationQueue = null,
+    } = {}
+  ) => {
     const grid = document.createElement('div');
     grid.className = 'menu-page-grid';
 
-    items.forEach((item) => {
-      grid.appendChild(createCard(toCardViewModel(item)));
+    items.forEach((item, index) => {
+      const shouldPrioritizeImage = index < prioritizeFirstItems;
+      const cardNode = createCardNode(item, {
+        prioritizeImage: shouldPrioritizeImage,
+        skeleton,
+      });
+
+      if (!(cardNode instanceof HTMLElement)) {
+        return;
+      }
+
+      if (skeleton && Array.isArray(hydrationQueue)) {
+        hydrationQueue.push({
+          node: cardNode,
+          item,
+          prioritizeImage: shouldPrioritizeImage,
+        });
+      }
+
+      grid.appendChild(cardNode);
     });
 
     return grid;
@@ -10479,7 +10660,16 @@
     return title;
   };
 
-  const renderPizzaCategoryContent = (section, category, visibleItems) => {
+  const renderPizzaCategoryContent = (
+    section,
+    category,
+    visibleItems,
+    {
+      prioritizeFirstItems = 0,
+      skeleton = false,
+      hydrationQueue = null,
+    } = {}
+  ) => {
     const itemsBySourceCategoryId = new Map();
 
     visibleItems.forEach((item) => {
@@ -10516,13 +10706,22 @@
       return;
     }
 
+    let remainingPriority = prioritizeFirstItems;
+
     renderedGroups.forEach(({ sourceCategory, items }) => {
       const subgroup = document.createElement('div');
       subgroup.className = 'menu-page-category__subgroup';
       subgroup.dataset.sourceCategoryId = normalizeText(sourceCategory?.id);
       subgroup.appendChild(createPizzaSubgroupLabel(sourceCategory, items));
-      subgroup.appendChild(createCategoryGrid(items));
+      subgroup.appendChild(
+        createCategoryGrid(items, {
+          prioritizeFirstItems: Math.max(remainingPriority, 0),
+          skeleton,
+          hydrationQueue,
+        })
+      );
       section.appendChild(subgroup);
+      remainingPriority = Math.max(0, remainingPriority - items.length);
     });
   };
 
@@ -10533,6 +10732,31 @@
     new Promise((resolve) => {
       window.setTimeout(resolve, ms);
     });
+
+  const scheduleAfterNextPaint = (callback) => {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        callback();
+      });
+    });
+  };
+
+  const scheduleNonCriticalTask = (
+    callback,
+    { timeout = NON_CRITICAL_MENU_TASK_TIMEOUT_MS } = {}
+  ) => {
+    if (typeof window.requestIdleCallback === 'function') {
+      window.requestIdleCallback(() => callback(), { timeout });
+      return;
+    }
+
+    window.setTimeout(callback, 80);
+  };
+
+  const invalidateCatalogRender = () => {
+    state.catalogRenderToken += 1;
+    return state.catalogRenderToken;
+  };
 
   const getSearchTransitionNodes = () => {
     const nodes = Array.from(
@@ -10920,6 +11144,7 @@
     getSearchResultsGrid() instanceof HTMLElement;
 
   const animateSearchResultItemsDiff = async (previousRenderState, nextRenderState) => {
+    invalidateCatalogRender();
     const grid = getSearchResultsGrid();
 
     if (!(grid instanceof HTMLElement)) {
@@ -11034,6 +11259,7 @@
   };
 
   const animateSearchResultsUpdate = async (nextRenderState) => {
+    invalidateCatalogRender();
     const token = state.searchTransitionToken + 1;
     state.searchTransitionToken = token;
     state.searchTransitioning = true;
@@ -11193,8 +11419,8 @@
     return nodes;
   };
 
-  const createCardNode = (item) => {
-    const fragment = createCard(toCardViewModel(item));
+  const createCardNode = (item, options = {}) => {
+    const fragment = createCard(toCardViewModel(item), options);
     const node = fragment instanceof DocumentFragment
       ? fragment.firstElementChild
       : fragment;
@@ -11219,7 +11445,229 @@
     state.renderedSearchQuery = query;
   };
 
+  const createCategorySectionElement = (
+    { category, visibleItems },
+    {
+      prioritizeFirstItems = 0,
+      skeleton = false,
+      hydrationQueue = null,
+    } = {}
+  ) => {
+    const section = document.createElement('section');
+    section.className = 'menu-page-category';
+    section.id = category.sectionId;
+    section.setAttribute('data-category-id', category.id);
+
+    const title = document.createElement('h2');
+    title.className = 'menu-page-category__title';
+    title.textContent = category.label;
+    section.appendChild(title);
+
+    if (visibleItems.length) {
+      if (category.id === PIZZA_GROUP_ID) {
+        renderPizzaCategoryContent(section, category, visibleItems, {
+          prioritizeFirstItems,
+          skeleton,
+          hydrationQueue,
+        });
+      } else {
+        section.appendChild(
+          createCategoryGrid(visibleItems, {
+            prioritizeFirstItems,
+            skeleton,
+            hydrationQueue,
+          })
+        );
+      }
+    } else {
+      section.appendChild(createEmptyState(category.emptyMessage));
+    }
+
+    return section;
+  };
+
+  const shouldUseMobileProgressiveCatalog = (renderState = buildRenderState()) =>
+    MOBILE_CARD_QUERY.matches &&
+    !isAdminPreviewMode &&
+    !getRouteItemId() &&
+    !renderState.isSearching &&
+    !renderState.isFilteredBrowse &&
+    renderState.totalMatches > 0;
+
+  const hasInitialMobileCatalogSeed = () =>
+    contentRoot.getAttribute(INITIAL_MOBILE_CATALOG_SEED_ATTR) === 'true';
+
+  const clearInitialMobileCatalogSeed = () => {
+    contentRoot.removeAttribute(INITIAL_MOBILE_CATALOG_SEED_ATTR);
+  };
+
+  const createInitialMobileCatalogSeedCategory = () => {
+    const initialGroup = tabEntries[0];
+
+    if (!initialGroup) {
+      return null;
+    }
+
+    return {
+      id: initialGroup.id,
+      label: initialGroup.label,
+      sectionId: toSectionId(initialGroup.id),
+      emptyMessage: initialGroup.emptyMessage,
+      sourceCategories: Array.isArray(initialGroup.sourceCategoryIds)
+        ? initialGroup.sourceCategoryIds.map((sourceCategoryId) => ({
+            id: sourceCategoryId,
+            label: formatFallbackLabel(sourceCategoryId),
+          }))
+        : [],
+    };
+  };
+
+  const createInitialMobileCatalogSeedItem = (categoryId, index) => ({
+    id: `__menu-seed-${normalizeText(categoryId) || 'item'}-${index}`,
+    name: '',
+    description: '',
+    descriptionShort: '',
+    descriptionLong: '',
+    price: 0,
+    priceFormatted: '',
+    available: true,
+    category: normalizeText(categoryId),
+    categoryLabel: formatFallbackLabel(categoryId),
+    image: '',
+    imageAlt: '',
+    soldOutReason: '',
+  });
+
+  const shouldSeedInitialMobileCatalogShell = () =>
+    MOBILE_CARD_QUERY.matches &&
+    !isAdminPreviewMode &&
+    !getRouteItemId() &&
+    !normalizeText(state.searchQuery) &&
+    !hasActiveFilters(state.appliedFilters);
+
+  const seedInitialMobileCatalogShell = () => {
+    if (!shouldSeedInitialMobileCatalogShell()) {
+      return false;
+    }
+
+    if (hasInitialMobileCatalogSeed()) {
+      return true;
+    }
+
+    if (contentRoot.childElementCount > 0) {
+      return false;
+    }
+
+    const category = createInitialMobileCatalogSeedCategory();
+
+    if (!category) {
+      return false;
+    }
+
+    const visibleItems = Array.from(
+      { length: INITIAL_MOBILE_SEED_CARD_COUNT },
+      (_, index) => createInitialMobileCatalogSeedItem(category.id, index)
+    );
+    const section = createCategorySectionElement(
+      { category, visibleItems },
+      { skeleton: true }
+    );
+
+    if (!(section instanceof HTMLElement)) {
+      return false;
+    }
+
+    contentRoot.appendChild(section);
+    contentRoot.setAttribute(INITIAL_MOBILE_CATALOG_SEED_ATTR, 'true');
+    return true;
+  };
+
+  const progressivelyHydrateMobileCards = (queue = [], token) =>
+    new Promise((resolve) => {
+      if (!Array.isArray(queue) || !queue.length) {
+        resolve(true);
+        return;
+      }
+
+      let nextIndex = 0;
+
+      const flushBatch = () => {
+        if (state.catalogRenderToken !== token) {
+          resolve(false);
+          return;
+        }
+
+        const batchEnd = Math.min(
+          nextIndex + MOBILE_PROGRESSIVE_CARD_BATCH_SIZE,
+          queue.length
+        );
+
+        for (; nextIndex < batchEnd; nextIndex += 1) {
+          const entry = queue[nextIndex];
+
+          if (!(entry?.node instanceof HTMLElement)) {
+            continue;
+          }
+
+          hydrateCardNode(entry.node, entry.item, {
+            prioritizeImage: Boolean(entry.prioritizeImage),
+            skeleton: false,
+          });
+        }
+
+        if (nextIndex < queue.length) {
+          window.requestAnimationFrame(flushBatch);
+          return;
+        }
+
+        resolve(true);
+      };
+
+      window.requestAnimationFrame(flushBatch);
+    });
+
+  const renderMobileCatalogShell = (renderState = buildRenderState()) => {
+    const token = invalidateCatalogRender();
+    clearInitialMobileCatalogSeed();
+    contentRoot.replaceChildren();
+    state.sectionsByCategoryId.clear();
+
+    const contentFragment = document.createDocumentFragment();
+    const hydrationQueue = [];
+    const {
+      query,
+      renderableEntries,
+      renderSignature,
+    } = renderState;
+
+    renderableEntries.forEach(({ category, visibleItems }, index) => {
+      const section = createCategorySectionElement(
+        { category, visibleItems },
+        {
+          prioritizeFirstItems: index === 0 ? CARD_IMAGE_PRIORITY_COUNT : 0,
+          skeleton: true,
+          hydrationQueue,
+        }
+      );
+
+      contentFragment.appendChild(section);
+      state.sectionsByCategoryId.set(category.id, section);
+    });
+
+    contentRoot.appendChild(contentFragment);
+    setStatus('', { hide: true });
+    state.renderedSearchSignature = renderSignature;
+    state.renderedSearchQuery = query;
+
+    return {
+      token,
+      promise: progressivelyHydrateMobileCards(hydrationQueue, token),
+    };
+  };
+
   const renderCategorySections = (renderState = buildRenderState()) => {
+    invalidateCatalogRender();
+    clearInitialMobileCatalogSeed();
     contentRoot.replaceChildren();
     state.sectionsByCategoryId.clear();
 
@@ -11242,7 +11690,8 @@
 
     if (isSearching) {
       const grid = createCategoryGrid(
-        renderableEntries.flatMap(({ visibleItems }) => visibleItems)
+        renderableEntries.flatMap(({ visibleItems }) => visibleItems),
+        { prioritizeFirstItems: CARD_IMAGE_PRIORITY_COUNT }
       );
 
       contentRoot.appendChild(grid);
@@ -11252,26 +11701,11 @@
       return;
     }
 
-    renderableEntries.forEach(({ category, visibleItems }) => {
-      const section = document.createElement('section');
-      section.className = 'menu-page-category';
-      section.id = category.sectionId;
-      section.setAttribute('data-category-id', category.id);
-
-      const title = document.createElement('h2');
-      title.className = 'menu-page-category__title';
-      title.textContent = category.label;
-      section.appendChild(title);
-
-      if (visibleItems.length) {
-        if (category.id === PIZZA_GROUP_ID) {
-          renderPizzaCategoryContent(section, category, visibleItems);
-        } else {
-          section.appendChild(createCategoryGrid(visibleItems));
-        }
-      } else {
-        section.appendChild(createEmptyState(category.emptyMessage));
-      }
+    renderableEntries.forEach(({ category, visibleItems }, index) => {
+      const section = createCategorySectionElement(
+        { category, visibleItems },
+        { prioritizeFirstItems: index === 0 ? CARD_IMAGE_PRIORITY_COUNT : 0 }
+      );
 
       contentFragment.appendChild(section);
       state.sectionsByCategoryId.set(category.id, section);
@@ -11793,11 +12227,13 @@
     const items = [];
     const seen = new Set();
 
-    for (const categoryId of group.sourceCategoryIds) {
-      const categoryItems = await menuApi.getMenuItemsByCategory(categoryId);
+    const categoryItemGroups = await Promise.all(
+      group.sourceCategoryIds.map((categoryId) => menuApi.getMenuItemsByCategory(categoryId))
+    );
 
+    categoryItemGroups.forEach((categoryItems) => {
       if (!Array.isArray(categoryItems)) {
-        continue;
+        return;
       }
 
       categoryItems.forEach((item) => {
@@ -11810,7 +12246,7 @@
         seen.add(itemId);
         items.push(item);
       });
-    }
+    });
 
     return items;
   };
@@ -11837,19 +12273,13 @@
   };
 
   const renderMenu = async () => {
-    await loadHomeMenuDetailContext();
+    void loadHomeMenuDetailContext();
     const stateCopy = getMenuPageStateCopy();
-    setStatus(
-      normalizeText(stateCopy?.loading) || MENU_PAGE_COPY_DEFAULTS.states.loading
-    );
-
-    if (mediaApi?.loadMediaStore) {
-      try {
-        await mediaApi.loadMediaStore();
-      } catch (error) {
-        console.warn('[menu-page] No se pudo cargar media.json.', error);
-      }
-    }
+    const routeItemId = getRouteItemId();
+    const seededInitialMobileShell = seedInitialMobileCatalogShell();
+    const loadingMessage =
+      normalizeText(stateCopy?.loading) || MENU_PAGE_COPY_DEFAULTS.states.loading;
+    setStatus(loadingMessage, { hide: seededInitialMobileShell });
 
     const renderedGroups = await Promise.all(
       tabEntries.map(async (group) => ({
@@ -11875,6 +12305,8 @@
     state.categories = renderedGroups;
 
     if (!state.categories.length) {
+      clearInitialMobileCatalogSeed();
+      contentRoot.replaceChildren();
       setStatus(
         normalizeText(stateCopy?.noCategories) ||
           MENU_PAGE_COPY_DEFAULTS.states.noCategories
@@ -11890,14 +12322,19 @@
       });
     });
 
-    renderCategorySections();
-    initPriceRange();
-    renderFilterModalShell();
+    const initialRenderState = buildRenderState();
+
+    if (shouldUseMobileProgressiveCatalog(initialRenderState)) {
+      renderMobileCatalogShell(initialRenderState);
+    } else {
+      renderCategorySections(initialRenderState);
+    }
+
     setActiveCategory(state.categories[0].id, { animate: false, force: true });
 
-    if (!getRouteItemId()) {
-      const hashMatch = findCategoryByHash(window.location.hash);
+    const hashMatch = !routeItemId ? findCategoryByHash(window.location.hash) : null;
 
+    if (!routeItemId) {
       if (hashMatch) {
         window.setTimeout(() => {
           scrollToCategory(hashMatch.id);
@@ -11906,6 +12343,12 @@
         scheduleActiveCategoryUpdate();
       }
     }
+
+    scheduleAfterNextPaint(() => {
+      scheduleNonCriticalTask(() => {
+        ensureFilterModalRuntimeReady();
+      });
+    });
   };
 
   if (detailBackButton instanceof HTMLButtonElement) {
@@ -12678,7 +13121,6 @@
 
   void (async () => {
     try {
-      await waitForPublicNavbar();
       await renderMenu();
       hydrateAccountSession();
       renderSearchHelperWord(searchHelperWords[0]);
@@ -12696,6 +13138,8 @@
     } catch (error) {
       console.error('[menu-page] Error renderizando menú.', error);
       const stateCopy = getMenuPageStateCopy();
+      clearInitialMobileCatalogSeed();
+      contentRoot.replaceChildren();
       setStatus(
         normalizeText(stateCopy?.loadError) ||
           MENU_PAGE_COPY_DEFAULTS.states.loadError,

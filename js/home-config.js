@@ -250,7 +250,7 @@ Personas:`;
     const safeMinutes = Math.max(0, Math.min(24 * 60 - 1, Math.round(totalMinutes)));
     const hour24 = Math.floor(safeMinutes / 60);
     const minute = safeMinutes % 60;
-    const period = hour24 >= 12 ? 'p. m.' : 'a. m.';
+    const period = hour24 >= 12 ? 'p.m.' : 'a.m.';
     const hour12 = ((hour24 + 11) % 12) + 1;
     const minuteText = String(minute).padStart(2, '0');
     return `${hour12}:${minuteText} ${period}`;

@@ -1,8 +1,7 @@
 (() => {
   const publicPaths = window.FigataPublicPaths || null;
-  const MENU_PATHNAME = "/menu/";
   const SESSION_KEY = "figata:route-transition";
-  const MENU_ROUTE_FLAG = "menu-enter";
+  const ROUTE_HANDOFF_KIND = "public-route";
   const COVER_IN_DURATION_MS = 900;
   const PAGE_PUSH_Y_PX = -200;
 
@@ -30,58 +29,110 @@
   let isTransitionRunning = false;
 
   const normalizePathname = (pathname) => {
+    const rawPath = String(pathname || "/").trim() || "/";
     const strippedPath =
       publicPaths?.stripSitePath
-        ? publicPaths.stripSitePath(pathname)
-        : pathname;
+        ? publicPaths.stripSitePath(rawPath)
+        : rawPath;
     return strippedPath.replace(/\/+$/, "") || "/";
   };
 
-  const isMenuRouteTarget = (href) => {
-    let targetUrl;
-
+  const getCurrentPath = () => normalizePathname(window.location.pathname);
+  const isHomePath = (pathname) => {
+    const normalized = normalizePathname(pathname);
+    return normalized === "/" || normalized === "/index.html";
+  };
+  const isMenuPath = (pathname) => {
+    const normalized = normalizePathname(pathname);
+    return normalized === "/menu" || normalized.startsWith("/menu/");
+  };
+  const isEventosPath = (pathname) => {
+    const normalized = normalizePathname(pathname);
+    return normalized === "/eventos" || normalized.startsWith("/eventos/");
+  };
+  const isManagedPublicPath = (pathname) =>
+    isHomePath(pathname) || isMenuPath(pathname) || isEventosPath(pathname);
+  const toUrl = (href) => {
     try {
-      targetUrl = new URL(href, window.location.href);
+      return new URL(href, window.location.href);
     } catch (_) {
+      return null;
+    }
+  };
+  const isCrossRouteTarget = (url) => {
+    if (!(url instanceof URL) || url.origin !== window.location.origin) {
       return false;
     }
 
-    if (targetUrl.origin !== window.location.origin) {
+    const currentPath = getCurrentPath();
+    const nextPath = normalizePathname(url.pathname);
+
+    if (currentPath === nextPath) {
       return false;
     }
 
-    const currentPath = normalizePathname(window.location.pathname);
-    const nextPath = normalizePathname(targetUrl.pathname);
-    const menuPath = normalizePathname(MENU_PATHNAME);
+    if (!isManagedPublicPath(currentPath) || !isManagedPublicPath(nextPath)) {
+      return false;
+    }
 
-    return nextPath === menuPath && currentPath !== menuPath;
+    return true;
   };
 
-  const isNavbarMenuLink = (link) => {
+  const isManagedRouteLink = (link) => {
     if (!(link instanceof HTMLAnchorElement)) {
       return false;
     }
 
-    if (!link.closest(".navbar")) {
+    if (link.hasAttribute("download")) {
       return false;
     }
 
-    return isMenuRouteTarget(link.href);
+    const href = link.getAttribute("href");
+    if (!href || href.startsWith("#")) {
+      return false;
+    }
+
+    if (link.target && link.target !== "_self") {
+      return false;
+    }
+
+    const targetUrl = toUrl(link.href);
+    return isCrossRouteTarget(targetUrl);
   };
 
-  const markMenuRouteTransition = () => {
+  const markRouteTransition = (url) => {
     if (!window.sessionStorage) {
       return;
     }
 
-    window.sessionStorage.setItem(SESSION_KEY, MENU_ROUTE_FLAG);
+    const targetUrl =
+      url instanceof URL
+        ? url
+        : toUrl(url);
+
+    if (!(targetUrl instanceof URL)) {
+      return;
+    }
+
+    const payload = {
+      kind: ROUTE_HANDOFF_KIND,
+      at: Date.now(),
+      fromPath: getCurrentPath(),
+      toPath: normalizePathname(targetUrl.pathname),
+    };
+
+    try {
+      window.sessionStorage.setItem(SESSION_KEY, JSON.stringify(payload));
+    } catch (_) {
+      // Ignore storage write failures.
+    }
   };
 
   const navigateTo = (url) => {
     window.location.href = url;
   };
 
-  const playMenuRouteTransition = async (url) => {
+  const playRouteTransition = async (url) => {
     if (isTransitionRunning) {
       return;
     }
@@ -94,7 +145,7 @@
         pagePushFrom: 0,
         pagePushTo: PAGE_PUSH_Y_PX,
         onMidpoint: () => {
-          markMenuRouteTransition();
+          markRouteTransition(url);
           navigateTo(url);
         },
       });
@@ -120,16 +171,12 @@
 
     const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
 
-    if (!isNavbarMenuLink(link)) {
-      return;
-    }
-
-    if (link.target && link.target !== "_self") {
+    if (!isManagedRouteLink(link)) {
       return;
     }
 
     event.preventDefault();
-    playMenuRouteTransition(link.href);
+    playRouteTransition(link.href);
   });
 
   window.addEventListener("pagehide", () => {

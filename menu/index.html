@@ -1223,9 +1223,115 @@
     </article>
   </template>
 
+  <script>
+    (function () {
+      if (!window.matchMedia || !window.matchMedia("(max-width: 1023px)").matches) {
+        return;
+      }
+
+      var params = new URL(window.location.href).searchParams;
+      if (params.get("adminPreview") === "1") {
+        return;
+      }
+
+      var pathname = window.location.pathname || "";
+      if (!/\/menu\/?$/.test(pathname)) {
+        return;
+      }
+
+      var contentRoot = document.getElementById("menu-categories-content");
+      var statusNode = document.getElementById("menu-page-status");
+      var template = document.getElementById("menu-page-card-template");
+
+      if (
+        !contentRoot ||
+        !statusNode ||
+        !template ||
+        !template.content ||
+        contentRoot.childElementCount
+      ) {
+        return;
+      }
+
+      var section = document.createElement("section");
+      section.className = "menu-page-category";
+      section.id = "menu-category-entradas";
+      section.setAttribute("data-category-id", "entradas");
+
+      var title = document.createElement("h2");
+      title.className = "menu-page-category__title";
+      title.textContent = "Entradas";
+      section.appendChild(title);
+
+      var grid = document.createElement("div");
+      grid.className = "menu-page-grid";
+
+      for (var index = 0; index < 4; index += 1) {
+        var fragment = template.content.cloneNode(true);
+        var article = fragment.querySelector(".mas-pedidas-card");
+        var media = fragment.querySelector(".mas-pedidas-card__media");
+        var baseImage = fragment.querySelector(".mas-pedidas-card__image--base");
+        var hoverImage = fragment.querySelector(".mas-pedidas-card__image--hover");
+        var cardTitle = fragment.querySelector(".mas-pedidas-card__title");
+        var description = fragment.querySelector(".mas-pedidas-card__description");
+        var metaRow = fragment.querySelector(".mas-pedidas-card__meta-row");
+        var meta = fragment.querySelector(".mas-pedidas-card__meta");
+        var price = fragment.querySelector(".mas-pedidas-card__price");
+        var button = fragment.querySelector(".mas-pedidas-card__button");
+
+        if (
+          !article ||
+          !media ||
+          !baseImage ||
+          !hoverImage ||
+          !cardTitle ||
+          !description ||
+          !price ||
+          !button
+        ) {
+          continue;
+        }
+
+        article.classList.add("is-skeleton");
+        article.setAttribute("data-card-state", "skeleton");
+        article.setAttribute("aria-hidden", "true");
+        article.dataset.menuItemId = "__menu-seed-entradas-" + index;
+
+        media.classList.remove("is-empty");
+        baseImage.hidden = true;
+        baseImage.removeAttribute("src");
+        hoverImage.hidden = true;
+        hoverImage.removeAttribute("src");
+
+        cardTitle.textContent = " ";
+        description.textContent = " ";
+        price.textContent = " ";
+
+        if (metaRow) {
+          metaRow.hidden = true;
+        }
+
+        if (meta) {
+          meta.textContent = "";
+        }
+
+        button.disabled = true;
+        button.tabIndex = -1;
+        button.setAttribute("aria-hidden", "true");
+        grid.appendChild(fragment);
+      }
+
+      section.appendChild(grid);
+      contentRoot.appendChild(section);
+      contentRoot.setAttribute("data-initial-mobile-catalog-seed", "true");
+      statusNode.hidden = true;
+    })();
+  </script>
+
   <script src="shared/public-paths.js" defer></script>
   <script src="shared/public-navbar.js" defer></script>
   <script src="shared/figata-cover-transition.js" defer></script>
+  <script src="js/menu-route-transition.js" defer></script>
   <script src="js/reload-cover.js" defer></script>
   <script src="js/navbar-collapse.js" defer></script>
   <script src="shared/menu-traits.js" defer></script>

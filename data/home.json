@@ -29,6 +29,36 @@
     ],
     "limit": 8
   },
+  "mobileHours": {
+    "enabled": true,
+    "title": "Horarios",
+    "subtitle": "Revisa cuándo estamos abiertos y si hay\ncambios en el servicio",
+    "timezone": "America/Santo_Domingo",
+    "openSoonMinutes": 60,
+    "closeSoonMinutes": 60,
+    "labels": {
+      "openNow": "Abierto",
+      "opensSoon": "Por abrir",
+      "closesSoon": "Por cerrar",
+      "closedToday": "Cerrado",
+      "specialHours": "Especial",
+      "willOpenLater": "Abriremos",
+      "noService": "Sin servicio",
+      "closed": "Cerrado",
+      "today": "Hoy"
+    },
+    "baseWeek": {
+      "mon": null,
+      "tue": null,
+      "wed": "17:00-23:00",
+      "thu": "17:00-23:00",
+      "fri": "17:00-23:00",
+      "sat": "17:00-23:00",
+      "sun": "12:00-23:00"
+    },
+    "weeklyOverrides": [],
+    "dateOverrides": []
+  },
   "eventsPreview": {
     "enabled": true,
     "title": "Eventos en Figata",
@@ -104,6 +134,7 @@
   "sections": {
     "hero": true,
     "popular": true,
+    "hours": true,
     "events": true,
     "delivery": true,
     "reservation": true,
@@ -125,6 +156,10 @@
         "url": "/menu/"
       },
       {
+        "label": "Eventos",
+        "url": "/eventos/"
+      },
+      {
         "label": "Nosotros",
         "url": "#nosotros"
       },
@@ -141,7 +176,7 @@
   "testimonials": {
     "enabled": true,
     "title": "Historias que nacen en nuestra mesa",
-    "subtitle": "Clientes que volvieron por la masa, el fuego y\nel ambiente de Figata.",
+    "subtitle": "Clientes que volvieron por la masa,\nel fuego y el ambiente de Figata.",
     "items": [
       {
         "name": "Awilda Suero",
