@@ -134,7 +134,8 @@
         "hover": "",
         "modal": "",
         "gallery": [
-          "assets/menu/pizzas/marinara/marinara-slide-0.webp"
+          "assets/menu/pizzas/marinara/marinara-slide-0.webp",
+          "assets/menu/pizzas/marinara/marinara-slide-1.webp"
         ]
       },
       "dominantColor": "",
@@ -290,7 +291,9 @@
         "card": "",
         "hover": "assets/menu/pizzas/quattro-formaggi-y-black-truffle/quattroformaggi-hover.webp",
         "modal": "assets/menu/pizzas/quattro-formaggi-y-black-truffle/quattroformaggi.webp",
-        "gallery": []
+        "gallery": [
+          "assets/menu/pizzas/quattro-formaggi-y-black-truffle/quattro-formaggi-slide-0.webp"
+        ]
       },
       "dominantColor": "",
       "version": 2
@@ -366,7 +369,10 @@
         "card": "",
         "hover": "",
         "modal": "",
-        "gallery": []
+        "gallery": [
+          "assets/menu/pizzas/bellezza/bellezza-slide-0.webp",
+          "assets/menu/pizzas/bellezza/bellezza-slide-1.webp"
+        ]
       },
       "dominantColor": "",
       "version": 2
@@ -696,7 +702,8 @@
         "modal": "",
         "gallery": [
           "assets/menu/pizzas/spetaccolo/spettacolo-slide-0.webp",
-          "assets/menu/pizzas/spetaccolo/spettacolo-slide-1.webp"
+          "assets/menu/pizzas/spetaccolo/spettacolo-slide-1.webp",
+          "assets/menu/pizzas/spetaccolo/spettacolo-slide-2.webp"
         ]
       },
       "dominantColor": "",
