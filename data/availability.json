@@ -96,11 +96,6 @@
       "soldOutReason": ""
     },
     {
-      "itemId": "gin_tonic",
-      "available": true,
-      "soldOutReason": ""
-    },
-    {
       "itemId": "focaccia_parmigiano",
       "available": true,
       "soldOutReason": ""
@@ -111,12 +106,12 @@
       "soldOutReason": ""
     },
     {
-      "itemId": "helado_artesanal",
+      "itemId": "gin_tonic",
       "available": true,
       "soldOutReason": ""
     },
     {
-      "itemId": "insalata_caprese",
+      "itemId": "helado_artesanal",
       "available": true,
       "soldOutReason": ""
     },
@@ -191,6 +186,11 @@
       "soldOutReason": ""
     },
     {
+      "itemId": "polpettine",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
       "itemId": "prosciutto_rucula",
       "available": true,
       "soldOutReason": ""
@@ -206,11 +206,6 @@
       "soldOutReason": ""
     },
     {
-      "itemId": "salsiccia_vino_miele",
-      "available": true,
-      "soldOutReason": ""
-    },
-    {
       "itemId": "sangria",
       "available": true,
       "soldOutReason": ""
@@ -221,12 +216,22 @@
       "soldOutReason": ""
     },
     {
+      "itemId": "spettacolo",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
       "itemId": "sweet_goat",
       "available": true,
       "soldOutReason": ""
     },
     {
       "itemId": "tagliere_misto",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
+      "itemId": "tartufina",
       "available": true,
       "soldOutReason": ""
     },

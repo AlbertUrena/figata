@@ -48,7 +48,7 @@ The primary menu data file. Contains all items grouped by section (category).
           "descriptionLong": "",         // legacy fallback only
           "price": 550,                  // integer, in DOP
           "ingredients": ["berenjena", "salsa_de_tomate", ...],  // refs to ingredients.json
-          "image": "assets/menu/entradas/berenjenas-a-la-parmesana.webp",  // primary image path
+          "image": "assets/menu/entradas/berenjenas-a-la-parmesana/berenjenas-a-la-parmesana.webp",  // primary image path
           "featured": false,             // appears in homepage featured section
           "allergen_overrides": {        // optional editorial exceptions over derived allergens
             "add": ["gluten"]
@@ -511,7 +511,7 @@ The system uses `source` by default, but falls back to the `overrides` dictionar
 
 - `items[<itemId>].overrides.editorialSlides` is an optional typed list for mixed editorial media in detail view.
 - Supported slide types:
-  - `image`: `{ "type": "image", "src": "assets/menu/editorial/<id>-slide-0.webp" }`
+  - `image`: `{ "type": "image", "src": "assets/menu/<categoria>/<item-slug>/<editorial-slug>-slide-0.webp" }`
   - `video`: `{ "type": "video", "poster": "...", "sources": [{ "src": "...webm", "type": "video/webm" }, { "src": "...mp4", "type": "video/mp4" }] }`
 - Use only real sources; if mp4 fallback is not available yet, keep only the valid webm source.
 - `items[<itemId>].overrides.gallery` remains supported as the legacy image-only list.
@@ -521,9 +521,9 @@ The system uses `source` by default, but falls back to the `overrides` dictionar
   3. Auto-detected assets by naming convention
   4. Catalog image fallback (`modal`/`card`)
 - Auto-detection convention (progressive, no required JSON edit):
-  - Folder: `assets/menu/editorial/`
-  - Pattern: `<item-id>-slide-<n>.webp` (also accepts underscore/hyphen equivalent; e.g. `aperol_spritz` ↔ `aperol-spritz`)
-  - Example: `assets/menu/editorial/margherita-slide-0.webp`
+  - Folder: same folder as the item source image (for example `assets/menu/pizzas/margherita/`)
+  - Pattern: `<editorial-slug>-slide-<n>.webp` (`editorial-slug` accepts item-id variants and source basename variants, including underscore/hyphen equivalents)
+  - Example: `assets/menu/pizzas/margherita/margherita-slide-0.webp`
 - Detection is contiguous from `slide-0` forward; first missing index stops detection.
 - This keeps editorial support optional: items without editorial slides continue using the existing catalog flow.
 

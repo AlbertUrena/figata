@@ -38,7 +38,8 @@
       "icon": "/assets/Ingredients/albahaca.webp",
       "label": "Albahaca",
       "covers": [
-        "albahaca"
+        "albahaca",
+        "basilico"
       ]
     },
     "alcaparra": {
@@ -82,7 +83,8 @@
       "covers": [
         "peperoncino",
         "chili_flakes",
-        "nduja"
+        "nduja",
+        "pimienta"
       ]
     },
     "hongo": {
@@ -98,7 +100,8 @@
       "covers": [
         "prosciutto_di_parma",
         "bresaola",
-        "mortadella"
+        "mortadella",
+        "speck"
       ]
     },
     "menta": {
@@ -119,7 +122,8 @@
       "icon": "/assets/Ingredients/miel.webp",
       "label": "Miel",
       "covers": [
-        "miel"
+        "miel",
+        "miel_trufada"
       ]
     },
     "oliva": {
@@ -208,7 +212,8 @@
       "icon": "/assets/Ingredients/salchicha.webp",
       "label": "Salsiccia",
       "covers": [
-        "salsiccia"
+        "salsiccia",
+        "mini_albondigas"
       ]
     },
     "san_marzano": {
@@ -1715,6 +1720,161 @@
           "truffle"
         ]
       }
+    },
+    "basilico": {
+      "allergens": [],
+      "metadata": {
+        "dietary_profile": {
+          "vegetarian_safe": true,
+          "vegan_safe": true
+        },
+        "content_flags": [],
+        "experience_signals": {
+          "truffled": 0,
+          "smoked": 0,
+          "spicy": 0,
+          "sweet_savory": 0,
+          "fresh": 2,
+          "aromatic": 2,
+          "classic": 1,
+          "intense": 0
+        },
+        "internal_traits": [
+          "herb"
+        ]
+      },
+      "label": "Basilico",
+      "icon": "albahaca",
+      "aliases": [
+        "basilico",
+        "albahaca_fresca",
+        "basil_fresco"
+      ]
+    },
+    "miel_trufada": {
+      "allergens": [],
+      "metadata": {
+        "dietary_profile": {
+          "vegetarian_safe": true,
+          "vegan_safe": false
+        },
+        "content_flags": [],
+        "experience_signals": {
+          "truffled": 2,
+          "smoked": 0,
+          "spicy": 0,
+          "sweet_savory": 2,
+          "fresh": 0,
+          "aromatic": 1,
+          "classic": 0,
+          "intense": 1
+        },
+        "internal_traits": [
+          "sweet",
+          "truffle"
+        ]
+      },
+      "label": "Miel trufada",
+      "icon": "miel",
+      "aliases": [
+        "miel_trufada",
+        "miel_con_trufa",
+        "truffle_honey"
+      ]
+    },
+    "mini_albondigas": {
+      "allergens": [],
+      "metadata": {
+        "dietary_profile": {
+          "vegetarian_safe": false,
+          "vegan_safe": false
+        },
+        "content_flags": [
+          "pork"
+        ],
+        "experience_signals": {
+          "truffled": 0,
+          "smoked": 0,
+          "spicy": 0,
+          "sweet_savory": 0,
+          "fresh": 0,
+          "aromatic": 0,
+          "classic": 1,
+          "intense": 2
+        },
+        "internal_traits": [
+          "pork"
+        ]
+      },
+      "label": "Mini albóndigas",
+      "icon": "salchicha",
+      "aliases": [
+        "mini_albondigas",
+        "albondigas",
+        "mini_meatballs"
+      ]
+    },
+    "speck": {
+      "allergens": [],
+      "metadata": {
+        "dietary_profile": {
+          "vegetarian_safe": false,
+          "vegan_safe": false
+        },
+        "content_flags": [
+          "pork"
+        ],
+        "experience_signals": {
+          "truffled": 0,
+          "smoked": 2,
+          "spicy": 0,
+          "sweet_savory": 0,
+          "fresh": 0,
+          "aromatic": 1,
+          "classic": 0,
+          "intense": 2
+        },
+        "internal_traits": [
+          "pork",
+          "cured_meat"
+        ]
+      },
+      "label": "Speck",
+      "icon": "jamon_curado",
+      "aliases": [
+        "speck",
+        "jamon_ahumado_speck"
+      ]
+    },
+    "pimienta": {
+      "allergens": [],
+      "metadata": {
+        "dietary_profile": {
+          "vegetarian_safe": true,
+          "vegan_safe": true
+        },
+        "content_flags": [],
+        "experience_signals": {
+          "truffled": 0,
+          "smoked": 0,
+          "spicy": 1,
+          "sweet_savory": 0,
+          "fresh": 0,
+          "aromatic": 1,
+          "classic": 0,
+          "intense": 1
+        },
+        "internal_traits": [
+          "spicy"
+        ]
+      },
+      "label": "Pimienta",
+      "icon": "chile",
+      "aliases": [
+        "pimienta",
+        "pimienta_negra",
+        "black_pepper"
+      ]
     }
   }
 }

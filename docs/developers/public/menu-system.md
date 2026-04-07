@@ -173,7 +173,7 @@ For each item, `resolveItemMedia(item)` resolves paths from `media.json`:
 For mobile detail hero, `js/menu-page.js` also resolves `mediaApi.getEditorialGallery(id)` with this priority:
 
 1. `overrides.gallery` from `data/media.json` (if present)
-2. Auto-detected assets: `assets/menu/editorial/<item-id>-slide-<n>.webp` (also accepts underscore/hyphen equivalent for the same item id)
+2. Auto-detected assets from the item folder (same directory as `card/modal/source`) using `<editorial-slug>-slide-<n>.webp`; accepts underscore/hyphen item-id variants and source-basename variants
 3. Catalog fallback (`modal`/`card`) when no editorial slides exist
 
 ### Prefetching

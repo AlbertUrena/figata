@@ -22,7 +22,7 @@
             "albahaca",
             "parmigiano_reggiano"
           ],
-          "image": "assets/menu/entradas/berenjenas-a-la-parmesana.webp",
+          "image": "assets/menu/entradas/berenjenas-a-la-parmesana/berenjenas-a-la-parmesana.webp",
           "featured": false,
           "description": "Capas de berenjena con salsa de tomate, mozzarella fundida y parmigiano.",
           "metrics": {
@@ -44,7 +44,7 @@
             "aceite_de_oliva_evoo",
             "parmigiano_reggiano"
           ],
-          "image": "assets/menu/entradas/focaccia.webp",
+          "image": "assets/menu/entradas/focaccia-al-horno/focaccia-al-horno.webp",
           "featured": false,
           "available": true,
           "allergen_overrides": {
@@ -68,7 +68,7 @@
             "aceite_de_oliva_evoo",
             "albahaca"
           ],
-          "image": "assets/menu/entradas/bruschetta.webp",
+          "image": "assets/menu/entradas/bruschetta/bruschetta.webp",
           "featured": true,
           "reviews": "121 reseñas",
           "allergen_overrides": {
@@ -76,25 +76,6 @@
               "gluten"
             ]
           }
-        },
-        {
-          "id": "insalata_caprese",
-          "name": "Insalata Caprese",
-          "slug": "insalata-caprese",
-          "category": "entradas",
-          "subcategory": "",
-          "descriptionShort": "Mozzarella fresca con pomodoro, pesto de albahaca y aceite de oliva.",
-          "descriptionLong": "",
-          "price": 600,
-          "ingredients": [
-            "mozzarella",
-            "pomodoro",
-            "aceite_de_oliva_evoo",
-            "pesto_de_albahaca"
-          ],
-          "image": "assets/menu/entradas/insalata-caprese.webp",
-          "featured": false,
-          "available": true
         },
         {
           "id": "carpaccio_bresaola",
@@ -110,25 +91,7 @@
             "tomate_cherry",
             "pesto_de_rucula"
           ],
-          "image": "assets/menu/entradas/carpaccio-di-bresaola.webp",
-          "featured": false,
-          "available": true
-        },
-        {
-          "id": "salsiccia_vino_miele",
-          "name": "Salsiccia vino e miele",
-          "slug": "salsiccia-vino-miele",
-          "category": "entradas",
-          "subcategory": "",
-          "descriptionShort": "Salchicha dorada con miel y romero, de perfil dulce y aromático.",
-          "descriptionLong": "",
-          "price": 500,
-          "ingredients": [
-            "salsiccia",
-            "miel",
-            "romero"
-          ],
-          "image": "assets/menu/entradas/salsiccia-vino-e-miele.webp",
+          "image": "assets/menu/entradas/carpaccio-di-bresaola/carpaccio-di-bresaola.webp",
           "featured": false,
           "available": true
         },
@@ -147,7 +110,7 @@
             "tomate_cherry",
             "pesto_de_albahaca"
           ],
-          "image": "assets/menu/entradas/burrata-con-prosciutto.webp",
+          "image": "assets/menu/entradas/burrata-con-prosciutto/burrata-con-prosciutto.webp",
           "featured": false,
           "available": true
         },
@@ -167,7 +130,7 @@
             "pesto_de_albahaca",
             "mermelada_de_tomate"
           ],
-          "image": "assets/menu/entradas/tagliere-misto.webp",
+          "image": "assets/menu/entradas/tagliere-misto/tagliere-misto.webp",
           "featured": false,
           "available": true
         },
@@ -183,7 +146,7 @@
             "stracciatella",
             "pesto_de_albahaca"
           ],
-          "image": "assets/menu/entradas/focaccia-rellena.webp",
+          "image": "assets/menu/entradas/focaccia-rellena/focaccia-rellena.webp",
           "featured": false,
           "allergen_overrides": {
             "add": [
@@ -216,7 +179,7 @@
             "pomodoro",
             "albahaca"
           ],
-          "image": "assets/menu/pizzas/clasica/margherita.webp",
+          "image": "assets/menu/pizzas/margherita/margherita.webp",
           "featured": true,
           "reviews": "198 reseñas",
           "allergen_overrides": {
@@ -299,7 +262,7 @@
             "aceite_de_oliva_evoo",
             "oregano"
           ],
-          "image": "assets/menu/pizzas/clasica/marinara.webp",
+          "image": "assets/menu/pizzas/marinara/marinara.webp",
           "featured": false,
           "allergen_overrides": {
             "add": [
@@ -372,7 +335,7 @@
             "pecorino",
             "albahaca"
           ],
-          "image": "assets/menu/pizzas/clasica/cacio-e-pepe.webp",
+          "image": "assets/menu/pizzas/cacio-e-pepe/cacio-e-pepe.webp",
           "featured": false,
           "available": true,
           "allergen_overrides": {
@@ -397,7 +360,7 @@
             "albahaca",
             "aceite_de_oliva_evoo"
           ],
-          "image": "assets/menu/pizzas/clasica/margherita-fume.webp",
+          "image": "assets/menu/pizzas/margherita-fume/margherita-fume.webp",
           "featured": false,
           "available": true,
           "allergen_overrides": {
@@ -420,7 +383,7 @@
             "pomodoro",
             "salamino_piccante"
           ],
-          "image": "assets/menu/pizzas/clasica/diavola.webp",
+          "image": "assets/menu/pizzas/diavola/diavola.webp",
           "featured": true,
           "reviews": "166 reseñas",
           "allergen_overrides": {
@@ -445,7 +408,7 @@
             "aceite_de_oliva_evoo",
             "albahaca"
           ],
-          "image": "assets/menu/pizzas/clasica/filetti.webp",
+          "image": "assets/menu/pizzas/filetti/filetti.webp",
           "featured": true,
           "allergen_overrides": {
             "add": [
@@ -468,7 +431,7 @@
             "bacon",
             "miel"
           ],
-          "image": "assets/menu/pizzas/clasica/sweet-goat.webp",
+          "image": "assets/menu/pizzas/sweet-goat/sweet-goat.webp",
           "featured": false,
           "reviews": "149 reseñas",
           "allergen_overrides": {
@@ -492,7 +455,7 @@
             "mermelada_de_tomate",
             "menta"
           ],
-          "image": "assets/menu/pizzas/clasica/mamma.webp",
+          "image": "assets/menu/pizzas/mamma/mamma.webp",
           "featured": false,
           "available": true,
           "allergen_overrides": {
@@ -516,7 +479,7 @@
             "atun",
             "cebolla"
           ],
-          "image": "assets/menu/pizzas/clasica/tonno.webp",
+          "image": "assets/menu/pizzas/tonno/tonno.webp",
           "featured": false,
           "available": true,
           "allergen_overrides": {
@@ -542,7 +505,7 @@
             "pecorino",
             "peperoncino"
           ],
-          "image": "assets/menu/pizzas/clasica/puta.webp",
+          "image": "assets/menu/pizzas/puta/puta.webp",
           "featured": false,
           "available": true,
           "allergen_overrides": {
@@ -565,7 +528,7 @@
             "mortadella",
             "crema_de_trufa"
           ],
-          "image": "assets/menu/pizzas/clasica/pizza-figata.webp",
+          "image": "assets/menu/pizzas/figata/pizza-figata.webp",
           "featured": false,
           "reviews": "184 reseñas",
           "allergen_overrides": {
@@ -588,7 +551,7 @@
             "san_marzano_dop",
             "pesto_de_albahaca"
           ],
-          "image": "assets/menu/pizzas/clasica/margherita-sbagliata.webp",
+          "image": "assets/menu/pizzas/margherita-sbagliata/margherita-sbagliata.webp",
           "featured": true,
           "available": true,
           "reviews": "143 reseñas",
@@ -620,7 +583,7 @@
             "pancetta",
             "salamino_piccante"
           ],
-          "image": "assets/menu/pizzas/autor/macellaio.webp",
+          "image": "assets/menu/pizzas/macellaio/macellaio.webp",
           "featured": false,
           "available": true,
           "allergen_overrides": {
@@ -645,7 +608,7 @@
             "parmigiano_reggiano",
             "crema_de_trufa"
           ],
-          "image": "assets/menu/pizzas/autor/quattroformaggi.webp",
+          "image": "assets/menu/pizzas/quattro-formaggi-y-black-truffle/quattroformaggi.webp",
           "featured": false,
           "available": true,
           "allergen_overrides": {
@@ -669,7 +632,7 @@
             "porcini",
             "pecorino_trufado"
           ],
-          "image": "assets/menu/pizzas/autor/boscaiola.webp",
+          "image": "assets/menu/pizzas/boscaiola/boscaiola.webp",
           "featured": false,
           "available": true,
           "allergen_overrides": {
@@ -694,7 +657,7 @@
             "porcini",
             "parmigiano_reggiano"
           ],
-          "image": "assets/menu/pizzas/autor/calzone.webp",
+          "image": "assets/menu/pizzas/calzone/calzone.webp",
           "featured": false,
           "available": true,
           "allergen_overrides": {
@@ -719,7 +682,7 @@
             "prosciutto_di_parma",
             "burrata_fresca"
           ],
-          "image": "assets/menu/pizzas/autor/corazon-de-burrata.webp",
+          "image": "assets/menu/pizzas/corazon-de-burrata/corazon-de-burrata.webp",
           "featured": false,
           "available": true,
           "allergen_overrides": {
@@ -742,7 +705,7 @@
             "mortadella",
             "pistachos"
           ],
-          "image": "assets/menu/pizzas/autor/fantasia-de-pistachos.webp",
+          "image": "assets/menu/pizzas/fantasia-de-pistachos/fantasia-de-pistachos.webp",
           "featured": false,
           "allergen_overrides": {
             "add": [
@@ -776,7 +739,7 @@
             "gorgonzola",
             "chili_flakes"
           ],
-          "image": "assets/menu/pizzas/autor/vulcano.webp",
+          "image": "assets/menu/pizzas/vulcano/vulcano.webp",
           "featured": false,
           "reviews": "171 reseñas",
           "allergen_overrides": {
@@ -832,7 +795,7 @@
             "albahaca",
             "parmigiano_reggiano"
           ],
-          "image": "assets/menu/pizzas/autor/bellezza.webp",
+          "image": "assets/menu/pizzas/bellezza/bellezza.webp",
           "featured": false,
           "allergen_overrides": {
             "add": [
@@ -856,7 +819,7 @@
             "stracciatella",
             "pesto_de_albahaca"
           ],
-          "image": "assets/menu/pizzas/autor/passione-del-sud.webp",
+          "image": "assets/menu/pizzas/passione-del-sud/passione-del-sud.webp",
           "featured": false,
           "available": true,
           "allergen_overrides": {
@@ -882,7 +845,7 @@
             "ricotta",
             "miel"
           ],
-          "image": "assets/menu/pizzas/autor/soppressata.webp",
+          "image": "assets/menu/pizzas/soppressata/soppressata.webp",
           "featured": false,
           "available": true,
           "allergen_overrides": {
@@ -907,7 +870,7 @@
             "albahaca",
             "parmigiano_reggiano"
           ],
-          "image": "assets/menu/pizzas/autor/pizza-parmesana.webp",
+          "image": "assets/menu/pizzas/parmesana/pizza-parmesana.webp",
           "featured": false,
           "available": true,
           "allergen_overrides": {
@@ -931,7 +894,7 @@
             "prosciutto_di_parma",
             "pesto_de_rucula"
           ],
-          "image": "assets/menu/pizzas/autor/prosciutto-y-rucula.webp",
+          "image": "assets/menu/pizzas/prosciutto-y-rucula/prosciutto-y-rucula.webp",
           "featured": false,
           "available": true,
           "allergen_overrides": {
@@ -939,6 +902,78 @@
               "gluten"
             ]
           }
+        },
+        {
+          "id": "tartufina",
+          "name": "Tartufina",
+          "slug": "tartufina",
+          "category": "pizza_autor",
+          "subcategory": "",
+          "price": 850,
+          "ingredients": [
+            "basilico",
+            "pancetta",
+            "parmigiano_reggiano",
+            "miel_trufada"
+          ],
+          "image": "assets/menu/pizzas/tartufina/tartufina.webp",
+          "featured": false,
+          "available": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          },
+          "description": "Basilico, pancetta, parmigiano reggiano y miel trufada sobre base napolitana."
+        },
+        {
+          "id": "polpettine",
+          "name": "Polpettine",
+          "slug": "polpettine",
+          "category": "pizza_autor",
+          "subcategory": "",
+          "price": 850,
+          "ingredients": [
+            "salsa_de_tomate",
+            "basilico",
+            "mozzarella",
+            "parmigiano_reggiano",
+            "mini_albondigas"
+          ],
+          "image": "assets/menu/pizzas/polpettine/polpettine.webp",
+          "featured": false,
+          "available": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          },
+          "description": "Salsa pomodoro, albahaca fresca, mozzarella, parmesano y mini albóndigas."
+        },
+        {
+          "id": "spettacolo",
+          "name": "Spettacolo",
+          "slug": "spettacolo",
+          "category": "pizza_autor",
+          "subcategory": "",
+          "price": 950,
+          "ingredients": [
+            "mozzarella",
+            "aceite_de_oliva_evoo",
+            "stracciatella",
+            "pimienta",
+            "pesto_de_rucula",
+            "speck"
+          ],
+          "image": "assets/menu/pizzas/spetaccolo/spettacolo.webp",
+          "featured": false,
+          "available": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          },
+          "description": "Mozzarella, aceite EVOO, stracciatella, pesto de rúcula, pimienta y speck."
         }
       ]
     },
@@ -956,7 +991,7 @@
           "descriptionLong": "",
           "price": 350,
           "ingredients": [],
-          "image": "assets/menu/postres/pizza-nutella.webp",
+          "image": "assets/menu/postres/pizza-nutella/pizza-nutella.webp",
           "featured": false,
           "available": true,
           "allergen_overrides": {
@@ -975,7 +1010,7 @@
           "descriptionLong": "Tiramisú artesanal de textura suave con notas de café y cacao, ideal para cerrar la experiencia Figata.",
           "price": 450,
           "ingredients": [],
-          "image": "assets/menu/postres/tiramisu.webp",
+          "image": "assets/menu/postres/tiramisu/tiramisu.webp",
           "featured": true,
           "reviews": "132 reseñas",
           "sensory_profile": {
@@ -1018,7 +1053,7 @@
           "descriptionLong": "",
           "price": 350,
           "ingredients": [],
-          "image": "assets/menu/postres/helado-artesanal.webp",
+          "image": "assets/menu/postres/helado-artesanal/helado-artesanal.webp",
           "featured": false
         },
         {
@@ -1031,7 +1066,7 @@
           "descriptionLong": "",
           "price": 450,
           "ingredients": [],
-          "image": "assets/menu/postres/delicia-de-coco.webp",
+          "image": "assets/menu/postres/delicia-de-coco/delicia-de-coco.webp",
           "featured": false,
           "available": true
         },
@@ -1045,7 +1080,7 @@
           "descriptionLong": "",
           "price": 550,
           "ingredients": [],
-          "image": "assets/menu/postres/tartufo-affogato.webp",
+          "image": "assets/menu/postres/tartufo-affogato/tartufo-affogato.webp",
           "featured": false,
           "available": true
         }
@@ -1065,7 +1100,7 @@
           "descriptionLong": "Mezcla intensa y equilibrada, con notas herbales, amargas y cítricas. Servido en vaso corto sobre hielo para un trago serio, limpio y con mucha presencia.",
           "price": 450,
           "ingredients": [],
-          "image": "assets/menu/bebidas/negroni.webp",
+          "image": "assets/menu/bebidas/negroni/negroni.webp",
           "featured": false,
           "available": true,
           "sensory_profile": {
@@ -1129,7 +1164,7 @@
           "descriptionLong": "Una versión vibrante y fresca, con burbujas, fruta y un toque cítrico que lo hace fácil de tomar. Ideal para abrir la mesa con algo alegre y refrescante.",
           "price": 370,
           "ingredients": [],
-          "image": "assets/menu/bebidas/passion-spritz.webp",
+          "image": "assets/menu/bebidas/passion-spritz/passion-spritz.webp",
           "featured": false,
           "available": true
         },
@@ -1143,7 +1178,7 @@
           "descriptionLong": "Trago ligero y aromático, con notas botánicas y sensación fresca en boca. Servido con hielo y un perfil seco que funciona bien a cualquier hora.",
           "price": 370,
           "ingredients": [],
-          "image": "assets/menu/bebidas/gin-tonic.webp",
+          "image": "assets/menu/bebidas/gin-tonic/gin-tonic.webp",
           "featured": false,
           "available": true
         },
@@ -1157,7 +1192,7 @@
           "descriptionLong": "Una bebida relajada y fácil de disfrutar, con carácter frutal y un perfil refrescante. Pensada para acompañar la comida sin sentirse pesada.",
           "price": 370,
           "ingredients": [],
-          "image": "assets/menu/bebidas/sangria.webp",
+          "image": "assets/menu/bebidas/sangria/sangria.webp",
           "featured": false,
           "available": true
         },
@@ -1171,7 +1206,7 @@
           "descriptionLong": "Ligero, brillante y de amargor suave, con notas de naranja y un final seco. Un clásico para arrancar con algo fresco y de estilo italiano.",
           "price": 370,
           "ingredients": [],
-          "image": "assets/menu/bebidas/aperol-spritz.webp",
+          "image": "assets/menu/bebidas/aperol-spritz/aperol-spritz.webp",
           "featured": false,
           "available": true
         },
@@ -1185,7 +1220,7 @@
           "descriptionLong": "Cocktail de textura redonda y perfil fresco, donde el lado cítrico se mezcla con una sensación suave y cremosa. Tiene presencia, pero se mantiene fácil de tomar.",
           "price": 370,
           "ingredients": [],
-          "image": "assets/menu/bebidas/tequila-sour.webp",
+          "image": "assets/menu/bebidas/tequila-sour/tequila-sour.webp",
           "featured": false,
           "available": true
         },
@@ -1199,7 +1234,7 @@
           "descriptionLong": "Simple, frío y directo, con un perfil dulce, especiado y muy fácil de reconocer. Servido sobre hielo para un trago familiar y siempre efectivo.",
           "price": 370,
           "ingredients": [],
-          "image": "assets/menu/bebidas/cuba-libre.webp",
+          "image": "assets/menu/bebidas/cuba-libre/cuba-libre.webp",
           "featured": false,
           "available": true
         }
@@ -1222,7 +1257,7 @@
             "mermelada_de_tomate",
             "menta"
           ],
-          "image": "assets/menu/productos/producto-meremelada-della-mamma.webp",
+          "image": "assets/menu/productos/producto-meremelada-della-mamma/producto-meremelada-della-mamma.webp",
           "featured": false,
           "available": true
         },
@@ -1238,7 +1273,7 @@
           "ingredients": [
             "burrata_fresca"
           ],
-          "image": "assets/menu/productos/producto-burrata.webp",
+          "image": "assets/menu/productos/producto-burrata/producto-burrata.webp",
           "featured": false,
           "available": true
         },
@@ -1257,7 +1292,7 @@
             "peperoncino",
             "porcini"
           ],
-          "image": "assets/menu/productos/aceite-evoo.webp",
+          "image": "assets/menu/productos/aceite-evoo/aceite-evoo.webp",
           "featured": false,
           "available": true
         },
@@ -1274,7 +1309,7 @@
             "pesto_de_rucula",
             "pesto_de_albahaca"
           ],
-          "image": "assets/menu/productos/pesto.webp",
+          "image": "assets/menu/productos/pesto/pesto.webp",
           "featured": false,
           "available": true
         },
@@ -1288,7 +1323,7 @@
           "descriptionLong": "",
           "price": 200,
           "ingredients": [],
-          "image": "assets/menu/productos/sourdough-ciabatta.webp",
+          "image": "assets/menu/productos/sourdough-ciabatta/sourdough-ciabatta.webp",
           "featured": true,
           "allergen_overrides": {
             "add": [

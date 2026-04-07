@@ -6,7 +6,7 @@
   const MEDIA_URL = new URL('data/media.json', ROOT_URL);
 
   const VARIANTS = new Set(['card', 'hover', 'modal']);
-  const EDITORIAL_MEDIA_ROOT = 'assets/menu/editorial';
+  const LEGACY_EDITORIAL_MEDIA_ROOT = 'assets/menu/editorial';
   const MAX_EDITORIAL_SLIDES = 12;
 
   const STATIC_DEFAULTS = {
@@ -35,6 +35,27 @@
     }
 
     return normalized.startsWith('/') ? normalized.slice(1) : normalized;
+  };
+
+  const getAssetDirname = (value) => {
+    const normalized = normalizeAssetPath(value);
+    if (!normalized) {
+      return '';
+    }
+    const slashIndex = normalized.lastIndexOf('/');
+    if (slashIndex <= 0) {
+      return '';
+    }
+    return normalized.slice(0, slashIndex);
+  };
+
+  const getAssetBaseNameNoExt = (value) => {
+    const normalized = normalizeAssetPath(value);
+    if (!normalized) {
+      return '';
+    }
+    const basename = normalized.slice(normalized.lastIndexOf('/') + 1);
+    return basename.replace(/\.[^.]+$/i, '');
   };
 
   const inferVideoSourceType = (path) => {
@@ -461,8 +482,69 @@
     );
   };
 
-  const buildEditorialSlidePath = (itemId, slideIndex) =>
-    `${EDITORIAL_MEDIA_ROOT}/${normalizeId(itemId)}-slide-${slideIndex}.webp`;
+  const buildEditorialDirectoryCandidates = (item) => {
+    const candidates = [];
+    const seen = new Set();
+
+    const pushCandidate = (value) => {
+      const directory = getAssetDirname(value);
+      if (!directory || seen.has(directory)) {
+        return;
+      }
+      seen.add(directory);
+      candidates.push(directory);
+    };
+
+    if (item && typeof item === 'object') {
+      pushCandidate(item.card);
+      pushCandidate(item.modal);
+      pushCandidate(item.hover);
+    }
+
+    return candidates;
+  };
+
+  const buildEditorialSlugCandidates = (item, itemId) => {
+    const candidates = [];
+    const seen = new Set();
+
+    const pushCandidate = (value) => {
+      const normalized = normalizeId(value).replace(/_/g, '-');
+      if (!normalized || seen.has(normalized)) {
+        return;
+      }
+      seen.add(normalized);
+      candidates.push(normalized);
+    };
+
+    getEditorialIdVariants(itemId).forEach(pushCandidate);
+
+    const baseCandidates = [];
+    if (item && typeof item === 'object') {
+      baseCandidates.push(getAssetBaseNameNoExt(item.card));
+      baseCandidates.push(getAssetBaseNameNoExt(item.modal));
+      baseCandidates.push(getAssetBaseNameNoExt(item.hover));
+    }
+
+    baseCandidates
+      .filter(Boolean)
+      .forEach((base) => {
+        pushCandidate(base);
+        pushCandidate(base.replace(/-hover$/i, ''));
+        pushCandidate(base.replace(/^pizza-/i, ''));
+        pushCandidate(base.replace(/^producto-/i, ''));
+
+        const chunks = base.split('-').filter(Boolean);
+        if (chunks.length > 1) {
+          pushCandidate(chunks[chunks.length - 1]);
+        }
+      });
+
+    return candidates;
+  };
+
+  const buildEditorialSlidePath = (directory, slug, slideIndex) =>
+    `${directory}/${slug}-slide-${slideIndex}.webp`;
 
   const toProbeUrl = (path) => {
     const normalizedPath = normalizeAssetPath(path);
@@ -559,25 +641,37 @@
     }
 
     const detectionPromise = (async () => {
-      const idVariants = getEditorialIdVariants(normalizedId);
+      const item = store.items.get(normalizedId);
+      const slugCandidates = buildEditorialSlugCandidates(item, normalizedId);
+      const directoryCandidates = buildEditorialDirectoryCandidates(item);
+      if (!directoryCandidates.includes(LEGACY_EDITORIAL_MEDIA_ROOT)) {
+        directoryCandidates.push(LEGACY_EDITORIAL_MEDIA_ROOT);
+      }
+
       let detectedPaths = [];
 
-      for (const editorialId of idVariants) {
-        const candidatePaths = [];
+      for (const directory of directoryCandidates) {
+        for (const slug of slugCandidates) {
+          const candidatePaths = [];
 
-        for (let slideIndex = 0; slideIndex < MAX_EDITORIAL_SLIDES; slideIndex += 1) {
-          const candidatePath = buildEditorialSlidePath(editorialId, slideIndex);
-          const exists = await probeAssetExists(store, candidatePath);
+          for (let slideIndex = 0; slideIndex < MAX_EDITORIAL_SLIDES; slideIndex += 1) {
+            const candidatePath = buildEditorialSlidePath(directory, slug, slideIndex);
+            const exists = await probeAssetExists(store, candidatePath);
 
-          if (!exists) {
-            break;
+            if (!exists) {
+              break;
+            }
+
+            candidatePaths.push(candidatePath);
           }
 
-          candidatePaths.push(candidatePath);
+          if (candidatePaths.length) {
+            detectedPaths = candidatePaths;
+            break;
+          }
         }
 
-        if (candidatePaths.length) {
-          detectedPaths = candidatePaths;
+        if (detectedPaths.length) {
           break;
         }
       }

@@ -256,7 +256,7 @@ The shared public scroll indicator is optional and should be loaded after the ro
 ### Data Conventions
 
 - Menu images use **WebP** format, stored in `assets/menu/` with category subfolders:
-  `entradas/`, `pizzas/clasica/`, `pizzas/autor/`, `postres/`, `productos/`
+  `entradas/<item-slug>/`, `pizzas/<pizza-slug>/`, `postres/<item-slug>/`, `bebidas/<item-slug>/`, `productos/<item-slug>/`
 - Placeholder images are **SVG**, stored in `assets/menu/placeholders/`
 - Ingredient icons are **WebP**, stored in `assets/Ingredients/`
 - All data files use `version` and usually `schema` fields for forward compatibility

@@ -324,7 +324,7 @@ Uses `shared/ingredients-contract.js`. Validation runs:
 - Validates with `shared/media-contract.js`
 - Uses a dedicated item route (`#/media/item/:id`) instead of an inline detail section in the main flow
 - Item view now includes **editorial/detail slides** support:
-  - Auto-detects slides using `assets/menu/editorial/<item-id>-slide-<n>.webp` from known media paths (underscore/hyphen item id variants are both accepted)
+  - Auto-detects slides inside the item folder (same directory as `source/card/modal`) using `<editorial-slug>-slide-<n>.webp` from known media paths (item-id and source-basename variants, underscore/hyphen, are accepted)
   - Shows detected count, draft count, active runtime mode (`auto`, `persisted`, `fallback`)
   - Renders ordered slide previews and exposes a textarea (one path per line) bound to `overrides.gallery`
 - In local dev with `?devAuthBypass=1`, Media save actions also sync drafts to `data/*.json` via `POST /__local/save-drafts` so `/menu/` reflects changes after reload

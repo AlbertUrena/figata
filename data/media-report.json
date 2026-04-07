@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-03-25T19:17:56.414Z",
+  "generatedAt": "2026-04-07T05:57:37.815Z",
   "schemaVersion": 2,
   "summary": {
     "errors": 0,
     "warnings": 1,
-    "menuItems": 50,
-    "mediaItems": 50,
+    "menuItems": 51,
+    "mediaItems": 51,
     "missingMediaItems": 0,
     "unknownMediaItems": 0,
     "missingSource": 0,
@@ -23,7 +23,7 @@
     "brokenPaths": [],
     "duplicatedPaths": [
       {
-        "path": "assets/menu/entradas/bruschetta.webp",
+        "path": "assets/menu/entradas/bruschetta/bruschetta.webp",
         "uses": [
           {
             "itemId": "bruschetta_classica",
@@ -36,7 +36,7 @@
         ]
       },
       {
-        "path": "assets/menu/pizzas/clasica/margherita.webp",
+        "path": "assets/menu/pizzas/margherita/margherita.webp",
         "uses": [
           {
             "itemId": "margherita",
@@ -49,7 +49,7 @@
         ]
       },
       {
-        "path": "assets/menu/pizzas/clasica/margherita-sbagliata.webp",
+        "path": "assets/menu/pizzas/margherita-sbagliata/margherita-sbagliata.webp",
         "uses": [
           {
             "itemId": "margherita_sbagliata",
@@ -62,7 +62,7 @@
         ]
       },
       {
-        "path": "assets/menu/pizzas/autor/quattroformaggi.webp",
+        "path": "assets/menu/pizzas/quattro-formaggi-y-black-truffle/quattroformaggi.webp",
         "uses": [
           {
             "itemId": "quattro_formaggi_truffle",
@@ -75,7 +75,7 @@
         ]
       },
       {
-        "path": "assets/menu/postres/tiramisu.webp",
+        "path": "assets/menu/postres/tiramisu/tiramisu.webp",
         "uses": [
           {
             "itemId": "tiramisu",
@@ -88,7 +88,7 @@
         ]
       },
       {
-        "path": "assets/menu/productos/sourdough-ciabatta.webp",
+        "path": "assets/menu/productos/sourdough-ciabatta/sourdough-ciabatta.webp",
         "uses": [
           {
             "itemId": "pan_ciabatta",

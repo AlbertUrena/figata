@@ -22,7 +22,7 @@
     searchQuery: "",
     mode: "browser"
   };
-  var EDITORIAL_MEDIA_ROOT = "assets/menu/editorial";
+  var LEGACY_EDITORIAL_MEDIA_ROOT = "assets/menu/editorial";
   var EDITORIAL_SLIDE_EXTENSION = ".webp";
 
   function escapeHtml(value) {
@@ -140,7 +140,97 @@
     });
   }
 
-  function detectEditorialGallery(ctx, itemId) {
+  function getPathDirectory(path) {
+    var normalizedPath = normalizeAssetPath(path);
+    if (!normalizedPath) return "";
+    var slashIndex = normalizedPath.lastIndexOf("/");
+    if (slashIndex <= 0) return "";
+    return normalizedPath.slice(0, slashIndex);
+  }
+
+  function getPathBasenameNoExt(path) {
+    var normalizedPath = normalizeAssetPath(path);
+    if (!normalizedPath) return "";
+    var baseName = normalizedPath.slice(normalizedPath.lastIndexOf("/") + 1);
+    return baseName.replace(/\.[^.]+$/i, "");
+  }
+
+  function buildEditorialDirectoryCandidates(entry) {
+    var candidates = [];
+    var seen = {};
+
+    function pushCandidate(pathValue) {
+      var candidate = getPathDirectory(pathValue);
+      if (!candidate || seen[candidate]) return;
+      seen[candidate] = true;
+      candidates.push(candidate);
+    }
+
+    if (entry && typeof entry === "object") {
+      pushCandidate(entry.source);
+
+      if (entry.overrides && typeof entry.overrides === "object") {
+        pushCandidate(entry.overrides.card);
+        pushCandidate(entry.overrides.hover);
+        pushCandidate(entry.overrides.modal);
+      }
+
+      pushCandidate(entry.card);
+      pushCandidate(entry.hover);
+      pushCandidate(entry.modal);
+    }
+
+    if (!seen[LEGACY_EDITORIAL_MEDIA_ROOT]) {
+      candidates.push(LEGACY_EDITORIAL_MEDIA_ROOT);
+    }
+
+    return candidates;
+  }
+
+  function buildEditorialSlugCandidates(entry, itemId) {
+    var candidates = [];
+    var seen = {};
+
+    function pushCandidate(value) {
+      var normalizedValue = normalizeAssetPath(value).replace(/_/g, "-");
+      if (!normalizedValue || seen[normalizedValue]) return;
+      seen[normalizedValue] = true;
+      candidates.push(normalizedValue);
+    }
+
+    getEditorialIdVariants(itemId).forEach(pushCandidate);
+
+    var baseCandidates = [];
+    if (entry && typeof entry === "object") {
+      baseCandidates.push(getPathBasenameNoExt(entry.source));
+      if (entry.overrides && typeof entry.overrides === "object") {
+        baseCandidates.push(getPathBasenameNoExt(entry.overrides.card));
+        baseCandidates.push(getPathBasenameNoExt(entry.overrides.hover));
+        baseCandidates.push(getPathBasenameNoExt(entry.overrides.modal));
+      }
+      baseCandidates.push(getPathBasenameNoExt(entry.card));
+      baseCandidates.push(getPathBasenameNoExt(entry.hover));
+      baseCandidates.push(getPathBasenameNoExt(entry.modal));
+    }
+
+    baseCandidates.forEach(function (base) {
+      var normalizedBase = normalizeAssetPath(base);
+      if (!normalizedBase) return;
+      pushCandidate(normalizedBase);
+      pushCandidate(normalizedBase.replace(/-hover$/i, ""));
+      pushCandidate(normalizedBase.replace(/^pizza-/i, ""));
+      pushCandidate(normalizedBase.replace(/^producto-/i, ""));
+
+      var chunks = normalizedBase.split("-").filter(Boolean);
+      if (chunks.length > 1) {
+        pushCandidate(chunks[chunks.length - 1]);
+      }
+    });
+
+    return candidates;
+  }
+
+  function detectEditorialGallery(ctx, itemId, entry) {
     var normalizedItemId = normalizeAssetPath(itemId);
     if (!normalizedItemId) return [];
 
@@ -148,40 +238,46 @@
       return normalizeAssetPath(path);
     }).filter(Boolean);
 
-    var idVariants = getEditorialIdVariants(normalizedItemId);
-    for (var variantIndex = 0; variantIndex < idVariants.length; variantIndex += 1) {
-      var candidateId = idVariants[variantIndex];
-      var matcher = new RegExp(
-        "^" +
-        escapeRegExp(EDITORIAL_MEDIA_ROOT + "/" + candidateId + "-slide-") +
-        "(\\d+)" +
-        escapeRegExp(EDITORIAL_SLIDE_EXTENSION) +
-        "$",
-        "i"
-      );
+    var directoryCandidates = buildEditorialDirectoryCandidates(entry);
+    var slugCandidates = buildEditorialSlugCandidates(entry, normalizedItemId);
 
-      var bySlideIndex = {};
-      knownPaths.forEach(function (path) {
-        var match = path.match(matcher);
-        if (!match) return;
+    for (var dirIndex = 0; dirIndex < directoryCandidates.length; dirIndex += 1) {
+      var directory = directoryCandidates[dirIndex];
 
-        var slideIndex = Number(match[1]);
-        if (!Number.isFinite(slideIndex)) return;
-        if (!bySlideIndex[slideIndex]) {
-          bySlideIndex[slideIndex] = path;
+      for (var slugIndex = 0; slugIndex < slugCandidates.length; slugIndex += 1) {
+        var slug = slugCandidates[slugIndex];
+        var matcher = new RegExp(
+          "^" +
+          escapeRegExp(directory + "/" + slug + "-slide-") +
+          "(\\d+)" +
+          escapeRegExp(EDITORIAL_SLIDE_EXTENSION) +
+          "$",
+          "i"
+        );
+
+        var bySlideIndex = {};
+        knownPaths.forEach(function (path) {
+          var match = path.match(matcher);
+          if (!match) return;
+
+          var slideIndex = Number(match[1]);
+          if (!Number.isFinite(slideIndex)) return;
+          if (!bySlideIndex[slideIndex]) {
+            bySlideIndex[slideIndex] = path;
+          }
+        });
+
+        var contiguousSlides = [];
+        for (var slide = 0; slide < 24; slide += 1) {
+          if (!bySlideIndex[slide]) {
+            break;
+          }
+          contiguousSlides.push(bySlideIndex[slide]);
         }
-      });
 
-      var contiguousSlides = [];
-      for (var slide = 0; slide < 24; slide += 1) {
-        if (!bySlideIndex[slide]) {
-          break;
+        if (contiguousSlides.length) {
+          return contiguousSlides;
         }
-        contiguousSlides.push(bySlideIndex[slide]);
-      }
-
-      if (contiguousSlides.length) {
-        return contiguousSlides;
       }
     }
 
@@ -620,7 +716,7 @@
     var hoverPreviewSrc = resolveAssetUrl(hoverPath || C.MENU_PLACEHOLDER_IMAGE);
     var modalPreviewSrc = resolveAssetUrl(modalPath || C.MENU_MODAL_PLACEHOLDER_IMAGE);
     var configuredGallery = resolveConfiguredGallery(entry);
-    var detectedGallery = detectEditorialGallery(ctx, itemId);
+    var detectedGallery = detectEditorialGallery(ctx, itemId, entry);
     var effectiveGallery = detectedGallery.length ? detectedGallery.slice() : configuredGallery.slice();
     var hasLocalMediaInventory = Boolean(
       ctx &&
@@ -629,11 +725,13 @@
       Array.isArray(ctx.state.indexes.localMenuMediaPaths) &&
       ctx.state.indexes.localMenuMediaPaths.length
     );
-    var editorialIdVariants = getEditorialIdVariants(itemId);
+    var editorialSlugCandidates = buildEditorialSlugCandidates(entry, itemId);
+    var editorialDirectoryCandidates = buildEditorialDirectoryCandidates(entry);
+    var editorialPatternDirectory = editorialDirectoryCandidates[0] || LEGACY_EDITORIAL_MEDIA_ROOT;
     var editorialPatternExample =
-      EDITORIAL_MEDIA_ROOT + "/" + (editorialIdVariants[0] || itemId) + "-slide-0" + EDITORIAL_SLIDE_EXTENSION;
-    var editorialPatternAltExample = editorialIdVariants.length > 1
-      ? EDITORIAL_MEDIA_ROOT + "/" + editorialIdVariants[1] + "-slide-0" + EDITORIAL_SLIDE_EXTENSION
+      editorialPatternDirectory + "/" + (editorialSlugCandidates[0] || itemId) + "-slide-0" + EDITORIAL_SLIDE_EXTENSION;
+    var editorialPatternAltExample = editorialSlugCandidates.length > 1
+      ? editorialPatternDirectory + "/" + editorialSlugCandidates[1] + "-slide-0" + EDITORIAL_SLIDE_EXTENSION
       : "";
     var editorialRuntimeMode = "fallback";
     if (detectedGallery.length) {
@@ -655,7 +753,7 @@
       configuredGallery.length > 0 &&
       !areSamePathArrays(configuredGallery, effectiveGallery);
     var editorialHelpCopy = hasLocalMediaInventory
-      ? "Ordena por líneas. Detecta slides por naming (item_id o item-id), prellena este campo y al guardar persiste en overrides.gallery."
+      ? "Ordena por líneas. Detecta slides por naming dentro de la carpeta del item, prellena este campo y al guardar persiste en overrides.gallery."
       : "Sin inventario local de assets en esta sesión. Puedes pegar rutas manuales o mantener overrides.gallery existente.";
     var persistedPreviewHtml = showPersistedPreview
       ? ''

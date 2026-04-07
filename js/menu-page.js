@@ -9172,6 +9172,15 @@
             return null;
           }
 
+          const inferredVideoType = inferEditorialVideoSourceType(src);
+          if (inferredVideoType) {
+            return {
+              type: 'video',
+              sources: [{ src, type: inferredVideoType }],
+              alt: slideAlt,
+            };
+          }
+
           return {
             type: 'image',
             src,

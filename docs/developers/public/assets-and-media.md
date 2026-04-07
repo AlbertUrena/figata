@@ -41,18 +41,18 @@ The Figata project uses static image assets organized by type. There is no image
 Menu images use the **item slug** as the filename and live under category subfolders:
 
 ```
-assets/menu/entradas/<item-slug>.webp           ← entradas
-assets/menu/pizzas/clasica/<item-slug>.webp     ← pizzas clásicas
-assets/menu/pizzas/autor/<item-slug>.webp       ← pizzas de autor
-assets/menu/postres/<item-slug>.webp            ← postres
-assets/menu/productos/<item-slug>.webp          ← productos
-assets/menu/<item-slug>-hover.webp              ← hover variant (optional, legacy)
+assets/menu/entradas/<item-slug>/<asset>.webp   ← entradas
+assets/menu/pizzas/<pizza-slug>/<asset>.webp    ← pizzas
+assets/menu/postres/<item-slug>/<asset>.webp    ← postres
+assets/menu/bebidas/<item-slug>/<asset>.webp    ← bebidas
+assets/menu/productos/<item-slug>/<asset>.webp  ← productos
+assets/menu/.../<item-slug>-hover.webp          ← hover variant (optional)
 ```
 
 Example for "Margherita":
 ```
-assets/menu/pizzas/clasica/margherita.webp      ← card/modal image
-assets/menu/margherita-hover.webp               ← hover variant (legacy)
+assets/menu/pizzas/margherita/margherita.webp   ← source/card/modal image
+assets/menu/pizzas/margherita/margherita-hover.webp  ← hover override (optional)
 ```
 
 ### Image Variants
@@ -84,9 +84,9 @@ When no image is available or an image fails to load:
 Uses `window.FigataData.media` API:
 
 ```js
-mediaApi.get(itemId, "card")     // → "assets/menu/pizzas/clasica/margherita.webp"
-mediaApi.get(itemId, "hover")    // → "assets/menu/margherita-hover.webp"
-mediaApi.get(itemId, "modal")    // → "assets/menu/margherita.webp"
+mediaApi.get(itemId, "card")     // → "assets/menu/pizzas/margherita/margherita.webp"
+mediaApi.get(itemId, "hover")    // → "assets/menu/pizzas/margherita/margherita-hover.webp"
+mediaApi.get(itemId, "modal")    // → "assets/menu/pizzas/margherita/margherita.webp"
 mediaApi.getAlt(itemId)          // → "Margherita"
 mediaApi.getGallery(itemId)      // → ["assets/menu/extra1.webp", ...]
 mediaApi.prefetch(itemId, variant) // Preloads image into browser cache
@@ -124,14 +124,17 @@ buildMenuMediaCandidates(raw)   // Build candidate paths for media picker
 ```json
 {
   "version": 2,
-  "schema": "media",
+  "schema": "figata.media.v2",
   "items": {
     "<item-id>": {
-      "card": "assets/menu/<slug>.webp",
-      "hover": "assets/menu/<slug>-hover.webp",
-      "modal": "assets/menu/<slug>.webp",
+      "source": "assets/menu/pizzas/<pizza-slug>/<asset>.webp",
       "alt": "Item display name",
-      "gallery": []
+      "overrides": {
+        "card": "",
+        "hover": "",
+        "modal": "",
+        "gallery": []
+      }
     }
   }
 }
@@ -238,18 +241,20 @@ Returns a sorted list of all `.webp` and `.svg` files under `assets/menu/`. Used
 ## Adding a New Menu Item Image
 
 1. Create a WebP image (recommended: 800×600px for card, 1200×800px for modal)
-2. Name it `<item-slug>.webp` and optionally `<item-slug>-hover.webp`
-3. Place in the correct category subfolder under `assets/menu/`
-4. Add an entry in `data/media.json` under `items.<item-id>`:
+2. Place it in the corresponding per-item folder (`assets/menu/<categoria>/<item-slug>/`)
+3. Name it `<item-slug>.webp` and optionally `<item-slug>-hover.webp`
+4. Add/update the entry in `data/media.json` under `items.<item-id>`:
    ```json
    {
-     "card": "assets/menu/<slug>.webp",
-     "hover": "assets/menu/<slug>-hover.webp",
-     "modal": "assets/menu/<slug>.webp",
+     "source": "assets/menu/<categoria>/<item-slug>/<asset>.webp",
+     "overrides": {
+       "hover": "assets/menu/<categoria>/<item-slug>/<asset>-hover.webp"
+     },
      "alt": "Display name"
    }
    ```
-5. Run `npm run validate:media` to verify
+5. Keep `data/menu.json` `item.image` aligned with the same path used as source/card
+6. Run `npm run validate:media` to verify
 
 ## Adding a New Ingredient Icon
 
