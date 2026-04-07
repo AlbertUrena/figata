@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-04-07T16:20:46.228Z",
+  "generatedAt": "2026-04-07T20:03:48.536Z",
   "schemaVersion": 2,
   "summary": {
     "errors": 0,
     "warnings": 1,
-    "menuItems": 51,
-    "mediaItems": 51,
+    "menuItems": 52,
+    "mediaItems": 52,
     "missingMediaItems": 0,
     "unknownMediaItems": 0,
     "missingSource": 0,
     "brokenPaths": 0,
-    "duplicatedPaths": 6
+    "duplicatedPaths": 7
   },
   "details": {
     "errors": [],
     "warnings": [
-      "Rutas duplicadas potencialmente innecesarias: 6"
+      "Rutas duplicadas potencialmente innecesarias: 7"
     ],
     "missingMediaItems": [],
     "unknownMediaItems": [],
@@ -31,6 +31,19 @@
           },
           {
             "itemId": "bruschetta_classica",
+            "variant": "overrides.modal"
+          }
+        ]
+      },
+      {
+        "path": "assets/menu/entradas/carpaccio-di-bresaola/carpaccio-di-bresaola.webp",
+        "uses": [
+          {
+            "itemId": "carpaccio_bresaola",
+            "variant": "source"
+          },
+          {
+            "itemId": "carpaccio_bresaola",
             "variant": "overrides.modal"
           }
         ]

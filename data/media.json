@@ -41,7 +41,7 @@
       "alt": "Bruschetta Classica",
       "overrides": {
         "card": "",
-        "hover": "assets/menu/entradas/bruschetta/bruschetta-hover.webp",
+        "hover": "",
         "modal": "assets/menu/entradas/bruschetta/bruschetta.webp",
         "gallery": []
       },
@@ -54,8 +54,10 @@
       "overrides": {
         "card": "",
         "hover": "",
-        "modal": "",
-        "gallery": []
+        "modal": "assets/menu/entradas/carpaccio-di-bresaola/carpaccio-di-bresaola.webp",
+        "gallery": [
+          "assets/menu/entradas/carpaccio-di-bresaola/carpaccio-slide-0.webp"
+        ]
       },
       "dominantColor": "",
       "version": 2
@@ -79,7 +81,11 @@
         "card": "",
         "hover": "",
         "modal": "",
-        "gallery": []
+        "gallery": [
+          "assets/menu/entradas/tagliere-misto/tagliere-slide-0.webp",
+          "assets/menu/entradas/tagliere-misto/tagliere-slide-1.webp",
+          "assets/menu/entradas/tagliere-misto/tagliere-slide-2.webp"
+        ]
       },
       "dominantColor": "",
       "version": 2
@@ -704,6 +710,21 @@
           "assets/menu/pizzas/spetaccolo/spettacolo-slide-0.webp",
           "assets/menu/pizzas/spetaccolo/spettacolo-slide-1.webp",
           "assets/menu/pizzas/spetaccolo/spettacolo-slide-2.webp"
+        ]
+      },
+      "dominantColor": "",
+      "version": 2
+    },
+    "bruschetta_golosa": {
+      "source": "assets/menu/entradas/bruschetta-golosa/bruschetta-golosa.webp",
+      "alt": "Bruschetta Golosa",
+      "overrides": {
+        "card": "",
+        "hover": "",
+        "modal": "",
+        "gallery": [
+          "assets/menu/entradas/bruschetta-golosa/bruschetta-golosa-slide-0.webp",
+          "assets/menu/entradas/bruschetta-golosa/bruschetta-golosa-slide-1.webp"
         ]
       },
       "dominantColor": "",

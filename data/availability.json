@@ -36,6 +36,11 @@
       "soldOutReason": ""
     },
     {
+      "itemId": "bruschetta_golosa",
+      "available": true,
+      "soldOutReason": ""
+    },
+    {
       "itemId": "burrata_fresca_producto",
       "available": true,
       "soldOutReason": ""

@@ -78,6 +78,28 @@
           }
         },
         {
+          "id": "bruschetta_golosa",
+          "name": "Bruschetta Golosa",
+          "slug": "bruschetta-golosa",
+          "category": "entradas",
+          "subcategory": "",
+          "price": 450,
+          "ingredients": [
+            "stracciatella",
+            "prosciutto_di_parma",
+            "miel_trufada"
+          ],
+          "image": "assets/menu/entradas/bruschetta-golosa/bruschetta-golosa.webp",
+          "featured": false,
+          "available": true,
+          "allergen_overrides": {
+            "add": [
+              "gluten"
+            ]
+          },
+          "description": "Bruschetta con stracciatella, prosciutto y miel trufada."
+        },
+        {
           "id": "carpaccio_bresaola",
           "name": "Carpaccio di Bresaola",
           "slug": "carpaccio-bresaola",
