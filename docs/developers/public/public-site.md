@@ -72,13 +72,13 @@ The page is structured as a single scrollable document. Major sections in `index
 
 ### Script Loading Order
 
-Homepage (`index.html`) scripts are loaded with `defer` and execute in order after HTML parsing:
+Homepage (`index.html`) runs a mixed boot pipeline: critical route/runtime scripts load with `defer`, while non-critical testimonials/events/scroll-indicator code is kicked to post-DCL idle time.
 
 ```
 1.  shared/public-paths.js      — Shared site-base helper for root + GitHub Pages subpath hosting
 2.  shared/figata-cover-transition.js — Shared transition engine
 3.  js/menu-route-transition.js — Shared public route handoff for home/menu/eventos links and CTAs
-4.  js/reload-cover.js          — Entry/reload cover transition plus real-page reveal handoff
+4.  js/reload-cover.js          — Deferred route-handoff reveal runtime; initial/reload exit boots inline before deferred scripts
 5.  shared/public-navbar.js     — Captures canonical navbar markup for cross-route reuse
 6.  js/navbar-collapse.js       — Navbar collapse/expand animation controller
 7.  js/public-burger-menu.js    — Homepage-only lightweight burger/menu runtime for the mobile navbar
@@ -94,14 +94,13 @@ Homepage (`index.html`) scripts are loaded with `defer` and execute in order aft
 17. js/home-lazy-images.js      — Lazy image loading (IntersectionObserver)
 18. js/home-config.js           — Homepage section rendering (hero, delivery, footer, etc.)
 19. js/mas-pedidas.js           — Featured menu renderer + preview transition consumer
-20. js/testimonials.js          — Testimonials carousel
-21. js/events-tabs.js           — Events tabbed section
-22. shared/public-scroll-indicator.js — Native root-scroll progress meter
+20. inline post-DCL/idle loader — Defers testimonials, events tabs, and the scroll indicator out of the first-load critical path
 ```
 
 Additionally loaded (non-deferred):
 - `shared/public-navbar-bootstrap.js` — synchronous head bootstrap that seeds the compact mobile navbar before first paint
-- `netlify-identity-widget.js` from CDN — for admin redirect handling
+- Inline reload bootstrap immediately after `.reload-transition-cover` — owns first-load/reload exit timing and a hard failsafe before deferred scripts run
+- Conditional Netlify Identity loader — fetches `netlify-identity-widget.js` only when auth hash tokens are present
 
 Menu page (`menu/index.html`) loads:
 
@@ -148,7 +147,7 @@ head. shared/public-navbar-bootstrap.js
 
 - `_redirects` defines the `/menu/:item` rewrite behavior used by Cloudflare Pages so deep links load the menu shell directly.
 - Because Cloudflare redirects are evaluated before static file lookup, the route file includes an explicit static pass-through for `/menu/menu-page.css` before dynamic `/menu/:item` rules.
-- `_headers` keeps every repo-served runtime asset on `must-revalidate`, including media and fonts, so deploys do not depend on manual cache-busting query params.
+- `_headers` keeps HTML/data on fresh validation while allowing short `stale-while-revalidate` windows for public JS/CSS and longer windows for media/fonts so refreshes do not stall on every runtime asset revalidation.
 
 ### Script Responsibilities
 
@@ -283,11 +282,13 @@ Navbar collapse animation controller:
 - Keeps the public navbar in the compact collapsed state across mobile viewports, while desktop retains the scroll-driven collapse behavior
 
 #### `js/reload-cover.js` (6KB, ~170 lines)
-Reload overlay animation:
-- Uses `shared/figata-cover-transition.js` as the single transition engine
-- Plays exit phase on page entry/reload
-- On route handoff, adds a preview-style content rise reveal on the destination page so cross-route navigation feels closer to the homepage `Detalles` modal
-- Supports route handoff via `sessionStorage` (`figata:route-transition`)
+Deferred public-route handoff runtime:
+- Reads the structured route payload written by `js/menu-route-transition.js`
+- Cancels the early inline cover failsafe once the deferred route runtime takes over
+- Uses `shared/figata-cover-transition.js` for the richer destination-page reveal on `home`, `/menu/`, and `/eventos/`
+- Falls back to clearing the cover state if the transition engine is unavailable
+
+Initial/reload exits no longer depend on this file. Those now boot inline in each public route immediately after `.reload-transition-cover`, with a hard failsafe so the cover cannot sit over the page waiting for the deferred script chain.
 
 #### `js/menu-route-transition.js`
 Public route transition binder:

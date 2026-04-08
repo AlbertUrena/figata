@@ -54,7 +54,7 @@ website-figata/
 │   ├── events-tabs.js            Events section tabs
 │   ├── feature-tabs.js           Feature highlights tabs
 │   ├── navbar-collapse.js        Mobile navbar behavior
-│   ├── reload-cover.js           Page reload overlay + route reveal handoff
+│   ├── reload-cover.js           Deferred route-handoff reveal runtime + cover cleanup fallback
 │   └── home-lazy-images.js       Lazy image loading
 ├── data/                      ← Shared data layer (9 JSON files)
 │   ├── menu.json                 Menu items grouped by section
@@ -242,6 +242,8 @@ Shared runtime helpers used by traits/validation must load before their consumer
 `shared/menu-traits.js` + `shared/menu-allergens.js` + `shared/menu-sensory.js` → contracts/data loaders → feature scripts.
 
 On public routes, `shared/public-navbar-bootstrap.js` must load synchronously in the page `<head>` before route styles so mobile first paint starts in the compact navbar state.
+
+On public routes, the entry/reload cover bootstrap runs inline immediately after `.reload-transition-cover` so first-load exit timing never depends on deferred route scripts.
 
 On public routes, `shared/public-paths.js` must load before other route scripts that resolve site-relative URLs or parse the current pathname.
 

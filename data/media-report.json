@@ -1,34 +1,26 @@
 {
-  "generatedAt": "2026-04-07T23:27:07.940Z",
+  "generatedAt": "2026-04-08T15:34:59.566Z",
   "schemaVersion": 2,
   "summary": {
-    "errors": 1,
+    "errors": 0,
     "warnings": 1,
     "menuItems": 52,
     "mediaItems": 52,
     "missingMediaItems": 0,
     "unknownMediaItems": 0,
     "missingSource": 0,
-    "brokenPaths": 1,
+    "brokenPaths": 0,
     "duplicatedPaths": 7
   },
   "details": {
-    "errors": [
-      "Se detectaron paths rotos: 1"
-    ],
+    "errors": [],
     "warnings": [
       "Rutas duplicadas potencialmente innecesarias: 7"
     ],
     "missingMediaItems": [],
     "unknownMediaItems": [],
     "missingSource": [],
-    "brokenPaths": [
-      {
-        "itemId": "tiramisu",
-        "variant": "overrides.hover",
-        "path": "assets/menu/postres/tiramisu/tiramisu-hover.webp"
-      }
-    ],
+    "brokenPaths": [],
     "duplicatedPaths": [
       {
         "path": "assets/menu/entradas/bruschetta/bruschetta.webp",
@@ -101,6 +93,10 @@
           {
             "itemId": "tiramisu",
             "variant": "source"
+          },
+          {
+            "itemId": "tiramisu",
+            "variant": "overrides.hover"
           },
           {
             "itemId": "tiramisu",

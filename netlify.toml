@@ -11,37 +11,37 @@
 [[headers]]
   for = "/assets/*"
   [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
+    Cache-Control = "public, max-age=0, stale-while-revalidate=86400"
 
 [[headers]]
   for = "/js/*"
   [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
+    Cache-Control = "public, max-age=0, stale-while-revalidate=60"
 
 [[headers]]
   for = "/shared/*"
   [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
+    Cache-Control = "public, max-age=0, stale-while-revalidate=60"
 
 [[headers]]
   for = "/src/*"
   [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
+    Cache-Control = "public, max-age=0, stale-while-revalidate=60"
 
 [[headers]]
   for = "/styles.css"
   [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
+    Cache-Control = "public, max-age=0, stale-while-revalidate=60"
 
 [[headers]]
   for = "/menu/menu-page.css"
   [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
+    Cache-Control = "public, max-age=0, stale-while-revalidate=60"
 
 [[headers]]
   for = "/eventos/eventos.css"
   [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
+    Cache-Control = "public, max-age=0, stale-while-revalidate=60"
 
 [[headers]]
   for = "/admin/app/*.css"
@@ -56,12 +56,12 @@
 [[headers]]
   for = "/fonts/*"
   [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
+    Cache-Control = "public, max-age=0, stale-while-revalidate=86400"
 
 [[headers]]
   for = "/assets/fonts/*"
   [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
+    Cache-Control = "public, max-age=0, stale-while-revalidate=86400"
 
 [[headers]]
   for = "/admin/app/modules/*"

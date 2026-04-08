@@ -1,24 +1,24 @@
 # Static asset caching
 /assets/*
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, stale-while-revalidate=86400
 
 /js/*
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, stale-while-revalidate=60
 
 /shared/*
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, stale-while-revalidate=60
 
 /src/*
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, stale-while-revalidate=60
 
 /styles.css
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, stale-while-revalidate=60
 
 /menu/menu-page.css
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, stale-while-revalidate=60
 
 /eventos/eventos.css
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, stale-while-revalidate=60
 
 /admin/app/*.css
   Cache-Control: public, max-age=0, must-revalidate
@@ -33,10 +33,10 @@
   Cache-Control: public, max-age=0, must-revalidate
 
 /fonts/*
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, stale-while-revalidate=86400
 
 /assets/fonts/*
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, stale-while-revalidate=86400
 
 # Data should always be fresh after publish.
 /data/*.json

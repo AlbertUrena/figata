@@ -66,7 +66,10 @@
 
   const routeHandoff = readRouteHandoff();
   const hasRouteHandoff = Boolean(routeHandoff);
+  const earlyReloadBootstrap = window.FigataReloadBootstrap || null;
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const initialBootstrapOwnsExit =
+    earlyReloadBootstrap?.kind === "initial" && !hasRouteHandoff;
 
   const getStageTarget = (pageMain) => {
     if (!(pageMain instanceof HTMLElement)) {
@@ -173,8 +176,20 @@
 
   const shouldRunReloadTransition = root.classList.contains("page-reload-transition");
 
+  if (earlyReloadBootstrap?.completed && !shouldRunReloadTransition) {
+    return;
+  }
+
   if (!shouldRunReloadTransition && !hasRouteHandoff) {
     return;
+  }
+
+  if (initialBootstrapOwnsExit) {
+    return;
+  }
+
+  if (hasRouteHandoff) {
+    earlyReloadBootstrap?.cancelFailSafe?.();
   }
 
   const cover = document.querySelector(".reload-transition-cover");
@@ -189,6 +204,7 @@
     !(bgPath instanceof SVGPathElement) ||
     typeof transitionFactory !== "function"
   ) {
+    earlyReloadBootstrap?.clearNow?.("route-transition-bootstrap-fallback");
     root.classList.remove("page-reload-transition");
     return;
   }

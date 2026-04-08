@@ -448,7 +448,7 @@
       "alt": "Tiramisú artesanal",
       "overrides": {
         "card": "",
-        "hover": "assets/menu/postres/tiramisu/tiramisu-hover.webp",
+        "hover": "assets/menu/postres/tiramisu/tiramisu.webp",
         "modal": "assets/menu/postres/tiramisu/tiramisu.webp",
         "gallery": []
       },
