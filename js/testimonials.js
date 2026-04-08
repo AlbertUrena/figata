@@ -20,6 +20,8 @@
   const ROW_AUTOSCROLL_SPEED_PX_PER_SECOND = 22;
   const ROW_AUTOSCROLL_MAX_TRACK_COPIES = 8;
   const ROW_AUTOSCROLL_RESIZE_EPSILON_PX = 1;
+  const TESTIMONIALS_INIT_ROOT_MARGIN = "240px 0px";
+  const STAR_SVG_NS = "http://www.w3.org/2000/svg";
 
   const createMediaQueryList = (query) =>
     typeof window.matchMedia === "function"
@@ -187,14 +189,17 @@
     const stars = document.createDocumentFragment();
 
     for (let index = 0; index < 5; index += 1) {
-      const star = document.createElement("img");
+      const star = document.createElementNS(STAR_SVG_NS, "svg");
       star.className = index < safeRating ? "star" : "star star--muted";
-      star.src = "assets/svg-icons/star.svg";
-      star.alt = "";
-      star.width = 16;
-      star.height = 16;
-      star.loading = "lazy";
+      star.setAttribute("viewBox", "0 0 24 24");
+      star.setAttribute("focusable", "false");
       star.setAttribute("aria-hidden", "true");
+      const polygon = document.createElementNS(STAR_SVG_NS, "polygon");
+      polygon.setAttribute(
+        "points",
+        "12,1.8 15.16,8.18 22.2,9.2 17.1,14.18 18.3,21.2 12,17.9 5.7,21.2 6.9,14.18 1.8,9.2 8.84,8.18"
+      );
+      star.appendChild(polygon);
       stars.appendChild(star);
     }
 
@@ -760,7 +765,35 @@
     requestRender();
   };
 
-  void init();
+  const startInit = () => {
+    if (grid.dataset.testimonialsInitStarted === "true") {
+      return;
+    }
+
+    grid.dataset.testimonialsInitStarted = "true";
+    void init();
+  };
+
+  const section = grid.closest("section");
+
+  if ("IntersectionObserver" in window && section instanceof HTMLElement) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const isVisible = entries.some((entry) => entry.isIntersecting);
+        if (!isVisible) {
+          return;
+        }
+
+        observer.disconnect();
+        startInit();
+      },
+      { rootMargin: TESTIMONIALS_INIT_ROOT_MARGIN }
+    );
+
+    observer.observe(section);
+  } else {
+    startInit();
+  }
 })();
 
 (() => {

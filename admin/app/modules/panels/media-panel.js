@@ -24,6 +24,7 @@
   };
   var LEGACY_EDITORIAL_MEDIA_ROOT = "assets/menu/editorial";
   var EDITORIAL_SLIDE_EXTENSION = ".webp";
+  var EDITORIAL_SLIDE_EXTENSIONS = [".webp", ".webm", ".mp4"];
 
   function escapeHtml(value) {
     return RU.escapeHtml(value == null ? "" : String(value));
@@ -237,42 +238,61 @@
     var knownPaths = getKnownMediaPaths(ctx).map(function (path) {
       return normalizeAssetPath(path);
     }).filter(Boolean);
+    var knownPathSet = {};
+    knownPaths.forEach(function (path) {
+      knownPathSet[path] = true;
+    });
 
     var directoryCandidates = buildEditorialDirectoryCandidates(entry);
     var slugCandidates = buildEditorialSlugCandidates(entry, normalizedItemId);
+
+    function buildSlideCandidates(directory, slug, slideIndex) {
+      var normalizedDirectory = normalizeAssetPath(directory);
+      var normalizedSlug = normalizeAssetPath(slug).replace(/_/g, "-");
+      if (!normalizedDirectory || !normalizedSlug) return [];
+
+      var baseNames = [
+        normalizedSlug + "-slide-" + slideIndex,
+        normalizedSlug + "-slide" + slideIndex,
+        normalizedSlug + "-video-slide-" + slideIndex,
+        normalizedSlug + "-video-slide" + slideIndex
+      ];
+
+      var seen = {};
+      var candidates = [];
+      baseNames.forEach(function (baseName) {
+        EDITORIAL_SLIDE_EXTENSIONS.forEach(function (extension) {
+          var candidate = normalizedDirectory + "/" + baseName + extension;
+          if (seen[candidate]) return;
+          seen[candidate] = true;
+          candidates.push(candidate);
+        });
+      });
+
+      return candidates;
+    }
 
     for (var dirIndex = 0; dirIndex < directoryCandidates.length; dirIndex += 1) {
       var directory = directoryCandidates[dirIndex];
 
       for (var slugIndex = 0; slugIndex < slugCandidates.length; slugIndex += 1) {
         var slug = slugCandidates[slugIndex];
-        var matcher = new RegExp(
-          "^" +
-          escapeRegExp(directory + "/" + slug + "-slide-") +
-          "(\\d+)" +
-          escapeRegExp(EDITORIAL_SLIDE_EXTENSION) +
-          "$",
-          "i"
-        );
-
-        var bySlideIndex = {};
-        knownPaths.forEach(function (path) {
-          var match = path.match(matcher);
-          if (!match) return;
-
-          var slideIndex = Number(match[1]);
-          if (!Number.isFinite(slideIndex)) return;
-          if (!bySlideIndex[slideIndex]) {
-            bySlideIndex[slideIndex] = path;
-          }
-        });
-
         var contiguousSlides = [];
         for (var slide = 0; slide < 24; slide += 1) {
-          if (!bySlideIndex[slide]) {
+          var slideCandidates = buildSlideCandidates(directory, slug, slide);
+          var matchedPath = "";
+          for (var candidateIndex = 0; candidateIndex < slideCandidates.length; candidateIndex += 1) {
+            var candidatePath = slideCandidates[candidateIndex];
+            if (knownPathSet[candidatePath]) {
+              matchedPath = candidatePath;
+              break;
+            }
+          }
+
+          if (!matchedPath) {
             break;
           }
-          contiguousSlides.push(bySlideIndex[slide]);
+          contiguousSlides.push(matchedPath);
         }
 
         if (contiguousSlides.length) {
@@ -308,14 +328,21 @@
         var normalizedPath = normalizeAssetPath(path);
         var slideLabel = "Slide " + (index + 1);
         var imageSrc = resolveAssetUrl(normalizedPath || C.MENU_PLACEHOLDER_IMAGE);
+        var isVideo = /\.(webm|mp4)(\?|#|$)/i.test(normalizedPath);
+        var mimeType = /\.mp4(\?|#|$)/i.test(normalizedPath) ? "video/mp4" : "video/webm";
         var imageAlt = itemLabel
           ? itemLabel + " " + slideLabel.toLowerCase()
           : slideLabel;
+        var mediaHtml = isVideo
+          ? ('<video muted loop playsinline preload="metadata" controls>'
+            + '<source src="' + escapeHtml(imageSrc) + '" type="' + escapeHtml(mimeType) + '" />'
+            + '</video>')
+          : ('<img src="' + escapeHtml(imageSrc) + '" alt="' + escapeHtml(imageAlt) + '" loading="lazy" />');
 
         return ''
           + '<li class="media-editorial-preview-item">'
           + '  <p class="kicker">' + escapeHtml(slideLabel) + '</p>'
-          + '  <img src="' + escapeHtml(imageSrc) + '" alt="' + escapeHtml(imageAlt) + '" loading="lazy" />'
+          + "  " + mediaHtml
           + '  <code>' + escapeHtml(normalizedPath) + '</code>'
           + '</li>';
       }).join("")

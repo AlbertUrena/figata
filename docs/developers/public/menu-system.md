@@ -170,11 +170,13 @@ For each item, `resolveItemMedia(item)` resolves paths from `media.json`:
 | `alt` | `mediaApi.getAlt(id)` | `item.name` |
 | `gallery` | `mediaApi.getGallery(id)` | Empty array |
 
-For mobile detail hero, `js/menu-page.js` also resolves `mediaApi.getEditorialGallery(id)` with this priority:
+For mobile detail hero, `js/menu-page.js` resolves editorial media with this priority:
 
-1. `overrides.gallery` from `data/media.json` (if present)
-2. Auto-detected assets from the item folder (same directory as `card/modal/source`) using `<editorial-slug>-slide-<n>.webp`; accepts underscore/hyphen item-id variants and source-basename variants
-3. Catalog fallback (`modal`/`card`) when no editorial slides exist
+1. Typed `overrides.editorialSlides` only when they include video slides (`type: "video"`)
+2. `mediaApi.getEditorialGallery(id)` repo-first auto-detection from the item folder (same directory as `card/modal/source`) using image patterns (`<editorial-slug>-slide-<n>.webp`, compact `<editorial-slug>-slide<n>.webp`) and video patterns (`<editorial-slug>-video-slide-<n>.(webm|mp4)`, compact `<editorial-slug>-video-slide<n>.(webm|mp4)`); accepts underscore/hyphen item-id variants and source-basename variants
+3. `overrides.gallery` legacy image-only fallback
+4. Image-only `overrides.editorialSlides` legacy fallback
+5. Catalog fallback (`modal`/`card`) when no editorial slides exist
 
 ### Prefetching
 

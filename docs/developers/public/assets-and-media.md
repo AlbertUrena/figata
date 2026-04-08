@@ -64,7 +64,7 @@ Each menu item can have up to 4 image variants, defined in `data/media.json`:
 | `card` | Card thumbnail in the featured grid | `js/mas-pedidas.js` card rendering |
 | `hover` | Alternate image shown on pointer hover | Card hover state + preview hover |
 | `modal` | Full-size image in the preview overlay | Preview overlay main image |
-| `gallery` | Additional images (array) | Currently unused on public site |
+| `gallery` | Additional editorial detail images (array) | Detail hero fallback/editorial runtime |
 
 ### Placeholder Images
 
@@ -234,7 +234,7 @@ During local development, the dev server provides:
 |----------|--------|----------|
 | `/__local/menu-media-paths` | GET | `{ root: "assets/menu", paths: [...] }` |
 
-Returns a sorted list of all `.webp` and `.svg` files under `assets/menu/`. Used by the admin panel's media picker to show available images for assignment to menu items.
+Returns a sorted list of `.webp`, `.svg`, `.webm`, and `.mp4` files under `assets/menu/`. Used by the admin panel's media picker/editorial detector to show available media for assignment to menu items.
 
 ---
 

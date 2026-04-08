@@ -4216,7 +4216,9 @@ code {
   margin: 0;
 }
 
-.media-editorial-preview-item img {
+.media-editorial-preview-item img,
+.media-editorial-preview-item video {
+  display: block;
   width: 100%;
   aspect-ratio: 3 / 4;
   object-fit: cover;

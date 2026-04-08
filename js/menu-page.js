@@ -9849,28 +9849,32 @@
     const media = resolveItemMedia(item);
     const editorial = resolveDetailEditorialModel(item);
     const editorialAltBase = normalizeText(media.alt || item?.name || item?.id);
-    let editorialSlides = buildDetailEditorialSlides(media.editorialSlides, editorialAltBase);
+    const manualEditorialSlides = buildDetailEditorialSlides(media.editorialSlides, editorialAltBase);
+    const manualSlidesIncludeVideo = manualEditorialSlides.some(
+      (slide) => slide?.type === 'video'
+    );
+    let editorialSlides = manualSlidesIncludeVideo ? manualEditorialSlides : [];
+    let editorialGallery = Array.isArray(media.gallery) ? media.gallery.slice() : [];
+
+    if (mediaApi?.getEditorialGallery) {
+      try {
+        const detectedGallery = await mediaApi.getEditorialGallery(item?.id);
+        if (Array.isArray(detectedGallery) && detectedGallery.length) {
+          editorialGallery = detectedGallery
+            .map((path) => toAbsoluteAssetPath(path))
+            .filter(Boolean);
+        }
+      } catch (error) {
+        console.warn(
+          '[menu-page] No se pudo resolver la galería editorial para el detalle.',
+          error
+        );
+      }
+    }
 
     if (!editorialSlides.length) {
-      let editorialGallery = Array.isArray(media.gallery) ? media.gallery.slice() : [];
-
-      if (!editorialGallery.length && mediaApi?.getEditorialGallery) {
-        try {
-          const detectedGallery = await mediaApi.getEditorialGallery(item?.id);
-          if (Array.isArray(detectedGallery) && detectedGallery.length) {
-            editorialGallery = detectedGallery
-              .map((path) => toAbsoluteAssetPath(path))
-              .filter(Boolean);
-          }
-        } catch (error) {
-          console.warn(
-            '[menu-page] No se pudo resolver la galería editorial para el detalle.',
-            error
-          );
-        }
-      }
-
-      editorialSlides = buildDetailEditorialSlides(editorialGallery, editorialAltBase);
+      const gallerySlides = buildDetailEditorialSlides(editorialGallery, editorialAltBase);
+      editorialSlides = gallerySlides.length ? gallerySlides : manualEditorialSlides;
     }
 
     const homeMenuDetailContext = await loadHomeMenuDetailContext();

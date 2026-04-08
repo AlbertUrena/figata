@@ -8,6 +8,7 @@
   const VARIANTS = new Set(['card', 'hover', 'modal']);
   const LEGACY_EDITORIAL_MEDIA_ROOT = 'assets/menu/editorial';
   const MAX_EDITORIAL_SLIDES = 12;
+  const EDITORIAL_SLIDE_EXTENSIONS = ['webp', 'webm', 'mp4'];
 
   const STATIC_DEFAULTS = {
     card: 'assets/menu/placeholders/card.svg',
@@ -543,8 +544,36 @@
     return candidates;
   };
 
-  const buildEditorialSlidePath = (directory, slug, slideIndex) =>
-    `${directory}/${slug}-slide-${slideIndex}.webp`;
+  const buildEditorialSlideCandidates = (directory, slug, slideIndex) => {
+    const normalizedDirectory = normalizeAssetPath(directory);
+    const normalizedSlug = normalizeId(slug).replace(/_/g, '-');
+
+    if (!normalizedDirectory || !normalizedSlug || !Number.isFinite(slideIndex)) {
+      return [];
+    }
+
+    const baseNames = [
+      `${normalizedSlug}-slide-${slideIndex}`,
+      `${normalizedSlug}-slide${slideIndex}`,
+      `${normalizedSlug}-video-slide-${slideIndex}`,
+      `${normalizedSlug}-video-slide${slideIndex}`,
+    ];
+
+    const candidates = [];
+    const seen = new Set();
+
+    baseNames.forEach((baseName) => {
+      EDITORIAL_SLIDE_EXTENSIONS.forEach((extension) => {
+        const candidate = `${normalizedDirectory}/${baseName}.${extension}`;
+        if (!seen.has(candidate)) {
+          seen.add(candidate);
+          candidates.push(candidate);
+        }
+      });
+    });
+
+    return candidates;
+  };
 
   const toProbeUrl = (path) => {
     const normalizedPath = normalizeAssetPath(path);
@@ -655,14 +684,22 @@
           const candidatePaths = [];
 
           for (let slideIndex = 0; slideIndex < MAX_EDITORIAL_SLIDES; slideIndex += 1) {
-            const candidatePath = buildEditorialSlidePath(directory, slug, slideIndex);
-            const exists = await probeAssetExists(store, candidatePath);
+            const candidatesForIndex = buildEditorialSlideCandidates(directory, slug, slideIndex);
+            let detectedPath = '';
 
-            if (!exists) {
+            for (const candidatePath of candidatesForIndex) {
+              const exists = await probeAssetExists(store, candidatePath);
+              if (exists) {
+                detectedPath = candidatePath;
+                break;
+              }
+            }
+
+            if (!detectedPath) {
               break;
             }
 
-            candidatePaths.push(candidatePath);
+            candidatePaths.push(detectedPath);
           }
 
           if (candidatePaths.length) {
@@ -752,11 +789,13 @@
 
     const configuredGallery = resolveGallery(store, itemId);
 
-    if (configuredGallery.length) {
-      return configuredGallery;
+    const detectedGallery = await detectEditorialGallery(store, itemId);
+
+    if (detectedGallery.length) {
+      return detectedGallery;
     }
 
-    return detectEditorialGallery(store, itemId);
+    return configuredGallery;
   };
 
   const prefetch = (itemId, variant = 'modal') => {

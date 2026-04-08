@@ -41,19 +41,20 @@ website-figata/
 │   ├── index.html             ← Public Pizza Party editorial landing (`/eventos/`)
 │   └── eventos.css            ← Events landing styles
 ├── styles.css                 ← Public site styles (~2,600 lines)
-├── js/                        ← Public site JavaScript (13 scripts)
+├── js/                        ← Public site JavaScript (14 scripts)
 │   ├── home-config.js            Fetches data/home.json, renders homepage sections
 │   ├── mas-pedidas.js            Menu rendering engine (largest: 34KB)
-│   ├── menu-route-transition.js  Shared public route-transition handoff for home/menu/eventos
+│   ├── menu-route-transition.js  Shared public route-transition handoff + prefetch for home/menu/eventos
 │   ├── menu-page.js              Full menu page renderer (Events-style top tabs + category grids)
 │   ├── menu-page-navbar.js       `/menu/` sticky-menu enhancer for the shared navbar
-│   ├── eventos-page.js           `/eventos/` enhancer (cotizador Pizza Party + modal variedades, FAQ, hero video, media rail, navbar burger/menu mobile)
+│   ├── public-burger-menu.js     Lightweight burger/menu runtime used by the homepage mobile navbar
+│   ├── eventos-page.js           `/eventos/` enhancer (cotizador Pizza Party + modal variedades, FAQ, hero video, media rail, route-local burger/menu mobile)
 │   ├── restaurant-config.js      Restaurant info (hours, address, phone)
 │   ├── testimonials.js           Testimonials carousel
 │   ├── events-tabs.js            Events section tabs
 │   ├── feature-tabs.js           Feature highlights tabs
 │   ├── navbar-collapse.js        Mobile navbar behavior
-│   ├── reload-cover.js           Page reload overlay
+│   ├── reload-cover.js           Page reload overlay + route reveal handoff
 │   └── home-lazy-images.js       Lazy image loading
 ├── data/                      ← Shared data layer (9 JSON files)
 │   ├── menu.json                 Menu items grouped by section

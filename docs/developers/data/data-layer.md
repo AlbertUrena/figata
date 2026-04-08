@@ -516,13 +516,16 @@ The system uses `source` by default, but falls back to the `overrides` dictionar
 - Use only real sources; if mp4 fallback is not available yet, keep only the valid webm source.
 - `items[<itemId>].overrides.gallery` remains supported as the legacy image-only list.
 - Runtime priority in `/menu/<item-id>` detail view:
-  1. `media.items[itemId].overrides.editorialSlides` (if non-empty)
-  2. `media.items[itemId].overrides.gallery` (if non-empty)
-  3. Auto-detected assets by naming convention
-  4. Catalog image fallback (`modal`/`card`)
+  1. `media.items[itemId].overrides.editorialSlides` only when it includes typed video slides (`type: "video"`)
+  2. Auto-detected assets by naming convention (repo-first)
+  3. `media.items[itemId].overrides.gallery` (legacy image-only fallback)
+  4. `media.items[itemId].overrides.editorialSlides` image-only entries (legacy compatibility fallback)
+  5. Catalog image fallback (`modal`/`card`)
 - Auto-detection convention (progressive, no required JSON edit):
   - Folder: same folder as the item source image (for example `assets/menu/pizzas/margherita/`)
-  - Pattern: `<editorial-slug>-slide-<n>.webp` (`editorial-slug` accepts item-id variants and source basename variants, including underscore/hyphen equivalents)
+  - Image patterns: `<editorial-slug>-slide-<n>.webp` and compact legacy `<editorial-slug>-slide<n>.webp`
+  - Video patterns: `<editorial-slug>-video-slide-<n>.(webm|mp4)` and compact legacy `<editorial-slug>-video-slide<n>.(webm|mp4)`
+  - `editorial-slug` accepts item-id variants and source basename variants, including underscore/hyphen equivalents
   - Example: `assets/menu/pizzas/margherita/margherita-slide-0.webp`
 - Detection is contiguous from `slide-0` forward; first missing index stops detection.
 - This keeps editorial support optional: items without editorial slides continue using the existing catalog flow.

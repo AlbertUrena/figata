@@ -4,6 +4,14 @@
   const ROUTE_HANDOFF_KIND = "public-route";
   const COVER_IN_DURATION_MS = 900;
   const PAGE_PUSH_Y_PX = -200;
+  const PREFETCH_TIMEOUT_MS = 2600;
+  const routeDocPrefetches = new Set();
+  const routeAssetPrefetches = new Set();
+  const ROUTE_STAGE_POSTER_BY_KEY = Object.freeze({
+    home: "assets/home/middle-hero.webp",
+    menu: "assets/navbar/menu-thumb.webp",
+    eventos: "assets/eventos/thumb.webp",
+  });
 
   const cover = document.querySelector(".reload-transition-cover");
   const coverPath = cover?.querySelector(".reload-transition-cover__bg");
@@ -38,6 +46,17 @@
   };
 
   const getCurrentPath = () => normalizePathname(window.location.pathname);
+  const getRouteKey = (pathname) => {
+    if (isMenuPath(pathname)) {
+      return "menu";
+    }
+
+    if (isEventosPath(pathname)) {
+      return "eventos";
+    }
+
+    return "home";
+  };
   const isHomePath = (pathname) => {
     const normalized = normalizePathname(pathname);
     return normalized === "/" || normalized === "/index.html";
@@ -52,6 +71,27 @@
   };
   const isManagedPublicPath = (pathname) =>
     isHomePath(pathname) || isMenuPath(pathname) || isEventosPath(pathname);
+  const toSiteAssetPath = (value) => {
+    const normalized = String(value || "").trim();
+
+    if (!normalized) {
+      return "";
+    }
+
+    if (/^(?:https?:|data:|blob:)/i.test(normalized)) {
+      return normalized;
+    }
+
+    if (publicPaths?.toSitePath) {
+      return publicPaths.toSitePath(normalized);
+    }
+
+    if (normalized.startsWith("/")) {
+      return normalized;
+    }
+
+    return `/${normalized.replace(/^(\.\/)+/, "").replace(/^\/+/, "")}`;
+  };
   const toUrl = (href) => {
     try {
       return new URL(href, window.location.href);
@@ -76,6 +116,64 @@
     }
 
     return true;
+  };
+  const prefetchRouteDocument = (url) => {
+    if (!(url instanceof URL)) {
+      return;
+    }
+
+    const cacheKey = url.toString();
+    if (routeDocPrefetches.has(cacheKey) || typeof window.fetch !== "function") {
+      return;
+    }
+
+    routeDocPrefetches.add(cacheKey);
+
+    const controller =
+      typeof AbortController === "function"
+        ? new AbortController()
+        : null;
+
+    if (controller) {
+      window.setTimeout(() => {
+        controller.abort();
+      }, PREFETCH_TIMEOUT_MS);
+    }
+
+    window
+      .fetch(cacheKey, {
+        credentials: "same-origin",
+        signal: controller?.signal,
+      })
+      .catch(() => {
+        // Prefetch warming is opportunistic only.
+      });
+  };
+  const prefetchRoutePoster = (url) => {
+    if (!(url instanceof URL)) {
+      return;
+    }
+
+    const routeKey = getRouteKey(url.pathname);
+    const assetPath = toSiteAssetPath(ROUTE_STAGE_POSTER_BY_KEY[routeKey]);
+
+    if (!assetPath || routeAssetPrefetches.has(assetPath)) {
+      return;
+    }
+
+    routeAssetPrefetches.add(assetPath);
+
+    const image = new Image();
+    image.decoding = "async";
+    image.src = assetPath;
+  };
+  const primeManagedRoute = (url) => {
+    if (!(url instanceof URL) || !isCrossRouteTarget(url)) {
+      return;
+    }
+
+    prefetchRouteDocument(url);
+    prefetchRoutePoster(url);
   };
 
   const isManagedRouteLink = (link) => {
@@ -119,6 +217,7 @@
       at: Date.now(),
       fromPath: getCurrentPath(),
       toPath: normalizePathname(targetUrl.pathname),
+      toRoute: getRouteKey(targetUrl.pathname),
     };
 
     try {
@@ -140,6 +239,7 @@
     isTransitionRunning = true;
 
     try {
+      primeManagedRoute(toUrl(url));
       await transition.playEnter({
         durationMs: COVER_IN_DURATION_MS,
         pagePushFrom: 0,
@@ -178,6 +278,51 @@
     event.preventDefault();
     playRouteTransition(link.href);
   });
+
+  const primeFromTarget = (target) => {
+    if (!(target instanceof Element)) {
+      return;
+    }
+
+    const link = target.closest("a[href]");
+    if (!isManagedRouteLink(link)) {
+      return;
+    }
+
+    primeManagedRoute(toUrl(link.href));
+  };
+
+  document.addEventListener(
+    "pointerover",
+    (event) => {
+      primeFromTarget(event.target);
+    },
+    { capture: true, passive: true }
+  );
+  document.addEventListener(
+    "touchstart",
+    (event) => {
+      primeFromTarget(event.target);
+    },
+    { capture: true, passive: true }
+  );
+  document.addEventListener(
+    "focusin",
+    (event) => {
+      primeFromTarget(event.target);
+    },
+    true
+  );
+
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(() => {
+      document.querySelectorAll("a[href]").forEach((link) => {
+        if (isManagedRouteLink(link)) {
+          primeManagedRoute(toUrl(link.href));
+        }
+      });
+    }, { timeout: 1800 });
+  }
 
   window.addEventListener("pagehide", () => {
     transition.cancel();

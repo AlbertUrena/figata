@@ -111,7 +111,7 @@ function writeJsonFile(relativePath, payload) {
 }
 
 function listMenuMediaPaths() {
-  const allowedExtensions = new Set([".webp", ".svg"]);
+  const allowedExtensions = new Set([".webp", ".svg", ".webm", ".mp4"]);
   const result = [];
   const stack = [MENU_MEDIA_ROOT_DIR];
 

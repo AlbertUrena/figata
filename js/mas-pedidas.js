@@ -50,6 +50,7 @@
   const ROW_AUTOSCROLL_RESIZE_EPSILON_PX = 1;
   const COVER_COLOR = "#143f2b";
   const POWER3_OUT_EASING = "cubic-bezier(0.215, 0.61, 0.355, 1)";
+  const hoverCapabilityMedia = window.matchMedia("(hover: hover) and (pointer: fine)");
 
   const SVG_WIDTH = 1366;
   const SVG_HEIGHT = 768;
@@ -393,7 +394,9 @@
     const execute = () => {
       itemsToPrefetch.forEach((item) => {
         mediaApi.prefetch(item.id, "modal");
-        mediaApi.prefetch(item.id, "hover");
+        if (hoverCapabilityMedia.matches) {
+          mediaApi.prefetch(item.id, "hover");
+        }
       });
     };
 
@@ -1399,7 +1402,7 @@
           mediaContainer.classList.add("is-empty");
         });
 
-        if (card.hoverImage && card.hoverImage !== imageSrc) {
+        if (hoverCapabilityMedia.matches && card.hoverImage && card.hoverImage !== imageSrc) {
           hoverImage.src = card.hoverImage;
           hoverImage.alt = "";
           hoverImage.loading = "lazy";

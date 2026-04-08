@@ -17,7 +17,7 @@ There is no build step — the HTML, CSS, and JavaScript are deployed directly.
 |--------|---------|
 | Entry points | `index.html` (homepage), `menu/index.html` (full menu page), `eventos/index.html` (Pizza Party editorial landing) |
 | Styles | `styles.css` (~2,600 lines, 75KB) |
-| Scripts | 13 files in `js/` + shared runtime modules/assets in `shared/` + data loaders in `src/data/` |
+| Scripts | 14 files in `js/` + shared runtime modules/assets in `shared/` + data loaders in `src/data/` |
 | Data | Fetches from `data/*.json` at runtime |
 | Hosting | Cloudflare Pages runtime (primary) plus Netlify/GitHub Pages fallback for the public surface |
 
@@ -78,10 +78,10 @@ Homepage (`index.html`) scripts are loaded with `defer` and execute in order aft
 1.  shared/public-paths.js      — Shared site-base helper for root + GitHub Pages subpath hosting
 2.  shared/figata-cover-transition.js — Shared transition engine
 3.  js/menu-route-transition.js — Shared public route handoff for home/menu/eventos links and CTAs
-4.  js/reload-cover.js          — Entry/reload cover transition
+4.  js/reload-cover.js          — Entry/reload cover transition plus real-page reveal handoff
 5.  shared/public-navbar.js     — Captures canonical navbar markup for cross-route reuse
 6.  js/navbar-collapse.js       — Navbar collapse/expand animation controller
-7.  js/eventos-page.js          — Applies the burger-nav variant only on pages that explicitly opt in, while the editorial/cotizador features stay scoped to `/eventos/`
+7.  js/public-burger-menu.js    — Homepage-only lightweight burger/menu runtime for the mobile navbar
 8.  shared/menu-traits.js       — Trait/badge runtime helpers
 9.  shared/menu-allergens.js    — Allergen runtime helpers
 10. shared/menu-sensory.js      — Structured sensory profile schema/normalizer
@@ -200,6 +200,13 @@ Full menu page runtime controller for `/menu/`. Handles:
 - Omitting that chevron override on mobile so the sticky navbar can dedicate the left rail to brand/search space
 - Locking mobile detail view into a stable `account-only` top-right account button so no navbar shell reveals on scroll and only the account action remains visible
 
+#### `js/public-burger-menu.js`
+Homepage mobile navbar enhancer. Handles:
+- Building the burger-menu chrome on top of the canonical homepage navbar
+- Rendering the card-style mobile panel entries with thumbs/subtitles
+- Animating the burger icon between closed/open states
+- Managing open/close, focus restoration, outside-click dismissal, and viewport changes
+
 #### `js/eventos-page.js`
 `/eventos/` route enhancer. Handles:
 - Commercial cotizador section ("Cotiza tu Pizza Party")
@@ -211,7 +218,7 @@ Full menu page runtime controller for `/menu/`. Handles:
   - Generates WhatsApp quote message with selected varieties and pricing breakdown
 - FAQ accordion behavior (single open item at a time)
 - Hero video autoplay fallback (enables controls when autoplay is blocked)
-- Menu-style navbar adaptation on mobile (burger button, animated icon, card menu panel, open/close states) only on pages that explicitly opt into that navbar variant, and only after a shared-navbar host has mounted when applicable
+- Menu-style navbar adaptation on mobile for `/eventos/` only (burger button, animated icon, card menu panel, open/close states) after a shared-navbar host mounts
 - Storytelling gallery modal + photo viewer behavior
 
 #### `js/restaurant-config.js` (11KB, ~390 lines)

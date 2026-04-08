@@ -169,7 +169,7 @@
 
     target.style.transform = "";
     target.style.transformOrigin = "";
-  }
+  };
 
   const shouldRunReloadTransition = root.classList.contains("page-reload-transition");
 

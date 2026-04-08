@@ -3187,6 +3187,9 @@ body.home-page-body.home-virtual-tour-open {
 .testimonials-section .star {
   width: 16px;
   height: 16px;
+  color: #e1a658;
+  fill: currentColor;
+  flex: 0 0 auto;
 }
 
 .testimonials-section .star--muted {
