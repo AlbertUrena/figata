@@ -5,7 +5,7 @@
 ## Contents
 
 - [Overview](#overview)
-- [Data Files](#data-files) — menu, categories, ingredients, availability, home, restaurant, media, media-variants, media-report
+- [Data Files](#data-files) — menu, categories, ingredients, availability, home, home-featured, restaurant, media, media-variants, media-report
 - [Validation Contracts](#validation-contracts) — menu traits, menu allergens, menu sensory profile, ingredients, categories, restaurant, media
 - [Data Flow](#data-flow) — from admin drafts to live site
 - [Key Rules](#key-rules)
@@ -14,7 +14,7 @@
 
 ## Overview
 
-The data layer consists of **9 JSON files** in `data/` that serve as the shared data store between the public website and the admin panel. These files are committed to Git and deployed statically. The admin panel modifies them through a publish pipeline (Netlify serverless function).
+The data layer consists of **10 JSON files** in `data/` that serve as the shared data store between the public website and the admin panel. These files are committed to Git and deployed statically. The admin panel modifies them through a publish pipeline (Netlify serverless function).
 
 The shared layer now includes a central **Menu Traits V2** engine, a separate **Menu Allergens** derivation engine, a structured **Menu Sensory Profile** contract, plus validation contracts for ingredients, categories, restaurant, and media. These modules are used by both the admin panel (client-side validation before publish) and the publish pipeline (server-side validation before commit).
 
@@ -259,7 +259,7 @@ Controls all dynamic sections of the public homepage.
   "hero": {
     "title": "...",
     "subtitle": "...",
-    "backgroundImage": "assets/home/seamless-bg.webp",
+    "backgroundImage": "assets/home/hero.webp",
     "ctaPrimary": { "label": "Menú", "url": "/menu/" },
     "ctaSecondary": { "label": "...", "url": "..." }
   },
@@ -410,6 +410,51 @@ Controls all dynamic sections of the public homepage.
 
 **Read by:** `js/home-config.js` (public site) and admin home editor
 
+### `data/home-featured.json` — Homepage Featured Cards
+
+Dedicated homepage payload for the `Más pedidas` section. This file exists to keep the homepage mobile-first and avoid fetching the full menu/media/ingredients stack just to render 8 featured cards.
+
+```
+{
+  "version": 1,
+  "schema": "figata.home.featured.v1",
+  "updatedAt": "2026-04-08T17:49:52.427Z",
+  "items": [
+    {
+      "id": "quattro_formaggi_truffle",
+      "slug": "quattro-formaggi-truffle",
+      "title": "Quattro Formaggi y Black Truffle",
+      "description": "Cuatro quesos italianos con crema de trufa aromática.",
+      "previewDescription": "Cuatro quesos italianos con crema de trufa aromática.",
+      "price": 800,
+      "available": true,
+      "soldOutReason": "",
+      "imageAlt": "Quattro Formaggi y Black Truffle",
+      "cardImage": "assets/home/featured/quattro-formaggi-y-black-truffle-640.webp",
+      "cardImageSrcSet": "assets/home/featured/quattro-formaggi-y-black-truffle-320.webp 320w, assets/home/featured/quattro-formaggi-y-black-truffle-640.webp 640w",
+      "cardImageSizes": "(max-width: 1023px) 38vw, 312px",
+      "hoverImage": "assets/menu/pizzas/quattro-formaggi-y-black-truffle/quattroformaggi-hover.webp",
+      "modalImage": "assets/menu/pizzas/quattro-formaggi-y-black-truffle/quattroformaggi.webp",
+      "ingredients": [
+        {
+          "id": "mozzarella",
+          "label": "Mozzarella",
+          "icon": "assets/Ingredients/queso.webp"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Key relationships:**
+- `items[].id` should match an existing menu item id from `data/menu.json`
+- `items[].cardImage*` is optimized specifically for homepage card rendering, not for the full menu page
+- `items[].hoverImage` and `items[].modalImage` are only consumed by the desktop `Detalles` preview
+- `items[].ingredients[]` is already flattened for the homepage preview so the home no longer needs to fetch `data/ingredients.json`
+
+**Read by:** `src/data/home-featured.js`, `js/home-featured.js`, `js/mas-pedidas.js`
+
 `home.mobileHours` is rendered into the mobile-only homepage section `#horarios` and supports realtime status + weekly/date overrides.
 
 The public menu catalog/detail route (`/menu/`) reads both global blocks:
@@ -469,8 +514,8 @@ Maps visual assets (images and optional editorial videos) to entities, evolving 
   "notes": "...",
   "global": {
     "homepage": {
-      "heroBackground": "assets/home/seamless-bg.webp",
-      "featuredBackground": "assets/home/seamless-bg.webp"
+      "heroBackground": "assets/home/hero.webp",
+      "featuredBackground": "assets/home/hero.webp"
     },
     "branding": {
       "logo": "assets/logo.svg",

@@ -1,0 +1,285 @@
+{
+  "version": 1,
+  "schema": "figata.home.featured.v1",
+  "updatedAt": "2026-04-08T17:49:52.427Z",
+  "items": [
+    {
+      "id": "quattro_formaggi_truffle",
+      "slug": "quattro-formaggi-truffle",
+      "title": "Quattro Formaggi y Black Truffle",
+      "description": "Cuatro quesos italianos con crema de trufa aromática.",
+      "previewDescription": "Cuatro quesos italianos con crema de trufa aromática.",
+      "reviews": "",
+      "price": 800,
+      "priceFormatted": "",
+      "available": true,
+      "soldOutReason": "",
+      "imageAlt": "Quattro Formaggi y Black Truffle",
+      "cardImage": "assets/home/featured/quattro-formaggi-y-black-truffle-640.webp",
+      "cardImageSrcSet": "assets/home/featured/quattro-formaggi-y-black-truffle-320.webp 320w, assets/home/featured/quattro-formaggi-y-black-truffle-640.webp 640w",
+      "cardImageSizes": "(max-width: 1023px) 38vw, 312px",
+      "hoverImage": "assets/menu/pizzas/quattro-formaggi-y-black-truffle/quattroformaggi-hover.webp",
+      "modalImage": "assets/menu/pizzas/quattro-formaggi-y-black-truffle/quattroformaggi.webp",
+      "ingredients": [
+        {
+          "id": "mozzarella",
+          "label": "Mozzarella",
+          "icon": "assets/Ingredients/queso.webp"
+        },
+        {
+          "id": "queso_de_cabra",
+          "label": "Queso de cabra",
+          "icon": "assets/Ingredients/queso.webp"
+        },
+        {
+          "id": "pecorino",
+          "label": "Pecorino",
+          "icon": "assets/Ingredients/queso.webp"
+        },
+        {
+          "id": "parmigiano_reggiano",
+          "label": "Parmigiano Reggiano",
+          "icon": "assets/Ingredients/queso.webp"
+        },
+        {
+          "id": "crema_de_trufa",
+          "label": "Crema de trufa",
+          "icon": "assets/Ingredients/trufa.webp"
+        }
+      ]
+    },
+    {
+      "id": "pan_ciabatta",
+      "slug": "pan-ciabatta",
+      "title": "Sourdough Ciabatta",
+      "description": "Pan ciabatta de masa madre con corteza crujiente.",
+      "previewDescription": "Pan ciabatta de masa madre con corteza crujiente.",
+      "reviews": "",
+      "price": 200,
+      "priceFormatted": "",
+      "available": true,
+      "soldOutReason": "",
+      "imageAlt": "Pan ciabatta de masa madre",
+      "cardImage": "assets/home/featured/sourdough-ciabatta-640.webp",
+      "cardImageSrcSet": "assets/home/featured/sourdough-ciabatta-320.webp 320w, assets/home/featured/sourdough-ciabatta-640.webp 640w",
+      "cardImageSizes": "(max-width: 1023px) 38vw, 312px",
+      "hoverImage": "assets/menu/productos/sourdough-ciabatta/sourdough-ciabatta-hover.webp",
+      "modalImage": "assets/menu/productos/sourdough-ciabatta/sourdough-ciabatta.webp",
+      "ingredients": []
+    },
+    {
+      "id": "tiramisu",
+      "slug": "tiramisu",
+      "title": "Tiramisú artesanal",
+      "description": "Tiramisú artesanal de textura suave con notas de café y cacao, ideal para cerrar la experiencia Figata.",
+      "previewDescription": "Tiramisú artesanal de textura suave con notas de café y cacao, ideal para cerrar la experiencia Figata.",
+      "reviews": "132 reseñas",
+      "price": 450,
+      "priceFormatted": "",
+      "available": true,
+      "soldOutReason": "",
+      "imageAlt": "Tiramisú artesanal",
+      "cardImage": "assets/home/featured/tiramisu-640.webp",
+      "cardImageSrcSet": "assets/home/featured/tiramisu-320.webp 320w, assets/home/featured/tiramisu-640.webp 640w",
+      "cardImageSizes": "(max-width: 1023px) 38vw, 312px",
+      "hoverImage": "assets/menu/postres/tiramisu/tiramisu.webp",
+      "modalImage": "assets/menu/postres/tiramisu/tiramisu.webp",
+      "ingredients": []
+    },
+    {
+      "id": "margherita_sbagliata",
+      "slug": "margherita-sbagliata",
+      "title": "Margherita Sbagliata",
+      "description": "Mozzarella, San Marzano DOP y pesto de albahaca sobre masa madre. Una margherita con más profundidad herbal y carácter.",
+      "previewDescription": "Mozzarella, San Marzano DOP y pesto de albahaca sobre masa madre. Una margherita con más profundidad herbal y carácter.",
+      "reviews": "143 reseñas",
+      "price": 600,
+      "priceFormatted": "",
+      "available": true,
+      "soldOutReason": "",
+      "imageAlt": "Margherita Sbagliata",
+      "cardImage": "assets/home/featured/margherita-sbagliata-640.webp",
+      "cardImageSrcSet": "assets/home/featured/margherita-sbagliata-320.webp 320w, assets/home/featured/margherita-sbagliata-640.webp 640w",
+      "cardImageSizes": "(max-width: 1023px) 38vw, 312px",
+      "hoverImage": "assets/menu/pizzas/margherita-sbagliata/margherita-sbagliata-hover.webp",
+      "modalImage": "assets/menu/pizzas/margherita-sbagliata/margherita-sbagliata.webp",
+      "ingredients": [
+        {
+          "id": "mozzarella",
+          "label": "Mozzarella",
+          "icon": "assets/Ingredients/queso.webp"
+        },
+        {
+          "id": "san_marzano_dop",
+          "label": "Pomodoro San Marzano DOP",
+          "icon": "assets/Ingredients/san-marzano.webp"
+        },
+        {
+          "id": "pesto_de_albahaca",
+          "label": "Pesto de albahaca",
+          "icon": "assets/Ingredients/pesto.webp"
+        }
+      ]
+    },
+    {
+      "id": "filetti",
+      "slug": "filetti",
+      "title": "Filetti",
+      "description": "Mozzarella con tomate cherry, ajo y albahaca sobre base ligera.",
+      "previewDescription": "Mozzarella con tomate cherry, ajo y albahaca sobre base ligera.",
+      "reviews": "",
+      "price": 600,
+      "priceFormatted": "",
+      "available": true,
+      "soldOutReason": "",
+      "imageAlt": "Filetti",
+      "cardImage": "assets/home/featured/filetti-640.webp",
+      "cardImageSrcSet": "assets/home/featured/filetti-320.webp 320w, assets/home/featured/filetti-640.webp 640w",
+      "cardImageSizes": "(max-width: 1023px) 38vw, 312px",
+      "hoverImage": "",
+      "modalImage": "assets/menu/pizzas/filetti/filetti.webp",
+      "ingredients": [
+        {
+          "id": "mozzarella",
+          "label": "Mozzarella",
+          "icon": "assets/Ingredients/queso.webp"
+        },
+        {
+          "id": "tomate_cherry",
+          "label": "Tomate cherry",
+          "icon": "assets/Ingredients/tomate-cherry.webp"
+        },
+        {
+          "id": "ajo",
+          "label": "Ajo",
+          "icon": "assets/Ingredients/ajo.webp"
+        },
+        {
+          "id": "aceite_de_oliva_evoo",
+          "label": "Aceite de oliva (EVOO)",
+          "icon": "assets/Ingredients/oliva.webp"
+        },
+        {
+          "id": "albahaca",
+          "label": "Albahaca",
+          "icon": "assets/Ingredients/albahaca.webp"
+        }
+      ]
+    },
+    {
+      "id": "diavola",
+      "slug": "diavola",
+      "title": "Diavola",
+      "description": "Una pizza de perfil picante con pomodoro, mozzarella y salamino piccante, horneada para lograr borde aireado y centro jugoso.",
+      "previewDescription": "Una pizza de perfil picante con pomodoro, mozzarella y salamino piccante, horneada para lograr borde aireado y centro jugoso.",
+      "reviews": "166 reseñas",
+      "price": 600,
+      "priceFormatted": "",
+      "available": true,
+      "soldOutReason": "",
+      "imageAlt": "Diavola",
+      "cardImage": "assets/home/featured/diavola-640.webp",
+      "cardImageSrcSet": "assets/home/featured/diavola-320.webp 320w, assets/home/featured/diavola-640.webp 640w",
+      "cardImageSizes": "(max-width: 1023px) 38vw, 312px",
+      "hoverImage": "assets/menu/pizzas/diavola/diavola-hover.webp",
+      "modalImage": "assets/menu/pizzas/diavola/diavola.webp",
+      "ingredients": [
+        {
+          "id": "mozzarella",
+          "label": "Mozzarella",
+          "icon": "assets/Ingredients/queso.webp"
+        },
+        {
+          "id": "pomodoro",
+          "label": "Pomodoro",
+          "icon": "assets/Ingredients/tomate.webp"
+        },
+        {
+          "id": "salamino_piccante",
+          "label": "Salamino piccante",
+          "icon": "assets/Ingredients/salami.webp"
+        }
+      ]
+    },
+    {
+      "id": "margherita",
+      "slug": "margherita",
+      "title": "Margherita",
+      "description": "Pomodoro San Marzano, mozzarella fresca y albahaca sobre masa madre de fermentación lenta, horneada al estilo napolitano.",
+      "previewDescription": "Pomodoro San Marzano, mozzarella fresca y albahaca sobre masa madre de fermentación lenta, horneada al estilo napolitano.",
+      "reviews": "198 reseñas",
+      "price": 500,
+      "priceFormatted": "",
+      "available": true,
+      "soldOutReason": "",
+      "imageAlt": "Margherita",
+      "cardImage": "assets/home/featured/margherita-640.webp",
+      "cardImageSrcSet": "assets/home/featured/margherita-320.webp 320w, assets/home/featured/margherita-640.webp 640w",
+      "cardImageSizes": "(max-width: 1023px) 38vw, 312px",
+      "hoverImage": "",
+      "modalImage": "assets/menu/pizzas/margherita/margherita.webp",
+      "ingredients": [
+        {
+          "id": "mozzarella",
+          "label": "Mozzarella",
+          "icon": "assets/Ingredients/queso.webp"
+        },
+        {
+          "id": "pomodoro",
+          "label": "Pomodoro",
+          "icon": "assets/Ingredients/tomate.webp"
+        },
+        {
+          "id": "albahaca",
+          "label": "Albahaca",
+          "icon": "assets/Ingredients/albahaca.webp"
+        }
+      ]
+    },
+    {
+      "id": "berenjenas_parmesana",
+      "slug": "berenjenas-parmesana",
+      "title": "Berenjenas a la Parmesana",
+      "description": "Capas de berenjena con salsa de tomate, mozzarella fundida y parmigiano.",
+      "previewDescription": "Capas de berenjena con salsa de tomate, mozzarella fundida y parmigiano.",
+      "reviews": "",
+      "price": 550,
+      "priceFormatted": "",
+      "available": true,
+      "soldOutReason": "",
+      "imageAlt": "Berenjenas a la Parmesana",
+      "cardImage": "assets/home/featured/berenjenas-parmesana-640.webp",
+      "cardImageSrcSet": "assets/home/featured/berenjenas-parmesana-320.webp 320w, assets/home/featured/berenjenas-parmesana-640.webp 640w",
+      "cardImageSizes": "(max-width: 1023px) 38vw, 312px",
+      "hoverImage": "",
+      "modalImage": "assets/menu/entradas/berenjenas-a-la-parmesana/berenjenas-a-la-parmesana.webp",
+      "ingredients": [
+        {
+          "id": "berenjena",
+          "label": "Berenjena",
+          "icon": "assets/Ingredients/berenjena.webp"
+        },
+        {
+          "id": "salsa_de_tomate",
+          "label": "Salsa de tomate",
+          "icon": "assets/Ingredients/tomate.webp"
+        },
+        {
+          "id": "mozzarella",
+          "label": "Mozzarella",
+          "icon": "assets/Ingredients/queso.webp"
+        },
+        {
+          "id": "albahaca",
+          "label": "Albahaca",
+          "icon": "assets/Ingredients/albahaca.webp"
+        },
+        {
+          "id": "parmigiano_reggiano",
+          "label": "Parmigiano Reggiano",
+          "icon": "assets/Ingredients/queso.webp"
+        }
+      ]
+    }
+  ]
+}

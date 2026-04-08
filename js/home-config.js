@@ -52,6 +52,7 @@
 Fecha:
 Hora:
 Personas:`;
+  const HOME_MOBILE_MEDIA = window.matchMedia('(max-width: 1023px)');
   const HOURS_DAY_ORDER = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
   const HOURS_DAY_DISPLAY_ORDER = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
   const HOURS_DAY_LABELS = {
@@ -505,7 +506,9 @@ Personas:`;
       return;
     }
 
-    const existing = document.querySelector('link[data-hero-preload]');
+    const existing = document.querySelector(
+      'link[data-hero-preload-dynamic], link[data-hero-preload-desktop]'
+    );
     const preload =
       existing instanceof HTMLLinkElement ? existing : document.createElement('link');
 
@@ -513,7 +516,7 @@ Personas:`;
     preload.as = 'image';
     preload.href = normalizedPath;
     preload.setAttribute('fetchpriority', 'high');
-    preload.setAttribute('data-hero-preload', 'true');
+    preload.setAttribute('data-hero-preload-dynamic', 'true');
 
     if (!existing) {
       document.head.appendChild(preload);
@@ -533,28 +536,32 @@ Personas:`;
     });
 
     if (topBackground) {
-      const imagePath = (hero?.backgroundImage || fallbackBackground || '').trim();
-      const defaultPath = (fallbackBackground || '').trim();
-      const criticalHeroImagePath = imagePath || defaultPath;
+      if (HOME_MOBILE_MEDIA.matches) {
+        topBackground.style.removeProperty('background-image');
+      } else {
+        const imagePath = (hero?.backgroundImage || fallbackBackground || '').trim();
+        const defaultPath = (fallbackBackground || '').trim();
+        const criticalHeroImagePath = imagePath || defaultPath;
 
-      ensureHeroImagePreload(criticalHeroImagePath);
+        ensureHeroImagePreload(criticalHeroImagePath);
 
-      if (imagePath) {
-        const probe = new Image();
-        probe.decoding = 'async';
-        probe.loading = 'eager';
-        probe.fetchPriority = 'high';
-        probe.onload = () => {
-          topBackground.style.backgroundImage = `url("${imagePath}")`;
-        };
-        probe.onerror = () => {
-          if (defaultPath) {
-            topBackground.style.backgroundImage = `url("${defaultPath}")`;
-          }
-        };
-        probe.src = imagePath;
-      } else if (defaultPath) {
-        topBackground.style.backgroundImage = `url("${defaultPath}")`;
+        if (imagePath) {
+          const probe = new Image();
+          probe.decoding = 'async';
+          probe.loading = 'eager';
+          probe.fetchPriority = 'high';
+          probe.onload = () => {
+            topBackground.style.backgroundImage = `url("${imagePath}")`;
+          };
+          probe.onerror = () => {
+            if (defaultPath) {
+              topBackground.style.backgroundImage = `url("${defaultPath}")`;
+            }
+          };
+          probe.src = imagePath;
+        } else if (defaultPath) {
+          topBackground.style.backgroundImage = `url("${defaultPath}")`;
+        }
       }
     }
 
@@ -1295,6 +1302,12 @@ Personas:`;
       };
     }
 
+    if (HOME_MOBILE_MEDIA.matches) {
+      return {
+        hasRenderableEvents: false,
+      };
+    }
+
     const title = section.querySelector('.testimonials-header h2');
     const subtitle = section.querySelector('.testimonials-header p');
     const tabRoot = section.querySelector('.events-tabs[role="tablist"]');
@@ -1795,7 +1808,7 @@ Personas:`;
         homeApi.getHomeConfig(),
         restaurantPromise,
       ]);
-      const fallbackBackground = homeApi.DEFAULT_HERO_BACKGROUND || 'assets/home/seamless-bg.webp';
+      const fallbackBackground = homeApi.DEFAULT_HERO_BACKGROUND || 'assets/home/hero.webp';
 
       applyHero(home.hero, fallbackBackground);
       applyNavbar(home.navbar);

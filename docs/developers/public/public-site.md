@@ -17,7 +17,7 @@ There is no build step — the HTML, CSS, and JavaScript are deployed directly.
 |--------|---------|
 | Entry points | `index.html` (homepage), `menu/index.html` (full menu page), `eventos/index.html` (Pizza Party editorial landing) |
 | Styles | `styles.css` (~2,600 lines, 75KB) |
-| Scripts | 14 files in `js/` + shared runtime modules/assets in `shared/` + data loaders in `src/data/` |
+| Scripts | 15 files in `js/` + shared runtime modules/assets in `shared/` + data loaders in `src/data/` |
 | Data | Fetches from `data/*.json` at runtime |
 | Hosting | Cloudflare Pages runtime (primary) plus Netlify/GitHub Pages fallback for the public surface |
 
@@ -32,17 +32,17 @@ The page is structured as a single scrollable document. Major sections in `index
 | **Navbar** | `<nav>` | `.navbar` | 78–102 | Canonical markup in `index.html` + `shared/public-navbar.js` for cross-route reuse |
 | **Hero** | `<section>` | `#inicio`, `.hero` | 107–129 | `js/home-config.js` |
 | **Announcement** | `<section>` | `#home-announcement` | 131–138 | `js/home-config.js` (hidden by default) |
-| **Featured Items** | `<section>` | `#mas-pedidas` | 140–172 | `js/mas-pedidas.js` (uses card template) |
+| **Featured Items** | `<section>` | `#mas-pedidas` | 140–172 | `js/home-featured.js` (card render) + `js/mas-pedidas.js` on desktop only |
 | **Delivery** | `<section>` | `.delivery-section` | 175–234 | `js/home-config.js` |
 | **Testimonials** | `<section>` | `#testimonials` | 236–312 | `js/testimonials.js` (carousel) |
-| **Events** | `<section>` | `#eventos-tabs` | 314–394 | `js/events-tabs.js` (tabbed display) |
+| **Events** | `<section>` | `#eventos-tabs` | 314–394 | `js/events-tabs.js` (tabbed display, desktop only) |
 | **Footer** | `<footer>` | `.site-footer` | 400–539 | `js/home-config.js` |
 
 ### Templates
 
 | Template | ID | Used by | Purpose |
 |----------|-----|---------|---------|
-| Menu item card | `mas-pedidas-card-template` | `js/mas-pedidas.js` | Renders each menu item as a card |
+| Menu item card | `mas-pedidas-card-template` | `js/home-featured.js` | Renders each featured homepage card |
 | Testimonial card | `testimonial-card-template` | `js/testimonials.js` | Renders each testimonial entry |
 
 ## Menu Route Map (`/menu/`)
@@ -82,19 +82,13 @@ Homepage (`index.html`) runs a mixed boot pipeline: critical route/runtime scrip
 5.  shared/public-navbar.js     — Captures canonical navbar markup for cross-route reuse
 6.  js/navbar-collapse.js       — Navbar collapse/expand animation controller
 7.  js/public-burger-menu.js    — Homepage-only lightweight burger/menu runtime for the mobile navbar
-8.  shared/menu-traits.js       — Trait/badge runtime helpers
-9.  shared/menu-allergens.js    — Allergen runtime helpers
-10. shared/menu-sensory.js      — Structured sensory profile schema/normalizer
-11. src/data/media.js           — Media data loader
-12. src/data/menu.js            — Menu data loader
-13. src/data/home.js            — Home data loader
-14. src/data/restaurant.js      — Restaurant data loader
-15. src/data/ingredients.js     — Ingredients data loader
-16. src/ui/ingredient-icon-row.js — Ingredient icon row component
-17. js/home-lazy-images.js      — Lazy image loading (IntersectionObserver)
-18. js/home-config.js           — Homepage section rendering (hero, delivery, footer, etc.)
-19. js/mas-pedidas.js           — Featured menu renderer + preview transition consumer
-20. inline post-DCL/idle loader — Defers testimonials, events tabs, and the scroll indicator out of the first-load critical path
+8.  src/data/home.js            — Home data loader
+9.  src/data/home-featured.js   — Mobile-first featured-card data loader
+10. src/data/restaurant.js      — Restaurant data loader
+11. js/home-lazy-images.js      — Lazy image loading (IntersectionObserver)
+12. js/home-config.js           — Homepage section rendering (hero, delivery, footer, etc.)
+13. js/home-featured.js         — Featured-card renderer; injects `js/mas-pedidas.js` only on desktop
+14. inline post-DCL/idle loader — Defers testimonials, desktop-only events tabs, and the scroll indicator out of the first-load critical path
 ```
 
 Additionally loaded (non-deferred):
@@ -151,7 +145,7 @@ head. shared/public-navbar-bootstrap.js
 
 ### Script Responsibilities
 
-#### `js/home-config.js` (22KB, ~700 lines)
+#### `js/home-config.js`
 The central homepage controller. Fetches `data/home.json` and renders:
 - Hero section (title, subtitle, background, CTAs)
 - Announcement bar (conditional display)
@@ -159,21 +153,28 @@ The central homepage controller. Fetches `data/home.json` and renders:
 - Delivery section (platforms, icons)
 - Footer (columns, links, CTAs, social icons)
 - Navbar links
-- Feature tabs content
+- Mobile hours and location content
+- Desktop-only events preview content (mobile returns early and does no events-tab work)
 
 **Data source:** `data/home.json`
 
-#### `js/mas-pedidas.js` (34KB, ~900 lines)
-The menu rendering engine. This is the largest JS file. Handles:
-- Fetching `data/menu.json`, `data/categories.json`, `data/availability.json`, `data/media.json`
-- Building the menu grid with sections and item cards
-- Item modal/detail view
-- Category filtering and navigation
-- Image resolution and lazy loading
-- Ingredient icon display
-- Price formatting (DOP currency)
+#### `js/home-featured.js`
+Homepage featured-card renderer. Handles:
+- Fetching `data/home-featured.json` through `src/data/home-featured.js`
+- Rendering the 8-card mobile-first grid using optimized image variants and `srcset`
+- Removing the `Detalles` button and all preview hooks on mobile so no desktop preview runtime ships there
+- Deferring desktop-only hover media and injecting `js/mas-pedidas.js` only on desktop after cards render
 
-**Data sources:** `data/menu.json`, `data/categories.json`, `data/availability.json`, `data/media.json`, `data/ingredients.json`
+**Data source:** `data/home-featured.json`
+
+#### `js/mas-pedidas.js`
+Desktop-only homepage preview enhancer. Handles:
+- Reading the already-rendered featured cards from `js/home-featured.js`
+- Opening the “Detalles” overlay with the shared cover transition feel
+- Hydrating preview content from `data/home-featured.json`
+- Prefetching modal/hover media only on desktop interaction intent
+
+**Data source:** `data/home-featured.json`
 
 #### `js/menu-page.js`
 Full menu page runtime controller for `/menu/`. Handles:
@@ -203,6 +204,7 @@ Full menu page runtime controller for `/menu/`. Handles:
 Homepage mobile navbar enhancer. Handles:
 - Building the burger-menu chrome on top of the canonical homepage navbar
 - Rendering the card-style mobile panel entries with thumbs/subtitles
+- Deferring burger-card thumbs until post-load/idle and using downsized mobile-only variants
 - Animating the burger icon between closed/open states
 - Managing open/close, focus restoration, outside-click dismissal, and viewport changes
 
@@ -239,7 +241,7 @@ Testimonials carousel. Fetches `data/home.json` (testimonials section) and rende
 **Data source:** `data/home.json` (testimonials array)
 
 #### `js/events-tabs.js` (7KB, ~230 lines)
-Events section with tabbed display. Fetches `data/home.json` (events section) and renders:
+Desktop-only events section with tabbed display. Fetches `data/home.json` (events section) and renders:
 - Tab navigation for different event types
 - Event cards with images, descriptions, and dates
 
@@ -310,18 +312,19 @@ Lazy image loading using IntersectionObserver for homepage images.
 
 ## Source Generators (`src/`)
 
-The `src/` directory contains scripts that generate or process data:
+The `src/` directory contains browser-side runtime data loaders/helpers used by the public site:
 
 | File | Lines | Purpose |
 |------|------:|---------|
-| `src/data/home.js` | 1,006 | Home page data generator — builds `data/home.json` structure |
-| `src/data/menu.js` | 660 | Menu data generator — builds `data/menu.json` structure |
-| `src/data/restaurant.js` | 434 | Restaurant data generator — builds `data/restaurant.json` |
-| `src/data/media.js` | 302 | Media mapping generator — builds `data/media.json` |
-| `src/data/ingredients.js` | 152 | Ingredients data generator — builds `data/ingredients.json` |
-| `src/ui/ingredient-icon-row.js` | 52 | UI component: renders an ingredient icon row for the menu display |
+| `src/data/home.js` | — | Home data loader/normalizer for `data/home.json` |
+| `src/data/home-featured.js` | — | Homepage featured-card loader for `data/home-featured.json` |
+| `src/data/menu.js` | — | Menu data loader/runtime API for `data/menu.json` (used by `/menu/`, `/eventos/`, and admin-side menu workflows) |
+| `src/data/restaurant.js` | — | Restaurant data loader for `data/restaurant.json` |
+| `src/data/media.js` | — | Media mapping runtime API for `data/media.json` (used outside the optimized mobile homepage featured path) |
+| `src/data/ingredients.js` | — | Ingredients data loader for `data/ingredients.json` (used outside the optimized mobile homepage featured path) |
+| `src/ui/ingredient-icon-row.js` | — | Menu/detail helper used outside the optimized homepage featured path |
 
-These generators are loaded as `<script>` tags on the public site and execute at page load. They are NOT Node.js build-time scripts — they run in the browser.
+These scripts are loaded as `<script>` tags on the public site and execute in the browser. They are not Node.js build-time generators.
 
 ---
 
@@ -360,18 +363,21 @@ Homepage loads in browser
     ↓
 index.html parsed, <script defer> tags queue execution
     ↓
-src/data/*.js generate page data (in-browser)
+src/data/home.js + src/data/home-featured.js + src/data/restaurant.js expose runtime data
     ↓
 js/home-config.js fetches data/home.json
-    → renders hero, announcement, delivery, footer, navbar
+    → renders hero, announcement, delivery, footer, navbar, mobile-only hours/location
     ↓
-js/mas-pedidas.js fetches data/menu.json + categories + availability + media + ingredients
-    → renders menu grid with cards and modal
+js/home-featured.js fetches data/home-featured.json
+    → renders the 8-card featured grid with optimized mobile images
+    ↓
+js/mas-pedidas.js loads only on desktop
+    → adds the Detalles preview overlay/transition on top of the rendered cards
     ↓
 js/testimonials.js reads home data (testimonials)
     → renders carousel
     ↓
-js/events-tabs.js reads home data (events)
+js/events-tabs.js reads home data (events) on desktop only
     → renders tabbed events
     ↓
 js/restaurant-config.js fetches data/restaurant.json

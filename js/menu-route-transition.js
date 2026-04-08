@@ -6,17 +6,12 @@
   const PAGE_PUSH_Y_PX = -200;
   const PREFETCH_TIMEOUT_MS = 2600;
   const routeDocPrefetches = new Set();
-  const routeAssetPrefetches = new Set();
-  const ROUTE_STAGE_POSTER_BY_KEY = Object.freeze({
-    home: "assets/home/middle-hero.webp",
-    menu: "assets/navbar/menu-thumb.webp",
-    eventos: "assets/eventos/thumb.webp",
-  });
 
   const cover = document.querySelector(".reload-transition-cover");
   const coverPath = cover?.querySelector(".reload-transition-cover__bg");
   const pagePushTarget = document.querySelector("main");
   const transitionFactory = window.FigataTransitions?.createFigataTransition;
+  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || null;
 
   if (
     !(cover instanceof HTMLElement) ||
@@ -71,27 +66,6 @@
   };
   const isManagedPublicPath = (pathname) =>
     isHomePath(pathname) || isMenuPath(pathname) || isEventosPath(pathname);
-  const toSiteAssetPath = (value) => {
-    const normalized = String(value || "").trim();
-
-    if (!normalized) {
-      return "";
-    }
-
-    if (/^(?:https?:|data:|blob:)/i.test(normalized)) {
-      return normalized;
-    }
-
-    if (publicPaths?.toSitePath) {
-      return publicPaths.toSitePath(normalized);
-    }
-
-    if (normalized.startsWith("/")) {
-      return normalized;
-    }
-
-    return `/${normalized.replace(/^(\.\/)+/, "").replace(/^\/+/, "")}`;
-  };
   const toUrl = (href) => {
     try {
       return new URL(href, window.location.href);
@@ -149,31 +123,25 @@
         // Prefetch warming is opportunistic only.
       });
   };
-  const prefetchRoutePoster = (url) => {
-    if (!(url instanceof URL)) {
-      return;
-    }
-
-    const routeKey = getRouteKey(url.pathname);
-    const assetPath = toSiteAssetPath(ROUTE_STAGE_POSTER_BY_KEY[routeKey]);
-
-    if (!assetPath || routeAssetPrefetches.has(assetPath)) {
-      return;
-    }
-
-    routeAssetPrefetches.add(assetPath);
-
-    const image = new Image();
-    image.decoding = "async";
-    image.src = assetPath;
-  };
   const primeManagedRoute = (url) => {
     if (!(url instanceof URL) || !isCrossRouteTarget(url)) {
       return;
     }
 
     prefetchRouteDocument(url);
-    prefetchRoutePoster(url);
+  };
+  const shouldPrimeRoutesOnIdle = () => {
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+    if (viewportWidth <= 1023) {
+      return false;
+    }
+
+    if (connection?.saveData) {
+      return false;
+    }
+
+    const effectiveType = String(connection?.effectiveType || "").toLowerCase();
+    return effectiveType !== "slow-2g" && effectiveType !== "2g";
   };
 
   const isManagedRouteLink = (link) => {
@@ -314,7 +282,7 @@
     true
   );
 
-  if (typeof window.requestIdleCallback === "function") {
+  if (shouldPrimeRoutesOnIdle() && typeof window.requestIdleCallback === "function") {
     window.requestIdleCallback(() => {
       document.querySelectorAll("a[href]").forEach((link) => {
         if (isManagedRouteLink(link)) {

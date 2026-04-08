@@ -41,10 +41,11 @@ website-figata/
 │   ├── index.html             ← Public Pizza Party editorial landing (`/eventos/`)
 │   └── eventos.css            ← Events landing styles
 ├── styles.css                 ← Public site styles (~2,600 lines)
-├── js/                        ← Public site JavaScript (14 scripts)
+├── js/                        ← Public site JavaScript (15 scripts)
 │   ├── home-config.js            Fetches data/home.json, renders homepage sections
-│   ├── mas-pedidas.js            Menu rendering engine (largest: 34KB)
-│   ├── menu-route-transition.js  Shared public route-transition handoff + prefetch for home/menu/eventos
+│   ├── home-featured.js          Homepage featured-cards renderer (mobile-first, uses data/home-featured.json)
+│   ├── mas-pedidas.js            Desktop-only featured preview overlay + cover transition enhancer
+│   ├── menu-route-transition.js  Shared public route-transition handoff + intent-based prefetch for home/menu/eventos
 │   ├── menu-page.js              Full menu page renderer (Events-style top tabs + category grids)
 │   ├── menu-page-navbar.js       `/menu/` sticky-menu enhancer for the shared navbar
 │   ├── public-burger-menu.js     Lightweight burger/menu runtime used by the homepage mobile navbar
@@ -56,12 +57,13 @@ website-figata/
 │   ├── navbar-collapse.js        Mobile navbar behavior
 │   ├── reload-cover.js           Deferred route-handoff reveal runtime + cover cleanup fallback
 │   └── home-lazy-images.js       Lazy image loading
-├── data/                      ← Shared data layer (9 JSON files)
+├── data/                      ← Shared data layer (10 JSON files)
 │   ├── menu.json                 Menu items grouped by section
 │   ├── categories.json           Category ordering and visibility
 │   ├── ingredients.json          Ingredient catalog, icons, metadata V2, allergens
 │   ├── availability.json         Per-item availability status
 │   ├── home.json                 Homepage configuration (hero, featured, events, etc.)
+│   ├── home-featured.json        Mobile-first featured-card payload for the homepage
 │   ├── restaurant.json           Restaurant metadata
 │   ├── media.json                Per-item media variants (card, modal, hover)
 │   ├── media-report.json         Media audit report (generated)
@@ -148,7 +150,7 @@ Use this table to find the right starting point for common tasks:
 |-----------|-----------|-----------|
 | Fix public site layout/content | `index.html`, `styles.css` | Relevant `js/` script |
 | Modify homepage sections | `js/home-config.js` | `data/home.json`, `docs/developers/data/data-layer.md` |
-| Change public menu display | `js/mas-pedidas.js` | `data/menu.json`, `data/media.json` |
+| Change homepage featured cards | `js/home-featured.js`, `data/home-featured.json` | `js/mas-pedidas.js`, `styles.css` |
 | Build/fix public full menu page | `menu/index.html`, `menu/menu-page.css`, `js/menu-page.js` | `js/menu-page-navbar.js`, `src/data/menu.js`, `src/data/media.js`, `data/categories.json` |
 | Build/fix public eventos landing page | `eventos/index.html`, `eventos/eventos.css`, `js/eventos-page.js` | `data/menu.json`, `shared/public-navbar.js`, `shared/public-paths.js` |
 | Reuse/fix public navbar across routes | `shared/public-navbar.js` | `index.html`, `menu/index.html`, `js/navbar-collapse.js` |

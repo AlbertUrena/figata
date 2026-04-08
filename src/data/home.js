@@ -4,9 +4,8 @@
     ? new URL(publicPaths.baseUrl.toString())
     : new URL(document.baseURI || '/', window.location.origin);
   const HOME_URL = new URL('data/home.json', ROOT_URL);
-  const MENU_URL = new URL('data/menu.json', ROOT_URL);
 
-  const DEFAULT_HERO_BACKGROUND = 'assets/home/seamless-bg.webp';
+  const DEFAULT_HERO_BACKGROUND = 'assets/home/hero.webp';
   const DEFAULT_POPULAR_LIMIT = 8;
   const DEFAULT_EVENTS_LIMIT = 3;
   const DEFAULT_TESTIMONIALS_LIMIT = 9;
@@ -840,106 +839,28 @@
     };
   };
 
-  const collectMenuIdsFromJson = (menuJson) => {
-    const ids = new Set();
-    const sections = Array.isArray(menuJson?.sections) ? menuJson.sections : [];
-
-    sections.forEach((section) => {
-      const items = Array.isArray(section?.items) ? section.items : [];
-      items.forEach((item) => {
-        const id = normalizeId(item?.id);
-        if (id) {
-          ids.add(id);
-        }
-      });
-    });
-
-    return ids;
-  };
-
-  const loadMenuItemIdSet = async () => {
-    try {
-      const menuApi = window.FigataData?.menu;
-
-      if (menuApi?.loadMenuStore) {
-        const menuStore = await menuApi.loadMenuStore();
-        const ids = new Set();
-        (menuStore?.items || []).forEach((item) => {
-          const id = normalizeId(item?.id);
-          if (id) {
-            ids.add(id);
-          }
-        });
-
-        if (ids.size > 0) {
-          return ids;
-        }
-      }
-    } catch (error) {
-      console.warn('[home] No se pudieron cargar IDs desde menu API; usando fallback.', error);
-    }
-
-    const menuJson = await fetchJson(MENU_URL, 'menu.json', {
-      optional: true,
-      defaultValue: null,
-    });
-
-    return collectMenuIdsFromJson(menuJson);
-  };
-
-  const coerceFeaturedIds = (requestedIds, menuIds, limit, warnings) => {
+  const coerceFeaturedIds = (requestedIds, limit, warnings) => {
     const validRequestedIds = [];
-    const invalidIds = [];
     const seen = new Set();
 
     requestedIds.forEach((id) => {
-      if (seen.has(id)) {
+      if (!id || seen.has(id)) {
         return;
       }
 
       seen.add(id);
-
-      if (!menuIds.has(id)) {
-        invalidIds.push(id);
-        return;
-      }
-
       validRequestedIds.push(id);
     });
-
-    if (invalidIds.length > 0) {
-      warnings.push(
-        `popular.featuredIds contiene IDs inexistentes en menu.json: ${invalidIds.join(', ')}`
-      );
-    }
 
     if (validRequestedIds.length > 0) {
       return validRequestedIds.slice(0, limit);
     }
 
-    const defaults = DEFAULT_FEATURED_IDS.filter((id) => menuIds.has(id));
-
-    if (defaults.length > 0) {
-      warnings.push(
-        'popular.featuredIds vacio o invalido. Se aplico fallback con defaults internos.'
-      );
-      return defaults.slice(0, limit);
-    }
-
-    const firstMenuIds = Array.from(menuIds).slice(0, limit);
-
-    if (firstMenuIds.length > 0) {
-      warnings.push(
-        'popular.featuredIds vacio o invalido. Se aplico fallback con primeros items del menu.'
-      );
-      return firstMenuIds;
-    }
-
-    warnings.push('No hay items en menu.json para resolver popular.featuredIds.');
-    return [];
+    warnings.push('popular.featuredIds vacio o invalido. Se aplico fallback con defaults internos.');
+    return DEFAULT_FEATURED_IDS.slice(0, limit);
   };
 
-  const validateAndFinalizeHome = (home, menuIds) => {
+  const validateAndFinalizeHome = (home) => {
     const warnings = [];
     const errors = [];
     const normalized = clone(home);
@@ -973,7 +894,6 @@
 
     normalized.popular.featuredIds = coerceFeaturedIds(
       normalized.popular.featuredIds,
-      menuIds,
       normalized.popular.limit,
       warnings
     );
@@ -1182,16 +1102,13 @@
   };
 
   const buildHomeStore = async () => {
-    const [homeJson, menuIds] = await Promise.all([
-      fetchJson(HOME_URL, 'home.json', {
-        optional: true,
-        defaultValue: null,
-      }),
-      loadMenuItemIdSet(),
-    ]);
+    const homeJson = await fetchJson(HOME_URL, 'home.json', {
+      optional: true,
+      defaultValue: null,
+    });
 
     const normalizedHome = normalizeHome(homeJson);
-    const finalized = validateAndFinalizeHome(normalizedHome, menuIds);
+    const finalized = validateAndFinalizeHome(normalizedHome);
 
     finalized.validation.warnings.forEach((warning) => {
       console.warn(`[home] ${warning}`);

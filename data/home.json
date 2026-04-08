@@ -4,7 +4,7 @@
   "hero": {
     "title": "El nuevo estándar de las pizzas",
     "subtitle": "Pizzas napoletanas al horno de leña, con masa madre centenaria y una carta curada de vinos y cervezas italianas.",
-    "backgroundImage": "assets/home/seamless-bg.webp",
+    "backgroundImage": "assets/home/hero.webp",
     "ctaPrimary": {
       "label": "Menú",
       "url": "/menu/"

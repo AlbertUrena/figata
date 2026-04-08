@@ -1,31 +1,14 @@
 (() => {
-  const grid = document.getElementById("mas-pedidas-grid");
-  const template = document.getElementById("mas-pedidas-card-template");
+  const desktopMedia = window.matchMedia('(min-width: 1024px)');
+  const hoverCapabilityMedia = window.matchMedia('(hover: hover) and (pointer: fine)');
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const grid = document.getElementById('mas-pedidas-grid');
+  const featuredApi = window.FigataData?.homeFeatured;
+  const publicPaths = window.FigataPublicPaths || null;
 
-  if (!grid || !(template instanceof HTMLTemplateElement)) {
+  if (!desktopMedia.matches || !grid || !featuredApi?.getFeaturedItemMap) {
     return;
   }
-
-  const menuApi = window.FigataData?.menu;
-  const homeApi = window.FigataData?.home;
-  const mediaApi = window.FigataData?.media;
-  const ingredientIconRowApi = window.FigataData?.ingredientIconRow;
-
-  if (!menuApi?.getFeaturedMenuItems || !ingredientIconRowApi?.renderIngredientIconRow) {
-    console.error("[mas-pedidas] APIs de datos no disponibles.");
-    return;
-  }
-
-  const { getFeaturedMenuItems } = menuApi;
-  const { renderIngredientIconRow } = ingredientIconRowApi;
-
-  let isPreviewOpen = false;
-  let isCoverTransitionRunning = false;
-  let previewBaseImageSrc = "";
-  let previewHoverImageSrc = "";
-  let hasPreviewHoverImage = false;
-
-  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
   const COVER_IN_DURATION_MS = 900;
   const COVER_IN_MORPH_DURATION_MS = 1200;
@@ -41,180 +24,43 @@
   const PAGE_PUSH_DURATION_MS = 1000;
   const PAGE_PUSH_Y_PX = -200;
   const COVER_EXIT_Y_PERCENT = -100.2;
-  const HOME_FEATURED_LIMIT = 8;
-  const MOBILE_ROW_CAROUSEL_QUERY = "(max-width: 1023px)";
-  const ROW_AUTOSCROLL_SPEED_PX_PER_SECOND = 42;
-  const ROW_AUTOSCROLL_CLONE_ATTR = "data-row-autoscroll-clone";
-  const ROW_AUTOSCROLL_TRACK_CLASS = "mas-pedidas__row-track";
-  const ROW_AUTOSCROLL_MAX_TRACK_COPIES = 8;
-  const ROW_AUTOSCROLL_RESIZE_EPSILON_PX = 1;
-  const COVER_COLOR = "#143f2b";
-  const POWER3_OUT_EASING = "cubic-bezier(0.215, 0.61, 0.355, 1)";
-  const hoverCapabilityMedia = window.matchMedia("(hover: hover) and (pointer: fine)");
-
+  const COVER_COLOR = '#143f2b';
+  const POWER3_OUT_EASING = 'cubic-bezier(0.215, 0.61, 0.355, 1)';
+  const DEFAULT_SOLD_OUT_REASON = 'Temporalmente no disponible.';
   const SVG_WIDTH = 1366;
   const SVG_HEIGHT = 768;
 
-  const previewOverlay = document.createElement("div");
-  previewOverlay.className = "preview-overlay";
-  previewOverlay.hidden = true;
-  previewOverlay.setAttribute("aria-hidden", "true");
-  previewOverlay.setAttribute("role", "dialog");
-  previewOverlay.setAttribute("aria-modal", "true");
-  previewOverlay.setAttribute("aria-label", "Vista previa");
-
-  const previewShell = document.createElement("div");
-  previewShell.className = "preview-overlay__shell";
-
-  const previewCard = document.createElement("article");
-  previewCard.className = "preview-overlay__card preview-overlay__root mas-pedidas-card";
-  previewCard.setAttribute("aria-hidden", "true");
-
-  const previewMediaStage = document.createElement("section");
-  previewMediaStage.className = "preview-overlay__media";
-
-  const previewPicture = document.createElement("figure");
-  previewPicture.className = "preview-overlay__picture app-picture";
-
-  const previewImage = document.createElement("img");
-  previewImage.className = "preview-overlay__image mas-pedidas-card__image";
-  previewImage.alt = "";
-  previewImage.loading = "eager";
-  previewImage.decoding = "async";
-
-  previewPicture.appendChild(previewImage);
-  previewMediaStage.appendChild(previewPicture);
-
-  const previewInfo = document.createElement("aside");
-  previewInfo.className = "preview-overlay__info";
-
-  const previewInfoBorderOverlay = document.createElement("span");
-  previewInfoBorderOverlay.className = "preview-overlay__info-border-overlay picture__border-overlay";
-  previewInfoBorderOverlay.setAttribute("aria-hidden", "true");
-
-  const previewCloseIcon = document.createElement("button");
-  previewCloseIcon.type = "button";
-  previewCloseIcon.className = "preview-overlay__close-icon";
-  previewCloseIcon.setAttribute("aria-label", "Cerrar preview");
-  previewCloseIcon.textContent = "×";
-
-  const previewRatingRow = document.createElement("div");
-  previewRatingRow.className = "preview-overlay__rating-row";
-
-  const previewStars = document.createElement("div");
-  previewStars.className = "preview-overlay__stars";
-
-  for (let i = 0; i < 5; i += 1) {
-    const star = document.createElement("img");
-    star.className = "preview-overlay__star";
-    star.src = "assets/svg-icons/star.svg";
-    star.alt = "";
-    star.setAttribute("aria-hidden", "true");
-    previewStars.appendChild(star);
-  }
-
-  const previewReviews = document.createElement("p");
-  previewReviews.className = "preview-overlay__reviews";
-  previewReviews.textContent = "221 reseñas";
-
-  previewRatingRow.appendChild(previewStars);
-  previewRatingRow.appendChild(previewReviews);
-
-  const previewHeader = document.createElement("header");
-  previewHeader.className = "preview-overlay__header";
-
-  const previewTitle = document.createElement("h2");
-  previewTitle.className = "preview-overlay__title";
-
-  const previewPrice = document.createElement("p");
-  previewPrice.className = "preview-overlay__price mas-pedidas-card__price";
-
-  previewHeader.appendChild(previewTitle);
-  previewHeader.appendChild(previewPrice);
-
-  const previewDescription = document.createElement("p");
-  previewDescription.className = "preview-overlay__description";
-
-  const previewAvailability = document.createElement("section");
-  previewAvailability.className = "preview-overlay__availability";
-
-  const previewAvailabilityBadge = document.createElement("span");
-  previewAvailabilityBadge.className = "preview-overlay__availability-badge";
-
-  const previewSoldOutReason = document.createElement("p");
-  previewSoldOutReason.className = "preview-overlay__soldout-reason";
-
-  previewAvailability.appendChild(previewAvailabilityBadge);
-  previewAvailability.appendChild(previewSoldOutReason);
-
-  const previewIngredientsSection = document.createElement("section");
-  previewIngredientsSection.className = "preview-overlay__ingredients";
-
-  const previewIngredientsTitle = document.createElement("h3");
-  previewIngredientsTitle.className = "preview-overlay__ingredients-title";
-  previewIngredientsTitle.textContent = "Ingredientes";
-
-  const previewIngredientsList = document.createElement("ul");
-  previewIngredientsList.className = "preview-overlay__ingredients-list";
-
-  previewIngredientsSection.appendChild(previewIngredientsTitle);
-  previewIngredientsSection.appendChild(previewIngredientsList);
-
-  const previewActions = document.createElement("div");
-  previewActions.className = "preview-overlay__actions";
-
-  const previewPrimaryCta = document.createElement("button");
-  previewPrimaryCta.type = "button";
-  previewPrimaryCta.className = "preview-overlay__button preview-overlay__button--primary";
-  previewPrimaryCta.textContent = "Disponible";
-  previewPrimaryCta.disabled = true;
-
-  const previewSecondaryCta = document.createElement("button");
-  previewSecondaryCta.type = "button";
-  previewSecondaryCta.className = "preview-overlay__button preview-overlay__button--secondary";
-  previewSecondaryCta.textContent = "Cerrar";
-
-  previewActions.appendChild(previewPrimaryCta);
-  previewActions.appendChild(previewSecondaryCta);
-
-  previewInfo.appendChild(previewInfoBorderOverlay);
-  previewInfo.appendChild(previewRatingRow);
-  previewInfo.appendChild(previewHeader);
-  previewInfo.appendChild(previewDescription);
-  previewInfo.appendChild(previewAvailability);
-  previewInfo.appendChild(previewIngredientsSection);
-  previewInfo.appendChild(previewActions);
-
-  previewCard.appendChild(previewCloseIcon);
-  previewCard.appendChild(previewMediaStage);
-  previewCard.appendChild(previewInfo);
-
-  previewShell.appendChild(previewCard);
-  previewOverlay.appendChild(previewShell);
-  document.body.appendChild(previewOverlay);
-
-  const previewTransitionCover = document.createElement("div");
-  previewTransitionCover.className = "preview-transition-cover";
-  previewTransitionCover.hidden = true;
-  previewTransitionCover.setAttribute("aria-hidden", "true");
-  previewTransitionCover.innerHTML = `
-    <svg class="preview-transition-cover__svg" viewBox="0 0 ${SVG_WIDTH} ${SVG_HEIGHT}" preserveAspectRatio="none" focusable="false" aria-hidden="true">
-      <path class="preview-transition-cover__bg"></path>
-      <path class="preview-transition-cover__morph-leave" d="M1366,768L1366,768C1040.2,660.1,348.6,657.8,0,768l0,0V0h1366V768z"></path>
-      <path class="preview-transition-cover__morph-enter" d="M0.5,82.1L0.5,82.1c353-103.9,1015-114.8,1366,0l0,0l0,685.9H0.5L0.5,82.1z"></path>
-    </svg>
-  `;
-  document.body.appendChild(previewTransitionCover);
-
-  const previewTransitionPath = previewTransitionCover.querySelector(".preview-transition-cover__bg");
-  const pagePushTarget = document.querySelector("main");
+  let isPreviewOpen = false;
+  let isCoverTransitionRunning = false;
+  let previewBaseImageSrc = '';
+  let previewHoverImageSrc = '';
+  let hasPreviewHoverImage = false;
   let previewInfoAnimations = [];
-  const mobileRowCarouselMedia = window.matchMedia(MOBILE_ROW_CAROUSEL_QUERY);
-  let rowAutoScrollStates = [];
-  let rowAutoScrollCleanup = [];
+
+  const toSitePath = (value) => {
+    const normalized = String(value || '').trim();
+
+    if (!normalized) {
+      return '';
+    }
+
+    if (/^(?:https?:|data:|blob:)/i.test(normalized)) {
+      return normalized;
+    }
+
+    if (publicPaths?.toSitePath) {
+      return publicPaths.toSitePath(normalized);
+    }
+
+    if (normalized.startsWith('/')) {
+      return normalized;
+    }
+
+    return normalized;
+  };
 
   const formatNumber = (value) => Number(value.toFixed(2));
-
+  const pagePushTarget = document.querySelector('main');
   const setPagePush = (offsetY) => {
     if (!pagePushTarget) {
       return;
@@ -224,15 +70,160 @@
   };
 
   const transitionFactory = window.FigataTransitions?.createFigataTransition;
+
+  const previewOverlay = document.createElement('div');
+  previewOverlay.className = 'preview-overlay';
+  previewOverlay.hidden = true;
+  previewOverlay.setAttribute('aria-hidden', 'true');
+  previewOverlay.setAttribute('role', 'dialog');
+  previewOverlay.setAttribute('aria-modal', 'true');
+  previewOverlay.setAttribute('aria-label', 'Vista previa');
+
+  const previewShell = document.createElement('div');
+  previewShell.className = 'preview-overlay__shell';
+
+  const previewCard = document.createElement('article');
+  previewCard.className = 'preview-overlay__card preview-overlay__root mas-pedidas-card';
+  previewCard.setAttribute('aria-hidden', 'true');
+
+  const previewMediaStage = document.createElement('section');
+  previewMediaStage.className = 'preview-overlay__media';
+
+  const previewPicture = document.createElement('figure');
+  previewPicture.className = 'preview-overlay__picture app-picture';
+
+  const previewImage = document.createElement('img');
+  previewImage.className = 'preview-overlay__image mas-pedidas-card__image';
+  previewImage.alt = '';
+  previewImage.loading = 'eager';
+  previewImage.decoding = 'async';
+
+  previewPicture.appendChild(previewImage);
+  previewMediaStage.appendChild(previewPicture);
+
+  const previewInfo = document.createElement('aside');
+  previewInfo.className = 'preview-overlay__info';
+
+  const previewInfoBorderOverlay = document.createElement('span');
+  previewInfoBorderOverlay.className = 'preview-overlay__info-border-overlay picture__border-overlay';
+  previewInfoBorderOverlay.setAttribute('aria-hidden', 'true');
+
+  const previewCloseIcon = document.createElement('button');
+  previewCloseIcon.type = 'button';
+  previewCloseIcon.className = 'preview-overlay__close-icon';
+  previewCloseIcon.setAttribute('aria-label', 'Cerrar preview');
+  previewCloseIcon.textContent = '×';
+
+  const previewRatingRow = document.createElement('div');
+  previewRatingRow.className = 'preview-overlay__rating-row';
+
+  const previewStars = document.createElement('div');
+  previewStars.className = 'preview-overlay__stars';
+
+  for (let index = 0; index < 5; index += 1) {
+    const star = document.createElement('span');
+    star.className = 'preview-overlay__star';
+    star.textContent = '★';
+    previewStars.appendChild(star);
+  }
+
+  const previewReviews = document.createElement('p');
+  previewReviews.className = 'preview-overlay__reviews';
+  previewReviews.textContent = '221 reseñas';
+
+  previewRatingRow.append(previewStars, previewReviews);
+
+  const previewHeader = document.createElement('header');
+  previewHeader.className = 'preview-overlay__header';
+
+  const previewTitle = document.createElement('h2');
+  previewTitle.className = 'preview-overlay__title';
+
+  const previewPrice = document.createElement('p');
+  previewPrice.className = 'preview-overlay__price mas-pedidas-card__price';
+
+  previewHeader.append(previewTitle, previewPrice);
+
+  const previewDescription = document.createElement('p');
+  previewDescription.className = 'preview-overlay__description';
+
+  const previewAvailability = document.createElement('section');
+  previewAvailability.className = 'preview-overlay__availability';
+
+  const previewAvailabilityBadge = document.createElement('span');
+  previewAvailabilityBadge.className = 'preview-overlay__availability-badge';
+
+  const previewSoldOutReason = document.createElement('p');
+  previewSoldOutReason.className = 'preview-overlay__soldout-reason';
+
+  previewAvailability.append(previewAvailabilityBadge, previewSoldOutReason);
+
+  const previewIngredientsSection = document.createElement('section');
+  previewIngredientsSection.className = 'preview-overlay__ingredients';
+
+  const previewIngredientsTitle = document.createElement('h3');
+  previewIngredientsTitle.className = 'preview-overlay__ingredients-title';
+  previewIngredientsTitle.textContent = 'Ingredientes';
+
+  const previewIngredientsList = document.createElement('ul');
+  previewIngredientsList.className = 'preview-overlay__ingredients-list';
+
+  previewIngredientsSection.append(previewIngredientsTitle, previewIngredientsList);
+
+  const previewActions = document.createElement('div');
+  previewActions.className = 'preview-overlay__actions';
+
+  const previewPrimaryCta = document.createElement('button');
+  previewPrimaryCta.type = 'button';
+  previewPrimaryCta.className = 'preview-overlay__button preview-overlay__button--primary';
+  previewPrimaryCta.textContent = 'Disponible';
+  previewPrimaryCta.disabled = true;
+
+  const previewSecondaryCta = document.createElement('button');
+  previewSecondaryCta.type = 'button';
+  previewSecondaryCta.className = 'preview-overlay__button preview-overlay__button--secondary';
+  previewSecondaryCta.textContent = 'Cerrar';
+
+  previewActions.append(previewPrimaryCta, previewSecondaryCta);
+
+  previewInfo.append(
+    previewInfoBorderOverlay,
+    previewRatingRow,
+    previewHeader,
+    previewDescription,
+    previewAvailability,
+    previewIngredientsSection,
+    previewActions
+  );
+
+  previewCard.append(previewCloseIcon, previewMediaStage, previewInfo);
+  previewShell.appendChild(previewCard);
+  previewOverlay.appendChild(previewShell);
+  document.body.appendChild(previewOverlay);
+
+  const previewTransitionCover = document.createElement('div');
+  previewTransitionCover.className = 'preview-transition-cover';
+  previewTransitionCover.hidden = true;
+  previewTransitionCover.setAttribute('aria-hidden', 'true');
+  previewTransitionCover.innerHTML = `
+    <svg class="preview-transition-cover__svg" viewBox="0 0 ${SVG_WIDTH} ${SVG_HEIGHT}" preserveAspectRatio="none" focusable="false" aria-hidden="true">
+      <path class="preview-transition-cover__bg"></path>
+      <path class="preview-transition-cover__morph-leave" d="M1366,768L1366,768C1040.2,660.1,348.6,657.8,0,768l0,0V0h1366V768z"></path>
+      <path class="preview-transition-cover__morph-enter" d="M0.5,82.1L0.5,82.1c353-103.9,1015-114.8,1366,0l0,0l0,685.9H0.5L0.5,82.1z"></path>
+    </svg>
+  `;
+  document.body.appendChild(previewTransitionCover);
+
+  const previewTransitionPath = previewTransitionCover.querySelector('.preview-transition-cover__bg');
   const previewTransition =
-    typeof transitionFactory === "function" && previewTransitionPath instanceof SVGPathElement
+    typeof transitionFactory === 'function' && previewTransitionPath instanceof SVGPathElement
       ? transitionFactory({
           coverElement: previewTransitionCover,
           pathElement: previewTransitionPath,
           pagePushTarget,
           color: COVER_COLOR,
           precision: 2,
-          activeClass: "is-active",
+          activeClass: 'is-active',
         })
       : null;
 
@@ -258,10 +249,10 @@
 
   const resetPreviewInfoAnimation = () => {
     stopPreviewInfoAnimations();
-    previewInfo.style.transform = "";
+    previewInfo.style.transform = '';
     previewInfoBorderOverlay.style.borderColor = COVER_COLOR;
-    previewInfoBorderOverlay.style.borderWidth = "0px";
-    previewInfoBorderOverlay.style.opacity = "1";
+    previewInfoBorderOverlay.style.borderWidth = '0px';
+    previewInfoBorderOverlay.style.opacity = '1';
   };
 
   const playPreviewInfoMorph = () => {
@@ -279,25 +270,25 @@
     const infoScaleAnimation = previewInfo.animate(
       [
         { transform: `scale(${PREVIEW_INFO_INITIAL_SCALE})` },
-        { transform: "scale(1)" },
+        { transform: 'scale(1)' },
       ],
       {
         duration: PREVIEW_INFO_SCALE_DURATION_MS,
         easing: POWER3_OUT_EASING,
-        fill: "forwards",
+        fill: 'forwards',
       }
     );
 
     const borderAnimation = previewInfoBorderOverlay.animate(
       [
         { borderWidth: `${PREVIEW_INFO_INITIAL_BORDER_PX}px` },
-        { borderWidth: "0px" },
+        { borderWidth: '0px' },
       ],
       {
         duration: PREVIEW_INFO_BORDER_DURATION_MS,
         delay: PREVIEW_INFO_BORDER_DELAY_MS,
         easing: POWER3_OUT_EASING,
-        fill: "forwards",
+        fill: 'forwards',
       }
     );
 
@@ -309,14 +300,14 @@
       }
 
       previewInfoAnimations = [];
-      previewInfo.style.transform = "translate3d(0px, 0px, 0px) scale(1, 1)";
-      previewInfoBorderOverlay.style.borderWidth = "0px";
+      previewInfo.style.transform = 'translate3d(0px, 0px, 0px) scale(1, 1)';
+      previewInfoBorderOverlay.style.borderWidth = '0px';
     });
   };
 
   const resetPreviewCardAnimation = () => {
-    previewCard.style.transform = "";
-    previewCard.style.opacity = "";
+    previewCard.style.transform = '';
+    previewCard.style.opacity = '';
     resetPreviewInfoAnimation();
   };
 
@@ -327,143 +318,132 @@
 
     isPreviewOpen = nextOpen;
     previewOverlay.hidden = !nextOpen;
-    previewOverlay.setAttribute("aria-hidden", String(!nextOpen));
-    previewCard.setAttribute("aria-hidden", String(!nextOpen));
-    document.body.classList.toggle("preview-open", nextOpen);
+    previewOverlay.setAttribute('aria-hidden', String(!nextOpen));
+    previewCard.setAttribute('aria-hidden', String(!nextOpen));
+    document.body.classList.toggle('preview-open', nextOpen);
   };
 
   const syncPreviewCardStyles = () => {
-    const navbarInner = document.querySelector(".navbar__inner");
+    const navbarInner = document.querySelector('.navbar__inner');
 
-    if (navbarInner) {
-      const navbarStyles = window.getComputedStyle(navbarInner);
-
-      previewCard.style.background = navbarStyles.background;
-      previewCard.style.backgroundColor = navbarStyles.backgroundColor;
-      previewCard.style.backdropFilter = navbarStyles.backdropFilter;
-      previewCard.style.webkitBackdropFilter = navbarStyles.webkitBackdropFilter;
-      previewCard.style.boxShadow = navbarStyles.boxShadow;
+    if (!navbarInner) {
+      return;
     }
+
+    const navbarStyles = window.getComputedStyle(navbarInner);
+    previewCard.style.background = navbarStyles.background;
+    previewCard.style.backgroundColor = navbarStyles.backgroundColor;
+    previewCard.style.backdropFilter = navbarStyles.backdropFilter;
+    previewCard.style.webkitBackdropFilter = navbarStyles.webkitBackdropFilter;
+    previewCard.style.boxShadow = navbarStyles.boxShadow;
   };
 
   const setPreviewImageSource = (src) => {
-    previewImage.src = src;
+    if (!src) {
+      previewImage.removeAttribute('src');
+      previewImage.hidden = true;
+      return;
+    }
+
+    previewImage.src = toSitePath(src);
     previewImage.hidden = false;
   };
 
-  const normalizeAssetPath = (value) => String(value || "").trim().replace(/^\//, "");
-
-  const resolveItemMedia = (item) => {
-    const fallbackImage = normalizeAssetPath(item?.image || "");
-    const fallbackAlt = item?.name || item?.id || "";
-
-    if (!mediaApi?.get) {
-      return {
-        card: fallbackImage,
-        hover: "",
-        modal: fallbackImage,
-        alt: fallbackAlt,
-        gallery: [],
-      };
-    }
-
-    const card = normalizeAssetPath(mediaApi.get(item.id, "card"));
-    const hover = normalizeAssetPath(mediaApi.get(item.id, "hover"));
-    const modal = normalizeAssetPath(mediaApi.get(item.id, "modal"));
-    const alt = String(mediaApi.getAlt(item.id) || fallbackAlt).trim();
-    const gallery = Array.isArray(mediaApi.getGallery(item.id))
-      ? mediaApi.getGallery(item.id).map(normalizeAssetPath).filter(Boolean)
-      : [];
-
-    return {
-      card,
-      hover: hover && hover !== card ? hover : "",
-      modal: modal || card,
-      alt,
-      gallery,
-    };
-  };
-
-  const preloadFeaturedModalImages = (items) => {
-    if (!mediaApi?.prefetch || !Array.isArray(items) || items.length === 0) {
+  const preloadAsset = (src) => {
+    const assetPath = toSitePath(src);
+    if (!assetPath) {
       return;
     }
 
-    const itemsToPrefetch = items.slice(0, HOME_FEATURED_LIMIT);
-
-    const execute = () => {
-      itemsToPrefetch.forEach((item) => {
-        mediaApi.prefetch(item.id, "modal");
-        if (hoverCapabilityMedia.matches) {
-          mediaApi.prefetch(item.id, "hover");
-        }
-      });
-    };
-
-    if (typeof window.requestIdleCallback === "function") {
-      window.requestIdleCallback(execute, { timeout: 1500 });
-      return;
-    }
-
-    window.setTimeout(execute, 120);
+    const image = new Image();
+    image.decoding = 'async';
+    image.src = assetPath;
   };
 
   const setPreviewImage = (card) => {
-    const modalImage = card.modalImage || card.image;
+    const modalImage = card.modalImage || card.cardImage;
 
     if (!modalImage) {
-      previewBaseImageSrc = "";
-      previewHoverImageSrc = "";
+      previewBaseImageSrc = '';
+      previewHoverImageSrc = '';
       hasPreviewHoverImage = false;
-      previewImage.removeAttribute("src");
+      previewImage.removeAttribute('src');
       previewImage.hidden = true;
       return;
     }
 
     previewBaseImageSrc = modalImage;
-    previewHoverImageSrc = card.hoverImage || "";
+    previewHoverImageSrc = card.hoverImage || '';
     hasPreviewHoverImage =
       Boolean(previewHoverImageSrc) && previewHoverImageSrc !== previewBaseImageSrc;
 
     setPreviewImageSource(previewBaseImageSrc);
     previewImage.alt = card.imageAlt || card.title;
-
-    if (hasPreviewHoverImage) {
-      const hoverProbe = new Image();
-      hoverProbe.onload = () => {
-        hasPreviewHoverImage = true;
-      };
-      hoverProbe.onerror = () => {
-        hasPreviewHoverImage = false;
-      };
-      hoverProbe.src = previewHoverImageSrc;
-    }
   };
 
-  const setPreviewIngredients = async (ingredients) => {
-    try {
-      await renderIngredientIconRow(previewIngredientsList, ingredients);
-    } catch (error) {
-      previewIngredientsList.replaceChildren();
-      console.error("[mas-pedidas] No se pudieron renderizar ingredientes del preview", error);
+  const setPreviewIngredients = (ingredients) => {
+    previewIngredientsList.replaceChildren();
+
+    const normalizedIngredients = Array.isArray(ingredients) ? ingredients : [];
+    if (!normalizedIngredients.length) {
+      previewIngredientsSection.hidden = true;
+      return;
     }
+
+    previewIngredientsSection.hidden = false;
+
+    normalizedIngredients.forEach((ingredient) => {
+      const item = document.createElement('li');
+      item.className = 'preview-overlay__ingredient-item';
+
+      if (ingredient.icon) {
+        const icon = document.createElement('img');
+        icon.className = 'preview-overlay__ingredient-icon';
+        icon.src = toSitePath(ingredient.icon);
+        icon.alt = '';
+        icon.decoding = 'async';
+        icon.loading = 'lazy';
+        item.appendChild(icon);
+      }
+
+      const label = document.createElement('span');
+      label.className = 'preview-overlay__ingredient-label';
+      label.textContent = ingredient.label || ingredient.id || '';
+      item.appendChild(label);
+
+      previewIngredientsList.appendChild(item);
+    });
   };
 
-  const hydratePreviewContent = async (card) => {
-    previewReviews.textContent = card.reviews || "221 reseñas";
+  const setPreviewAvailability = (card) => {
+    const isAvailable = card.available !== false;
+    const soldOutReason = card.soldOutReason || DEFAULT_SOLD_OUT_REASON;
+
+    previewAvailabilityBadge.textContent = isAvailable ? 'Disponible' : 'No disponible';
+    previewAvailabilityBadge.classList.toggle('is-available', isAvailable);
+    previewAvailabilityBadge.classList.toggle('is-unavailable', !isAvailable);
+    previewPrimaryCta.textContent = isAvailable ? 'Disponible' : 'No disponible';
+    previewPrimaryCta.classList.toggle('is-available', isAvailable);
+    previewPrimaryCta.classList.toggle('is-unavailable', !isAvailable);
+    previewSoldOutReason.hidden = isAvailable;
+    previewSoldOutReason.textContent = isAvailable ? '' : soldOutReason;
+  };
+
+  const hydratePreviewContent = (card) => {
+    previewReviews.textContent = card.reviews || '221 reseñas';
     previewTitle.textContent = card.title;
-    previewPrice.textContent = card.price;
-    previewDescription.textContent = card.previewDescription || card.description;
+    previewPrice.textContent = card.priceFormatted || '';
+    previewDescription.textContent = card.previewDescription || card.description || '';
     setPreviewAvailability(card);
-    await setPreviewIngredients(card.ingredients || []);
+    setPreviewIngredients(card.ingredients || []);
     setPreviewImage(card);
   };
 
   const playCoverTransition = async () => {
     if (!previewTransition) {
       setPreviewOpen(true);
-      previewCard.style.transform = "translate3d(0, 0, 0)";
-      previewCard.style.opacity = "1";
+      previewCard.style.transform = 'translate3d(0, 0, 0)';
+      previewCard.style.opacity = '1';
       setPagePush(PAGE_PUSH_Y_PX);
       resetPreviewInfoAnimation();
       return;
@@ -495,8 +475,8 @@
 
           previewActivated = true;
           setPreviewOpen(true);
-          previewCard.style.transform = "translate3d(0, 400px, 0)";
-          previewCard.style.opacity = "0";
+          previewCard.style.transform = 'translate3d(0, 400px, 0)';
+          previewCard.style.opacity = '0';
           playPreviewInfoMorph();
         },
         onTick: ({ elapsedMs, helpers, easings }) => {
@@ -515,8 +495,8 @@
         },
         onComplete: () => {
           setPagePush(PAGE_PUSH_Y_PX);
-          previewCard.style.transform = "translate3d(0, 0, 0)";
-          previewCard.style.opacity = "1";
+          previewCard.style.transform = 'translate3d(0, 0, 0)';
+          previewCard.style.opacity = '1';
         },
       });
     } finally {
@@ -547,13 +527,21 @@
         coverEnterTo: 0,
         coverExitTo: COVER_EXIT_Y_PERCENT,
         finalPagePush: 0,
-        pagePush: ({ elapsedMs, coverOutStartMs, helpers, easings, setPagePush: setTransitionPagePush }) => {
+        pagePush: ({
+          elapsedMs,
+          coverOutStartMs,
+          helpers,
+          easings,
+          setPagePush: setTransitionPagePush,
+        }) => {
           if (!previewDeactivated) {
             setTransitionPagePush(PAGE_PUSH_Y_PX);
             return;
           }
 
-          const revealProgress = helpers.clamp((elapsedMs - coverOutStartMs) / COVER_OUT_DURATION_MS);
+          const revealProgress = helpers.clamp(
+            (elapsedMs - coverOutStartMs) / COVER_OUT_DURATION_MS
+          );
           const easedReveal = easings.rise(revealProgress);
           setTransitionPagePush(helpers.lerp(pageRevealStartY, 0, easedReveal));
         },
@@ -566,7 +554,7 @@
           previewCard.style.transform = `translate3d(0, ${formatNumber(
             helpers.lerp(0, PAGE_PUSH_Y_PX, pushUpProgress)
           )}px, 0)`;
-          previewCard.style.opacity = "1";
+          previewCard.style.opacity = '1';
         },
         onMidpoint: ({ setPagePush: setTransitionPagePush }) => {
           if (previewDeactivated) {
@@ -594,13 +582,13 @@
       return;
     }
 
-    await hydratePreviewContent(card);
+    hydratePreviewContent(card);
     syncPreviewCardStyles();
 
     if (prefersReducedMotion.matches) {
       setPreviewOpen(true);
-      previewCard.style.transform = "translate3d(0, 0, 0)";
-      previewCard.style.opacity = "1";
+      previewCard.style.transform = 'translate3d(0, 0, 0)';
+      previewCard.style.opacity = '1';
       resetPreviewInfoAnimation();
       return;
     }
@@ -623,16 +611,62 @@
     await playCoverCloseTransition();
   };
 
-  previewOverlay.addEventListener("click", (event) => {
+  const bindCardInteractions = async () => {
+    const cardById = await featuredApi.getFeaturedItemMap();
+    const articles = Array.from(grid.querySelectorAll('.mas-pedidas-card'));
+
+    articles.forEach((article) => {
+      if (!(article instanceof HTMLElement)) {
+        return;
+      }
+
+      const cardId = article.dataset.cardId;
+      const card = cardId ? cardById.get(cardId) : null;
+      const detailsButton = article.querySelector('.mas-pedidas-card__button');
+
+      if (!(detailsButton instanceof HTMLButtonElement) || !card) {
+        return;
+      }
+
+      const primeCardAssets = () => {
+        if (article.dataset.previewAssetsPrimed === '1') {
+          return;
+        }
+
+        article.dataset.previewAssetsPrimed = '1';
+        preloadAsset(card.modalImage);
+        if (hoverCapabilityMedia.matches && card.hoverImage) {
+          preloadAsset(card.hoverImage);
+        }
+      };
+
+      detailsButton.addEventListener('click', () => {
+        primeCardAssets();
+        void openPreview({
+          ...card,
+          priceFormatted: card.priceFormatted || `$${Math.round(Number(card.price || 0)).toLocaleString('es-DO')}`,
+        });
+      });
+
+      article.addEventListener('pointerenter', primeCardAssets, { once: true, passive: true });
+      detailsButton.addEventListener('focus', primeCardAssets, { once: true });
+    });
+  };
+
+  previewOverlay.addEventListener('click', (event) => {
     if (event.target === previewOverlay || event.target === previewShell) {
-      closePreview();
+      void closePreview();
     }
   });
 
-  previewCloseIcon.addEventListener("click", closePreview);
-  previewSecondaryCta.addEventListener("click", closePreview);
+  previewCloseIcon.addEventListener('click', () => {
+    void closePreview();
+  });
+  previewSecondaryCta.addEventListener('click', () => {
+    void closePreview();
+  });
 
-  previewMediaStage.addEventListener("pointerenter", () => {
+  previewMediaStage.addEventListener('pointerenter', () => {
     if (!hasPreviewHoverImage || !previewHoverImageSrc) {
       return;
     }
@@ -640,7 +674,7 @@
     setPreviewImageSource(previewHoverImageSrc);
   });
 
-  previewMediaStage.addEventListener("pointerleave", () => {
+  previewMediaStage.addEventListener('pointerleave', () => {
     if (!previewBaseImageSrc) {
       return;
     }
@@ -648,796 +682,26 @@
     setPreviewImageSource(previewBaseImageSrc);
   });
 
-  previewImage.addEventListener("error", () => {
-    const renderedSource = previewImage.currentSrc || previewImage.src || "";
-    const isHoverSource =
-      Boolean(previewHoverImageSrc) && renderedSource.includes(previewHoverImageSrc);
-
-    if (isHoverSource && previewBaseImageSrc) {
-      hasPreviewHoverImage = false;
-      setPreviewImageSource(previewBaseImageSrc);
-      return;
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      void closePreview();
     }
-
-    previewImage.hidden = true;
   });
 
-  document.addEventListener("keydown", (event) => {
-    if (!isPreviewOpen || event.key !== "Escape") {
-      return;
+  window.addEventListener('resize', () => {
+    if (!desktopMedia.matches && !previewOverlay.hidden) {
+      setPagePush(0);
+      setPreviewOpen(false);
+      resetPreviewCardAnimation();
     }
-
-    closePreview();
   });
 
-  if (previewTransitionPath instanceof SVGPathElement) {
-    previewTransitionPath.setAttribute("fill", COVER_COLOR);
-  }
-  previewTransitionCover.style.transform = `translate3d(0, ${COVER_EXIT_Y_PERCENT}%, 0)`;
-  previewTransitionCover.style.visibility = "hidden";
-  previewTransitionCover.style.opacity = "0";
-  previewTransitionCover.classList.remove("is-active");
-  previewTransitionCover.hidden = true;
-  previewTransitionCover.setAttribute("aria-hidden", "true");
-  setPagePush(0);
-
-  const DEFAULT_SOLD_OUT_REASON = "Temporalmente no disponible.";
-  const resolveItemDescriptionText = (item) =>
-    String(
-      (item && (item.description || item.descriptionLong || item.descriptionShort)) || ""
-    ).trim();
-
-  const groupThousandsWithDot = (amount) =>
-    String(amount).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-
-  const normalizePriceStringToNumber = (rawValue) => {
-    const raw = String(rawValue || "").trim();
-    if (!raw) {
-      return NaN;
-    }
-
-    let normalized = raw.replace(/[^\d.,-]/g, "");
-    if (!normalized) {
-      return NaN;
-    }
-
-    const hasComma = normalized.includes(",");
-    const hasDot = normalized.includes(".");
-
-    if (hasComma && hasDot) {
-      const lastComma = normalized.lastIndexOf(",");
-      const lastDot = normalized.lastIndexOf(".");
-      const decimalSeparator = lastComma > lastDot ? "," : ".";
-      const groupSeparator = decimalSeparator === "," ? "." : ",";
-
-      normalized = normalized.split(groupSeparator).join("");
-      if (decimalSeparator === ",") {
-        normalized = normalized.replace(",", ".");
-      }
-    } else if (hasComma) {
-      const parts = normalized.split(",");
-      if (parts.length === 2 && parts[1].length <= 2) {
-        normalized = `${parts[0]}.${parts[1]}`;
-      } else {
-        normalized = parts.join("");
-      }
-    } else if (hasDot) {
-      const parts = normalized.split(".");
-      if (!(parts.length === 2 && parts[1].length <= 2)) {
-        normalized = parts.join("");
-      }
-    }
-
-    const parsed = Number(normalized);
-    return Number.isFinite(parsed) ? parsed : NaN;
-  };
-
-  const formatHomePrice = (item) => {
-    const numericPrice =
-      Number.isFinite(Number(item?.price))
-        ? Number(item.price)
-        : normalizePriceStringToNumber(item?.priceFormatted);
-
-    if (Number.isFinite(numericPrice)) {
-      const rounded = Math.max(0, Math.round(numericPrice));
-      return `$${groupThousandsWithDot(rounded)}`;
-    }
-
-    const fallback = String(item?.priceFormatted || "").trim();
-    if (!fallback) {
-      return "";
-    }
-
-    return fallback
-      .replace(/^\s*RD\$/i, "$")
-      .replace(/([.,]\d{1,2})\s*$/, "");
-  };
-
-  const toCardViewModel = (item, media) => ({
-    id: item.id,
-    slug: item.slug,
-    title: item.name || item.id,
-    description: resolveItemDescriptionText(item),
-    previewDescription: resolveItemDescriptionText(item),
-    ingredients: Array.isArray(item.ingredients) ? item.ingredients : [],
-    reviews: item.reviews || "",
-    price: formatHomePrice(item),
-    image: media.card || "",
-    hoverImage: media.hover || "",
-    modalImage: media.modal || media.card || "",
-    imageAlt: media.alt || item.name || item.id,
-    gallery: Array.isArray(media.gallery) ? media.gallery : [],
-    available: item.available !== false,
-    soldOutReason: item.soldOutReason || "",
-  });
-
-  const setPreviewAvailability = (card) => {
-    const isAvailable = card.available !== false;
-    const soldOutReason = card.soldOutReason || DEFAULT_SOLD_OUT_REASON;
-
-    previewAvailabilityBadge.textContent = isAvailable ? "Disponible" : "No disponible";
-    previewAvailabilityBadge.classList.toggle("is-available", isAvailable);
-    previewAvailabilityBadge.classList.toggle("is-unavailable", !isAvailable);
-
-    previewSoldOutReason.hidden = isAvailable;
-    previewSoldOutReason.textContent = isAvailable ? "" : soldOutReason;
-
-    previewPrimaryCta.textContent = isAvailable ? "Disponible" : "No disponible";
-    previewPrimaryCta.classList.toggle("is-available", isAvailable);
-    previewPrimaryCta.classList.toggle("is-unavailable", !isAvailable);
-  };
-
-  const normalizeFeaturedIds = (value) =>
-    Array.isArray(value)
-      ? value.map((id) => String(id || "").trim()).filter(Boolean)
-      : [];
-
-  const stopRowAutoScroll = () => {
-    rowAutoScrollStates.forEach((state) => {
-      const row = state?.row;
-      cancelRowAutoScrollAnimation(state);
-      const track = state?.track;
-      clearRowAutoScrollTrackStyles(track);
-      if (row instanceof HTMLElement) {
-        const mountedTrack = row.firstElementChild;
-        if (
-          mountedTrack instanceof HTMLElement &&
-          mountedTrack.classList.contains(ROW_AUTOSCROLL_TRACK_CLASS)
-        ) {
-          const sourceCards = Array.from(mountedTrack.children).filter(
-            (node) =>
-              node instanceof HTMLElement &&
-              node.classList.contains("mas-pedidas-card") &&
-              !node.hasAttribute(ROW_AUTOSCROLL_CLONE_ATTR)
-          );
-          row.replaceChildren(...sourceCards);
-        }
-      }
+  bindCardInteractions()
+    .then(() => {
+      window.FigataHomeFeatured = window.FigataHomeFeatured || {};
+      window.FigataHomeFeatured.previewEnhancerReady = true;
+    })
+    .catch((error) => {
+      console.error('[mas-pedidas] No se pudieron vincular los detalles desktop.', error);
     });
-
-    rowAutoScrollCleanup.forEach((dispose) => {
-      try {
-        dispose();
-      } catch (_) {
-        // no-op
-      }
-    });
-    rowAutoScrollCleanup = [];
-    rowAutoScrollStates = [];
-  };
-
-  const getRowGapPx = (row) => {
-    if (!(row instanceof HTMLElement)) {
-      return 0;
-    }
-
-    const styles = window.getComputedStyle(row);
-    const gap = parseFloat(styles.columnGap || styles.gap || "0");
-    return Number.isFinite(gap) ? gap : 0;
-  };
-
-  const getCardWidthPx = (card) => {
-    if (!(card instanceof HTMLElement)) {
-      return 0;
-    }
-
-    const width = card.getBoundingClientRect().width || card.offsetWidth || 0;
-    if (!(width > 0)) {
-      return 0;
-    }
-
-    return width;
-  };
-
-  const getElementWidthPx = (element) => {
-    if (!(element instanceof HTMLElement)) {
-      return 0;
-    }
-
-    const width = element.getBoundingClientRect().width || element.clientWidth || 0;
-    return width > 0 ? width : 0;
-  };
-
-  const getRowCycleWidthPx = (cards, gapPx) => {
-    if (!Array.isArray(cards) || cards.length < 2) {
-      return 0;
-    }
-
-    const totalWidth = cards.reduce((sum, card) => sum + getCardWidthPx(card), 0);
-    if (!(totalWidth > 0)) {
-      return 0;
-    }
-
-    const safeGap = Number.isFinite(gapPx) ? gapPx : 0;
-    return totalWidth + safeGap * cards.length;
-  };
-
-  const normalizeRowCyclePhase = (value) => {
-    if (!Number.isFinite(value)) {
-      return 0;
-    }
-
-    let safeValue = value % 1;
-    if (safeValue < 0) {
-      safeValue += 1;
-    }
-
-    return safeValue;
-  };
-
-  const getRowCyclePhase = (state) => {
-    const durationMs = Number.isFinite(state?.durationMs) ? state.durationMs : 0;
-    if (!(durationMs > 0)) {
-      return 0;
-    }
-
-    const currentTimeMs =
-      state?.animation && typeof state.animation.currentTime === "number"
-        ? state.animation.currentTime
-        : 0;
-    return normalizeRowCyclePhase(currentTimeMs / durationMs);
-  };
-
-  const createRowAutoScrollClone = (card) => {
-    if (!(card instanceof HTMLElement)) {
-      return null;
-    }
-
-    const clone = card.cloneNode(true);
-    if (!(clone instanceof HTMLElement)) {
-      return null;
-    }
-
-    clone.setAttribute(ROW_AUTOSCROLL_CLONE_ATTR, "true");
-    clone.setAttribute("aria-hidden", "true");
-    if ("inert" in clone) {
-      clone.inert = true;
-    }
-    clone.querySelectorAll("a, button, input, select, textarea, [tabindex]").forEach((element) => {
-      if (!(element instanceof HTMLElement)) {
-        return;
-      }
-
-      element.setAttribute("tabindex", "-1");
-      if ("disabled" in element) {
-        element.disabled = true;
-      }
-    });
-
-    return clone;
-  };
-
-  const cancelRowAutoScrollAnimation = (state) => {
-    const animation = state?.animation;
-    if (!animation || typeof animation.cancel !== "function") {
-      state.animation = null;
-      return;
-    }
-
-    try {
-      animation.cancel();
-    } catch (_) {
-      // no-op
-    }
-    state.animation = null;
-  };
-
-  const clearRowAutoScrollTrackStyles = (track) => {
-    if (!(track instanceof HTMLElement)) {
-      return;
-    }
-
-    track.style.transform = "";
-    track.style.willChange = "";
-    track.style.animationDelay = "";
-    track.style.animationDirection = "";
-    track.style.animationDuration = "";
-    track.style.animationFillMode = "";
-    track.style.animationIterationCount = "";
-    track.style.animationName = "";
-    track.style.animationTimingFunction = "";
-    track.style.removeProperty("--home-rail-cycle-width");
-    track.style.removeProperty("--home-rail-duration");
-  };
-
-  const applyRowAutoScrollAnimation = (state, phase = 0) => {
-    const track = state?.track;
-    const cycleWidthPx = state?.cycleWidthPx;
-    if (!(track instanceof HTMLElement) || !(cycleWidthPx > 0)) {
-      return;
-    }
-
-    cancelRowAutoScrollAnimation(state);
-
-    const durationMs = (cycleWidthPx / ROW_AUTOSCROLL_SPEED_PX_PER_SECOND) * 1000;
-    if (!(durationMs > 0)) {
-      clearRowAutoScrollTrackStyles(track);
-      state.durationMs = 0;
-      return;
-    }
-
-    const safePhase = normalizeRowCyclePhase(phase);
-    state.durationMs = durationMs;
-    track.style.willChange = "transform";
-
-    if (typeof track.animate === "function") {
-      const animation = track.animate(
-        [
-          { transform: "translate3d(0, 0, 0)" },
-          { transform: `translate3d(${-cycleWidthPx.toFixed(3)}px, 0, 0)` },
-        ],
-        {
-          duration: durationMs,
-          easing: "linear",
-          iterations: Infinity,
-          fill: "both",
-          direction: state.direction < 0 ? "normal" : "reverse",
-        }
-      );
-
-      if (typeof animation.pause === "function") {
-        animation.pause();
-      }
-      animation.currentTime = safePhase * durationMs;
-      if (typeof animation.play === "function") {
-        animation.play();
-      }
-      state.animation = animation;
-      return;
-    }
-
-    track.style.animationName = "home-rail-marquee";
-    track.style.animationDuration = `${(durationMs / 1000).toFixed(3)}s`;
-    track.style.animationTimingFunction = "linear";
-    track.style.animationIterationCount = "infinite";
-    track.style.animationFillMode = "both";
-    track.style.animationDirection = state.direction < 0 ? "normal" : "reverse";
-    track.style.animationDelay = `${(-safePhase * durationMs / 1000).toFixed(3)}s`;
-    track.style.setProperty("--home-rail-cycle-width", `${cycleWidthPx.toFixed(3)}px`);
-  };
-
-  const syncRowAutoScrollState = (state, { preserveOffset = false } = {}) => {
-    const row = state?.row;
-    if (!(row instanceof HTMLElement)) {
-      return false;
-    }
-
-    const shouldPreserveOffset =
-      preserveOffset === true &&
-      Number.isFinite(state?.cycleWidthPx) &&
-      state.cycleWidthPx > 0;
-    const previousPhase = shouldPreserveOffset ? getRowCyclePhase(state) : 0;
-
-    const existingTrack = row.firstElementChild;
-    if (
-      existingTrack instanceof HTMLElement &&
-      existingTrack.classList.contains(ROW_AUTOSCROLL_TRACK_CLASS)
-    ) {
-      cancelRowAutoScrollAnimation(state);
-      const sourceCards = Array.from(existingTrack.children).filter(
-        (node) =>
-          node instanceof HTMLElement &&
-          node.classList.contains("mas-pedidas-card") &&
-          !node.hasAttribute(ROW_AUTOSCROLL_CLONE_ATTR)
-      );
-      row.replaceChildren(...sourceCards);
-    }
-
-    const sourceCards = Array.from(row.children).filter(
-      (node) => node instanceof HTMLElement && node.classList.contains("mas-pedidas-card")
-    );
-    if (sourceCards.length < 2) {
-      state.track = null;
-      state.cycleWidthPx = 0;
-      state.durationMs = 0;
-      state.animation = null;
-      state.rowWidthPx = getElementWidthPx(row);
-      return false;
-    }
-
-    const track = document.createElement("div");
-    track.className = ROW_AUTOSCROLL_TRACK_CLASS;
-    sourceCards.forEach((card) => track.appendChild(card));
-    row.replaceChildren(track);
-
-    state.gapPx = getRowGapPx(row);
-    const cycleWidthPx = getRowCycleWidthPx(sourceCards, state.gapPx);
-    if (!(cycleWidthPx > 0)) {
-      row.replaceChildren(...sourceCards);
-      state.track = null;
-      state.cycleWidthPx = 0;
-      state.durationMs = 0;
-      state.animation = null;
-      state.rowWidthPx = getElementWidthPx(row);
-      return false;
-    }
-
-    const minTrackWidthPx = (row.getBoundingClientRect().width || row.clientWidth || 0) + cycleWidthPx;
-    let copies = 1;
-
-    while (track.scrollWidth < minTrackWidthPx - 0.5 && copies < ROW_AUTOSCROLL_MAX_TRACK_COPIES) {
-      sourceCards.forEach((card) => {
-        const clone = createRowAutoScrollClone(card);
-        if (clone) {
-          track.appendChild(clone);
-        }
-      });
-      copies += 1;
-    }
-
-    state.track = track;
-    state.cycleWidthPx = cycleWidthPx;
-    state.rowWidthPx = getElementWidthPx(row);
-    applyRowAutoScrollAnimation(state, shouldPreserveOffset ? previousPhase : 0);
-    return true;
-  };
-
-  const hasRowWidthChanged = (state) => {
-    const nextWidthPx = getElementWidthPx(state?.row);
-    if (!(nextWidthPx > 0)) {
-      return false;
-    }
-
-    const previousWidthPx = Number.isFinite(state?.rowWidthPx) ? state.rowWidthPx : 0;
-    return (
-      !(previousWidthPx > 0) ||
-      Math.abs(nextWidthPx - previousWidthPx) > ROW_AUTOSCROLL_RESIZE_EPSILON_PX
-    );
-  };
-
-  const syncChangedRowAutoScrollStates = () => {
-    let didSync = false;
-
-    rowAutoScrollStates.forEach((state) => {
-      if (!hasRowWidthChanged(state)) {
-        return;
-      }
-
-      if (syncRowAutoScrollState(state, { preserveOffset: true })) {
-        didSync = true;
-      }
-    });
-
-    return didSync;
-  };
-
-  const startRowAutoScroll = (rows) => {
-    stopRowAutoScroll();
-
-    if (!mobileRowCarouselMedia.matches || !Array.isArray(rows) || rows.length === 0) {
-      return;
-    }
-
-    const states = [];
-
-    rows.forEach((row, index) => {
-      if (!(row instanceof HTMLElement) || row.hidden) {
-        return;
-      }
-
-      const cards = Array.from(row.children).filter(
-        (node) => node instanceof HTMLElement && node.classList.contains("mas-pedidas-card")
-      );
-      if (cards.length < 2) {
-        return;
-      }
-
-      const state = {
-        row,
-        track: null,
-        direction: index === 0 ? -1 : 1,
-        gapPx: getRowGapPx(row),
-        cycleWidthPx: 0,
-        rowWidthPx: 0,
-        durationMs: 0,
-        animation: null,
-      };
-
-      if (syncRowAutoScrollState(state)) {
-        states.push(state);
-      }
-    });
-
-    if (!states.length) {
-      return;
-    }
-
-    rowAutoScrollStates = states;
-
-    const onMediaChange = () => {
-      if (!mobileRowCarouselMedia.matches) {
-        rowAutoScrollStates.forEach((state) => {
-          const row = state?.row;
-          const track = state?.track;
-          clearRowAutoScrollTrackStyles(track);
-          if (row instanceof HTMLElement) {
-            const mountedTrack = row.firstElementChild;
-            if (
-              mountedTrack instanceof HTMLElement &&
-              mountedTrack.classList.contains(ROW_AUTOSCROLL_TRACK_CLASS)
-            ) {
-              const sourceCards = Array.from(mountedTrack.children).filter(
-                (node) =>
-                  node instanceof HTMLElement &&
-                  node.classList.contains("mas-pedidas-card") &&
-                  !node.hasAttribute(ROW_AUTOSCROLL_CLONE_ATTR)
-              );
-              row.replaceChildren(...sourceCards);
-            }
-          }
-        });
-        return;
-      }
-
-      rowAutoScrollStates.forEach((state) => {
-        syncRowAutoScrollState(state, { preserveOffset: true });
-      });
-    };
-
-    const onObservedSizeChange = () => {
-      if (!mobileRowCarouselMedia.matches) {
-        return;
-      }
-
-      syncChangedRowAutoScrollStates();
-    };
-
-    if (typeof mobileRowCarouselMedia.addEventListener === "function") {
-      mobileRowCarouselMedia.addEventListener("change", onMediaChange);
-      rowAutoScrollCleanup.push(() =>
-        mobileRowCarouselMedia.removeEventListener("change", onMediaChange)
-      );
-    } else if (typeof mobileRowCarouselMedia.addListener === "function") {
-      mobileRowCarouselMedia.addListener(onMediaChange);
-      rowAutoScrollCleanup.push(() => mobileRowCarouselMedia.removeListener(onMediaChange));
-    }
-
-    if ("ResizeObserver" in window) {
-      const resizeObserver = new ResizeObserver(onObservedSizeChange);
-      rowAutoScrollStates.forEach((state) => {
-        if (state?.row instanceof HTMLElement) {
-          resizeObserver.observe(state.row);
-        }
-      });
-      rowAutoScrollCleanup.push(() => resizeObserver.disconnect());
-    } else {
-      window.addEventListener("resize", onObservedSizeChange, { passive: true });
-      rowAutoScrollCleanup.push(() =>
-        window.removeEventListener("resize", onObservedSizeChange)
-      );
-    }
-  };
-
-  const bindRowCardInteractions = (rows, cardById) => {
-    if (!Array.isArray(rows) || !(cardById instanceof Map)) {
-      return;
-    }
-
-    rows.forEach((row) => {
-      if (!(row instanceof HTMLElement)) {
-        return;
-      }
-
-      row.addEventListener("click", (event) => {
-        const target = event.target;
-        if (!(target instanceof Element)) {
-          return;
-        }
-
-        const button = target.closest(".mas-pedidas-card__button");
-        if (!(button instanceof HTMLButtonElement) || !row.contains(button)) {
-          return;
-        }
-
-        const article = button.closest(".mas-pedidas-card");
-        const cardId = article?.dataset?.cardId || "";
-        const card = cardById.get(cardId);
-        if (!card) {
-          return;
-        }
-
-        void openPreview(card);
-      });
-
-      row.addEventListener("pointerover", (event) => {
-        const target = event.target;
-        if (!(target instanceof Element)) {
-          return;
-        }
-
-        const article = target.closest(".mas-pedidas-card");
-        if (!(article instanceof HTMLElement) || !row.contains(article)) {
-          return;
-        }
-
-        const cardId = article.dataset.cardId || "";
-        if (!cardId || article.dataset.prefetchDone === "1") {
-          return;
-        }
-
-        article.dataset.prefetchDone = "1";
-
-        if (mediaApi?.prefetch) {
-          mediaApi.prefetch(cardId, "modal");
-        }
-      });
-    });
-  };
-
-  const resolvePopularSelection = async () => {
-    const fallback = {
-      featuredIds: [],
-      limit: HOME_FEATURED_LIMIT,
-    };
-
-    if (!homeApi?.getHomeConfig) {
-      return fallback;
-    }
-
-    try {
-      const home = await homeApi.getHomeConfig();
-      const popular = home?.popular || {};
-      const configuredLimit = Number(popular.limit);
-      const normalizedLimit =
-        Number.isFinite(configuredLimit) && configuredLimit > 0
-          ? Math.round(configuredLimit)
-          : fallback.limit;
-      const limit = Math.min(normalizedLimit, HOME_FEATURED_LIMIT);
-
-      return {
-        featuredIds: normalizeFeaturedIds(popular.featuredIds),
-        limit,
-      };
-    } catch (error) {
-      console.error("[mas-pedidas] No se pudo leer configuracion popular desde home.json", error);
-      return fallback;
-    }
-  };
-
-  const renderFeaturedCards = async () => {
-    stopRowAutoScroll();
-
-    let featuredItems = [];
-    const selection = await resolvePopularSelection();
-
-    if (mediaApi?.loadMediaStore) {
-      try {
-        await mediaApi.loadMediaStore();
-      } catch (error) {
-        console.error("[mas-pedidas] No se pudo cargar media.json", error);
-      }
-    }
-
-    try {
-      featuredItems = await getFeaturedMenuItems({
-        featuredIds: selection.featuredIds,
-        limit: selection.limit,
-      });
-    } catch (error) {
-      console.error("[mas-pedidas] No se pudo cargar featured items desde menu.json", error);
-      return;
-    }
-
-    featuredItems = featuredItems.slice(0, HOME_FEATURED_LIMIT);
-
-    const topRow = document.createElement("div");
-    topRow.className = "mas-pedidas__row mas-pedidas__row--top";
-
-    const bottomRow = document.createElement("div");
-    bottomRow.className = "mas-pedidas__row mas-pedidas__row--bottom";
-    const cardById = new Map();
-    const splitIndex = Math.ceil(featuredItems.length / 2);
-
-    featuredItems.forEach((item, index) => {
-      const mediaAssets = resolveItemMedia(item);
-      const card = toCardViewModel(item, mediaAssets);
-      cardById.set(card.id, card);
-      const node = template.content.cloneNode(true);
-      const article = node.querySelector(".mas-pedidas-card");
-      const mediaContainer = node.querySelector(".mas-pedidas-card__media");
-      const baseImage = node.querySelector(".mas-pedidas-card__image--base");
-      const hoverImage = node.querySelector(".mas-pedidas-card__image--hover");
-      const title = node.querySelector(".mas-pedidas-card__title");
-      const description = node.querySelector(".mas-pedidas-card__description");
-      const price = node.querySelector(".mas-pedidas-card__price");
-      const detailsButton = node.querySelector(".mas-pedidas-card__button");
-
-      if (
-        !article ||
-        !mediaContainer ||
-        !baseImage ||
-        !hoverImage ||
-        !title ||
-        !description ||
-        !price ||
-        !detailsButton
-      ) {
-        return;
-      }
-
-      title.textContent = card.title;
-      description.textContent = card.description;
-      price.textContent = card.price;
-      article.classList.toggle("is-unavailable", !card.available);
-      article.dataset.cardId = card.id;
-
-      const detailsLabel = detailsButton.querySelector("span");
-      if (detailsLabel) {
-        detailsLabel.textContent = "Detalles";
-      } else {
-        detailsButton.textContent = "Detalles";
-      }
-
-      const imageSrc = card.image;
-
-      if (imageSrc) {
-        baseImage.src = imageSrc;
-        baseImage.alt = card.imageAlt || card.title;
-        baseImage.loading = "lazy";
-        baseImage.decoding = "async";
-        baseImage.addEventListener("error", () => {
-          baseImage.hidden = true;
-          hoverImage.hidden = true;
-          article.classList.remove("has-hover-image");
-          mediaContainer.classList.add("is-empty");
-        });
-
-        if (hoverCapabilityMedia.matches && card.hoverImage && card.hoverImage !== imageSrc) {
-          hoverImage.src = card.hoverImage;
-          hoverImage.alt = "";
-          hoverImage.loading = "lazy";
-          hoverImage.decoding = "async";
-          hoverImage.addEventListener("load", () => {
-            if (!hoverImage.hidden) {
-              article.classList.add("has-hover-image");
-            }
-          });
-          hoverImage.addEventListener("error", () => {
-            hoverImage.hidden = true;
-            article.classList.remove("has-hover-image");
-          });
-        } else {
-          hoverImage.hidden = true;
-          article.classList.remove("has-hover-image");
-        }
-      } else {
-        baseImage.hidden = true;
-        hoverImage.hidden = true;
-        mediaContainer.classList.add("is-empty");
-      }
-
-      const targetRow = index < splitIndex ? topRow : bottomRow;
-      targetRow.appendChild(node);
-    });
-
-    const renderedRows = [topRow, bottomRow];
-    topRow.hidden = topRow.childElementCount === 0;
-    bottomRow.hidden = bottomRow.childElementCount === 0;
-    grid.replaceChildren(topRow, bottomRow);
-    bindRowCardInteractions(renderedRows, cardById);
-    startRowAutoScroll(renderedRows);
-    preloadFeaturedModalImages(featuredItems);
-  };
-
-  void renderFeaturedCards();
 })();
