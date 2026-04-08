@@ -25,24 +25,24 @@
   const MOBILE_MENU_ENTRY_BY_KEY = {
     menu: {
       subtitle: 'Carta y favoritos',
-      thumbSrc: 'assets/navbar/menu-thumb.webp',
+      thumbSrc: 'assets/navbar/mobile/menu-thumb.webp',
     },
     eventos: {
       subtitle: 'Pizza Party by Figata',
-      thumbSrc: 'assets/eventos/thumb.webp',
+      thumbSrc: 'assets/navbar/mobile/eventos-thumb.webp',
       badgeLabel: 'NEW',
     },
     nosotros: {
       subtitle: 'Nuestra historia real',
-      thumbSrc: 'assets/navbar/nosotros-thumb.webp',
+      thumbSrc: 'assets/navbar/mobile/nosotros-thumb.webp',
     },
     ubicacion: {
       subtitle: 'Cómo llegar rápido',
-      thumbSrc: 'assets/navbar/ubicacion-thumb.webp',
+      thumbSrc: 'assets/navbar/mobile/ubicacion-thumb.webp',
     },
     contacto: {
       subtitle: 'Reserva o escríbenos',
-      thumbSrc: 'assets/navbar/contacto-thumb.webp',
+      thumbSrc: 'assets/navbar/mobile/contacto-thumb.webp',
     },
   };
   const SEARCH_INPUT_ID = 'navbar-menu-sticky-search-input';
@@ -160,6 +160,9 @@
     detailAccountSlot: null,
     sentinel: null,
   };
+  const deferredThumbImages = [];
+  let thumbsHydrated = false;
+  let thumbsHydrationScheduled = false;
 
   const resolveNavbarNodes = () => {
     navbar = header.querySelector('.navbar');
@@ -436,6 +439,7 @@
     state.mobileMenuOpen = shouldOpen;
 
     if (shouldOpen) {
+      hydrateDeferredThumbs();
       clearCloseCommitTimer();
       header.dataset.menuMobileNav = 'open';
       document.body.classList.add('menu-mobile-nav-backdrop');
@@ -495,11 +499,62 @@
     }
   };
 
+  const hydrateDeferredThumbs = () => {
+    if (thumbsHydrated) {
+      return;
+    }
+
+    thumbsHydrated = true;
+    deferredThumbImages.forEach((image) => {
+      if (!(image instanceof HTMLImageElement) || image.dataset.thumbHydrated === '1') {
+        return;
+      }
+
+      const thumbSrc = normalizeText(image.dataset.thumbSrc);
+      if (!thumbSrc) {
+        return;
+      }
+
+      image.src = thumbSrc;
+      image.dataset.thumbHydrated = '1';
+    });
+  };
+
+  const scheduleDeferredThumbHydration = () => {
+    if (thumbsHydrated || thumbsHydrationScheduled) {
+      return;
+    }
+
+    thumbsHydrationScheduled = true;
+    const schedule = () => {
+      const execute = () => {
+        window.setTimeout(hydrateDeferredThumbs, 2400);
+      };
+
+      if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(execute, { timeout: 3200 });
+        return;
+      }
+
+      window.setTimeout(execute, 2600);
+    };
+
+    if (document.readyState === 'complete') {
+      schedule();
+      return;
+    }
+
+    window.addEventListener('load', schedule, { once: true });
+  };
+
   const buildMobileMenuLinks = () => {
     if (!(refs.mobileMenuPanel instanceof HTMLElement)) {
       return;
     }
 
+    deferredThumbImages.length = 0;
+    thumbsHydrated = false;
+    thumbsHydrationScheduled = false;
     refs.mobileMenuLinks = [];
     const list = document.createElement('ul');
     list.className = 'navbar__mobile-menu-links';
@@ -566,11 +621,13 @@
       if (entryConfig?.thumbSrc) {
         const thumbImage = document.createElement('img');
         thumbImage.className = 'navbar__mobile-menu-thumb-image';
-        thumbImage.src = entryConfig.thumbSrc;
         thumbImage.alt = '';
         thumbImage.decoding = 'async';
-        thumbImage.loading = 'eager';
+        thumbImage.loading = 'lazy';
+        thumbImage.fetchPriority = 'low';
+        thumbImage.dataset.thumbSrc = entryConfig.thumbSrc;
         thumb.appendChild(thumbImage);
+        deferredThumbImages.push(thumbImage);
       } else {
         thumb.textContent = label.charAt(0).toUpperCase();
       }
@@ -587,6 +644,7 @@
     });
 
     refs.mobileMenuPanel.replaceChildren(list);
+    scheduleDeferredThumbHydration();
   };
 
   const getCategoryList = () => {

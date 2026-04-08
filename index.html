@@ -591,13 +591,13 @@
 
           <div class="home-ambiente-mobile__thumbs">
             <figure class="home-ambiente-mobile__thumb">
-              <img src="assets/eventos/collage/corito/corito-0.webp" alt="Ambiente exterior de Figata" loading="lazy" decoding="async">
+              <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" data-home-lazy-src="assets/eventos/collage/corito/corito-0.webp" alt="Ambiente exterior de Figata" loading="lazy" decoding="async" fetchpriority="low">
             </figure>
             <figure class="home-ambiente-mobile__thumb">
-              <img src="assets/eventos/collage/corito/corito-8.webp" alt="Preparación de pizza en Figata" loading="lazy" decoding="async">
+              <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" data-home-lazy-src="assets/eventos/collage/corito/corito-8.webp" alt="Preparación de pizza en Figata" loading="lazy" decoding="async" fetchpriority="low">
             </figure>
             <figure class="home-ambiente-mobile__thumb">
-              <img src="assets/eventos/collage/corito/corito-4.webp" alt="Mesa compartida en Figata" loading="lazy" decoding="async">
+              <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" data-home-lazy-src="assets/eventos/collage/corito/corito-4.webp" alt="Mesa compartida en Figata" loading="lazy" decoding="async" fetchpriority="low">
             </figure>
           </div>
 
@@ -610,9 +610,9 @@
             aria-haspopup="dialog"
             aria-controls="home-virtual-tour-modal"
           >
-            <img class="home-ambiente-mobile__hero-image" data-home-ambiente-parallax-image src="assets/home/exterior.webp" alt="Vista del ambiente de Figata para recorrido virtual" loading="lazy" decoding="async">
+            <img class="home-ambiente-mobile__hero-image" data-home-ambiente-parallax-image src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" data-home-lazy-src="assets/home/exterior.webp" alt="Vista del ambiente de Figata para recorrido virtual" loading="lazy" decoding="async" fetchpriority="low">
             <div class="home-ambiente-mobile__hero-overlay">
-              <img class="home-ambiente-mobile__hero-icon" src="assets/home/360-icon.webp" alt="" aria-hidden="true" loading="lazy" decoding="async">
+              <img class="home-ambiente-mobile__hero-icon" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" data-home-lazy-src="assets/home/360-icon.webp" alt="" aria-hidden="true" loading="lazy" decoding="async" fetchpriority="low">
               <p class="home-ambiente-mobile__hero-title">Tour virtual</p>
             </div>
           </button>
@@ -774,11 +774,13 @@
               >
                 <img
                   class="delivery-action__icon"
-                  src="assets/home/google-reviews.webp"
+                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
+                  data-home-lazy-src="assets/home/google-reviews.webp"
                   alt=""
                   aria-hidden="true"
                   loading="lazy"
                   decoding="async"
+                  fetchpriority="low"
                 >
               </a>
 
@@ -792,11 +794,13 @@
               >
                 <img
                   class="delivery-action__icon"
-                  src="assets/home/tripadvisor-logo.svg"
+                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
+                  data-home-lazy-src="assets/home/tripadvisor-logo.svg"
                   alt=""
                   aria-hidden="true"
                   loading="lazy"
                   decoding="async"
+                  fetchpriority="low"
                 >
               </a>
             </div>
@@ -1036,10 +1040,10 @@
             </div>
             <div class="footer-banner-mobile-actions" aria-label="Navegación hacia el local">
               <a class="home-ubicacion-mobile__map-button" href="https://ul.waze.com/ul?ll=18.49227723%2C-69.86180305&navigate=yes&zoom=17&utm_campaign=default&utm_source=waze_website&utm_medium=lm_share_location" aria-label="Abrir en Waze" data-home-location-waze>
-                <img class="home-ubicacion-mobile__map-button-icon" src="assets/home/waze.webp" alt="" aria-hidden="true" loading="lazy" decoding="async">
+                <img class="home-ubicacion-mobile__map-button-icon" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" data-home-lazy-src="assets/home/waze.webp" alt="" aria-hidden="true" loading="lazy" decoding="async" fetchpriority="low">
               </a>
               <a class="home-ubicacion-mobile__map-button" href="https://maps.app.goo.gl/Yg2cgWZvZxaHmWkMA" aria-label="Abrir en Google Maps" data-home-location-googlemaps>
-                <img class="home-ubicacion-mobile__map-button-icon" src="assets/home/google-maps.webp" alt="" aria-hidden="true" loading="lazy" decoding="async">
+                <img class="home-ubicacion-mobile__map-button-icon" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" data-home-lazy-src="assets/home/google-maps.webp" alt="" aria-hidden="true" loading="lazy" decoding="async" fetchpriority="low">
               </a>
             </div>
           </div>
@@ -1179,55 +1183,98 @@
   <script src="js/home-featured.js" defer></script>
   <script>
     (function () {
-      var secondaryScripts = [
-        "js/testimonials.js",
-        "shared/public-scroll-indicator.js"
-      ];
+      var idleScripts = ["shared/public-scroll-indicator.js"];
       var isDesktopViewport = window.matchMedia("(min-width: 1024px)").matches;
-      var started = false;
+      var idleStarted = false;
+      var testimonialsStarted = false;
 
       if (isDesktopViewport) {
-        secondaryScripts.splice(1, 0, "js/events-tabs.js");
+        idleScripts.unshift("js/events-tabs.js");
       }
 
-      var loadSequentially = function (index) {
-        if (index >= secondaryScripts.length) {
+      var loadSequentially = function (scripts, index) {
+        if (index >= scripts.length) {
           return;
         }
 
         var script = document.createElement("script");
-        script.src = secondaryScripts[index];
+        script.src = scripts[index];
         script.async = false;
         script.onload = function () {
-          loadSequentially(index + 1);
+          loadSequentially(scripts, index + 1);
         };
         script.onerror = function () {
-          loadSequentially(index + 1);
+          loadSequentially(scripts, index + 1);
         };
         document.body.appendChild(script);
       };
 
-      var start = function () {
-        if (started) {
+      var startIdleScripts = function () {
+        if (idleStarted) {
           return;
         }
 
-        started = true;
-        loadSequentially(0);
+        idleStarted = true;
+        loadSequentially(idleScripts, 0);
       };
 
-      var schedule = function () {
+      var scheduleIdleScripts = function () {
         if ("requestIdleCallback" in window) {
-          window.requestIdleCallback(start, { timeout: 1600 });
+          window.requestIdleCallback(startIdleScripts, { timeout: 1600 });
           return;
         }
 
-        window.setTimeout(start, 900);
+        window.setTimeout(startIdleScripts, 900);
       };
 
-      document.addEventListener("DOMContentLoaded", schedule, { once: true });
+      var startTestimonials = function () {
+        if (testimonialsStarted) {
+          return;
+        }
+
+        testimonialsStarted = true;
+        loadSequentially(["js/testimonials.js"], 0);
+      };
+
+      var scheduleTestimonials = function () {
+        var testimonialsSection = document.getElementById("testimonials");
+        if (!(testimonialsSection instanceof HTMLElement)) {
+          startTestimonials();
+          return;
+        }
+
+        if (!("IntersectionObserver" in window)) {
+          window.setTimeout(startTestimonials, 1800);
+          return;
+        }
+
+        var observer = new IntersectionObserver(
+          function (entries, activeObserver) {
+            entries.forEach(function (entry) {
+              if (!entry.isIntersecting) {
+                return;
+              }
+
+              activeObserver.disconnect();
+              startTestimonials();
+            });
+          },
+          {
+            root: null,
+            rootMargin: "420px 0px",
+            threshold: 0.01
+          }
+        );
+
+        observer.observe(testimonialsSection);
+      };
+
+      document.addEventListener("DOMContentLoaded", function () {
+        scheduleIdleScripts();
+        scheduleTestimonials();
+      }, { once: true });
       window.addEventListener("load", function () {
-        window.setTimeout(start, 0);
+        window.setTimeout(startIdleScripts, 0);
       }, { once: true });
     })();
   </script>

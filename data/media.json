@@ -295,7 +295,7 @@
       "alt": "Quattro Formaggi y Black Truffle",
       "overrides": {
         "card": "",
-        "hover": "assets/menu/pizzas/quattro-formaggi-y-black-truffle/quattroformaggi-hover.webp",
+        "hover": "assets/menu/pizzas/quattro-formaggi-y-black-truffle/quattroformaggi.webp",
         "modal": "assets/menu/pizzas/quattro-formaggi-y-black-truffle/quattroformaggi.webp",
         "gallery": [
           "assets/menu/pizzas/quattro-formaggi-y-black-truffle/quattro-formaggi-slide-0.webp"

@@ -44,6 +44,8 @@
   };
   const FOOTER_LOCATION_IMAGE_DESKTOP = 'assets/home/location.webp';
   const FOOTER_LOCATION_IMAGE_MOBILE = 'assets/home/location-mobile.webp';
+  const HOME_LAZY_IMAGE_PLACEHOLDER =
+    'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
   const HOME_LOCATION_WAZE_URL =
     'https://ul.waze.com/ul?ll=18.49227723%2C-69.86180305&navigate=yes&zoom=17&utm_campaign=default&utm_source=waze_website&utm_medium=lm_share_location';
   const HOME_LOCATION_GOOGLE_MAPS_URL = 'https://maps.app.goo.gl/Yg2cgWZvZxaHmWkMA';
@@ -1689,7 +1691,20 @@ Personas:`;
         : FOOTER_LOCATION_IMAGE_DESKTOP;
       const resolvedSource = normalizeAssetPath(relativeSource) || relativeSource;
 
-      locationImage.setAttribute('data-home-lazy-src', relativeSource);
+      if (isMobile) {
+        locationImage.setAttribute('data-home-lazy-src', resolvedSource);
+        locationImage.loading = 'lazy';
+        locationImage.decoding = 'async';
+        locationImage.fetchPriority = 'low';
+        if (locationImage.getAttribute('src') !== HOME_LAZY_IMAGE_PLACEHOLDER) {
+          locationImage.src = HOME_LAZY_IMAGE_PLACEHOLDER;
+        }
+        delete locationImage.dataset.homeLazyLoaded;
+        window.FigataHomeLazyImages?.observe?.(locationImage);
+        return;
+      }
+
+      locationImage.removeAttribute('data-home-lazy-src');
       if (locationImage.getAttribute('src') !== resolvedSource) {
         locationImage.src = resolvedSource;
       }

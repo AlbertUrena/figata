@@ -72,7 +72,7 @@ The page is structured as a single scrollable document. Major sections in `index
 
 ### Script Loading Order
 
-Homepage (`index.html`) runs a mixed boot pipeline: critical route/runtime scripts load with `defer`, while non-critical testimonials/events/scroll-indicator code is kicked to post-DCL idle time.
+Homepage (`index.html`) runs a mixed boot pipeline: critical route/runtime scripts load with `defer`, while below-the-fold work is staggered so mobile can prioritize the hero + featured rows first.
 
 ```
 1.  shared/public-paths.js      — Shared site-base helper for root + GitHub Pages subpath hosting
@@ -88,7 +88,7 @@ Homepage (`index.html`) runs a mixed boot pipeline: critical route/runtime scrip
 11. js/home-lazy-images.js      — Lazy image loading (IntersectionObserver)
 12. js/home-config.js           — Homepage section rendering (hero, delivery, footer, etc.)
 13. js/home-featured.js         — Featured-card renderer; injects `js/mas-pedidas.js` only on desktop
-14. inline post-DCL/idle loader — Defers testimonials, desktop-only events tabs, and the scroll indicator out of the first-load critical path
+14. inline secondary loader   — Defers desktop-only events tabs + scroll indicator to idle and mounts `js/testimonials.js` only when `#testimonials` approaches the viewport
 ```
 
 Additionally loaded (non-deferred):
@@ -204,7 +204,7 @@ Full menu page runtime controller for `/menu/`. Handles:
 Homepage mobile navbar enhancer. Handles:
 - Building the burger-menu chrome on top of the canonical homepage navbar
 - Rendering the card-style mobile panel entries with thumbs/subtitles
-- Deferring burger-card thumbs until post-load/idle and using downsized mobile-only variants
+- Deferring burger-card thumbs until well after first paint unless the menu opens early, while using downsized mobile-only variants
 - Animating the burger icon between closed/open states
 - Managing open/close, focus restoration, outside-click dismissal, and viewport changes
 
@@ -306,7 +306,7 @@ Reusable cover transition engine:
 - Shared by modal preview flow and route/reload transitions
 
 #### `js/home-lazy-images.js` (1KB, ~40 lines)
-Lazy image loading using IntersectionObserver for homepage images.
+Homepage image deferral helper. Uses `IntersectionObserver` + `data-home-lazy-src` to keep below-the-fold mobile media out of the initial request burst.
 
 ---
 
@@ -374,8 +374,8 @@ js/home-featured.js fetches data/home-featured.json
 js/mas-pedidas.js loads only on desktop
     → adds the Detalles preview overlay/transition on top of the rendered cards
     ↓
-js/testimonials.js reads home data (testimonials)
-    → renders carousel
+js/testimonials.js waits until #testimonials nears the viewport
+    → then reads home data (testimonials) and renders the carousel
     ↓
 js/events-tabs.js reads home data (events) on desktop only
     → renders tabbed events

@@ -151,15 +151,15 @@
     thumbsHydrationScheduled = true;
     const schedule = () => {
       const execute = () => {
-        window.setTimeout(hydrateDeferredThumbs, 180);
+        window.setTimeout(hydrateDeferredThumbs, 2400);
       };
 
       if (typeof window.requestIdleCallback === "function") {
-        window.requestIdleCallback(execute, { timeout: 1800 });
+        window.requestIdleCallback(execute, { timeout: 3200 });
         return;
       }
 
-      window.setTimeout(execute, 1200);
+      window.setTimeout(execute, 2600);
     };
 
     if (document.readyState === "complete") {
