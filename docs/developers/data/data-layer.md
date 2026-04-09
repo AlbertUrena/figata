@@ -412,12 +412,30 @@ Controls all dynamic sections of the public homepage.
 
 ### `data/home-featured.json` — Homepage Featured Cards
 
-Dedicated homepage payload for the `Más pedidas` section. This file exists to keep the homepage mobile-first and avoid fetching the full menu/media/ingredients stack just to render 8 featured cards.
+Generated homepage payload for the `Más pedidas` section. This file exists to keep the homepage mobile-first and avoid fetching the full menu/media/ingredients stack just to render the featured cards, but it is **not** a source-of-truth file anymore.
+
+Canonical ownership is:
+- order + selection: `data/home.json` → `popular.featuredIds`
+- copy/pricing/reviews: `data/menu.json`
+- availability: `data/availability.json`
+- modal/hover media + alt text: `data/media.json`
+- ingredient labels/icons: `data/ingredients.json`
+
+`scripts/generate-home-featured.js` derives `data/home-featured.json` and regenerates the square responsive homepage variants in `assets/home/featured/generated/`.
 
 ```
 {
   "version": 1,
   "schema": "figata.home.featured.v1",
+  "source": {
+    "home": "data/home.json",
+    "menu": "data/menu.json",
+    "media": "data/media.json",
+    "availability": "data/availability.json",
+    "ingredients": "data/ingredients.json"
+  },
+  "limit": 8,
+  "sourceFeaturedIds": ["quattro_formaggi_truffle", "pan_ciabatta", ...],
   "updatedAt": "2026-04-08T17:49:52.427Z",
   "items": [
     {
@@ -430,10 +448,10 @@ Dedicated homepage payload for the `Más pedidas` section. This file exists to k
       "available": true,
       "soldOutReason": "",
       "imageAlt": "Quattro Formaggi y Black Truffle",
-      "cardImage": "assets/home/featured/quattro-formaggi-y-black-truffle-640.webp",
-      "cardImageSrcSet": "assets/home/featured/quattro-formaggi-y-black-truffle-320.webp 320w, assets/home/featured/quattro-formaggi-y-black-truffle-640.webp 640w",
+      "cardImage": "assets/home/featured/generated/quattro-formaggi-truffle-640.webp",
+      "cardImageSrcSet": "assets/home/featured/generated/quattro-formaggi-truffle-320.webp 320w, assets/home/featured/generated/quattro-formaggi-truffle-640.webp 640w",
       "cardImageSizes": "(max-width: 1023px) 38vw, 312px",
-      "hoverImage": "assets/menu/pizzas/quattro-formaggi-y-black-truffle/quattroformaggi-hover.webp",
+      "hoverImage": "assets/menu/pizzas/quattro-formaggi-y-black-truffle/quattroformaggi.webp",
       "modalImage": "assets/menu/pizzas/quattro-formaggi-y-black-truffle/quattroformaggi.webp",
       "ingredients": [
         {
@@ -448,10 +466,13 @@ Dedicated homepage payload for the `Más pedidas` section. This file exists to k
 ```
 
 **Key relationships:**
-- `items[].id` should match an existing menu item id from `data/menu.json`
-- `items[].cardImage*` is optimized specifically for homepage card rendering, not for the full menu page
+- `sourceFeaturedIds[]` mirrors `home.popular.featuredIds` in order, after dedupe + limit
+- `items[].id` matches an existing menu item id from `data/menu.json`
+- `items[].cardImage*` is generated specifically for homepage card rendering; do not edit those paths by hand
 - `items[].hoverImage` and `items[].modalImage` are only consumed by the desktop `Detalles` preview
-- `items[].ingredients[]` is already flattened for the homepage preview so the home no longer needs to fetch `data/ingredients.json`
+- `items[].ingredients[]` is flattened during generation so the home no longer needs to fetch `data/ingredients.json`
+
+**Do not edit directly:** regenerate through `scripts/generate-home-featured.js`, `npm run validate:home`, `npm run validate:media`, or the local admin save flow.
 
 **Read by:** `src/data/home-featured.js`, `js/home-featured.js`, `js/mas-pedidas.js`
 

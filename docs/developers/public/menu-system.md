@@ -138,9 +138,10 @@ The featured items displayed on the homepage are determined by:
 
 1. `home.json` → `popular.featuredIds` — an ordered array of menu item IDs
 2. `home.json` → `popular.limit` — maximum items to display (capped at `HOME_FEATURED_LIMIT = 8`)
-3. `menu.js` → `getFeaturedMenuItems({ featuredIds, limit })` — fetches items from `menu.json`, filters by IDs, applies limit
+3. `scripts/generate-home-featured.js` — derives `data/home-featured.json` from `home.json`, `menu.json`, `media.json`, `availability.json`, and `ingredients.json`
+4. `js/home-featured.js` — renders rows in the exact order emitted by `data/home-featured.json`
 
-If no `featuredIds` are configured, the menu generator provides its own default selection.
+If no `featuredIds` are configured, the home data layer falls back to its internal defaults before the derived payload is generated.
 
 ---
 
@@ -160,14 +161,14 @@ Each featured item is rendered from the `#mas-pedidas-card-template`:
 
 ### Image Resolution
 
-For each item, `resolveItemMedia(item)` resolves paths from `media.json`:
+For each item, `data/home-featured.json` already contains the resolved homepage media contract:
 
 | Variant | Source | Fallback |
 |---------|--------|----------|
-| `card` | `mediaApi.get(id, "card")` | `item.image` |
-| `hover` | `mediaApi.get(id, "hover")` | None (hidden if missing or same as card) |
-| `modal` | `mediaApi.get(id, "modal")` | Card image |
-| `alt` | `mediaApi.getAlt(id)` | `item.name` |
+| `card` | Generated square variants in `assets/home/featured/generated/` | Item source image |
+| `hover` | `media.json` resolved hover/source variant | Same as source image |
+| `modal` | `media.json` resolved modal/source variant | Same as source image |
+| `alt` | `media.json` alt text | `item.name` |
 | `gallery` | `mediaApi.getGallery(id)` | Empty array |
 
 For mobile detail hero, `js/menu-page.js` resolves editorial media with this priority:

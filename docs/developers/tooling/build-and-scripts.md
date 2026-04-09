@@ -28,6 +28,7 @@ From `package.json`:
 | Script | Command | Purpose |
 |--------|---------|---------|
 | `dev` | `node scripts/dev-server.js` | Start local development server |
+| `generate:home-featured` | `node scripts/generate-home-featured.js` | Derive `data/home-featured.json` + responsive homepage featured assets from canonical data |
 | `test` | `node scripts/test-menu-traits.js && node scripts/test-menu-allergens.js` | Run menu traits + allergens smoke tests |
 | `validate:menu` | `node scripts/validate-menu.js` | Validate `data/menu.json` |
 | `validate:home` | `node scripts/validate_home_json.js` | Validate `data/home.json` |
@@ -62,6 +63,7 @@ Environment variables:
 | **Directory index** | Serves `index.html` for directory requests (e.g., `/admin/app/`) |
 | **Path safety** | Validates all paths stay within repo root (prevents traversal) |
 | **Streaming** | Uses `fs.createReadStream()` for efficient file delivery |
+| **Derived featured sync** | Regenerates `data/home-featured.json` on startup, on local draft saves, and whenever `/data/home-featured.json` is requested |
 
 ### Special Endpoints
 
@@ -71,7 +73,7 @@ Environment variables:
 | `/__local/menu-media-paths` | GET | List all WebP/SVG files in `assets/menu/` |
 
 #### `/__local/save-drafts`
-Accepts JSON body with keys: `menu`, `availability`, `home` (required), plus optional `ingredients`, `categories`, `media`. Writes each key's value as pretty-printed JSON to the corresponding `data/*.json` file.
+Accepts JSON body with keys: `menu`, `availability`, `home` (required), plus optional `ingredients`, `categories`, `media`. Writes each key's value as pretty-printed JSON to the corresponding `data/*.json` file, then regenerates `data/home-featured.json`.
 
 Body size limit: 5 MB.
 
@@ -118,6 +120,8 @@ npm run validate:home
 
 Checks: hero section structure, popular section (featured IDs exist in menu), events structure, testimonials structure, footer columns/links/socials, delivery platforms, navbar links, announcement structure.
 
+Side effect: regenerates `data/home-featured.json` after a successful validation pass so homepage featured order/media stay in sync with `home.json`.
+
 ### `scripts/validate_media_json.js` (264 lines)
 
 Validates `data/media.json` against `data/menu.json` and file system.
@@ -127,6 +131,8 @@ npm run validate:media
 ```
 
 Checks: all menu items have media entries, all media items reference valid menu items, variant completeness (card/hover/modal), broken file paths, duplicate paths.
+
+Side effect: regenerates `data/home-featured.json` after a successful validation pass so homepage featured variants stay aligned with media/image changes.
 
 ### `scripts/validate-restaurant.js` (179 lines)
 

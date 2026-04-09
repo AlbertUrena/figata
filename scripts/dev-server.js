@@ -2,6 +2,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const { URL } = require("url");
+const { generateHomeFeatured } = require("./generate-home-featured");
 
 const host = process.env.HOST || "127.0.0.1";
 const port = Number(process.env.PORT) || 5173;
@@ -110,6 +111,20 @@ function writeJsonFile(relativePath, payload) {
   fs.writeFileSync(absolutePath, JSON.stringify(payload, null, 2) + "\n", "utf8");
 }
 
+function syncDerivedHomeFeatured() {
+  const result = generateHomeFeatured({
+    rootDir,
+    write: true,
+    silent: true
+  });
+
+  if (Array.isArray(result.errors) && result.errors.length) {
+    throw new Error(result.errors.join(" | "));
+  }
+
+  return result;
+}
+
 function listMenuMediaPaths() {
   const allowedExtensions = new Set([".webp", ".svg", ".webm", ".mp4"]);
   const result = [];
@@ -189,6 +204,7 @@ async function handleLocalSaveDrafts(req, res) {
     if (typeof payload.media !== "undefined") {
       writeJsonFile("data/media.json", payload.media);
     }
+    syncDerivedHomeFeatured();
   } catch (error) {
     return sendJson(res, 500, {
       error: error && error.message ? error.message : "Unable to write data files"
@@ -208,6 +224,7 @@ async function handleLocalSaveDrafts(req, res) {
   if (typeof payload.media !== "undefined") {
     files.push("data/media.json");
   }
+  files.push("data/home-featured.json");
 
   return sendJson(res, 200, {
     success: true,
@@ -249,6 +266,16 @@ const server = http.createServer(async (req, res) => {
     }
 
     return sendJson(res, 200, payload);
+  }
+
+  if (requestPathname === "/data/home-featured.json") {
+    try {
+      syncDerivedHomeFeatured();
+    } catch (error) {
+      return sendJson(res, 500, {
+        error: error && error.message ? error.message : "Unable to sync home-featured.json"
+      });
+    }
   }
 
   if (method !== "GET" && method !== "HEAD") {
@@ -327,6 +354,15 @@ const server = http.createServer(async (req, res) => {
     }
   });
 });
+
+try {
+  const syncResult = syncDerivedHomeFeatured();
+  if (syncResult.written) {
+    console.log("[dev-server] home-featured.json sincronizado al iniciar.");
+  }
+} catch (error) {
+  console.warn("[dev-server] No se pudo sincronizar home-featured.json al iniciar:", error.message);
+}
 
 server.listen(port, host, () => {
   console.log(`Homepage running at http://${host}:${port}`);

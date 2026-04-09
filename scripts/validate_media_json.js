@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const contract = require('../shared/media-contract');
+const { generateHomeFeatured } = require('./generate-home-featured');
 
 const projectRoot = process.cwd();
 const mediaPath = path.join(projectRoot, 'data', 'media.json');
@@ -196,6 +197,26 @@ try {
   fs.writeFileSync(reportPath, JSON.stringify(report, null, 2) + '\n', 'utf8');
 } catch (error) {
   errors.push(`No se pudo escribir data/media-report.json: ${error.message}`);
+}
+
+if (errors.length === 0) {
+  const generationResult = generateHomeFeatured({
+    rootDir: projectRoot,
+    write: true,
+    silent: true,
+  });
+
+  if (Array.isArray(generationResult.errors) && generationResult.errors.length > 0) {
+    generationResult.errors.forEach((message) => {
+      errors.push(`home-featured derivado: ${message}`);
+    });
+  }
+
+  if (Array.isArray(generationResult.warnings) && generationResult.warnings.length > 0) {
+    generationResult.warnings.forEach((message) => {
+      warnings.push(`home-featured derivado: ${message}`);
+    });
+  }
 }
 
 if (errors.length === 0) {

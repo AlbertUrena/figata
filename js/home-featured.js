@@ -13,7 +13,6 @@
   const ROW_AUTOSCROLL_MAX_TRACK_COPIES = 8;
   const ROW_AUTOSCROLL_RESIZE_EPSILON_PX = 1;
   const PREVIEW_SCRIPT_ATTR = 'data-home-featured-preview-script';
-  const HOME_FEATURED_LIMIT = 8;
   const createMediaQueryList = (query) =>
     typeof window.matchMedia === 'function'
       ? window.matchMedia(query)
@@ -665,7 +664,7 @@
       return;
     }
 
-    const featuredItems = items.slice(0, HOME_FEATURED_LIMIT);
+    const featuredItems = Array.isArray(items) ? items.filter(Boolean) : [];
     const cardById = new Map();
     const topRow = document.createElement('div');
     const bottomRow = document.createElement('div');

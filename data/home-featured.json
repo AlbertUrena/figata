@@ -1,7 +1,24 @@
 {
   "version": 1,
   "schema": "figata.home.featured.v1",
-  "updatedAt": "2026-04-08T17:49:52.427Z",
+  "source": {
+    "home": "data/home.json",
+    "menu": "data/menu.json",
+    "media": "data/media.json",
+    "availability": "data/availability.json",
+    "ingredients": "data/ingredients.json"
+  },
+  "limit": 8,
+  "sourceFeaturedIds": [
+    "quattro_formaggi_truffle",
+    "pan_ciabatta",
+    "macellaio",
+    "tiramisu",
+    "bruschetta_golosa",
+    "spettacolo",
+    "berenjenas_parmesana",
+    "fantasia_pistachos"
+  ],
   "items": [
     {
       "id": "quattro_formaggi_truffle",
@@ -15,10 +32,10 @@
       "available": true,
       "soldOutReason": "",
       "imageAlt": "Quattro Formaggi y Black Truffle",
-      "cardImage": "assets/home/featured/quattro-formaggi-y-black-truffle-640.webp",
-      "cardImageSrcSet": "assets/home/featured/quattro-formaggi-y-black-truffle-320.webp 320w, assets/home/featured/quattro-formaggi-y-black-truffle-640.webp 640w",
+      "cardImage": "assets/home/featured/generated/quattro-formaggi-truffle-640.webp",
+      "cardImageSrcSet": "assets/home/featured/generated/quattro-formaggi-truffle-320.webp 320w, assets/home/featured/generated/quattro-formaggi-truffle-640.webp 640w",
       "cardImageSizes": "(max-width: 1023px) 38vw, 312px",
-      "hoverImage": "assets/menu/pizzas/quattro-formaggi-y-black-truffle/quattroformaggi-hover.webp",
+      "hoverImage": "assets/menu/pizzas/quattro-formaggi-y-black-truffle/quattroformaggi.webp",
       "modalImage": "assets/menu/pizzas/quattro-formaggi-y-black-truffle/quattroformaggi.webp",
       "ingredients": [
         {
@@ -60,129 +77,30 @@
       "available": true,
       "soldOutReason": "",
       "imageAlt": "Pan ciabatta de masa madre",
-      "cardImage": "assets/home/featured/sourdough-ciabatta-640.webp",
-      "cardImageSrcSet": "assets/home/featured/sourdough-ciabatta-320.webp 320w, assets/home/featured/sourdough-ciabatta-640.webp 640w",
+      "cardImage": "assets/home/featured/generated/pan-ciabatta-640.webp",
+      "cardImageSrcSet": "assets/home/featured/generated/pan-ciabatta-320.webp 320w, assets/home/featured/generated/pan-ciabatta-640.webp 640w",
       "cardImageSizes": "(max-width: 1023px) 38vw, 312px",
       "hoverImage": "assets/menu/productos/sourdough-ciabatta/sourdough-ciabatta-hover.webp",
       "modalImage": "assets/menu/productos/sourdough-ciabatta/sourdough-ciabatta.webp",
       "ingredients": []
     },
     {
-      "id": "tiramisu",
-      "slug": "tiramisu",
-      "title": "Tiramisú artesanal",
-      "description": "Tiramisú artesanal de textura suave con notas de café y cacao, ideal para cerrar la experiencia Figata.",
-      "previewDescription": "Tiramisú artesanal de textura suave con notas de café y cacao, ideal para cerrar la experiencia Figata.",
-      "reviews": "132 reseñas",
-      "price": 450,
-      "priceFormatted": "",
-      "available": true,
-      "soldOutReason": "",
-      "imageAlt": "Tiramisú artesanal",
-      "cardImage": "assets/home/featured/tiramisu-640.webp",
-      "cardImageSrcSet": "assets/home/featured/tiramisu-320.webp 320w, assets/home/featured/tiramisu-640.webp 640w",
-      "cardImageSizes": "(max-width: 1023px) 38vw, 312px",
-      "hoverImage": "assets/menu/postres/tiramisu/tiramisu.webp",
-      "modalImage": "assets/menu/postres/tiramisu/tiramisu.webp",
-      "ingredients": []
-    },
-    {
-      "id": "margherita_sbagliata",
-      "slug": "margherita-sbagliata",
-      "title": "Margherita Sbagliata",
-      "description": "Mozzarella, San Marzano DOP y pesto de albahaca sobre masa madre. Una margherita con más profundidad herbal y carácter.",
-      "previewDescription": "Mozzarella, San Marzano DOP y pesto de albahaca sobre masa madre. Una margherita con más profundidad herbal y carácter.",
-      "reviews": "143 reseñas",
-      "price": 600,
-      "priceFormatted": "",
-      "available": true,
-      "soldOutReason": "",
-      "imageAlt": "Margherita Sbagliata",
-      "cardImage": "assets/home/featured/margherita-sbagliata-640.webp",
-      "cardImageSrcSet": "assets/home/featured/margherita-sbagliata-320.webp 320w, assets/home/featured/margherita-sbagliata-640.webp 640w",
-      "cardImageSizes": "(max-width: 1023px) 38vw, 312px",
-      "hoverImage": "assets/menu/pizzas/margherita-sbagliata/margherita-sbagliata-hover.webp",
-      "modalImage": "assets/menu/pizzas/margherita-sbagliata/margherita-sbagliata.webp",
-      "ingredients": [
-        {
-          "id": "mozzarella",
-          "label": "Mozzarella",
-          "icon": "assets/Ingredients/queso.webp"
-        },
-        {
-          "id": "san_marzano_dop",
-          "label": "Pomodoro San Marzano DOP",
-          "icon": "assets/Ingredients/san-marzano.webp"
-        },
-        {
-          "id": "pesto_de_albahaca",
-          "label": "Pesto de albahaca",
-          "icon": "assets/Ingredients/pesto.webp"
-        }
-      ]
-    },
-    {
-      "id": "filetti",
-      "slug": "filetti",
-      "title": "Filetti",
-      "description": "Mozzarella con tomate cherry, ajo y albahaca sobre base ligera.",
-      "previewDescription": "Mozzarella con tomate cherry, ajo y albahaca sobre base ligera.",
+      "id": "macellaio",
+      "slug": "macellaio",
+      "title": "Macellaio",
+      "description": "Mozzarella con salsiccia, pancetta y salamino picante.",
+      "previewDescription": "Mozzarella con salsiccia, pancetta y salamino picante.",
       "reviews": "",
-      "price": 600,
+      "price": 800,
       "priceFormatted": "",
       "available": true,
       "soldOutReason": "",
-      "imageAlt": "Filetti",
-      "cardImage": "assets/home/featured/filetti-640.webp",
-      "cardImageSrcSet": "assets/home/featured/filetti-320.webp 320w, assets/home/featured/filetti-640.webp 640w",
+      "imageAlt": "Macellaio",
+      "cardImage": "assets/home/featured/generated/macellaio-640.webp",
+      "cardImageSrcSet": "assets/home/featured/generated/macellaio-320.webp 320w, assets/home/featured/generated/macellaio-640.webp 640w",
       "cardImageSizes": "(max-width: 1023px) 38vw, 312px",
-      "hoverImage": "",
-      "modalImage": "assets/menu/pizzas/filetti/filetti.webp",
-      "ingredients": [
-        {
-          "id": "mozzarella",
-          "label": "Mozzarella",
-          "icon": "assets/Ingredients/queso.webp"
-        },
-        {
-          "id": "tomate_cherry",
-          "label": "Tomate cherry",
-          "icon": "assets/Ingredients/tomate-cherry.webp"
-        },
-        {
-          "id": "ajo",
-          "label": "Ajo",
-          "icon": "assets/Ingredients/ajo.webp"
-        },
-        {
-          "id": "aceite_de_oliva_evoo",
-          "label": "Aceite de oliva (EVOO)",
-          "icon": "assets/Ingredients/oliva.webp"
-        },
-        {
-          "id": "albahaca",
-          "label": "Albahaca",
-          "icon": "assets/Ingredients/albahaca.webp"
-        }
-      ]
-    },
-    {
-      "id": "diavola",
-      "slug": "diavola",
-      "title": "Diavola",
-      "description": "Una pizza de perfil picante con pomodoro, mozzarella y salamino piccante, horneada para lograr borde aireado y centro jugoso.",
-      "previewDescription": "Una pizza de perfil picante con pomodoro, mozzarella y salamino piccante, horneada para lograr borde aireado y centro jugoso.",
-      "reviews": "166 reseñas",
-      "price": 600,
-      "priceFormatted": "",
-      "available": true,
-      "soldOutReason": "",
-      "imageAlt": "Diavola",
-      "cardImage": "assets/home/featured/diavola-640.webp",
-      "cardImageSrcSet": "assets/home/featured/diavola-320.webp 320w, assets/home/featured/diavola-640.webp 640w",
-      "cardImageSizes": "(max-width: 1023px) 38vw, 312px",
-      "hoverImage": "assets/menu/pizzas/diavola/diavola-hover.webp",
-      "modalImage": "assets/menu/pizzas/diavola/diavola.webp",
+      "hoverImage": "assets/menu/pizzas/macellaio/macellaio.webp",
+      "modalImage": "assets/menu/pizzas/macellaio/macellaio.webp",
       "ingredients": [
         {
           "id": "mozzarella",
@@ -193,6 +111,16 @@
           "id": "pomodoro",
           "label": "Pomodoro",
           "icon": "assets/Ingredients/tomate.webp"
+        },
+        {
+          "id": "salsiccia",
+          "label": "Salsiccia",
+          "icon": "assets/Ingredients/salchicha.webp"
+        },
+        {
+          "id": "pancetta",
+          "label": "Pancetta",
+          "icon": "assets/Ingredients/pancetta.webp"
         },
         {
           "id": "salamino_piccante",
@@ -202,22 +130,76 @@
       ]
     },
     {
-      "id": "margherita",
-      "slug": "margherita",
-      "title": "Margherita",
-      "description": "Pomodoro San Marzano, mozzarella fresca y albahaca sobre masa madre de fermentación lenta, horneada al estilo napolitano.",
-      "previewDescription": "Pomodoro San Marzano, mozzarella fresca y albahaca sobre masa madre de fermentación lenta, horneada al estilo napolitano.",
-      "reviews": "198 reseñas",
-      "price": 500,
+      "id": "tiramisu",
+      "slug": "tiramisu",
+      "title": "Tiramisú artesanal",
+      "description": "Postre italiano de capas cremosas con café y cacao.",
+      "previewDescription": "Tiramisú artesanal de textura suave con notas de café y cacao, ideal para cerrar la experiencia Figata.",
+      "reviews": "132 reseñas",
+      "price": 450,
       "priceFormatted": "",
       "available": true,
       "soldOutReason": "",
-      "imageAlt": "Margherita",
-      "cardImage": "assets/home/featured/margherita-640.webp",
-      "cardImageSrcSet": "assets/home/featured/margherita-320.webp 320w, assets/home/featured/margherita-640.webp 640w",
+      "imageAlt": "Tiramisú artesanal",
+      "cardImage": "assets/home/featured/generated/tiramisu-640.webp",
+      "cardImageSrcSet": "assets/home/featured/generated/tiramisu-320.webp 320w, assets/home/featured/generated/tiramisu-640.webp 640w",
       "cardImageSizes": "(max-width: 1023px) 38vw, 312px",
-      "hoverImage": "",
-      "modalImage": "assets/menu/pizzas/margherita/margherita.webp",
+      "hoverImage": "assets/menu/postres/tiramisu/tiramisu.webp",
+      "modalImage": "assets/menu/postres/tiramisu/tiramisu.webp",
+      "ingredients": []
+    },
+    {
+      "id": "bruschetta_golosa",
+      "slug": "bruschetta-golosa",
+      "title": "Bruschetta Golosa",
+      "description": "Bruschetta con stracciatella, prosciutto y miel trufada.",
+      "previewDescription": "Bruschetta con stracciatella, prosciutto y miel trufada.",
+      "reviews": "",
+      "price": 450,
+      "priceFormatted": "",
+      "available": true,
+      "soldOutReason": "",
+      "imageAlt": "Bruschetta Golosa",
+      "cardImage": "assets/home/featured/generated/bruschetta-golosa-640.webp",
+      "cardImageSrcSet": "assets/home/featured/generated/bruschetta-golosa-320.webp 320w, assets/home/featured/generated/bruschetta-golosa-640.webp 640w",
+      "cardImageSizes": "(max-width: 1023px) 38vw, 312px",
+      "hoverImage": "assets/menu/entradas/bruschetta-golosa/bruschetta-golosa.webp",
+      "modalImage": "assets/menu/entradas/bruschetta-golosa/bruschetta-golosa.webp",
+      "ingredients": [
+        {
+          "id": "stracciatella",
+          "label": "Stracciatella",
+          "icon": "assets/Ingredients/stracciatella.webp"
+        },
+        {
+          "id": "prosciutto_di_parma",
+          "label": "Prosciutto di Parma",
+          "icon": "assets/Ingredients/jamon-curado.webp"
+        },
+        {
+          "id": "miel_trufada",
+          "label": "Miel trufada",
+          "icon": "assets/Ingredients/miel.webp"
+        }
+      ]
+    },
+    {
+      "id": "spettacolo",
+      "slug": "spettacolo",
+      "title": "Spettacolo",
+      "description": "Mozzarella, aceite EVOO, stracciatella, pesto de rúcula, pimienta y speck.",
+      "previewDescription": "Mozzarella, aceite EVOO, stracciatella, pesto de rúcula, pimienta y speck.",
+      "reviews": "",
+      "price": 950,
+      "priceFormatted": "",
+      "available": true,
+      "soldOutReason": "",
+      "imageAlt": "Spettacolo",
+      "cardImage": "assets/home/featured/generated/spettacolo-640.webp",
+      "cardImageSrcSet": "assets/home/featured/generated/spettacolo-320.webp 320w, assets/home/featured/generated/spettacolo-640.webp 640w",
+      "cardImageSizes": "(max-width: 1023px) 38vw, 312px",
+      "hoverImage": "assets/menu/pizzas/spetaccolo/spettacolo.webp",
+      "modalImage": "assets/menu/pizzas/spetaccolo/spettacolo.webp",
       "ingredients": [
         {
           "id": "mozzarella",
@@ -225,14 +207,29 @@
           "icon": "assets/Ingredients/queso.webp"
         },
         {
-          "id": "pomodoro",
-          "label": "Pomodoro",
-          "icon": "assets/Ingredients/tomate.webp"
+          "id": "aceite_de_oliva_evoo",
+          "label": "Aceite de oliva (EVOO)",
+          "icon": "assets/Ingredients/oliva.webp"
         },
         {
-          "id": "albahaca",
-          "label": "Albahaca",
-          "icon": "assets/Ingredients/albahaca.webp"
+          "id": "stracciatella",
+          "label": "Stracciatella",
+          "icon": "assets/Ingredients/stracciatella.webp"
+        },
+        {
+          "id": "pimienta",
+          "label": "Pimienta",
+          "icon": "assets/Ingredients/chile.webp"
+        },
+        {
+          "id": "pesto_de_rucula",
+          "label": "Pesto de rúcula",
+          "icon": "assets/Ingredients/pesto.webp"
+        },
+        {
+          "id": "speck",
+          "label": "Speck",
+          "icon": "assets/Ingredients/jamon-curado.webp"
         }
       ]
     },
@@ -248,10 +245,10 @@
       "available": true,
       "soldOutReason": "",
       "imageAlt": "Berenjenas a la Parmesana",
-      "cardImage": "assets/home/featured/berenjenas-parmesana-640.webp",
-      "cardImageSrcSet": "assets/home/featured/berenjenas-parmesana-320.webp 320w, assets/home/featured/berenjenas-parmesana-640.webp 640w",
+      "cardImage": "assets/home/featured/generated/berenjenas-parmesana-640.webp",
+      "cardImageSrcSet": "assets/home/featured/generated/berenjenas-parmesana-320.webp 320w, assets/home/featured/generated/berenjenas-parmesana-640.webp 640w",
       "cardImageSizes": "(max-width: 1023px) 38vw, 312px",
-      "hoverImage": "",
+      "hoverImage": "assets/menu/entradas/berenjenas-a-la-parmesana/berenjenas-a-la-parmesana.webp",
       "modalImage": "assets/menu/entradas/berenjenas-a-la-parmesana/berenjenas-a-la-parmesana.webp",
       "ingredients": [
         {
@@ -280,6 +277,52 @@
           "icon": "assets/Ingredients/queso.webp"
         }
       ]
+    },
+    {
+      "id": "fantasia_pistachos",
+      "slug": "fantasia-pistachos",
+      "title": "Fantasia de Pistachos",
+      "description": "Mortadella con stracciatella, pesto de pistacho y pistachos.",
+      "previewDescription": "Mortadella con stracciatella, pesto de pistacho y pistachos.",
+      "reviews": "",
+      "price": 950,
+      "priceFormatted": "",
+      "available": true,
+      "soldOutReason": "",
+      "imageAlt": "Fantasia de Pistachos",
+      "cardImage": "assets/home/featured/generated/fantasia-pistachos-640.webp",
+      "cardImageSrcSet": "assets/home/featured/generated/fantasia-pistachos-320.webp 320w, assets/home/featured/generated/fantasia-pistachos-640.webp 640w",
+      "cardImageSizes": "(max-width: 1023px) 38vw, 312px",
+      "hoverImage": "assets/menu/pizzas/fantasia-de-pistachos/fantasia-de-pistachos.webp",
+      "modalImage": "assets/menu/pizzas/fantasia-de-pistachos/fantasia-de-pistachos.webp",
+      "ingredients": [
+        {
+          "id": "mozzarella",
+          "label": "Mozzarella",
+          "icon": "assets/Ingredients/queso.webp"
+        },
+        {
+          "id": "pesto_de_pistacho",
+          "label": "Pesto de pistacho",
+          "icon": "assets/Ingredients/pesto.webp"
+        },
+        {
+          "id": "stracciatella",
+          "label": "Stracciatella",
+          "icon": "assets/Ingredients/stracciatella.webp"
+        },
+        {
+          "id": "mortadella",
+          "label": "Mortadella",
+          "icon": "assets/Ingredients/jamon-curado.webp"
+        },
+        {
+          "id": "pistachos",
+          "label": "Pistachos",
+          "icon": "assets/Ingredients/pistacho.webp"
+        }
+      ]
     }
-  ]
+  ],
+  "updatedAt": "2026-04-09T00:18:03.016Z"
 }

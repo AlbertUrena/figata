@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { generateHomeFeatured } = require('./generate-home-featured');
 
 const projectRoot = process.cwd();
 const homePath = path.join(projectRoot, 'data', 'home.json');
@@ -831,6 +832,26 @@ if (home && menu) {
     }
   } else {
     errors.push('sections debe ser un objeto.');
+  }
+}
+
+if (errors.length === 0) {
+  const generationResult = generateHomeFeatured({
+    rootDir: projectRoot,
+    write: true,
+    silent: true,
+  });
+
+  if (Array.isArray(generationResult.errors) && generationResult.errors.length > 0) {
+    generationResult.errors.forEach((message) => {
+      errors.push(`home-featured derivado: ${message}`);
+    });
+  }
+
+  if (Array.isArray(generationResult.warnings) && generationResult.warnings.length > 0) {
+    generationResult.warnings.forEach((message) => {
+      warnings.push(`home-featured derivado: ${message}`);
+    });
   }
 }
 

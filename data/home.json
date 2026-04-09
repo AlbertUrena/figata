@@ -20,11 +20,12 @@
     "featuredIds": [
       "quattro_formaggi_truffle",
       "pan_ciabatta",
+      "macellaio",
       "tiramisu",
-      "margherita_sbagliata",
-      "filetti",
-      "diavola",
-      "margherita"
+      "bruschetta_golosa",
+      "spettacolo",
+      "berenjenas_parmesana",
+      "fantasia_pistachos"
     ],
     "limit": 8
   },

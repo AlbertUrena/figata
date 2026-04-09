@@ -43,7 +43,7 @@ website-figata/
 ├── styles.css                 ← Public site styles (~2,600 lines)
 ├── js/                        ← Public site JavaScript (15 scripts)
 │   ├── home-config.js            Fetches data/home.json, renders homepage sections
-│   ├── home-featured.js          Homepage featured-cards renderer (mobile-first, uses data/home-featured.json)
+│   ├── home-featured.js          Homepage featured-cards renderer (mobile-first, reads the derived data/home-featured.json payload)
 │   ├── mas-pedidas.js            Desktop-only featured preview overlay + cover transition enhancer
 │   ├── menu-route-transition.js  Shared public route-transition handoff + intent-based prefetch for home/menu/eventos
 │   ├── menu-page.js              Full menu page renderer (Events-style top tabs + category grids)
@@ -63,7 +63,7 @@ website-figata/
 │   ├── ingredients.json          Ingredient catalog, icons, metadata V2, allergens
 │   ├── availability.json         Per-item availability status
 │   ├── home.json                 Homepage configuration (hero, featured, events, etc.)
-│   ├── home-featured.json        Mobile-first featured-card payload for the homepage
+│   ├── home-featured.json        Generated homepage featured-card payload derived from home/menu/media/availability/ingredients
 │   ├── restaurant.json           Restaurant metadata
 │   ├── media.json                Per-item media variants (card, modal, hover)
 │   ├── media-report.json         Media audit report (generated)
@@ -95,6 +95,7 @@ website-figata/
 │       └── publish.js         ← Serverless function: commits data via Git
 ├── scripts/                   ← Dev tools and validation scripts
 │   ├── dev-server.js             Local dev server with media endpoint
+│   ├── generate-home-featured.js Derives data/home-featured.json + responsive homepage featured variants from canonical data
 │   ├── validate-menu.js          Validates menu.json against Menu Traits V2
 │   ├── validate-ingredients.js   Validates ingredients.json
 │   ├── validate-categories.js    Validates categories.json
@@ -150,7 +151,7 @@ Use this table to find the right starting point for common tasks:
 |-----------|-----------|-----------|
 | Fix public site layout/content | `index.html`, `styles.css` | Relevant `js/` script |
 | Modify homepage sections | `js/home-config.js` | `data/home.json`, `docs/developers/data/data-layer.md` |
-| Change homepage featured cards | `js/home-featured.js`, `data/home-featured.json` | `js/mas-pedidas.js`, `styles.css` |
+| Change homepage featured cards | `data/home.json` (`popular.featuredIds`), `js/home-featured.js` | `scripts/generate-home-featured.js`, `js/mas-pedidas.js`, `styles.css` |
 | Build/fix public full menu page | `menu/index.html`, `menu/menu-page.css`, `js/menu-page.js` | `js/menu-page-navbar.js`, `src/data/menu.js`, `src/data/media.js`, `data/categories.json` |
 | Build/fix public eventos landing page | `eventos/index.html`, `eventos/eventos.css`, `js/eventos-page.js` | `data/menu.json`, `shared/public-navbar.js`, `shared/public-paths.js` |
 | Reuse/fix public navbar across routes | `shared/public-navbar.js` | `index.html`, `menu/index.html`, `js/navbar-collapse.js` |
@@ -174,6 +175,7 @@ Use this table to find the right starting point for common tasks:
 
 ```bash
 npm run dev
+npm run generate:home-featured
 ```
 
 This starts a local server (`scripts/dev-server.js`) that:
@@ -191,6 +193,7 @@ http://127.0.0.1:5173/admin/app/?devAuthBypass=1
 ### Validation Scripts
 
 ```bash
+npm run generate:home-featured # regenerate data/home-featured.json + responsive homepage featured assets
 npm run validate:home          # validates data/home.json
 npm run validate:media         # validates data/media.json
 npm run validate:menu          # validates data/menu.json

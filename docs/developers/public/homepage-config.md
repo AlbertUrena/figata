@@ -31,7 +31,7 @@ The script is a single IIFE that:
 |----------|---------|-------------|
 | `applyHero(hero, fallback)` | Hero | Title, subtitle, background image (with preload + fallback), CTA buttons |
 | `applyNavbar(navbar)` | Navbar | Navigation links (rebuilt from config), CTA button with icon |
-| `applyPopular(popular)` | Featured Items | Title and subtitle only (cards rendered by `mas-pedidas.js`) |
+| `applyPopular(popular)` | Featured Items | Title and subtitle only (cards rendered by `js/home-featured.js`; desktop preview enhanced later by `js/mas-pedidas.js`) |
 | `applyMobileHours(mobileHours)` | Horarios (mobile) | Title, subtitle, weekly rows, realtime "hoy" status chips, weekly/date overrides + reasons |
 | `applyDelivery(delivery)` | Delivery | Title, subtitle, platform links + icons |
 | `applyTestimonials(testimonials)` | Testimonials | Title and subtitle (carousel rendered by `testimonials.js`) |
@@ -111,6 +111,6 @@ Quick reference of top-level keys consumed by `home-config.js`:
 
 | Script | Reads from home.json | How |
 |--------|---------------------|-----|
-| `js/mas-pedidas.js` | `popular.featuredIds`, `popular.limit` | Via `homeApi.getHomeConfig()` — determines which menu items to display as featured |
+| `js/home-featured.js` | `popular.featuredIds`, `popular.limit` | Indirectly, through the generated `data/home-featured.json` payload derived from `home.json` |
 | `js/testimonials.js` | `testimonials` section | Via `homeApi.getHomeConfig()` — carousel items |
 | `js/events-tabs.js` | `eventsPreview` section | Via `homeApi.getHomeConfig()` — tab content and selection |

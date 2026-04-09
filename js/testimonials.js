@@ -190,7 +190,9 @@
 
     for (let index = 0; index < 5; index += 1) {
       const star = document.createElementNS(STAR_SVG_NS, "svg");
-      star.className = index < safeRating ? "star" : "star star--muted";
+      // SVG className is an animated string in browsers, so use the attribute API
+      // to ensure the testimonial star styles apply consistently.
+      star.setAttribute("class", index < safeRating ? "star" : "star star--muted");
       star.setAttribute("viewBox", "0 0 24 24");
       star.setAttribute("focusable", "false");
       star.setAttribute("aria-hidden", "true");
