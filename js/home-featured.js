@@ -712,8 +712,6 @@
 
   bindMediaChange(mobileRowMedia, requestRowAutoScrollSync);
   bindMediaChange(reduceMotionMedia, requestRowAutoScrollSync);
-  window.addEventListener('resize', requestRowAutoScrollSync, { passive: true });
-  window.addEventListener('orientationchange', requestRowAutoScrollSync, { passive: true });
 
   void renderFeaturedCards();
 })();
