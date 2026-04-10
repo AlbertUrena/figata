@@ -276,6 +276,20 @@
         return sharedState.overlay;
       }
 
+      const existingOverlay = document.querySelector('[data-nosotros-route-loader]');
+      if (existingOverlay instanceof HTMLElement) {
+        if (!existingOverlay.querySelector('[data-nosotros-loader-logo-slot]')) {
+          existingOverlay.innerHTML = `
+            <div class="nosotros-route-loader__core">
+              <div class="nosotros-route-loader__logo-slot" data-nosotros-loader-logo-slot></div>
+            </div>
+          `;
+        }
+
+        sharedState.overlay = existingOverlay;
+        return sharedState.overlay;
+      }
+
       sharedState.overlay = document.createElement('div');
       sharedState.overlay.className = 'nosotros-route-loader';
       sharedState.overlay.setAttribute('aria-hidden', 'true');

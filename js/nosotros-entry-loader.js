@@ -256,6 +256,10 @@
   const handoff = readHandoff();
 
   if (!handoff) {
+    if (root.classList.contains('public-entry-pending')) {
+      return;
+    }
+
     hardReset();
     return;
   }
@@ -285,7 +289,7 @@
     clearPlayer();
     loader.classList.remove('is-active', 'is-entering', 'is-exiting');
     loader.setAttribute('aria-hidden', 'true');
-    root.classList.remove('nosotros-entry-pending', 'nosotros-entry-active');
+    root.classList.remove('public-entry-pending', 'nosotros-entry-pending', 'nosotros-entry-active');
   };
 
   const startExit = () => {

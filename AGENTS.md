@@ -87,7 +87,8 @@ website-figata/
 │   ├── menu-allergens.js         Menu allergen derivation + validation engine
 │   ├── menu-sensory.js           Structured sensory profile schema + validation engine
 │   ├── public-paths.js           Shared site-base/path helper for root + GitHub Pages subpath hosting
-│   ├── public-navbar-bootstrap.js Synchronous head bootstrap for the compact mobile public navbar state
+│   ├── public-navbar-bootstrap.js Synchronous head bootstrap for the compact mobile public navbar state + first-paint loader shell
+│   ├── public-entry-loader.js    Shared first-load/reload entry loader that reuses the fullscreen overlay before route-ready exit
 │   ├── public-navbar.js          Canonical public navbar loader/cache bridge for multi-route pages
 │   ├── public-hybrid-route-transition.js Shared same-document transition engine for reusable overlay/Lottie route swaps
 │   ├── public-scroll-indicator.css Overlay root scrollbar hide + progress meter styles
@@ -254,18 +255,18 @@ Admin modules must load **before** `app.js` in `admin/app/index.html`. Current o
 Shared runtime helpers used by traits/validation must load before their consumers:
 `shared/menu-traits.js` + `shared/menu-allergens.js` + `shared/menu-sensory.js` → contracts/data loaders → feature scripts.
 
-On public routes, `shared/public-navbar-bootstrap.js` must load synchronously in the page `<head>` before route styles so mobile first paint starts in the compact navbar state.
+On public routes, `shared/public-navbar-bootstrap.js` must load synchronously in the page `<head>` before route styles so mobile first paint starts in the compact navbar state and the fullscreen loader shell is visible immediately on hard opens/reloads.
 
 On public routes, `shared/public-paths.js` must load before other route scripts that resolve site-relative URLs or parse the current pathname.
 
 On `/menu/`, route scripts must load in this order:
-`shared/public-paths.js` → `shared/public-hybrid-route-transition.js` → `js/menu-route-transition.js` → `js/nosotros-route-transition.js` → `shared/public-navbar.js` → `js/navbar-collapse.js` → `js/menu-page.js` → `js/menu-page-navbar.js`
+`shared/public-paths.js` → `shared/public-entry-loader.js` → `shared/public-hybrid-route-transition.js` → `js/menu-route-transition.js` → `js/nosotros-route-transition.js` → `shared/public-navbar.js` → `js/navbar-collapse.js` → `js/menu-page.js` → `js/menu-page-navbar.js`
 
 On `/eventos/`, route scripts must load in this order:
-`shared/public-paths.js` → `shared/public-hybrid-route-transition.js` → `js/menu-route-transition.js` → `js/nosotros-route-transition.js` → `shared/public-navbar.js` → `js/navbar-collapse.js` → `js/eventos-page.js`
+`shared/public-paths.js` → `shared/public-entry-loader.js` → `shared/public-hybrid-route-transition.js` → `js/menu-route-transition.js` → `js/nosotros-route-transition.js` → `shared/public-navbar.js` → `js/navbar-collapse.js` → `js/eventos-page.js`
 
 On `/nosotros/`, route scripts must load in this order:
-`shared/public-paths.js` → `shared/public-hybrid-route-transition.js` → `js/menu-route-transition.js` → `js/nosotros-entry-loader.js` → `shared/public-navbar.js` → `js/navbar-collapse.js` → `js/public-burger-menu.js` → `js/nosotros-page.js` → `shared/public-scroll-indicator.js`
+`shared/public-paths.js` → `shared/public-entry-loader.js` → `shared/public-hybrid-route-transition.js` → `js/menu-route-transition.js` → `js/nosotros-entry-loader.js` → `shared/public-navbar.js` → `js/navbar-collapse.js` → `js/public-burger-menu.js` → `js/nosotros-page.js` → `shared/public-scroll-indicator.js`
 
 The shared public scroll indicator is optional and should be loaded after the route's primary public scripts so it can measure the final document scroll state without affecting route initialization:
 `shared/public-scroll-indicator.css` in the page `<head>` and `shared/public-scroll-indicator.js` near the end of the public script list.

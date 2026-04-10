@@ -37,6 +37,15 @@
   <link rel="stylesheet" href="shared/public-scroll-indicator.css">
 </head>
 <body class="menu-page-body" data-menu-page-view="list">
+  <div
+    class="nosotros-route-loader"
+    data-nosotros-route-loader
+    data-public-entry-loader
+    aria-hidden="true">
+    <div class="nosotros-route-loader__core">
+      <div class="nosotros-route-loader__logo-slot" data-nosotros-loader-logo-slot></div>
+    </div>
+  </div>
   <header class="site-header" data-public-navbar-host>
     <nav class="navbar" aria-label="Navegación principal">
       <div class="navbar__inner">
@@ -1266,6 +1275,7 @@
   </script>
 
   <script src="shared/public-paths.js" defer></script>
+  <script src="shared/public-entry-loader.js" defer></script>
   <script src="shared/public-hybrid-route-transition.js" defer></script>
   <script src="js/menu-route-transition.js" defer></script>
   <script src="js/nosotros-route-transition.js" defer></script>

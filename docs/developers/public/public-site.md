@@ -50,7 +50,7 @@ The page is structured as a single scrollable document. Major sections in `index
 
 | Area | File | Purpose |
 |------|------|---------|
-| Head bootstrap | `shared/public-navbar-bootstrap.js` | Seeds the compact mobile navbar state before route CSS paints |
+| Head bootstrap | `shared/public-navbar-bootstrap.js` | Seeds the compact mobile navbar state before route CSS paints and injects the first-paint fullscreen loader shell |
 | Shared navbar runtime | `shared/public-navbar.js` | Mounts canonical homepage navbar on `/menu/` and normalizes route URLs |
 | Shared scroll meter | `shared/public-scroll-indicator.css`, `shared/public-scroll-indicator.js` | Hides the root scrollbar and renders a fixed overlay progress indicator while preserving native document scroll |
 | Route HTML | `menu/index.html` | Full menu page shell + templates |
@@ -74,6 +74,7 @@ The page is structured as a single scrollable document. Major sections in `index
 | Route HTML | `nosotros/index.html` | About/brand story shell used for controlled transition experiments |
 | Route styles | `nosotros/nosotros.css` | Route layout plus premium fullscreen entry loader visuals |
 | Lottie helper | `js/nosotros-lottie-runtime.js` | Boots the self-hosted local `lottie-web` player, embeds the `/nosotros/` loader JSON, and mounts it in source/destination overlays |
+| Shared first-load entry loader | `shared/public-entry-loader.js` | Reuses the fullscreen loader on hard opens/reloads across home, menú, eventos y nosotros with a 1-second minimum hold |
 | Shared hybrid engine | `shared/public-hybrid-route-transition.js` | Reusable same-document transition motor that keeps one overlay alive while route-specific wrappers prepare and mount the destination |
 | Entry loader runtime | `js/nosotros-entry-loader.js` | Handles the hard-navigation fallback into `/nosotros/`, mounts the local Lottie loader, enforces min duration, and exits safely |
 | Route script | `js/nosotros-page.js` | Lightweight reveal/intersection enhancements for placeholder sections |
@@ -90,23 +91,24 @@ Homepage (`index.html`) runs a mixed boot pipeline: critical route/runtime scrip
 
 ```
 1.  shared/public-paths.js      — Shared site-base helper for root + GitHub Pages subpath hosting
-2.  shared/public-hybrid-route-transition.js — Shared same-document transition engine for reusable overlay + Lottie route swaps
-3.  js/menu-route-transition.js — Shared public route binder for home/menu/eventos links and CTAs
-4.  js/nosotros-route-transition.js — Route-local `/nosotros/` config wrapper on top of the shared hybrid engine
-5.  shared/public-navbar.js     — Captures canonical navbar markup for cross-route reuse
-6.  js/navbar-collapse.js       — Navbar collapse/expand animation controller
-7.  js/public-burger-menu.js    — Homepage-only lightweight burger/menu runtime for the mobile navbar
-8.  src/data/home.js            — Home data loader
-9.  src/data/home-featured.js   — Mobile-first featured-card data loader
-10. src/data/restaurant.js      — Restaurant data loader
-11. js/home-lazy-images.js      — Lazy image loading (IntersectionObserver)
-12. js/home-config.js           — Homepage section rendering (hero, delivery, footer, etc.)
-13. js/home-featured.js         — Featured-card renderer; injects `js/mas-pedidas.js` only on desktop
-14. inline secondary loader   — Defers desktop-only events tabs + scroll indicator to idle and mounts `js/testimonials.js` only when `#testimonials` approaches the viewport
+2.  shared/public-entry-loader.js — Hard-open/reload overlay runtime with a 1-second minimum hold
+3.  shared/public-hybrid-route-transition.js — Shared same-document transition engine for reusable overlay + Lottie route swaps
+4.  js/menu-route-transition.js — Shared public route binder for home/menu/eventos links and CTAs
+5.  js/nosotros-route-transition.js — Route-local `/nosotros/` config wrapper on top of the shared hybrid engine
+6.  shared/public-navbar.js     — Captures canonical navbar markup for cross-route reuse
+7.  js/navbar-collapse.js       — Navbar collapse/expand animation controller
+8.  js/public-burger-menu.js    — Homepage-only lightweight burger/menu runtime for the mobile navbar
+9.  src/data/home.js            — Home data loader
+10. src/data/home-featured.js   — Mobile-first featured-card data loader
+11. src/data/restaurant.js      — Restaurant data loader
+12. js/home-lazy-images.js      — Lazy image loading (IntersectionObserver)
+13. js/home-config.js           — Homepage section rendering (hero, delivery, footer, etc.)
+14. js/home-featured.js         — Featured-card renderer; injects `js/mas-pedidas.js` only on desktop
+15. inline secondary loader   — Defers desktop-only events tabs + scroll indicator to idle and mounts `js/testimonials.js` only when `#testimonials` approaches the viewport
 ```
 
 Additionally loaded (non-deferred):
-- `shared/public-navbar-bootstrap.js` — synchronous head bootstrap that seeds the compact mobile navbar before first paint
+- `shared/public-navbar-bootstrap.js` — synchronous head bootstrap that seeds the compact mobile navbar and first-paint loader shell before first paint
 - Conditional Netlify Identity loader — fetches `netlify-identity-widget.js` only when auth hash tokens are present
 
 Menu page (`menu/index.html`) loads:
@@ -114,20 +116,21 @@ Menu page (`menu/index.html`) loads:
 ```
 head. shared/public-navbar-bootstrap.js
 1. shared/public-paths.js
-2. shared/public-hybrid-route-transition.js
-3. js/menu-route-transition.js
-4. js/nosotros-route-transition.js
-5. shared/public-navbar.js
-6. js/navbar-collapse.js
-7. shared/menu-traits.js
-8. shared/menu-allergens.js
-9. shared/menu-sensory.js
-10. src/data/media.js
-11. src/data/menu.js
-12. src/data/ingredients.js
-13. js/menu-page.js
-14. js/menu-page-navbar.js
-15. shared/public-scroll-indicator.js
+2. shared/public-entry-loader.js
+3. shared/public-hybrid-route-transition.js
+4. js/menu-route-transition.js
+5. js/nosotros-route-transition.js
+6. shared/public-navbar.js
+7. js/navbar-collapse.js
+8. shared/menu-traits.js
+9. shared/menu-allergens.js
+10. shared/menu-sensory.js
+11. src/data/media.js
+12. src/data/menu.js
+13. src/data/ingredients.js
+14. js/menu-page.js
+15. js/menu-page-navbar.js
+16. shared/public-scroll-indicator.js
 ```
 
 Eventos page (`eventos/index.html`) loads:
@@ -135,13 +138,14 @@ Eventos page (`eventos/index.html`) loads:
 ```
 head. shared/public-navbar-bootstrap.js
 1. shared/public-paths.js
-2. shared/public-hybrid-route-transition.js
-3. js/menu-route-transition.js
-4. js/nosotros-route-transition.js
-5. shared/public-navbar.js
-6. js/navbar-collapse.js
-7. js/eventos-page.js
-8. shared/public-scroll-indicator.js
+2. shared/public-entry-loader.js
+3. shared/public-hybrid-route-transition.js
+4. js/menu-route-transition.js
+5. js/nosotros-route-transition.js
+6. shared/public-navbar.js
+7. js/navbar-collapse.js
+8. js/eventos-page.js
+9. shared/public-scroll-indicator.js
 ```
 
 Nosotros page (`nosotros/index.html`) loads:
@@ -149,14 +153,15 @@ Nosotros page (`nosotros/index.html`) loads:
 ```
 head. shared/public-navbar-bootstrap.js
 1. shared/public-paths.js
-2. shared/public-hybrid-route-transition.js
-3. js/menu-route-transition.js
-4. js/nosotros-entry-loader.js
-5. shared/public-navbar.js
-6. js/navbar-collapse.js
-7. js/public-burger-menu.js
-8. js/nosotros-page.js
-9. shared/public-scroll-indicator.js
+2. shared/public-entry-loader.js
+3. shared/public-hybrid-route-transition.js
+4. js/menu-route-transition.js
+5. js/nosotros-entry-loader.js
+6. shared/public-navbar.js
+7. js/navbar-collapse.js
+8. js/public-burger-menu.js
+9. js/nosotros-page.js
+10. shared/public-scroll-indicator.js
 ```
 
 ### GitHub Pages Notes
@@ -303,6 +308,7 @@ Shared public scroll meter enhancement. Handles:
 Synchronous public head bootstrap:
 - Runs before route styles on `index.html`, `/menu/`, and `/eventos/`
 - Seeds `html.nav--collapsed` immediately on mobile breakpoints so the public navbar paints in its compact state from first paint
+- Injects the minimal fullscreen loader-shell CSS so hard opens/reloads show the overlay from first paint
 - Leaves desktop expansion to `js/navbar-collapse.js`
 
 #### `js/navbar-collapse.js` (9KB, ~270 lines)
@@ -320,6 +326,13 @@ Public route transition binder:
 - Swaps the destination scaffold and reruns only the destination route scripts inside the current document
 - Reuses already-loaded shared runtimes (`public-paths`, hybrid engine, canonical navbar bridge, scroll indicator, `/nosotros/` binder) instead of reinserting them on every route swap
 - Waits for route-ready signals before allowing the shared overlay to exit
+
+#### `shared/public-entry-loader.js`
+Shared hard-open/reload entry loader:
+- Reuses the static fullscreen overlay already present in each public route shell
+- Mounts the shared local Lottie loader during first load or browser reload
+- Waits for route-ready signals plus a hard 1-second minimum hold before exiting
+- Skips itself when `/nosotros/` is already entering through the route-handoff loader
 
 #### `shared/public-hybrid-route-transition.js`
 Shared same-document transition engine:
