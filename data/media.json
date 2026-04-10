@@ -372,12 +372,13 @@
       "source": "assets/menu/pizzas/bellezza/bellezza.webp",
       "alt": "Bellezza",
       "overrides": {
-        "card": "",
+        "card": "assets/menu/pizzas/bellezza/bellezza-card-420x420-q80.webp",
         "hover": "",
         "modal": "",
         "gallery": [
           "assets/menu/pizzas/bellezza/bellezza-slide-0.webp",
-          "assets/menu/pizzas/bellezza/bellezza-slide-1.webp"
+          "assets/menu/pizzas/bellezza/bellezza-slide-1.webp",
+          "assets/menu/pizzas/bellezza/bellezza-slide-2.webp"
         ]
       },
       "dominantColor": "",

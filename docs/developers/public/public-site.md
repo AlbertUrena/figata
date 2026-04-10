@@ -10,14 +10,15 @@ The public site is a static multi-route surface served primarily by Cloudflare P
 - Homepage: `index.html`
 - Full menu page: `menu/index.html` (`/menu/`)
 - Events landing page: `eventos/index.html` (`/eventos/`)
+- Nosotros landing page: `nosotros/index.html` (`/nosotros/`)
 
 There is no build step — the HTML, CSS, and JavaScript are deployed directly.
 
 | Aspect | Details |
 |--------|---------|
-| Entry points | `index.html` (homepage), `menu/index.html` (full menu page), `eventos/index.html` (Pizza Party editorial landing) |
+| Entry points | `index.html` (homepage), `menu/index.html` (full menu page), `eventos/index.html` (Pizza Party editorial landing), `nosotros/index.html` (brand/about landing) |
 | Styles | `styles.css` (~2,600 lines, 75KB) |
-| Scripts | 15 files in `js/` + shared runtime modules/assets in `shared/` + data loaders in `src/data/` |
+| Scripts | 18 files in `js/` + shared runtime modules/assets in `shared/` + data loaders in `src/data/` |
 | Data | Fetches from `data/*.json` at runtime |
 | Hosting | Cloudflare Pages runtime (primary) plus Netlify/GitHub Pages fallback for the public surface |
 
@@ -66,6 +67,19 @@ The page is structured as a single scrollable document. Major sections in `index
 | Route script | `js/eventos-page.js` | Cotizador Pizza Party (fetch `data/menu.json`, exclusión automática top 5 más caras, selección manual/aleatoria de menú, resumen y CTA WhatsApp) + FAQ/media/navbar wiring |
 | Shared navbar runtime | `shared/public-navbar.js` | Mounts canonical homepage navbar and applies `data/home.json` link config on `/eventos/` |
 
+## Nosotros Route Map (`/nosotros/`)
+
+| Area | File | Purpose |
+|------|------|---------|
+| Route HTML | `nosotros/index.html` | About/brand story shell used for controlled transition experiments |
+| Route styles | `nosotros/nosotros.css` | Route layout plus premium fullscreen entry loader visuals |
+| Lottie helper | `js/nosotros-lottie-runtime.js` | Boots the self-hosted local `lottie-web` player, embeds the `/nosotros/` loader JSON, and mounts it in source/destination overlays |
+| Shared hybrid engine | `shared/public-hybrid-route-transition.js` | Reusable same-document transition motor that keeps one overlay alive while route-specific wrappers prepare and mount the destination |
+| Entry loader runtime | `js/nosotros-entry-loader.js` | Handles the hard-navigation fallback into `/nosotros/`, mounts the local Lottie loader, enforces min duration, and exits safely |
+| Route script | `js/nosotros-page.js` | Lightweight reveal/intersection enhancements for placeholder sections |
+| Shared public-route binder | `js/menu-route-transition.js` | Reuses the shared hybrid motor for home/menu/eventos by fetching and mounting the destination in-document before the URL update |
+| Isolated source transition binder | `js/nosotros-route-transition.js` | Intercepts only links targeting `/nosotros/` on home/menu/eventos, keeps one live overlay running, preloads `/nosotros/` in-document, and falls back to session handoff only if the swap fails |
+
 ---
 
 ## JavaScript Architecture
@@ -76,9 +90,9 @@ Homepage (`index.html`) runs a mixed boot pipeline: critical route/runtime scrip
 
 ```
 1.  shared/public-paths.js      — Shared site-base helper for root + GitHub Pages subpath hosting
-2.  shared/figata-cover-transition.js — Shared transition engine
-3.  js/menu-route-transition.js — Shared public route handoff for home/menu/eventos links and CTAs
-4.  js/reload-cover.js          — Deferred route-handoff reveal runtime; initial/reload exit boots inline before deferred scripts
+2.  shared/public-hybrid-route-transition.js — Shared same-document transition engine for reusable overlay + Lottie route swaps
+3.  js/menu-route-transition.js — Shared public route binder for home/menu/eventos links and CTAs
+4.  js/nosotros-route-transition.js — Route-local `/nosotros/` config wrapper on top of the shared hybrid engine
 5.  shared/public-navbar.js     — Captures canonical navbar markup for cross-route reuse
 6.  js/navbar-collapse.js       — Navbar collapse/expand animation controller
 7.  js/public-burger-menu.js    — Homepage-only lightweight burger/menu runtime for the mobile navbar
@@ -93,7 +107,6 @@ Homepage (`index.html`) runs a mixed boot pipeline: critical route/runtime scrip
 
 Additionally loaded (non-deferred):
 - `shared/public-navbar-bootstrap.js` — synchronous head bootstrap that seeds the compact mobile navbar before first paint
-- Inline reload bootstrap immediately after `.reload-transition-cover` — owns first-load/reload exit timing and a hard failsafe before deferred scripts run
 - Conditional Netlify Identity loader — fetches `netlify-identity-widget.js` only when auth hash tokens are present
 
 Menu page (`menu/index.html`) loads:
@@ -101,10 +114,10 @@ Menu page (`menu/index.html`) loads:
 ```
 head. shared/public-navbar-bootstrap.js
 1. shared/public-paths.js
-2. shared/public-navbar.js
-3. shared/figata-cover-transition.js
-4. js/menu-route-transition.js
-5. js/reload-cover.js
+2. shared/public-hybrid-route-transition.js
+3. js/menu-route-transition.js
+4. js/nosotros-route-transition.js
+5. shared/public-navbar.js
 6. js/navbar-collapse.js
 7. shared/menu-traits.js
 8. shared/menu-allergens.js
@@ -122,18 +135,33 @@ Eventos page (`eventos/index.html`) loads:
 ```
 head. shared/public-navbar-bootstrap.js
 1. shared/public-paths.js
-2. shared/public-navbar.js
-3. shared/figata-cover-transition.js
-4. js/menu-route-transition.js
-5. js/reload-cover.js
+2. shared/public-hybrid-route-transition.js
+3. js/menu-route-transition.js
+4. js/nosotros-route-transition.js
+5. shared/public-navbar.js
 6. js/navbar-collapse.js
 7. js/eventos-page.js
 8. shared/public-scroll-indicator.js
 ```
 
+Nosotros page (`nosotros/index.html`) loads:
+
+```
+head. shared/public-navbar-bootstrap.js
+1. shared/public-paths.js
+2. shared/public-hybrid-route-transition.js
+3. js/menu-route-transition.js
+4. js/nosotros-entry-loader.js
+5. shared/public-navbar.js
+6. js/navbar-collapse.js
+7. js/public-burger-menu.js
+8. js/nosotros-page.js
+9. shared/public-scroll-indicator.js
+```
+
 ### GitHub Pages Notes
 
-- `index.html` uses `<base href="./">` and route pages such as `menu/index.html` / `eventos/index.html` use `<base href="../">` so public assets and route links resolve correctly both at site root (`/`) and under the GitHub Pages project prefix (`/figata/`).
+- `index.html` uses `<base href="./">` and route pages such as `menu/index.html`, `eventos/index.html`, and `nosotros/index.html` use `<base href="../">` so public assets and route links resolve correctly both at site root (`/`) and under the GitHub Pages project prefix (`/figata/`).
 - `shared/public-paths.js` is the canonical helper for converting site-relative URLs and stripping the GitHub Pages project prefix from `window.location.pathname`.
 - `404.html` redirects GitHub Pages deep-link misses back into the public menu shell so `/menu/:item` still works after direct navigation or refresh.
 
@@ -255,6 +283,7 @@ Feature highlights section with tabbed display. Renders feature cards showcasing
 Shared public navbar runtime module. Handles:
 - Capturing canonical navbar markup from homepage (`index.html`)
 - Caching canonical markup for reuse on multi-route pages
+- Caching the navbar slice of `data/home.json` in-session so same-document swaps do not re-fetch it on every route mount
 - Mounting canonical navbar into route hosts (`data-public-navbar-host`)
 - Optional route-level CTA suppression via `data-public-navbar-hide-cta`
 - Route-aware URL normalization for non-home pages (home logo returns to `/`, sectional links keep `/#...` anchors, and asset paths stay route-safe)
@@ -284,27 +313,43 @@ Navbar collapse animation controller:
 - Supports non-hero routes via `data-nav-collapse-threshold="<px>"` on the page root/body
 - Keeps the public navbar in the compact collapsed state across mobile viewports, while desktop retains the scroll-driven collapse behavior
 
-#### `js/reload-cover.js` (6KB, ~170 lines)
-Deferred public-route handoff runtime:
-- Reads the structured route payload written by `js/menu-route-transition.js`
-- Cancels the early inline cover failsafe once the deferred route runtime takes over
-- Uses `shared/figata-cover-transition.js` for the richer destination-page reveal on `home`, `/menu/`, and `/eventos/`
-- Falls back to clearing the cover state if the transition engine is unavailable
-
-Initial/reload exits no longer depend on this file. Those now boot inline in each public route immediately after `.reload-transition-cover`, with a hard failsafe so the cover cannot sit over the page waiting for the deferred script chain.
-
 #### `js/menu-route-transition.js`
 Public route transition binder:
 - Intercepts managed cross-route public links between home, `/menu/`, and `/eventos/`
-- Plays transition enter phase in origin
-- Sets a structured handoff payload for destination exit phase
-- Ignores modified clicks (`cmd/ctrl`, `_blank`, etc.)
+- Fetches the destination document while the current overlay/Lottie stays alive
+- Swaps the destination scaffold and reruns only the destination route scripts inside the current document
+- Reuses already-loaded shared runtimes (`public-paths`, hybrid engine, canonical navbar bridge, scroll indicator, `/nosotros/` binder) instead of reinserting them on every route swap
+- Waits for route-ready signals before allowing the shared overlay to exit
 
-#### `shared/figata-cover-transition.js`
-Reusable cover transition engine:
-- Public API: `window.FigataTransitions.createFigataTransition(config)`
-- Methods: `playEnter`, `playExit`, `playEnterThenExit`, `cancel`, `isRunning`
-- Shared by modal preview flow and route/reload transitions
+#### `shared/public-hybrid-route-transition.js`
+Shared same-document transition engine:
+- Creates and owns the fullscreen overlay, live Lottie mount, click-driven route preparation, hard-navigation fallback, and history/back-button safety
+- Exposes a reusable binder factory so route-specific wrappers only define how to prepare a payload and how to mount that route into the current document
+- Keeps the transition mechanics isolated from route-specific HTML parsing or DOM shaping
+
+#### `js/nosotros-route-transition.js`
+Route-local wrapper for `/nosotros/` on top of the shared hybrid engine:
+- Configures the engine to intercept only same-origin links whose normalized destination is `/nosotros/`
+- Defines how `/nosotros/` should be fetched and parsed (`main.nosotros-main`, route CSS, hero image, title/meta)
+- Defines how the imported `/nosotros/` `<main>` is mounted and revealed inside the current document before URL change
+
+#### `js/nosotros-entry-loader.js`
+Destination entry loader runtime for `/nosotros/`:
+- Reads and validates the isolated handoff payload (`figata:nosotros-transition`)
+- Activates the premium entry overlay only when navigation fell back to a real document navigation
+- Mounts the self-hosted temporary loader animation through `js/nosotros-lottie-runtime.js`, with minimum duration guarantees and reduced-motion fallbacks
+- Clears handoff state and unlocks the page with hard failsafes if timing fails
+
+#### `js/nosotros-lottie-runtime.js`
+Temporary `/nosotros/` animation helper:
+- Dynamically loads the self-hosted `lottie-web` player from `assets/lottie/lottie.min.js`
+- Embeds the current loader animation data from `Prepare Food.json` directly inside the runtime module so route handoff does not request a separate animation payload
+- Mounts and clears the loader in both the source overlay and the destination entry loader while preserving phase offset across the handoff
+
+#### `js/nosotros-page.js`
+`/nosotros/` route enhancer:
+- Reveals content blocks tagged with `data-nosotros-reveal` using `IntersectionObserver`
+- Keeps progressive enhancement lightweight so the transition test remains the focus
 
 #### `js/home-lazy-images.js` (1KB, ~40 lines)
 Homepage image deferral helper. Uses `IntersectionObserver` + `data-home-lazy-src` to keep below-the-fold mobile media out of the initial request burst.
@@ -407,6 +452,7 @@ js/menu-page.js fetches grouped category items for the 5 visible menu tabs
 | Change menu card design | `js/mas-pedidas.js`, `styles.css` | Template in `index.html` at `#mas-pedidas-card-template` |
 | Change full menu page layout/navigation | `menu/index.html`, `menu/menu-page.css`, `js/menu-page.js` | Keep category/item order driven by `src/data/menu.js` APIs |
 | Change events landing layout/content | `eventos/index.html`, `eventos/eventos.css`, `js/eventos-page.js` | Keep one-service narrative focused on Pizza Party by Figata |
+| Change nosotros landing layout/content | `nosotros/index.html`, `nosotros/nosotros.css`, `js/nosotros-page.js` | Entry transition behavior lives in `js/nosotros-entry-loader.js` + source interception in `js/nosotros-route-transition.js` |
 | Modify navbar links | `data/home.json` (navbar.links) + `shared/public-navbar.js` | `home-config` sets labels/URLs; shared module mounts canonical navbar on secondary routes |
 | Change testimonials | `data/home.json` (testimonials.items) | Carousel in `js/testimonials.js` |
 | Add new section | `index.html` (add HTML), `styles.css` (add styles) | May need new JS file in `js/` |

@@ -2,6 +2,8 @@
   const STORAGE_KEY = 'figata.public-navbar.v1';
   const publicPaths = window.FigataPublicPaths || null;
   let readyResolver = null;
+  let cachedNavbarConfig = null;
+  let navbarConfigPromise = null;
 
   const readyPromise = new Promise((resolve) => {
     readyResolver = resolve;
@@ -301,20 +303,38 @@
     }
   };
 
-  const loadHomeNavbarConfig = async () => {
-    const response = await fetch(
-      publicPaths?.toAbsoluteUrl ? publicPaths.toAbsoluteUrl('data/home.json') : 'data/home.json',
-      { cache: 'no-cache' }
-    );
-
-    if (!response.ok) {
-      throw new Error(
-        `[public-navbar] No se pudo cargar data/home.json (${response.status}).`
-      );
+  const loadHomeNavbarConfig = async ({ forceFresh = false } = {}) => {
+    if (!forceFresh && cachedNavbarConfig) {
+      return cachedNavbarConfig;
     }
 
-    const home = await response.json();
-    return home?.navbar || null;
+    if (!forceFresh && navbarConfigPromise) {
+      return navbarConfigPromise;
+    }
+
+    navbarConfigPromise = fetch(
+      publicPaths?.toAbsoluteUrl ? publicPaths.toAbsoluteUrl('data/home.json') : 'data/home.json',
+      { cache: 'no-cache' }
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            `[public-navbar] No se pudo cargar data/home.json (${response.status}).`
+          );
+        }
+
+        return response.json();
+      })
+      .then((home) => {
+        cachedNavbarConfig = home?.navbar || null;
+        return cachedNavbarConfig;
+      })
+      .catch((error) => {
+        navbarConfigPromise = null;
+        throw error;
+      });
+
+    return navbarConfigPromise;
   };
 
   const normalizeSvgHref = (node, attributeName) => {
@@ -536,7 +556,7 @@
         return false;
       }
 
-      if (isCanonicalHeader(host)) {
+      if (!host.hasAttribute('data-public-navbar-host') && isCanonicalHeader(host)) {
         return true;
       }
 

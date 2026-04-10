@@ -206,19 +206,39 @@
     };
   }
 
-  indicators.push(createIndicator(document.scrollingElement || root, { root: true, host: body }));
+  function addIndicator(indicator) {
+    if (!indicator) {
+      return;
+    }
 
-  document.querySelectorAll("[data-scroll-indicator-container]").forEach(function (node) {
-    indicators.push(
-      createIndicator(node, {
-        root: false,
-        contained: true,
-        host: node.parentElement
-      })
-    );
-  });
+    indicators.push(indicator);
+  }
+
+  function mountRootIndicator() {
+    addIndicator(createIndicator(document.scrollingElement || root, { root: true, host: body }));
+  }
+
+  function mountContainedIndicators() {
+    document.querySelectorAll("[data-scroll-indicator-container]").forEach(function (node) {
+      addIndicator(
+        createIndicator(node, {
+          root: false,
+          contained: true,
+          host: node.parentElement
+        })
+      );
+    });
+  }
+
+  function mountAll() {
+    mountRootIndicator();
+    mountContainedIndicators();
+  }
+
+  mountAll();
 
   window.FigataScrollIndicators = {
+    mountAll: mountAll,
     refresh: function () {
       indicators.forEach(function (indicator) {
         if (indicator && typeof indicator.refresh === "function") {

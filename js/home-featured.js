@@ -661,6 +661,13 @@
       items = await featuredApi.getFeaturedItems();
     } catch (error) {
       console.error('[home-featured] No se pudo cargar home-featured.json.', error);
+      document.dispatchEvent(
+        new CustomEvent('figata:home-featured-rendered', {
+          detail: {
+            count: 0,
+          },
+        })
+      );
       return;
     }
 

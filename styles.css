@@ -1858,46 +1858,6 @@ html.nav--collapsed .navbar__actions .cta-button--nav.btn-liquid-glass:active {
   backdrop-filter: blur(4px);
 }
 
-.reload-transition-cover {
-  position: fixed;
-  inset: 0;
-  z-index: 2200;
-  display: block;
-  visibility: hidden;
-  opacity: 0;
-  transform: translate3d(0, -100.2%, 0);
-  pointer-events: none;
-  will-change: transform;
-}
-
-html.page-reload-transition .reload-transition-cover {
-  visibility: visible;
-  opacity: 1;
-  transform: translate3d(0, 0, 0);
-}
-
-html.page-reload-transition main {
-  transform: translate3d(0, 200px, 0);
-  will-change: transform;
-}
-
-.reload-transition-cover__svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.reload-transition-cover__bg {
-  fill: #143f2b;
-}
-
-.reload-transition-cover__morph-leave,
-.reload-transition-cover__morph-enter {
-  visibility: hidden;
-}
-
 .preview-overlay {
   position: fixed;
   inset: 0;

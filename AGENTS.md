@@ -6,7 +6,7 @@
 
 **Figata** is a restaurant website for an Italian pizza & wine restaurant in Santo Domingo, Dominican Republic. The project has two main systems:
 
-1. **Public website** — A static HTML/CSS/JS site served in production by Cloudflare Pages and also deployable to Netlify or GitHub Pages for fallback/preview workflows. Customers see the homepage, menu, events landing page, and restaurant info.
+1. **Public website** — A static HTML/CSS/JS site served in production by Cloudflare Pages and also deployable to Netlify or GitHub Pages for fallback/preview workflows. Customers see the homepage, menu, events landing page, nosotros/about page, and restaurant info.
 2. **Admin panel** — A custom single-page application at `/admin/app/` used by staff to manage menu items, ingredients, categories, homepage content, and publish changes.
 
 Both systems share a **data layer** (JSON files in `data/`) and are connected through a **publish pipeline** (Netlify serverless function that commits data changes via Git).
@@ -40,22 +40,28 @@ website-figata/
 ├── eventos/
 │   ├── index.html             ← Public Pizza Party editorial landing (`/eventos/`)
 │   └── eventos.css            ← Events landing styles
+├── nosotros/
+│   ├── index.html             ← Public About/brand story landing (`/nosotros/`)
+│   └── nosotros.css           ← Nosotros route styles + entry loader visuals
 ├── styles.css                 ← Public site styles (~2,600 lines)
-├── js/                        ← Public site JavaScript (15 scripts)
+├── js/                        ← Public site JavaScript (19 scripts)
 │   ├── home-config.js            Fetches data/home.json, renders homepage sections
 │   ├── home-featured.js          Homepage featured-cards renderer (mobile-first, reads the derived data/home-featured.json payload)
-│   ├── mas-pedidas.js            Desktop-only featured preview overlay + cover transition enhancer
-│   ├── menu-route-transition.js  Shared public route-transition handoff + intent-based prefetch for home/menu/eventos
+│   ├── mas-pedidas.js            Desktop-only featured preview overlay enhancer
+│   ├── menu-route-transition.js  Shared public same-document transition binder for home/menu/eventos
+│   ├── nosotros-route-transition.js Isolated `/nosotros/` transition binder (keeps one live overlay, preloads route markup, then swaps to `/nosotros/` in-document before pushState fallback)
+│   ├── nosotros-lottie-runtime.js    Shared `/nosotros/` Lottie JSON bootstrap + mount helper used by source/destination loaders
 │   ├── menu-page.js              Full menu page renderer (Events-style top tabs + category grids)
 │   ├── menu-page-navbar.js       `/menu/` sticky-menu enhancer for the shared navbar
 │   ├── public-burger-menu.js     Lightweight burger/menu runtime used by the homepage mobile navbar
 │   ├── eventos-page.js           `/eventos/` enhancer (cotizador Pizza Party + modal variedades, FAQ, hero video, media rail, route-local burger/menu mobile)
+│   ├── nosotros-entry-loader.js  `/nosotros/` hard-navigation entry loader fallback + self-hosted Lottie runtime bridge
+│   ├── nosotros-page.js          `/nosotros/` reveal/interaction enhancer
 │   ├── restaurant-config.js      Restaurant info (hours, address, phone)
 │   ├── testimonials.js           Testimonials carousel
 │   ├── events-tabs.js            Events section tabs
 │   ├── feature-tabs.js           Feature highlights tabs
 │   ├── navbar-collapse.js        Mobile navbar behavior
-│   ├── reload-cover.js           Deferred route-handoff reveal runtime + cover cleanup fallback
 │   └── home-lazy-images.js       Lazy image loading
 ├── data/                      ← Shared data layer (10 JSON files)
 │   ├── menu.json                 Menu items grouped by section
@@ -77,13 +83,13 @@ website-figata/
 │   │   └── styles.css            Admin-specific CSS
 │   └── cms/                   ← Netlify CMS config (rarely used)
 ├── shared/                    ← Shared validators + public runtime modules
-│   ├── figata-cover-transition.js Shared cover transition engine (route + modal)
 │   ├── menu-traits.js            Menu Traits V2 derivation + validation engine
 │   ├── menu-allergens.js         Menu allergen derivation + validation engine
 │   ├── menu-sensory.js           Structured sensory profile schema + validation engine
 │   ├── public-paths.js           Shared site-base/path helper for root + GitHub Pages subpath hosting
 │   ├── public-navbar-bootstrap.js Synchronous head bootstrap for the compact mobile public navbar state
 │   ├── public-navbar.js          Canonical public navbar loader/cache bridge for multi-route pages
+│   ├── public-hybrid-route-transition.js Shared same-document transition engine for reusable overlay/Lottie route swaps
 │   ├── public-scroll-indicator.css Overlay root scrollbar hide + progress meter styles
 │   ├── public-scroll-indicator.js  Native-scroll progress meter runtime for public routes
 │   ├── ingredients-contract.js   Ingredient data validation
@@ -110,6 +116,7 @@ website-figata/
 │   ├── menu/                     Menu item images (WebP) by category + placeholders
 │   ├── Ingredients/              Ingredient icon images (WebP)
 │   ├── home/                     Homepage assets
+│   ├── lottie/                   Self-hosted Lottie loader assets for `/nosotros/`
 │   ├── reviews/                  Testimonial avatars
 │   └── svg-icons/                UI icon SVGs
 ├── src/                       ← Source generators (build-time)
@@ -154,6 +161,7 @@ Use this table to find the right starting point for common tasks:
 | Change homepage featured cards | `data/home.json` (`popular.featuredIds`), `js/home-featured.js` | `scripts/generate-home-featured.js`, `js/mas-pedidas.js`, `styles.css` |
 | Build/fix public full menu page | `menu/index.html`, `menu/menu-page.css`, `js/menu-page.js` | `js/menu-page-navbar.js`, `src/data/menu.js`, `src/data/media.js`, `data/categories.json` |
 | Build/fix public eventos landing page | `eventos/index.html`, `eventos/eventos.css`, `js/eventos-page.js` | `data/menu.json`, `shared/public-navbar.js`, `shared/public-paths.js` |
+| Build/fix public nosotros landing page | `nosotros/index.html`, `nosotros/nosotros.css`, `js/nosotros-page.js` | `js/nosotros-entry-loader.js`, `js/nosotros-route-transition.js`, `js/nosotros-lottie-runtime.js`, `assets/lottie/Prepare Food.json` |
 | Reuse/fix public navbar across routes | `shared/public-navbar.js` | `index.html`, `menu/index.html`, `js/navbar-collapse.js` |
 | Edit restaurant info | `js/restaurant-config.js` | `data/restaurant.json` |
 | Work on admin panel | `docs/developers/admin/admin-panel.md` | `admin/app/app.js`, `admin/app/modules/` |
@@ -248,15 +256,16 @@ Shared runtime helpers used by traits/validation must load before their consumer
 
 On public routes, `shared/public-navbar-bootstrap.js` must load synchronously in the page `<head>` before route styles so mobile first paint starts in the compact navbar state.
 
-On public routes, the entry/reload cover bootstrap runs inline immediately after `.reload-transition-cover` so first-load exit timing never depends on deferred route scripts.
-
 On public routes, `shared/public-paths.js` must load before other route scripts that resolve site-relative URLs or parse the current pathname.
 
 On `/menu/`, route scripts must load in this order:
-`shared/public-paths.js` → `shared/public-navbar.js` → `shared/figata-cover-transition.js` → `js/menu-route-transition.js` → `js/reload-cover.js` → `js/navbar-collapse.js` → `js/menu-page.js` → `js/menu-page-navbar.js`
+`shared/public-paths.js` → `shared/public-hybrid-route-transition.js` → `js/menu-route-transition.js` → `js/nosotros-route-transition.js` → `shared/public-navbar.js` → `js/navbar-collapse.js` → `js/menu-page.js` → `js/menu-page-navbar.js`
 
 On `/eventos/`, route scripts must load in this order:
-`shared/public-paths.js` → `shared/public-navbar.js` → `shared/figata-cover-transition.js` → `js/menu-route-transition.js` → `js/reload-cover.js` → `js/navbar-collapse.js` → `js/eventos-page.js`
+`shared/public-paths.js` → `shared/public-hybrid-route-transition.js` → `js/menu-route-transition.js` → `js/nosotros-route-transition.js` → `shared/public-navbar.js` → `js/navbar-collapse.js` → `js/eventos-page.js`
+
+On `/nosotros/`, route scripts must load in this order:
+`shared/public-paths.js` → `shared/public-hybrid-route-transition.js` → `js/menu-route-transition.js` → `js/nosotros-entry-loader.js` → `shared/public-navbar.js` → `js/navbar-collapse.js` → `js/public-burger-menu.js` → `js/nosotros-page.js` → `shared/public-scroll-indicator.js`
 
 The shared public scroll indicator is optional and should be loaded after the route's primary public scripts so it can measure the final document scroll state without affecting route initialization:
 `shared/public-scroll-indicator.css` in the page `<head>` and `shared/public-scroll-indicator.js` near the end of the public script list.

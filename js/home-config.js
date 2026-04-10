@@ -78,7 +78,18 @@ Personas:`;
   const HOURS_RANGE_PATTERN = /^(\d{2}):(\d{2})-(\d{2}):(\d{2})$/;
   const HOURS_TODAY_ICON_PATH = 'M216 64C229.3 64 240 74.7 240 88L240 128L400 128L400 88C400 74.7 410.7 64 424 64C437.3 64 448 74.7 448 88L448 128L480 128C515.3 128 544 156.7 544 192L544 480C544 515.3 515.3 544 480 544L160 544C124.7 544 96 515.3 96 480L96 192C96 156.7 124.7 128 160 128L192 128L192 88C192 74.7 202.7 64 216 64zM480 496C488.8 496 496 488.8 496 480L496 416L408 416L408 496L480 496zM496 368L496 288L408 288L408 368L496 368zM360 368L360 288L280 288L280 368L360 368zM232 368L232 288L144 288L144 368L232 368zM144 416L144 480C144 488.8 151.2 496 160 496L232 496L232 416L144 416zM280 416L280 496L360 496L360 416L280 416zM216 176L160 176C151.2 176 144 183.2 144 192L144 240L496 240L496 192C496 183.2 488.8 176 480 176L216 176z';
   const HOURS_CLOSED_ICON_PATH = 'M320 576C461.4 576 576 461.4 576 320C576 178.6 461.4 64 320 64C178.6 64 64 178.6 64 320C64 461.4 178.6 576 320 576zM320 224C373 224 416 267 416 320C416 373 373 416 320 416C267 416 224 373 224 320C224 267 267 224 320 224z';
+  const HOME_READY_EVENT = 'figata:home-page-ready';
   const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let homeReadyDispatched = false;
+
+  const dispatchHomeReady = () => {
+    if (homeReadyDispatched) {
+      return;
+    }
+
+    homeReadyDispatched = true;
+    window.dispatchEvent(new CustomEvent(HOME_READY_EVENT));
+  };
 
   const normalizeTextValue = (value) =>
     typeof value === 'string' ? value.trim() : '';
@@ -1808,6 +1819,7 @@ Personas:`;
     const homeApi = window.FigataData?.home;
 
     if (!homeApi?.getHomeConfig) {
+      dispatchHomeReady();
       return;
     }
 
@@ -1851,8 +1863,10 @@ Personas:`;
       initMobileLocationCard();
       initAmbienteParallax();
       initHomeVirtualTour();
+      dispatchHomeReady();
     } catch (error) {
       console.error('[home-config] No se pudo aplicar data/home.json.', error);
+      dispatchHomeReady();
     }
   };
 

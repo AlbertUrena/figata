@@ -1,298 +1,475 @@
 (() => {
-  const publicPaths = window.FigataPublicPaths || null;
-  const SESSION_KEY = "figata:route-transition";
-  const ROUTE_HANDOFF_KIND = "public-route";
-  const COVER_IN_DURATION_MS = 900;
-  const PAGE_PUSH_Y_PX = -200;
-  const PREFETCH_TIMEOUT_MS = 2600;
-  const routeDocPrefetches = new Set();
+  const INIT_FLAG = '__figataManagedPublicRouteTransitionInit';
+  if (window[INIT_FLAG]) {
+    return;
+  }
+  window[INIT_FLAG] = true;
 
-  const cover = document.querySelector(".reload-transition-cover");
-  const coverPath = cover?.querySelector(".reload-transition-cover__bg");
-  const pagePushTarget = document.querySelector("main");
-  const transitionFactory = window.FigataTransitions?.createFigataTransition;
-  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || null;
-
-  if (
-    !(cover instanceof HTMLElement) ||
-    !(coverPath instanceof SVGPathElement) ||
-    typeof transitionFactory !== "function"
-  ) {
+  const hybridTransition = window.FigataPublicHybridRouteTransition || null;
+  if (!hybridTransition || typeof hybridTransition.createBinder !== 'function') {
     return;
   }
 
-  const transition = transitionFactory({
-    coverElement: cover,
-    pathElement: coverPath,
-    pagePushTarget,
-    color: "#143f2b",
-    precision: 4,
-  });
+  const publicPaths = window.FigataPublicPaths || null;
+  const CLIENT_BODY_ATTR = 'data-public-route-client-active';
+  const CLIENT_MAIN_ATTR = 'data-public-route-client-main';
+  const CLIENT_STATE_FLAG = '__figataPublicRouteClientMounted';
+  const OVERLAY_ATTR = 'data-nosotros-route-loader';
+  const DYNAMIC_SCRIPT_ATTR = 'data-public-hybrid-dynamic-script';
+  const SKIPPED_SCRIPT_PATHS = new Set([
+    'shared/public-hybrid-route-transition.js',
+    'js/menu-route-transition.js',
+    'js/nosotros-route-transition.js',
+    'js/nosotros-entry-loader.js',
+  ]);
+  const PERSISTENT_SCRIPT_GUARDS = new Map([
+    ['shared/public-paths.js', () => Boolean(window.FigataPublicPaths)],
+    [
+      'shared/public-hybrid-route-transition.js',
+      () => Boolean(window.FigataPublicHybridRouteTransition?.createBinder),
+    ],
+    ['js/menu-route-transition.js', () => Boolean(window[INIT_FLAG])],
+    ['js/nosotros-route-transition.js', () => Boolean(window.__figataNosotrosRouteTransitionInit)],
+    ['shared/public-navbar.js', () => Boolean(window.FigataPublicNavbar)],
+    ['shared/public-scroll-indicator.js', () => Boolean(window.FigataScrollIndicators)],
+  ]);
+  const ROUTE_CONFIGS = [
+    {
+      criticalAssetPaths: [
+        'js/public-burger-menu.js',
+        'src/data/home.js',
+        'src/data/home-featured.js',
+        'src/data/restaurant.js',
+        'js/home-lazy-images.js',
+        'js/home-config.js',
+        'js/home-featured.js',
+      ],
+      readySignals: [
+        { eventName: 'figata:home-page-ready', target: 'window', timeoutMs: 7000 },
+        { eventName: 'figata:home-featured-rendered', target: 'document', timeoutMs: 7000 },
+      ],
+      targetPath: '/',
+    },
+    {
+      criticalAssetPaths: [
+        'menu/menu-page.css',
+        'shared/menu-traits.js',
+        'shared/menu-allergens.js',
+        'shared/menu-sensory.js',
+        'src/data/media.js',
+        'src/data/menu.js',
+        'src/data/ingredients.js',
+        'js/menu-page.js',
+        'js/menu-page-navbar.js',
+      ],
+      readySignals: [
+        { eventName: 'figata:menu-page-ready', target: 'window', timeoutMs: 8000 },
+      ],
+      targetPath: '/menu',
+    },
+    {
+      criticalAssetPaths: ['eventos/eventos.css', 'js/eventos-page.js'],
+      readySignals: [
+        { eventName: 'figata:eventos-page-ready', target: 'window', timeoutMs: 6000 },
+      ],
+      targetPath: '/eventos',
+    },
+  ];
 
-  let isTransitionRunning = false;
+  const normalizeText = (value) => String(value || '').trim();
 
   const normalizePathname = (pathname) => {
-    const rawPath = String(pathname || "/").trim() || "/";
+    const rawPath = normalizeText(pathname) || '/';
     const strippedPath =
-      publicPaths?.stripSitePath
-        ? publicPaths.stripSitePath(rawPath)
-        : rawPath;
-    return strippedPath.replace(/\/+$/, "") || "/";
-  };
+      publicPaths?.stripSitePath ? publicPaths.stripSitePath(rawPath) : rawPath;
+    const normalized = strippedPath.replace(/\/+$/, '') || '/';
 
-  const getCurrentPath = () => normalizePathname(window.location.pathname);
-  const getRouteKey = (pathname) => {
-    if (isMenuPath(pathname)) {
-      return "menu";
+    if (normalized === '/index.html') {
+      return '/';
     }
 
-    if (isEventosPath(pathname)) {
-      return "eventos";
+    if (normalized === '/menu/index.html') {
+      return '/menu';
     }
 
-    return "home";
+    if (normalized === '/eventos/index.html') {
+      return '/eventos';
+    }
+
+    return normalized;
   };
-  const isHomePath = (pathname) => {
-    const normalized = normalizePathname(pathname);
-    return normalized === "/" || normalized === "/index.html";
+
+  const toSiteValue = (value) => {
+    const raw = normalizeText(value);
+
+    if (!raw) {
+      return raw;
+    }
+
+    if (/^(?:https?:|mailto:|tel:|data:|blob:|\/\/)/i.test(raw) || raw.startsWith('#')) {
+      return raw;
+    }
+
+    return publicPaths?.toSitePath ? publicPaths.toSitePath(raw) : raw;
   };
-  const isMenuPath = (pathname) => {
-    const normalized = normalizePathname(pathname);
-    return normalized === "/menu" || normalized.startsWith("/menu/");
-  };
-  const isEventosPath = (pathname) => {
-    const normalized = normalizePathname(pathname);
-    return normalized === "/eventos" || normalized.startsWith("/eventos/");
-  };
-  const isManagedPublicPath = (pathname) =>
-    isHomePath(pathname) || isMenuPath(pathname) || isEventosPath(pathname);
-  const toUrl = (href) => {
+
+  const normalizeAssetPath = (value) => {
+    const raw = normalizeText(value);
+
+    if (!raw) {
+      return '';
+    }
+
     try {
-      return new URL(href, window.location.href);
-    } catch (_) {
+      if (/^(?:https?:)?\/\//i.test(raw)) {
+        return normalizeAssetPath(new URL(raw, window.location.href).pathname);
+      }
+    } catch (_error) {
+      // keep raw fallback below
+    }
+
+    const stripped =
+      publicPaths?.stripSitePath ? publicPaths.stripSitePath(raw) : raw;
+
+    return stripped.replace(/^(\.\/)+/, '').replace(/^\/+/, '');
+  };
+
+  const getRootChildren = (root) =>
+    root instanceof HTMLElement ? Array.from(root.children) : [];
+
+  const serializeAttributes = (element) =>
+    element instanceof Element
+      ? Array.from(element.attributes).map((attribute) => ({
+          name: attribute.name,
+          value: attribute.value,
+        }))
+      : [];
+
+  const applySerializedAttributes = (element, attrs = []) => {
+    if (!(element instanceof HTMLElement)) {
+      return;
+    }
+
+    Array.from(element.attributes).forEach((attribute) => {
+      element.removeAttribute(attribute.name);
+    });
+
+    attrs.forEach((attribute) => {
+      if (!attribute?.name) {
+        return;
+      }
+
+      element.setAttribute(attribute.name, attribute.value || '');
+    });
+  };
+
+  const collectBodyNodes = (doc) =>
+    getRootChildren(doc.body).filter((node) => {
+      if (!(node instanceof HTMLElement)) {
+        return false;
+      }
+
+      if (node.tagName === 'SCRIPT') {
+        return false;
+      }
+
+      if (node.hasAttribute(OVERLAY_ATTR)) {
+        return false;
+      }
+
+      return true;
+    });
+
+  const shouldSkipScript = (script) => {
+    if (!(script instanceof HTMLScriptElement)) {
+      return true;
+    }
+
+    const src = normalizeText(script.getAttribute('src'));
+    if (src) {
+      return SKIPPED_SCRIPT_PATHS.has(normalizePathname(src));
+    }
+
+    const code = normalizeText(script.textContent);
+    if (!code) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const serializeScript = (script) => {
+    if (!(script instanceof HTMLScriptElement) || shouldSkipScript(script)) {
       return null;
     }
-  };
-  const isCrossRouteTarget = (url) => {
-    if (!(url instanceof URL) || url.origin !== window.location.origin) {
-      return false;
-    }
 
-    const currentPath = getCurrentPath();
-    const nextPath = normalizePathname(url.pathname);
-
-    if (currentPath === nextPath) {
-      return false;
-    }
-
-    if (!isManagedPublicPath(currentPath) || !isManagedPublicPath(nextPath)) {
-      return false;
-    }
-
-    return true;
-  };
-  const prefetchRouteDocument = (url) => {
-    if (!(url instanceof URL)) {
-      return;
-    }
-
-    const cacheKey = url.toString();
-    if (routeDocPrefetches.has(cacheKey) || typeof window.fetch !== "function") {
-      return;
-    }
-
-    routeDocPrefetches.add(cacheKey);
-
-    const controller =
-      typeof AbortController === "function"
-        ? new AbortController()
-        : null;
-
-    if (controller) {
-      window.setTimeout(() => {
-        controller.abort();
-      }, PREFETCH_TIMEOUT_MS);
-    }
-
-    window
-      .fetch(cacheKey, {
-        credentials: "same-origin",
-        signal: controller?.signal,
-      })
-      .catch(() => {
-        // Prefetch warming is opportunistic only.
-      });
-  };
-  const primeManagedRoute = (url) => {
-    if (!(url instanceof URL) || !isCrossRouteTarget(url)) {
-      return;
-    }
-
-    prefetchRouteDocument(url);
-  };
-  const shouldPrimeRoutesOnIdle = () => {
-    const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
-    if (viewportWidth <= 1023) {
-      return false;
-    }
-
-    if (connection?.saveData) {
-      return false;
-    }
-
-    const effectiveType = String(connection?.effectiveType || "").toLowerCase();
-    return effectiveType !== "slow-2g" && effectiveType !== "2g";
-  };
-
-  const isManagedRouteLink = (link) => {
-    if (!(link instanceof HTMLAnchorElement)) {
-      return false;
-    }
-
-    if (link.hasAttribute("download")) {
-      return false;
-    }
-
-    const href = link.getAttribute("href");
-    if (!href || href.startsWith("#")) {
-      return false;
-    }
-
-    if (link.target && link.target !== "_self") {
-      return false;
-    }
-
-    const targetUrl = toUrl(link.href);
-    return isCrossRouteTarget(targetUrl);
-  };
-
-  const markRouteTransition = (url) => {
-    if (!window.sessionStorage) {
-      return;
-    }
-
-    const targetUrl =
-      url instanceof URL
-        ? url
-        : toUrl(url);
-
-    if (!(targetUrl instanceof URL)) {
-      return;
-    }
-
-    const payload = {
-      kind: ROUTE_HANDOFF_KIND,
-      at: Date.now(),
-      fromPath: getCurrentPath(),
-      toPath: normalizePathname(targetUrl.pathname),
-      toRoute: getRouteKey(targetUrl.pathname),
+    const src = normalizeText(script.getAttribute('src'));
+    return {
+      noModule: script.noModule,
+      referrerPolicy: normalizeText(script.referrerPolicy),
+      src: src ? toSiteValue(src) : '',
+      textContent: src ? '' : script.textContent || '',
+      type: normalizeText(script.type),
     };
-
-    try {
-      window.sessionStorage.setItem(SESSION_KEY, JSON.stringify(payload));
-    } catch (_) {
-      // Ignore storage write failures.
-    }
   };
 
-  const navigateTo = (url) => {
-    window.location.href = url;
-  };
+  const collectBodyScripts = (doc) =>
+    getRootChildren(doc.body)
+      .filter((node) => node instanceof HTMLScriptElement)
+      .map(serializeScript)
+      .filter(Boolean);
 
-  const playRouteTransition = async (url) => {
-    if (isTransitionRunning) {
-      return;
-    }
+  const waitForSignal = (signal) =>
+    new Promise((resolve) => {
+      const eventName = normalizeText(signal?.eventName);
+      const target =
+        signal?.target === 'document'
+          ? document
+          : window;
+      const timeoutMs = Number(signal?.timeoutMs) > 0 ? Number(signal.timeoutMs) : 5000;
 
-    isTransitionRunning = true;
+      if (!eventName) {
+        resolve();
+        return;
+      }
 
-    try {
-      primeManagedRoute(toUrl(url));
-      await transition.playEnter({
-        durationMs: COVER_IN_DURATION_MS,
-        pagePushFrom: 0,
-        pagePushTo: PAGE_PUSH_Y_PX,
-        onMidpoint: () => {
-          markRouteTransition(url);
-          navigateTo(url);
-        },
-      });
-    } catch (_) {
-      navigateTo(url);
-    } finally {
-      isTransitionRunning = false;
-    }
-  };
+      let settled = false;
+      let timerId = 0;
 
-  document.addEventListener("click", (event) => {
-    if (event.defaultPrevented || isTransitionRunning) {
-      return;
-    }
-
-    if (event.button !== 0) {
-      return;
-    }
-
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
-      return;
-    }
-
-    const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
-
-    if (!isManagedRouteLink(link)) {
-      return;
-    }
-
-    event.preventDefault();
-    playRouteTransition(link.href);
-  });
-
-  const primeFromTarget = (target) => {
-    if (!(target instanceof Element)) {
-      return;
-    }
-
-    const link = target.closest("a[href]");
-    if (!isManagedRouteLink(link)) {
-      return;
-    }
-
-    primeManagedRoute(toUrl(link.href));
-  };
-
-  document.addEventListener(
-    "pointerover",
-    (event) => {
-      primeFromTarget(event.target);
-    },
-    { capture: true, passive: true }
-  );
-  document.addEventListener(
-    "touchstart",
-    (event) => {
-      primeFromTarget(event.target);
-    },
-    { capture: true, passive: true }
-  );
-  document.addEventListener(
-    "focusin",
-    (event) => {
-      primeFromTarget(event.target);
-    },
-    true
-  );
-
-  if (shouldPrimeRoutesOnIdle() && typeof window.requestIdleCallback === "function") {
-    window.requestIdleCallback(() => {
-      document.querySelectorAll("a[href]").forEach((link) => {
-        if (isManagedRouteLink(link)) {
-          primeManagedRoute(toUrl(link.href));
+      const finish = () => {
+        if (settled) {
+          return;
         }
-      });
-    }, { timeout: 1800 });
-  }
 
-  window.addEventListener("pagehide", () => {
-    transition.cancel();
-  });
+        settled = true;
+        target.removeEventListener(eventName, handleEvent);
+        if (timerId) {
+          window.clearTimeout(timerId);
+        }
+        resolve();
+      };
+
+      const handleEvent = () => {
+        finish();
+      };
+
+      target.addEventListener(eventName, handleEvent, { once: true });
+      timerId = window.setTimeout(finish, timeoutMs);
+    });
+
+  const removeDynamicScripts = () => {
+    document.querySelectorAll(`script[${DYNAMIC_SCRIPT_ATTR}]`).forEach((node) => {
+      node.remove();
+    });
+  };
+
+  const runScriptDescriptor = (descriptor, overlay) =>
+    new Promise((resolve) => {
+      if (descriptor.src) {
+        const normalizedSrc = normalizeAssetPath(descriptor.src);
+        const persistentGuard = PERSISTENT_SCRIPT_GUARDS.get(normalizedSrc);
+
+        if (typeof persistentGuard === 'function' && persistentGuard()) {
+          resolve();
+          return;
+        }
+      }
+
+      const script = document.createElement('script');
+      const anchor =
+        overlay instanceof HTMLElement && overlay.parentNode === document.body
+          ? overlay
+          : null;
+
+      script.setAttribute(DYNAMIC_SCRIPT_ATTR, 'true');
+
+      if (descriptor.type) {
+        script.type = descriptor.type;
+      }
+
+      if (descriptor.noModule) {
+        script.noModule = true;
+      }
+
+      if (descriptor.referrerPolicy) {
+        script.referrerPolicy = descriptor.referrerPolicy;
+      }
+
+      if (descriptor.src) {
+        script.async = false;
+        script.src = descriptor.src;
+        script.addEventListener('load', () => resolve(), { once: true });
+        script.addEventListener('error', () => resolve(), { once: true });
+      } else {
+        script.textContent = descriptor.textContent || '';
+      }
+
+      document.body.insertBefore(script, anchor);
+
+      if (!descriptor.src) {
+        resolve();
+      }
+    });
+
+  const runScriptsSequentially = async (descriptors, overlay) => {
+    removeDynamicScripts();
+
+    for (const descriptor of descriptors) {
+      await runScriptDescriptor(descriptor, overlay);
+    }
+  };
+
+  const notifyPersistentRuntimes = () => {
+    document.dispatchEvent(new CustomEvent('figata:public-navbar-ready'));
+
+    const scrollIndicators = window.FigataScrollIndicators || null;
+    if (typeof scrollIndicators?.mountAll === 'function') {
+      scrollIndicators.mountAll();
+    }
+
+    if (typeof scrollIndicators?.refresh === 'function') {
+      scrollIndicators.refresh();
+    }
+  };
+
+  const getInsertAnchor = (overlay) => {
+    const firstScript = getRootChildren(document.body).find(
+      (node) => node instanceof HTMLScriptElement
+    );
+
+    if (firstScript) {
+      return firstScript;
+    }
+
+    return overlay instanceof HTMLElement ? overlay : null;
+  };
+
+  const replaceBodyScaffold = (nodes, overlay) => {
+    getRootChildren(document.body).forEach((node) => {
+      if (node === overlay || node instanceof HTMLScriptElement) {
+        return;
+      }
+
+      node.remove();
+    });
+
+    const anchor = getInsertAnchor(overlay);
+
+    nodes.forEach((node) => {
+      const importedNode = document.importNode(node, true);
+      document.body.insertBefore(importedNode, anchor);
+    });
+  };
+
+  const syncDocumentMeta = (payload) => {
+    applySerializedAttributes(document.documentElement, payload.htmlAttrs);
+    applySerializedAttributes(document.body, payload.bodyAttrs);
+    document.title = payload.title || document.title;
+
+    const descriptionMeta =
+      document.querySelector('meta[name="description"]') ||
+      document.getElementById('meta-description');
+    if (descriptionMeta instanceof HTMLMetaElement && payload.description) {
+      descriptionMeta.setAttribute('content', payload.description);
+    }
+
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeMeta instanceof HTMLMetaElement && payload.themeColor) {
+      themeMeta.setAttribute('content', payload.themeColor);
+    }
+  };
+
+  const refreshNavbar = async () => {
+    const navbarApi = window.FigataPublicNavbar;
+
+    if (!navbarApi) {
+      return;
+    }
+
+    if (typeof navbarApi.ensureCanonicalHost === 'function') {
+      try {
+        await navbarApi.ensureCanonicalHost(document.querySelector('header.site-header'));
+      } catch (_error) {
+        // ignore navbar re-mount issues during route swap
+      }
+    }
+
+    if (typeof navbarApi.refreshFromDom === 'function') {
+      navbarApi.refreshFromDom();
+    }
+  };
+
+  const buildBinder = ({ criticalAssetPaths, readySignals, targetPath }) => {
+    hybridTransition.createBinder({
+      clientBodyAttr: CLIENT_BODY_ATTR,
+      clientMainAttr: CLIENT_MAIN_ATTR,
+      clientStateFlag: CLIENT_STATE_FLAG,
+      criticalAssetPaths,
+      handoffKey: `figata:managed-route:${targetPath === '/' ? 'home' : targetPath.slice(1)}`,
+      handoffKind: 'managed-public-route',
+      targetPath,
+      preparePayload: async (url, helpers) => {
+        const response = await window.fetch(url.toString(), {
+          credentials: 'same-origin',
+        });
+
+        if (!response.ok) {
+          throw new Error(`No se pudo cargar ${targetPath} (${response.status}).`);
+        }
+
+        const html = await response.text();
+        const doc = helpers.parseHtmlDocument(html);
+        const bodyNodes = collectBodyNodes(doc);
+        const scriptDescriptors = collectBodyScripts(doc);
+        const stylesheets = Array.from(
+          doc.querySelectorAll('link[rel="stylesheet"][href]')
+        ).map((link) => toSiteValue(link.getAttribute('href')));
+        const firstImageSrc = doc.body?.querySelector('img[src]')?.getAttribute('src') || '';
+
+        await Promise.allSettled([
+          ...stylesheets.map((href) => helpers.ensureStylesheet(href)),
+          helpers.primeRuntime(),
+          helpers.preloadImage(firstImageSrc),
+        ]);
+
+        return {
+          bodyAttrs: serializeAttributes(doc.body),
+          bodyNodes,
+          description:
+            doc.querySelector('meta[name="description"]')?.getAttribute('content') || '',
+          htmlAttrs: serializeAttributes(doc.documentElement),
+          readySignals,
+          scriptDescriptors,
+          themeColor:
+            doc.querySelector('meta[name="theme-color"]')?.getAttribute('content') || '',
+          title: doc.title || document.title,
+        };
+      },
+      mountPayload: async (payload, helpers) => {
+        if (!payload || !Array.isArray(payload.bodyNodes)) {
+          throw new Error(`Payload inválido para ${targetPath}.`);
+        }
+
+        const readyPromise = Promise.all(payload.readySignals.map(waitForSignal));
+
+        syncDocumentMeta(payload);
+        replaceBodyScaffold(payload.bodyNodes, helpers.overlay);
+        const mountedMain = document.querySelector('main');
+        if (mountedMain instanceof HTMLElement) {
+          mountedMain.setAttribute(CLIENT_MAIN_ATTR, 'true');
+        }
+        document.body.setAttribute(CLIENT_BODY_ATTR, 'true');
+        document.body.classList.remove('menu-mobile-nav-backdrop');
+        await refreshNavbar();
+        await runScriptsSequentially(payload.scriptDescriptors, helpers.overlay);
+        notifyPersistentRuntimes();
+        await readyPromise;
+        await helpers.waitForFrames(2);
+
+        return document.querySelector('main');
+      },
+    });
+  };
+
+  ROUTE_CONFIGS.forEach(buildBinder);
 })();

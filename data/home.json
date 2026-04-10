@@ -161,7 +161,7 @@
       },
       {
         "label": "Nosotros",
-        "url": "#nosotros"
+        "url": "/nosotros/"
       },
       {
         "label": "Ubicación",
@@ -246,7 +246,7 @@
           },
           {
             "label": "Nosotros",
-            "url": "#nosotros"
+            "url": "/nosotros/"
           },
           {
             "label": "Eventos",

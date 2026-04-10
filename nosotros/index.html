@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="es" class="nosotros-page-root">
+<head>
+  <meta charset="UTF-8">
+  <base href="../">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script src="shared/public-navbar-bootstrap.js"></script>
+  <script>
+    (function () {
+      var key = "figata:nosotros-transition";
+      var cycleMs = 2666.6667;
+      var reducedMotion = false;
+
+      try {
+        reducedMotion = Boolean(
+          window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        );
+      } catch (_mediaError) {
+        reducedMotion = false;
+      }
+
+      window.__figataNosotrosEntryReducedMotion = reducedMotion;
+      if (reducedMotion) {
+        document.documentElement.classList.add("nosotros-entry-reduced-motion");
+      }
+
+      try {
+        var raw = window.sessionStorage.getItem(key);
+        if (!raw) {
+          return;
+        }
+
+        var payload = JSON.parse(raw);
+        if (!payload || payload.kind !== "nosotros-route") {
+          return;
+        }
+
+        var toPath = String(payload.toPath || "").trim().replace(/\/+$/, "") || "/";
+        if (toPath === "/nosotros" || toPath === "/nosotros/index.html") {
+          document.documentElement.classList.add("nosotros-entry-pending");
+          window.__figataNosotrosEntryOffsetMs =
+            Math.max(0, Date.now() - Number(payload.at || Date.now())) % cycleMs;
+          window.__figataNosotrosEntryPosterSvg =
+            typeof payload.posterSvg === "string" ? payload.posterSvg : "";
+
+          if (Boolean(payload.reducedMotion) && !reducedMotion) {
+            window.__figataNosotrosEntryReducedMotion = true;
+            document.documentElement.classList.add("nosotros-entry-reduced-motion");
+          }
+        }
+      } catch (_error) {
+        // no-op
+      }
+    })();
+  </script>
+  <title>Nosotros | Figata Pizza &amp; Wine</title>
+  <meta name="description" content="Conoce la historia de Figata, nuestra cocina de fuego y la forma en que construimos cada experiencia alrededor de la mesa.">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="nosotros/nosotros.css">
+  <link rel="stylesheet" href="shared/public-scroll-indicator.css">
+  <link rel="modulepreload" href="js/nosotros-lottie-runtime.js">
+  <link rel="preload" href="assets/lottie/lottie.min.js" as="script" fetchpriority="high">
+</head>
+<body class="nosotros-page-body" data-nav-collapse-threshold="420" data-menu-mobile-nav="closed">
+  <div id="nosotros-entry-loader" class="nosotros-route-loader" aria-hidden="true">
+    <div class="nosotros-route-loader__core">
+      <div class="nosotros-route-loader__logo-slot" data-nosotros-loader-logo-slot></div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      if (!document.documentElement.classList.contains("nosotros-entry-pending")) {
+        return;
+      }
+
+      var slot = document.querySelector("[data-nosotros-loader-logo-slot]");
+      if (!slot) {
+        return;
+      }
+
+      if (window.__figataNosotrosEntryReducedMotion) {
+        var reducedFallback = document.createElement("span");
+        reducedFallback.className = "nosotros-route-loader__fallback";
+        reducedFallback.textContent = "Sirviendo en breve…";
+        slot.replaceChildren(reducedFallback);
+        return;
+      }
+
+      if (typeof window.__figataNosotrosEntryPosterSvg === "string" && window.__figataNosotrosEntryPosterSvg) {
+        var poster = document.createElement("div");
+        poster.className = "nosotros-route-loader__poster";
+        poster.setAttribute("aria-hidden", "true");
+        poster.innerHTML = window.__figataNosotrosEntryPosterSvg;
+        slot.replaceChildren(poster);
+      }
+
+      var offsetMs = Number(window.__figataNosotrosEntryOffsetMs || 0);
+      var runtimeUrl = new URL("js/nosotros-lottie-runtime.js", document.baseURI || window.location.href).toString();
+      window.__figataNosotrosEntryVisualBoot = import(runtimeUrl)
+        .then(function (runtime) {
+          return runtime.mountNosotrosLottie(slot, {
+            autoplay: true,
+            initialElapsedMs: offsetMs,
+            loop: true,
+            speed: 1.5
+          }).then(function (player) {
+            var root = document.documentElement;
+            if (!root.classList.contains("nosotros-entry-pending") && !root.classList.contains("nosotros-entry-active")) {
+              runtime.clearNosotrosLottie(slot);
+            }
+            return player;
+          });
+        })
+        .catch(function (error) {
+          window.__figataNosotrosEntryVisualBootError = String(error && (error.message || error));
+          if (slot.querySelector(".nosotros-route-loader__poster")) {
+            return;
+          }
+          var fallback = document.createElement("span");
+          fallback.className = "nosotros-route-loader__fallback";
+          fallback.textContent = "Sirviendo en breve…";
+          slot.replaceChildren(fallback);
+        });
+    })();
+  </script>
+
+  <header class="site-header" data-public-navbar-host data-public-navbar-hide-cta data-eventos-burger-nav data-menu-mobile-nav="closed">
+    <nav class="navbar" aria-label="Navegación principal">
+      <div class="navbar__inner">
+        <a class="navbar__brand" href="./" aria-label="Figata Pizza &amp; Wine">
+          <img class="navbar__brand-icon" src="assets/svg-icons/logo-icon.svg" alt="" aria-hidden="true">
+          <img class="navbar__brand-text" src="assets/svg-icons/logo-text.svg" alt="" aria-hidden="true">
+        </a>
+
+        <ul class="navbar__links" role="list">
+          <li><a href="menu/">Menú</a></li>
+          <li><a href="eventos/">Eventos</a></li>
+          <li><a href="nosotros/">Nosotros</a></li>
+          <li><a href="#ubicacion">Ubicación</a></li>
+          <li><a href="#contacto">Contacto</a></li>
+        </ul>
+
+        <div class="navbar__actions"></div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="nosotros-main" id="inicio">
+    <section class="nosotros-hero" aria-labelledby="nosotros-hero-title" data-nosotros-reveal>
+      <div class="nosotros-container nosotros-hero__content">
+        <p class="nosotros-chip">
+          <span class="nosotros-chip__label">Nosotros</span>
+        </p>
+        <p class="nosotros-meta">By Figata · Santo Domingo · Nuestra historia</p>
+        <h1 id="nosotros-hero-title">Fuego, masa y hospitalidad con intención</h1>
+        <p class="nosotros-hero__subtitle">
+          Figata nació para unir técnica napolitana, producto honesto y una forma de servicio cálida y cercana.
+          Más que vender pizza, quisimos construir una casa donde cada visita se sienta cuidada, viva y memorable.
+        </p>
+        <figure class="nosotros-hero__media-block">
+          <img
+            class="nosotros-hero__media"
+            src="assets/home/hero.webp"
+            alt="Mesa servida en Figata con pizzas recién horneadas y ambiente cálido"
+            loading="eager"
+            decoding="async">
+          <figcaption>Una cocina viva pensada para compartir alrededor de la mesa.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="nosotros-section nosotros-what" id="quienes-somos" aria-labelledby="quienes-somos-title" data-nosotros-reveal>
+      <div class="nosotros-container">
+        <header class="nosotros-section__header">
+          <h2 id="quienes-somos-title">¿Quiénes somos?</h2>
+        </header>
+
+        <div class="nosotros-what__flow">
+          <p>
+            Somos un equipo obsesionado con la pizza napolitana bien hecha y con la idea de que la hospitalidad también es cocina:
+            cómo recibimos, cómo servimos y cómo acompañamos cada mesa.
+          </p>
+          <ul class="nosotros-bullets">
+            <li>Masa de fermentación lenta y hornos de alta temperatura.</li>
+            <li>Ingredientes seleccionados con enfoque en equilibrio y sabor real.</li>
+            <li>Servicio cercano, atento y consistente en cada turno.</li>
+          </ul>
+          <figure class="nosotros-what__media">
+            <img
+              src="assets/home/middle-hero.webp"
+              alt="Equipo de Figata en cocina preparando pizzas con fuego alto"
+              loading="lazy"
+              decoding="async">
+          </figure>
+          <p class="nosotros-what__closing">Nuestra intención es simple: cocinar bien, servir mejor y hacer que quieras volver.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="nosotros-section" id="nuestra-historia" aria-labelledby="nuestra-historia-title" data-nosotros-reveal>
+      <div class="nosotros-container">
+        <header class="nosotros-section__header">
+          <h2 id="nuestra-historia-title">Nuestra historia</h2>
+        </header>
+
+        <div class="nosotros-flow">
+          <p class="nosotros-flow__intro">
+            Empezamos con una convicción clara: una buena pizza no depende de atajos, sino de técnica, tiempo y criterio.
+          </p>
+
+          <ol class="nosotros-flow__list" aria-label="Etapas de la historia de Figata">
+            <li class="nosotros-flow__step">
+              <div class="nosotros-flow__head">
+                <span class="nosotros-flow__icon" aria-hidden="true">01</span>
+                <h3>El origen</h3>
+              </div>
+              <p>Todo comenzó con pruebas de masa, hidratación y hornos, buscando una base napolitana fiel y consistente.</p>
+            </li>
+            <li class="nosotros-flow__step">
+              <div class="nosotros-flow__head">
+                <span class="nosotros-flow__icon" aria-hidden="true">02</span>
+                <h3>La cocina real</h3>
+              </div>
+              <p>Consolidamos una carta corta pero sólida, enfocada en sabor, repetibilidad y producto bien tratado.</p>
+            </li>
+            <li class="nosotros-flow__step">
+              <div class="nosotros-flow__head">
+                <span class="nosotros-flow__icon" aria-hidden="true">03</span>
+                <h3>La casa Figata</h3>
+              </div>
+              <p>Convertimos el servicio en parte de la propuesta: energía de sala, ritmo de pase y atención con intención.</p>
+            </li>
+            <li class="nosotros-flow__step">
+              <div class="nosotros-flow__head">
+                <span class="nosotros-flow__icon" aria-hidden="true">04</span>
+                <h3>Hoy</h3>
+              </div>
+              <p>Seguimos afinando la experiencia entre salón, menú y eventos, sin perder la esencia que nos trajo hasta aquí.</p>
+            </li>
+          </ol>
+
+          <div class="nosotros-flow-gallery" aria-label="Atmósfera de Figata">
+            <div class="nosotros-collage">
+              <figure class="nosotros-collage__tile nosotros-collage__tile--lead">
+                <img
+                  src="assets/home/exterior.webp"
+                  alt="Fachada y ambiente exterior del restaurante Figata"
+                  loading="lazy"
+                  decoding="async">
+              </figure>
+
+              <div class="nosotros-collage__row">
+                <figure class="nosotros-collage__tile nosotros-collage__tile--small">
+                  <img
+                    src="assets/home/location.webp"
+                    alt="Espacio interior de Figata listo para recibir comensales"
+                    loading="lazy"
+                    decoding="async">
+                </figure>
+
+                <figure class="nosotros-collage__tile nosotros-collage__tile--small">
+                  <img
+                    src="assets/home/location-mobile.webp"
+                    alt="Detalle de una mesa servida en Figata"
+                    loading="lazy"
+                    decoding="async">
+                </figure>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="nosotros-section nosotros-principios" id="como-trabajamos" aria-labelledby="como-trabajamos-title" data-nosotros-reveal>
+      <div class="nosotros-container">
+        <header class="nosotros-section__header nosotros-principios__header">
+          <h2 id="como-trabajamos-title">Cómo trabajamos</h2>
+          <p class="nosotros-principios__intro">
+            Nuestro proceso combina oficio de cocina, claridad operativa y hospitalidad para mantener una experiencia consistente.
+          </p>
+        </header>
+
+        <div class="nosotros-principios__layout">
+          <div class="nosotros-principios__utility-card">
+            <section class="nosotros-principios__block" aria-labelledby="principio-cocina-title">
+              <div class="nosotros-principios__block-head">
+                <h3 id="principio-cocina-title">Cocina con método</h3>
+              </div>
+              <p>Trabajamos con mise en place precisa, control de fermentación y hornos calibrados para sostener textura y sabor en cada servicio.</p>
+            </section>
+
+            <section class="nosotros-principios__block" aria-labelledby="principio-servicio-title">
+              <div class="nosotros-principios__block-head">
+                <h3 id="principio-servicio-title">Servicio con ritmo</h3>
+              </div>
+              <p>Sincronizamos cocina y sala para que los tiempos fluyan, la mesa siempre esté acompañada y la experiencia no se corte.</p>
+            </section>
+
+            <section class="nosotros-principios__block" aria-labelledby="principio-producto-title">
+              <div class="nosotros-principios__block-head">
+                <h3 id="principio-producto-title">Producto con criterio</h3>
+              </div>
+              <p>Elegimos ingredientes que aporten claridad al plato y evitamos complejidad innecesaria: menos ruido, más sabor real.</p>
+            </section>
+          </div>
+
+          <section class="nosotros-principios__notes" aria-labelledby="principios-notes-title">
+            <h3 id="principios-notes-title">En cada servicio cuidamos</h3>
+            <ul class="nosotros-principios__notes-list nosotros-bullets" role="list">
+              <li>Temperatura de salida y consistencia del horneado.</li>
+              <li>Secuencia de servicio para que la mesa se mantenga viva.</li>
+              <li>Comunicación clara entre equipo y comensales.</li>
+              <li>Ambiente cálido: música, luz y ritmo sin exceso.</li>
+              <li>Detalles pequeños que construyen confianza visita tras visita.</li>
+            </ul>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="nosotros-section" id="contacto" aria-labelledby="experiencia-figata-title" data-nosotros-reveal>
+      <div class="nosotros-container">
+        <header class="nosotros-section__header">
+          <h2 id="experiencia-figata-title">La experiencia Figata</h2>
+        </header>
+
+        <div class="nosotros-copy-stack nosotros-experiencia-copy">
+          <p>
+            Queremos que Figata se sienta como una pausa bien hecha: cocina honesta, trato humano y una atmósfera que invita a quedarse.
+          </p>
+          <ul class="nosotros-bullets nosotros-experiencia-list" role="list">
+            <li>Pizzas napolitanas servidas con timing y temperatura correctos.</li>
+            <li>Una mesa pensada para compartir, conversar y volver a pedir.</li>
+            <li>Hospitalidad sin rigidez, con atención genuina.</li>
+            <li>Una identidad de marca construida desde el detalle, no desde la pose.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="shared/public-paths.js" defer></script>
+  <script src="shared/public-hybrid-route-transition.js" defer></script>
+  <script src="js/menu-route-transition.js" defer></script>
+  <script src="js/nosotros-entry-loader.js" defer></script>
+  <script src="shared/public-navbar.js" defer></script>
+  <script src="js/navbar-collapse.js" defer></script>
+  <script src="js/public-burger-menu.js" defer></script>
+  <script src="js/nosotros-page.js" defer></script>
+  <script src="shared/public-scroll-indicator.js" defer></script>
+</body>
+</html>

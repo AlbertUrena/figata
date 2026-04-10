@@ -7,8 +7,18 @@
   const BURGER_ANIMATION_MS = 240;
   const PHOTO_TOUR_CLOSE_MS = 430;
   const PHOTO_VIEWER_CLOSE_MS = 300;
+  const READY_EVENT = 'figata:eventos-page-ready';
   const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let readyDispatched = false;
   const isEventosPage = () => document.body?.classList.contains('eventos-page-body');
+  const dispatchReady = () => {
+    if (readyDispatched) {
+      return;
+    }
+
+    readyDispatched = true;
+    window.dispatchEvent(new CustomEvent(READY_EVENT));
+  };
   const MOBILE_MENU_ENTRY_BY_KEY = {
     menu: {
       subtitle: 'Carta y favoritos',
@@ -3006,6 +3016,7 @@
     initMenuNavbar();
 
     if (!isEventosPage()) {
+      dispatchReady();
       return;
     }
 
@@ -3014,6 +3025,9 @@
     initQuoteCalculator();
     initHeroVideo();
     initSectionParallax();
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(dispatchReady);
+    });
   };
 
   document.addEventListener('figata:public-navbar-ready', initMenuNavbar);
