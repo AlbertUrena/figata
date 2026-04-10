@@ -378,7 +378,10 @@
         "gallery": [
           "assets/menu/pizzas/bellezza/bellezza-slide-0.webp",
           "assets/menu/pizzas/bellezza/bellezza-slide-1.webp",
-          "assets/menu/pizzas/bellezza/bellezza-slide-2.webp"
+          "assets/menu/pizzas/bellezza/bellezza-slide-2.webp",
+          "assets/menu/pizzas/bellezza/bellezza-slide-3.webp",
+          "assets/menu/pizzas/bellezza/bellezza-slide-4.webp",
+          "assets/menu/pizzas/bellezza/bellezza-slide-5.webp"
         ]
       },
       "dominantColor": "",
@@ -710,7 +713,13 @@
         "gallery": [
           "assets/menu/pizzas/spetaccolo/spettacolo-slide-0.webp",
           "assets/menu/pizzas/spetaccolo/spettacolo-slide-1.webp",
-          "assets/menu/pizzas/spetaccolo/spettacolo-slide-2.webp"
+          "assets/menu/pizzas/spetaccolo/spettacolo-slide-2.webp",
+          "assets/menu/pizzas/spetaccolo/spettacolo-slide-3.webp",
+          "assets/menu/pizzas/spetaccolo/spettacolo-slide-4.webp",
+          "assets/menu/pizzas/spetaccolo/spettacolo-slide-5.webp",
+          "assets/menu/pizzas/spetaccolo/spettacolo-slide-6.webp",
+          "assets/menu/pizzas/spetaccolo/spettacolo-slide-7.webp",
+          "assets/menu/pizzas/spetaccolo/spettacolo-slide-8.webp"
         ]
       },
       "dominantColor": "",
