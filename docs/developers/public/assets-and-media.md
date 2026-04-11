@@ -64,7 +64,7 @@ Each menu item can have up to 4 image variants, defined in `data/media.json`:
 | `card` | Card thumbnail in the featured grid | `js/mas-pedidas.js` card rendering |
 | `hover` | Alternate image shown on pointer hover | Card hover state + preview hover |
 | `modal` | Full-size image in the preview overlay | Preview overlay main image |
-| `gallery` | Additional editorial detail images (array) | Detail hero fallback/editorial runtime |
+| `gallery` | Additional editorial detail images (array) | Explicit `/menu/` detail editorial gallery |
 
 ### Placeholder Images
 
@@ -129,6 +129,10 @@ buildMenuMediaCandidates(raw)   // Build candidate paths for media picker
     "<item-id>": {
       "source": "assets/menu/pizzas/<pizza-slug>/<asset>.webp",
       "alt": "Item display name",
+      "lqip": "data:image/webp;base64,...",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/<pizza-slug>/<asset>-slide-0.webp": "data:image/webp;base64,..."
+      },
       "overrides": {
         "card": "",
         "hover": "",
@@ -139,6 +143,10 @@ buildMenuMediaCandidates(raw)   // Build candidate paths for media picker
   }
 }
 ```
+
+`lqip` is optional and stores a tiny inline data URI used as the first-paint blurred placeholder in the `/menu/` catalog cards.
+`detailSlideLqip` is optional and stores inline placeholders per detail slide path so the active `/menu/` editorial slide can render instantly without extra placeholder requests.
+The public `/menu/` detail hero only uses editorial media declared in `overrides.gallery` or `overrides.editorialSlides`. When `gallery` is empty, the runtime can rebuild the image-only editorial gallery from the already-declared `detailSlideLqip` keys in `data/media.json`; it does not guess slide filenames over the network and it never falls back to the catalog image.
 
 For the full schema, see `docs/developers/data/data-layer.md`.
 
@@ -254,7 +262,9 @@ Returns a sorted list of `.webp`, `.svg`, `.webm`, and `.mp4` files under `asset
    }
    ```
 5. Keep `data/menu.json` `item.image` aligned with the same path used as source/card
-6. Run `npm run validate:media` to verify
+6. (Optional) Regenerate catalog inline placeholders with `npm run generate:menu-card-lqip`
+7. (Optional, when changing detail slides) regenerate detail slide assets/LQIP with `npm run generate:menu-detail-slides`
+8. Run `npm run validate:media` to verify
 
 ## Adding a New Ingredient Icon
 

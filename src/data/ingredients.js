@@ -40,9 +40,7 @@
     return response.json();
   };
 
-  const buildIngredientsStore = async () => {
-    const ingredientsJson = await fetchJson(INGREDIENTS_URL, 'ingredients.json');
-
+  const buildIngredientsStoreFromPayload = (ingredientsJson = null) => {
     const ingredients = ingredientsJson?.ingredients || {};
     const icons = ingredientsJson?.icons || {};
     const allergens = ingredientsJson?.allergens || {};
@@ -75,12 +73,31 @@
     };
   };
 
+  const buildIngredientsStore = async () => {
+    const ingredientsJson = await fetchJson(INGREDIENTS_URL, 'ingredients.json');
+    return buildIngredientsStoreFromPayload(ingredientsJson);
+  };
+
   const loadIngredientsStore = async () => {
     if (!cachedIngredientsStorePromise) {
       cachedIngredientsStorePromise = buildIngredientsStore();
     }
 
     return cachedIngredientsStorePromise;
+  };
+
+  const primeIngredientsStore = (ingredientsJson = null) => {
+    if (!ingredientsJson || typeof ingredientsJson !== 'object') {
+      return null;
+    }
+
+    if (cachedIngredientsStorePromise) {
+      return null;
+    }
+
+    const store = buildIngredientsStoreFromPayload(ingredientsJson);
+    cachedIngredientsStorePromise = Promise.resolve(store);
+    return store;
   };
 
   const resolveIcon = (ingredient, icons) => {
@@ -160,6 +177,7 @@
   window.FigataData = window.FigataData || {};
   window.FigataData.ingredients = {
     loadIngredientsStore,
+    primeIngredientsStore,
     resolveIngredient,
     resolveIngredients,
   };

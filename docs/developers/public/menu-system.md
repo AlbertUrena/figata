@@ -21,7 +21,7 @@ The menu system has two public surfaces:
 | **Card template** | `index.html` (`#mas-pedidas-card-template`) | ~20 | HTML template cloned for each card |
 | **Menu data generator** | `src/data/menu.js` | 660 | In-browser generator exposing `getFeaturedMenuItems()`, `getMenuItemsByCategory()`, and `getSensoryProfileSchema()` |
 | **Ingredients component** | `src/ui/ingredient-icon-row.js` | 52 | Renders ingredient icon chips |
-| **Media resolver** | `src/data/media.js` | ~490 | Provides `get(itemId, variant)`, `getAlt()`, `getGallery()`, `getEditorialGallery()`, `prefetch()` |
+| **Media resolver** | `src/data/media.js` | ~490 | Provides `get(itemId, variant)`, `getAlt()`, `getGallery()`, `getEditorialGallery()` (configured gallery only), `prefetch()` |
 
 ---
 
@@ -55,7 +55,7 @@ menu/index.html         → mobile-only initial catalog seed mounts the first re
 shared/public-navbar.js → mounts canonical navbar from homepage source and rejects route-mutated variants
     ↘
 src/data/menu.js      → getMenuItemsByCategory()
-src/data/media.js     → media variants + editorial gallery auto-detection + prefetch helpers
+src/data/media.js     → media variants + explicit editorial gallery lookups + prefetch helpers
 shared/menu-allergens.js → derived `item.allergens` for detail view + allergen filter exclusion
 shared/menu-sensory.js → exposes the fixed 8-axis sensory schema for detail-view sensory visualizations
     ↓
@@ -174,10 +174,10 @@ For each item, `data/home-featured.json` already contains the resolved homepage 
 For mobile detail hero, `js/menu-page.js` resolves editorial media with this priority:
 
 1. Typed `overrides.editorialSlides` only when they include video slides (`type: "video"`)
-2. `mediaApi.getEditorialGallery(id)` repo-first auto-detection from the item folder (same directory as `card/modal/source`) using image patterns (`<editorial-slug>-slide-<n>.webp`, compact `<editorial-slug>-slide<n>.webp`) and video patterns (`<editorial-slug>-video-slide-<n>.(webm|mp4)`, compact `<editorial-slug>-video-slide<n>.(webm|mp4)`); accepts underscore/hyphen item-id variants and source-basename variants
-3. `overrides.gallery` legacy image-only fallback
-4. Image-only `overrides.editorialSlides` legacy fallback
-5. Catalog fallback (`modal`/`card`) when no editorial slides exist
+2. `overrides.gallery` configured image-only gallery
+3. `detailSlideLqip` keys reused as a declared legacy image-only gallery when `gallery` is empty
+4. Image-only `overrides.editorialSlides` legacy compatibility fallback
+5. No catalog fallback in detail view; if no editorial media is configured, the hero stays empty
 
 ### Prefetching
 

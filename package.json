@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "node scripts/dev-server.js",
     "generate:home-featured": "node scripts/generate-home-featured.js",
+    "generate:menu-card-lqip": "node scripts/generate-menu-card-lqip.js",
+    "generate:menu-detail-slides": "node scripts/generate-menu-detail-slides.js",
     "test": "node scripts/test-menu-traits.js && node scripts/test-menu-allergens.js",
     "test:allergens": "node scripts/test-menu-allergens.js",
     "check:admin-ui": "node scripts/check_admin_ui.js",

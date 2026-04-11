@@ -90,13 +90,15 @@ if (menu && media) {
     pathUsage.set(normalized, usage);
   };
 
-  const checkPath = (assetPath, itemId, variant) => {
+  const checkPath = (assetPath, itemId, variant, { registerUsage = true } = {}) => {
     const normalized = normalizePath(assetPath);
     if (!normalized) return;
     if (!pathExistsInProject(normalized)) {
       brokenPaths.push({ itemId, variant, path: normalized });
     }
-    registerPathUse(normalized, itemId, variant);
+    if (registerUsage) {
+      registerPathUse(normalized, itemId, variant);
+    }
   };
 
   Object.entries(mediaItems).forEach(([rawId, rawEntry]) => {
@@ -118,6 +120,18 @@ if (menu && media) {
       gallery.forEach((gp, gi) => {
         checkPath(gp, itemId, 'overrides.gallery[' + gi + ']');
       });
+
+      const detailSlideLqip =
+        isObject(rawEntry.detailSlideLqip)
+          ? rawEntry.detailSlideLqip
+          : isObject(overrides.detailSlideLqip)
+            ? overrides.detailSlideLqip
+            : {};
+      Object.keys(detailSlideLqip).forEach((slidePath, si) => {
+        checkPath(slidePath, itemId, 'detailSlideLqip[' + si + ']', {
+          registerUsage: false,
+        });
+      });
     } else {
       // v1: flat
       ['card', 'hover', 'modal'].forEach((v) => {
@@ -126,6 +140,15 @@ if (menu && media) {
       const gallery = Array.isArray(rawEntry.gallery) ? rawEntry.gallery : [];
       gallery.forEach((gp, gi) => {
         checkPath(gp, itemId, 'gallery[' + gi + ']');
+      });
+
+      const detailSlideLqip = isObject(rawEntry.detailSlideLqip)
+        ? rawEntry.detailSlideLqip
+        : {};
+      Object.keys(detailSlideLqip).forEach((slidePath, si) => {
+        checkPath(slidePath, itemId, 'detailSlideLqip[' + si + ']', {
+          registerUsage: false,
+        });
       });
     }
   });

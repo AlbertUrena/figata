@@ -6,10 +6,6 @@
   const MEDIA_URL = new URL('data/media.json', ROOT_URL);
 
   const VARIANTS = new Set(['card', 'hover', 'modal']);
-  const LEGACY_EDITORIAL_MEDIA_ROOT = 'assets/menu/editorial';
-  const MAX_EDITORIAL_SLIDES = 12;
-  const EDITORIAL_SLIDE_EXTENSIONS = ['webp', 'webm', 'mp4'];
-
   const STATIC_DEFAULTS = {
     card: 'assets/menu/placeholders/card.svg',
     modal: 'assets/menu/placeholders/modal.svg',
@@ -38,25 +34,86 @@
     return normalized.startsWith('/') ? normalized.slice(1) : normalized;
   };
 
-  const getAssetDirname = (value) => {
-    const normalized = normalizeAssetPath(value);
-    if (!normalized) {
+  const normalizeAssetLookupPath = (value) => {
+    const normalized = normalizeText(value);
+
+    if (!normalized || /^data:/i.test(normalized)) {
       return '';
     }
-    const slashIndex = normalized.lastIndexOf('/');
-    if (slashIndex <= 0) {
-      return '';
+
+    const normalizedNoHash = normalized.split('#')[0];
+    const normalizedNoQuery = normalizedNoHash.split('?')[0];
+
+    try {
+      if (/^[a-z][a-z0-9+.-]*:/i.test(normalizedNoQuery)) {
+        const parsed = new URL(normalizedNoQuery, ROOT_URL);
+        return normalizeAssetPath(parsed.pathname);
+      }
+    } catch (_error) {
+      // Fall back to path normalization below.
     }
-    return normalized.slice(0, slashIndex);
+
+    return normalizeAssetPath(normalizedNoQuery);
   };
 
-  const getAssetBaseNameNoExt = (value) => {
-    const normalized = normalizeAssetPath(value);
+  const normalizeInlineImageDataUri = (value) => {
+    const normalized = normalizeText(value);
     if (!normalized) {
       return '';
     }
-    const basename = normalized.slice(normalized.lastIndexOf('/') + 1);
-    return basename.replace(/\.[^.]+$/i, '');
+
+    return /^data:image\/[a-z0-9.+-]+;base64,[a-z0-9+/=]+$/i.test(normalized)
+      ? normalized
+      : '';
+  };
+
+  const normalizeDetailSlideLqipMap = (value) => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return {};
+    }
+
+    const result = {};
+
+    Object.entries(value).forEach(([rawPath, rawLqip]) => {
+      const normalizedPath = normalizeAssetLookupPath(rawPath);
+      const normalizedLqip = normalizeInlineImageDataUri(rawLqip);
+
+      if (!normalizedPath || !normalizedLqip) {
+        return;
+      }
+
+      result[normalizedPath] = normalizedLqip;
+    });
+
+    return result;
+  };
+
+  const DETAIL_SLIDE_IMAGE_RE = /\.(?:webp|png|jpe?g)$/i;
+
+  const getDetailSlideSortIndex = (path) => {
+    const normalized = normalizeAssetLookupPath(path).toLowerCase();
+    const match = normalized.match(/-slide-?(\d+)\.(?:webp|png|jpe?g)$/i);
+    return match ? Number(match[1]) : Number.MAX_SAFE_INTEGER;
+  };
+
+  const deriveGalleryFromDetailSlideLqip = (detailSlideLqip) => {
+    if (!detailSlideLqip || typeof detailSlideLqip !== 'object') {
+      return [];
+    }
+
+    return Object.keys(detailSlideLqip)
+      .map(normalizeAssetLookupPath)
+      .filter((path) => Boolean(path) && DETAIL_SLIDE_IMAGE_RE.test(path))
+      .sort((left, right) => {
+        const leftIndex = getDetailSlideSortIndex(left);
+        const rightIndex = getDetailSlideSortIndex(right);
+
+        if (leftIndex !== rightIndex) {
+          return leftIndex - rightIndex;
+        }
+
+        return left.localeCompare(right);
+      });
   };
 
   const inferVideoSourceType = (path) => {
@@ -300,9 +357,6 @@
       warnedKeys: new Set(),
       missingMediaIds: new Set(),
       prefetchedPaths: new Set(),
-      editorialDetections: new Map(),
-      editorialDetectionPromises: new Map(),
-      editorialProbeCache: new Map(),
     };
 
     Object.entries(sourceItems).forEach(([rawId, rawEntry]) => {
@@ -321,6 +375,8 @@
       let editorialSlides = [];
       let alt = '';
       let dominantColor = '';
+      let lqip = '';
+      let detailSlideLqip = {};
 
       if (version >= 2 || rawEntry.source) {
         const sourcePath = normalizeAssetPath(rawEntry.source);
@@ -335,6 +391,13 @@
         }
         alt = normalizeText(rawEntry.alt);
         dominantColor = normalizeText(rawEntry.dominantColor);
+        lqip = normalizeInlineImageDataUri(rawEntry.lqip);
+        detailSlideLqip = normalizeDetailSlideLqipMap(
+          overrides.detailSlideLqip || rawEntry.detailSlideLqip
+        );
+        if (!gallery.length) {
+          gallery = deriveGalleryFromDetailSlideLqip(detailSlideLqip);
+        }
       } else {
         card = normalizeAssetPath(rawEntry.card);
         hover = normalizeAssetPath(rawEntry.hover);
@@ -343,6 +406,11 @@
         editorialSlides = normalizeEditorialSlides(rawEntry.editorialSlides);
         alt = normalizeText(rawEntry.alt);
         dominantColor = normalizeText(rawEntry.dominantColor);
+        lqip = normalizeInlineImageDataUri(rawEntry.lqip);
+        detailSlideLqip = normalizeDetailSlideLqipMap(rawEntry.detailSlideLqip);
+        if (!gallery.length) {
+          gallery = deriveGalleryFromDetailSlideLqip(detailSlideLqip);
+        }
       }
 
       store.items.set(itemId, {
@@ -353,6 +421,8 @@
         editorialSlides,
         alt,
         dominantColor,
+        lqip,
+        detailSlideLqip,
         version,
       });
     });
@@ -467,260 +537,31 @@
     return item.editorialSlides.map(cloneEditorialSlide).filter(Boolean);
   };
 
-  const getEditorialIdVariants = (itemId) => {
+  const resolveLqip = (store, itemId) => {
     const normalizedId = normalizeId(itemId);
+    const item = store.items.get(normalizedId);
 
-    if (!normalizedId) {
-      return [];
-    }
-
-    return Array.from(
-      new Set([
-        normalizedId,
-        normalizedId.replace(/_/g, '-'),
-        normalizedId.replace(/-/g, '_'),
-      ].filter(Boolean))
-    );
-  };
-
-  const buildEditorialDirectoryCandidates = (item) => {
-    const candidates = [];
-    const seen = new Set();
-
-    const pushCandidate = (value) => {
-      const directory = getAssetDirname(value);
-      if (!directory || seen.has(directory)) {
-        return;
-      }
-      seen.add(directory);
-      candidates.push(directory);
-    };
-
-    if (item && typeof item === 'object') {
-      pushCandidate(item.card);
-      pushCandidate(item.modal);
-      pushCandidate(item.hover);
-    }
-
-    return candidates;
-  };
-
-  const buildEditorialSlugCandidates = (item, itemId) => {
-    const candidates = [];
-    const seen = new Set();
-
-    const pushCandidate = (value) => {
-      const normalized = normalizeId(value).replace(/_/g, '-');
-      if (!normalized || seen.has(normalized)) {
-        return;
-      }
-      seen.add(normalized);
-      candidates.push(normalized);
-    };
-
-    getEditorialIdVariants(itemId).forEach(pushCandidate);
-
-    const baseCandidates = [];
-    if (item && typeof item === 'object') {
-      baseCandidates.push(getAssetBaseNameNoExt(item.card));
-      baseCandidates.push(getAssetBaseNameNoExt(item.modal));
-      baseCandidates.push(getAssetBaseNameNoExt(item.hover));
-    }
-
-    baseCandidates
-      .filter(Boolean)
-      .forEach((base) => {
-        pushCandidate(base);
-        pushCandidate(base.replace(/-hover$/i, ''));
-        pushCandidate(base.replace(/^pizza-/i, ''));
-        pushCandidate(base.replace(/^producto-/i, ''));
-
-        const chunks = base.split('-').filter(Boolean);
-        if (chunks.length > 1) {
-          pushCandidate(chunks[chunks.length - 1]);
-        }
-      });
-
-    return candidates;
-  };
-
-  const buildEditorialSlideCandidates = (directory, slug, slideIndex) => {
-    const normalizedDirectory = normalizeAssetPath(directory);
-    const normalizedSlug = normalizeId(slug).replace(/_/g, '-');
-
-    if (!normalizedDirectory || !normalizedSlug || !Number.isFinite(slideIndex)) {
-      return [];
-    }
-
-    const baseNames = [
-      `${normalizedSlug}-slide-${slideIndex}`,
-      `${normalizedSlug}-slide${slideIndex}`,
-      `${normalizedSlug}-video-slide-${slideIndex}`,
-      `${normalizedSlug}-video-slide${slideIndex}`,
-    ];
-
-    const candidates = [];
-    const seen = new Set();
-
-    baseNames.forEach((baseName) => {
-      EDITORIAL_SLIDE_EXTENSIONS.forEach((extension) => {
-        const candidate = `${normalizedDirectory}/${baseName}.${extension}`;
-        if (!seen.has(candidate)) {
-          seen.add(candidate);
-          candidates.push(candidate);
-        }
-      });
-    });
-
-    return candidates;
-  };
-
-  const toProbeUrl = (path) => {
-    const normalizedPath = normalizeAssetPath(path);
-
-    if (!normalizedPath) {
+    if (!item) {
       return '';
     }
 
-    if (publicPaths?.toAbsoluteUrl) {
-      return publicPaths.toAbsoluteUrl(normalizedPath);
-    }
-
-    return new URL(normalizedPath, ROOT_URL).toString();
+    return normalizeInlineImageDataUri(item.lqip);
   };
 
-  const resolveProbeCacheValue = async (cacheValue) => {
-    if (typeof cacheValue === 'boolean') {
-      return cacheValue;
-    }
-
-    if (cacheValue && typeof cacheValue.then === 'function') {
-      return cacheValue;
-    }
-
-    return false;
-  };
-
-  const probeAssetExists = async (store, path) => {
-    const normalizedPath = normalizeAssetPath(path);
-
-    if (!normalizedPath) {
-      return false;
-    }
-
-    if (store.editorialProbeCache.has(normalizedPath)) {
-      return resolveProbeCacheValue(store.editorialProbeCache.get(normalizedPath));
-    }
-
-    const probePromise = (async () => {
-      const probeUrl = toProbeUrl(normalizedPath);
-
-      if (!probeUrl) {
-        return false;
-      }
-
-      try {
-        const headResponse = await fetch(probeUrl, {
-          method: 'HEAD',
-          cache: 'no-store',
-        });
-
-        if (headResponse.ok) {
-          return true;
-        }
-
-        if (headResponse.status !== 405 && headResponse.status !== 501) {
-          return false;
-        }
-      } catch (_error) {
-        // Fallback to GET probe below.
-      }
-
-      try {
-        const getResponse = await fetch(probeUrl, {
-          method: 'GET',
-          cache: 'no-store',
-        });
-        return getResponse.ok;
-      } catch (_error) {
-        return false;
-      }
-    })();
-
-    store.editorialProbeCache.set(normalizedPath, probePromise);
-    const exists = await probePromise;
-    store.editorialProbeCache.set(normalizedPath, exists);
-    return exists;
-  };
-
-  const detectEditorialGallery = async (store, itemId) => {
+  const resolveDetailSlideLqip = (store, itemId, slidePath = '') => {
     const normalizedId = normalizeId(itemId);
+    const item = store.items.get(normalizedId);
 
-    if (!normalizedId) {
-      return [];
+    if (!item || !item.detailSlideLqip || typeof item.detailSlideLqip !== 'object') {
+      return '';
     }
 
-    if (store.editorialDetections.has(normalizedId)) {
-      return store.editorialDetections.get(normalizedId).slice();
+    const normalizedSlidePath = normalizeAssetLookupPath(slidePath);
+    if (!normalizedSlidePath) {
+      return '';
     }
 
-    if (store.editorialDetectionPromises.has(normalizedId)) {
-      const pendingResult = await store.editorialDetectionPromises.get(normalizedId);
-      return pendingResult.slice();
-    }
-
-    const detectionPromise = (async () => {
-      const item = store.items.get(normalizedId);
-      const slugCandidates = buildEditorialSlugCandidates(item, normalizedId);
-      const directoryCandidates = buildEditorialDirectoryCandidates(item);
-      if (!directoryCandidates.includes(LEGACY_EDITORIAL_MEDIA_ROOT)) {
-        directoryCandidates.push(LEGACY_EDITORIAL_MEDIA_ROOT);
-      }
-
-      let detectedPaths = [];
-
-      for (const directory of directoryCandidates) {
-        for (const slug of slugCandidates) {
-          const candidatePaths = [];
-
-          for (let slideIndex = 0; slideIndex < MAX_EDITORIAL_SLIDES; slideIndex += 1) {
-            const candidatesForIndex = buildEditorialSlideCandidates(directory, slug, slideIndex);
-            let detectedPath = '';
-
-            for (const candidatePath of candidatesForIndex) {
-              const exists = await probeAssetExists(store, candidatePath);
-              if (exists) {
-                detectedPath = candidatePath;
-                break;
-              }
-            }
-
-            if (!detectedPath) {
-              break;
-            }
-
-            candidatePaths.push(detectedPath);
-          }
-
-          if (candidatePaths.length) {
-            detectedPaths = candidatePaths;
-            break;
-          }
-        }
-
-        if (detectedPaths.length) {
-          break;
-        }
-      }
-
-      store.editorialDetections.set(normalizedId, detectedPaths.slice());
-      store.editorialDetectionPromises.delete(normalizedId);
-      return detectedPaths;
-    })();
-
-    store.editorialDetectionPromises.set(normalizedId, detectionPromise);
-    const result = await detectionPromise;
-    return result.slice();
+    return normalizeInlineImageDataUri(item.detailSlideLqip[normalizedSlidePath]);
   };
 
   const buildMediaStore = async () => {
@@ -778,6 +619,16 @@
     return resolveEditorialSlides(store, itemId);
   };
 
+  const getLqip = (itemId) => {
+    const store = ensureStore();
+    return resolveLqip(store, itemId);
+  };
+
+  const getDetailSlideLqip = (itemId, slidePath = '') => {
+    const store = ensureStore();
+    return resolveDetailSlideLqip(store, itemId, slidePath);
+  };
+
   const getEditorialGallery = async (itemId) => {
     let store;
 
@@ -787,15 +638,7 @@
       store = ensureStore();
     }
 
-    const configuredGallery = resolveGallery(store, itemId);
-
-    const detectedGallery = await detectEditorialGallery(store, itemId);
-
-    if (detectedGallery.length) {
-      return detectedGallery;
-    }
-
-    return configuredGallery;
+    return resolveGallery(store, itemId);
   };
 
   const prefetch = (itemId, variant = 'modal') => {
@@ -839,6 +682,8 @@
         editorialSlides: resolveEditorialSlides(store, itemId),
         alt: entry.alt,
         dominantColor: entry.dominantColor,
+        lqip: resolveLqip(store, itemId),
+        detailSlideLqip: { ...(entry.detailSlideLqip || {}) },
         version: entry.version,
       };
     });
@@ -861,6 +706,8 @@
     getAlt,
     getGallery,
     getEditorialSlides,
+    getLqip,
+    getDetailSlideLqip,
     getEditorialGallery,
     getMissingMediaIds,
     getConfigSnapshot,

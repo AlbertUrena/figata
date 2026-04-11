@@ -71,7 +71,7 @@ website-figata/
 │   ├── home.json                 Homepage configuration (hero, featured, events, etc.)
 │   ├── home-featured.json        Generated homepage featured-card payload derived from home/menu/media/availability/ingredients
 │   ├── restaurant.json           Restaurant metadata
-│   ├── media.json                Per-item media variants (card, modal, hover)
+│   ├── media.json                Per-item media variants (card, modal, hover, optional inline lqip)
 │   ├── media-report.json         Media audit report (generated)
 │   └── media-variants.json       Media variant specifications
 ├── admin/
@@ -103,6 +103,8 @@ website-figata/
 ├── scripts/                   ← Dev tools and validation scripts
 │   ├── dev-server.js             Local dev server with media endpoint
 │   ├── generate-home-featured.js Derives data/home-featured.json + responsive homepage featured variants from canonical data
+│   ├── generate-menu-card-lqip.js Generates inline LQIP placeholders for menu catalog cards in data/media.json
+│   ├── generate-menu-detail-slides.js Normalizes detail slides to 1080x1440 WebP + regenerates inline detail slide LQIP maps
 │   ├── validate-menu.js          Validates menu.json against Menu Traits V2
 │   ├── validate-ingredients.js   Validates ingredients.json
 │   ├── validate-categories.js    Validates categories.json
@@ -203,6 +205,8 @@ http://127.0.0.1:5173/admin/app/?devAuthBypass=1
 
 ```bash
 npm run generate:home-featured # regenerate data/home-featured.json + responsive homepage featured assets
+npm run generate:menu-card-lqip # regenerate inline LQIP placeholders for menu catalog cards
+npm run generate:menu-detail-slides # normalize detail slide assets (1080x1440) + regenerate inline detail slide LQIP maps
 npm run validate:home          # validates data/home.json
 npm run validate:media         # validates data/media.json
 npm run validate:menu          # validates data/menu.json

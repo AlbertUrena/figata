@@ -19,7 +19,12 @@
       "card": "assets/menu/entradas/berenjenas-a-la-parmesana/berenjenas-a-la-parmesana.webp",
       "modal": "assets/menu/entradas/berenjenas-a-la-parmesana/berenjenas-a-la-parmesana.webp",
       "hover": "",
-      "gallery": []
+      "gallery": [],
+      "lqip": "data:image/webp;base64,UklGRr4BAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSKkAAAABgFtt27Lmwb11hz04tGwAHTN4SacruMWlTJvW3d09Kd1+//+XDSJiAjBsY6Kz/fC42Uua5emyj4zkc1onw7PEyF4MSPjOGYXXQRHDCqN42yooMoR1AL43iv84MM6QPjqj/zRMaYYhntul2jmmOpynmqpSxez3NLNA/I/iMwKgRlECAP2ysj2TAN5zJacBiHsX5G36Ia3NPEu9FgyQbU72t5/vN8dSNgwbAFZQOCDuAAAAsAYAnQEqGAAYAD6VQJlJJaOiISgNULASiWwAnS/WpBRgDvMbgi6wwV/qYOaaSNRxSCrPl5flSyJGfFiywAAA/vnFnANiTkDQ5oSgbeDnzCvAOCC4Tnpfr6UXBuyeeQ2PfLXG89BXDdeYuDckqyT0UdaVXvkEzZeYpEvJq8b2296G7d2BHYGm+IL/y+IkM8cPI6J75wWFFJKDVqhoWUTRj7ahfLOlqOIYjdiuIyK83XcnkbOHB678YQ5p5BDaTCTQ6BBS6vDeL9opWjhvTWO+K/gf2G4lOs9dCJvrwctSHtmsYDMOfEf4hKm3Ep0QAA==",
+      "detailSlideLqip": {
+        "assets/menu/entradas/berenjenas-a-la-parmesana/parmesana-slide-0.webp": "data:image/webp;base64,UklGRhQBAABXRUJQVlA4IAgBAAAwBgCdASoYACAAPqlKn0smJCKhqAqowBUJYgCsAzAjowW4gUydyZnTgVvhkqLoe00AQKYzzjP7fINAAP5oaGzXFlDrCzzAWXkvBbzcfOOIvSVd4yPIOIETCJ9U1c2C8n49NI6e9xAWd6PQDfLz15UHvo0HsLtP3gDq+BwxZ1bYrHBjQTPG83VE4id7UK64qt1dFe43icNrknmR4h4uQq/Ti4L+qz+d+97caUUAIF9+AFJTtdCZtPMUfuhxHOVggMqZgNoJCe2S4M1j4AA/mTyQzdohyflCHozIbp74oCKNndZ28eWnxzpDSa9F/bQQkiDhLl0FDbEhXIpIIQXSlsQbjSV/u+6+oAA=",
+        "assets/menu/entradas/berenjenas-a-la-parmesana/parmesana-slide-1.webp": "data:image/webp;base64,UklGRkgBAABXRUJQVlA4IDwBAAAQBgCdASoYACAAPqlGnEkmI6KhMAgAwBUJagCdOUFSnga9lpEBynz7q6AjmuXQFNQjoUDfiK6+h3gA/vnI2UP1rw0SXI0ZPAvxB4ugJIzpvEul+FA3937pNjGb1PUztR2kUFGpxiBu5nB2fUKMJKMKSlyHnafFw23aDnI6KO7294a+IIFhX7EUJwHPDGptjDk8MAd9iCEsxoo+y6OjoRM7RxRTvfrdhASHkVFy35gipSeKhSpKCZgATTwK0lRp3OyJeImi7Gmr4B4hFQmdJfhoV5wViNajshPGcBiOPyUW+9Ud7+bwCskfbRPjgEwpcrR/+7rIGDB05wFDgamO0iA2AyU4hgNElUQ31amah6Y8JoBSMSIzoeveGn2nh5ydOuX6hW/GYE0uQZuobgdMA2ADpd+FrY/6hjO+zugA"
+      }
     },
     "focaccia_parmigiano": {
       "source": "assets/menu/entradas/focaccia-al-horno/focaccia-al-horno.webp",
@@ -34,7 +39,12 @@
         ]
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRiwCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSLAAAAABgJtt27Hn/m1ziT/ZwHZS225zpE1nLGDbae1s4Eqd7R8vR4iICQA7ZvxirTUA4bTjIPmWI9L4F6R/5fP1/gc5D6I5qv6D3N+1DN1zUPCvmJYVFN6nrYq9mwj3n1iwhigIShwj+mQcEAcyvrQArmQEfQCuZfwZAM23jDsAOJGxTSzKaCKaJfz4CfWQ2DqoypZvkXoaEHXJd2tiwdX1xlMEbkfR7AVtBOLW5IqZ9XhQAVZQOCBWAQAAUAcAnQEqGAAYAD6VPplIpaMiISgNULASiWwAnTLjdQejJ4a3lhGggUuxNe1hr2bxSVvHX1+9u3KxBtA/L1sS8V9MAAD5t0uo5RaSi/A5cTPAEf/BPbfKd7IINjXuH/Kg83j3pzaYWB/xjjLzZUhCPMcd2dk65z0BM29KdExJ66lc3ShMzNIpVKt2Iux2X8FwrWrvTGmg3CkCe9ihkfOXd1pHKmYmAQloKqQGJUn3Y4F11lA9OMm2ghoXf8K9zPU1H0zVtHHSSLIjbNrFY+6wtu8J1z2uvw8/Aue9SFOoEi3cNv/s2aX82lh7iEvlBNKz9VY/K8lJlnfHw6fED0QDrOv/XnPeX3VhZHp8FFLAlDSA0Bus9zCnTYzYPW3Y+Igg4JK5vJ1q7Asn13wFWGzwfbCmpGnbHPNY+Kxty5RtWoZYudrSFzIN6EUVu0uOKKN8f/qJYAAA",
+      "detailSlideLqip": {
+        "assets/menu/entradas/focaccia-al-horno/focaccia-al-horno-slide-0.webp": "data:image/webp;base64,UklGRigBAABXRUJQVlA4IBwBAACQBgCdASoYACAAPqlGnkqmI6KhsBgIAMAVCUATpl2fTxaMFBrASB55SWvKimUE5bFx7XZU1NZD30ty4x0AAP7F9JPuExhJq++paikg1EqLkovhJiQmjeJu8fCnzc4Ham7hSELF6xdzCX2ILKvEuWPuYV1ahDjXt68d06KTUWVDA5nBPQUkv1+4YHoKPPkknll/FbDQnoi6r104UzE/UMsx5Tmq2nGMrPEKzy16Wa5mW3q4LIEvMGl2nUsOTxZis9HjP2AU+gMJIelBFjGds9gaFp4x81j4v5v2rhzQ+Rq4XEBRbKVUF+dZFLn8x8tFKVvVxjWibwnS+OzQ++YUPA6raJVWshX2BpcKbGmmVlEIuBeNNr2W7vPg4zrcAA==",
+        "assets/menu/entradas/focaccia-al-horno/focaccia-al-horno-slide-1.webp": "data:image/webp;base64,UklGRooBAABXRUJQVlA4IH4BAADwBwCdASoYACAAPqlEnEkmI6KhMAgAwBUJaACdMtB+H1gTJ99Aby3ADSBM7egAMChVM+p3lwFT3WA3IxWnMCT7lYqtQHCCNAAA/SqPV4FPR34RO+vHi68sVVH1p2w20BDsI9x890QrD67Qvk8C35MXoFEFxN5KVcLLBsha6Hew2+7rk2oHnnnHzPM8G7Hv+bMoLVzSH3xSssLNnV+lW0Fc5e9GChJWpBSpIyNVht1m0OSMoDkHeZ89xPcHO5vptW7wGE7eJ2MLmB7v3bLUrnNJYduRXFYbXnI1fIU3c8PO4Zf1Uv+++eiLz1ngPSmp3EZCCqlxXpv5zIcVSu72AvqWzQDa+BwHuxX407N7OtwYBMILV9VY9tpmOzTs4kfRTBjAKG8Qbpz6lmQaiBtf38r8JaJPfTnJh3IWy1h7D22dJ+taZ1mDBmTWekcQ9yoPrec2rfUDWc83EFuzgqt8TplGY5VBkX3v9zarxmvV+Ql+wBZrdndkXg7C+4vGYgAA"
+      }
     },
     "bruschetta_classica": {
       "source": "assets/menu/entradas/bruschetta/bruschetta.webp",
@@ -46,7 +56,12 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRjICAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSL8AAAABkGvb2rFXO7bZ2els265SpcpIa3S2bkCdKxtlatu2nXOe5n3f772EiJgACDqVpy0WQLlq5y8R/Q9UYhe+ScyXRH0RtaofEpw05qn0kvh+SwhLe1UBEeUzrO+UUS6g5n9GEs80Gm5IbmYXSe5xXJc0DBtJI1B5k7ME7Mrpg9qKlHs39JLUb2BCzjKgGrUh4dUTADTaFZ34gqlS+Cc2awx+zq/AX7UmRGPOeSNQaDb2n4j+6H+8EsAur7LYI8sfbABWUDggTAEAADAIAJ0BKhgAGAA+lUScSyWjoqGoCACwEolsAJ05QVI93fyjhDNjtwDCubJT/7yPBCAauMhjoBFAN3oN/4oghk77soA6d5mjGCdcAP7o6FZ/W5QLsJw3WOc14AJrY7vnKbCiP0M5c1QMtKaN5ZAXM9LZXgh/UxWAN8Ra0IpCDeaMbqPpW7Q4tNxs8+n130vgq7zuqBWTHn/rydvFsi4S6lvxd7f7fO2iKXLo9wpBTfJP/ZPGJ9FH1QyvKCc2sh4GHzsOyswPJqDdHHn2oXyWzhvYB5iUuZP8dxa3IksSEX+0UuCENI2W4UX2yEb7VI3V4qizE0/2WeObleVD8/2yYbN5PSOXVM78lqTTV9QfvYbQvTrUZ8MIjPZRQMcsS9G995HCj2R+0kkhW3bppLONNq2iJ0FEbiRha5gar8u2t52blnr8LMLEMwYwAAAA",
+      "detailSlideLqip": {
+        "assets/menu/entradas/bruschetta/bruschetta-classica-slide-0.webp": "data:image/webp;base64,UklGRg4BAABXRUJQVlA4IAIBAADwBQCdASoYACAAPqlGm0kmI6IhMAgAwBUJYgCdMsfGc56KSczoWdlaYwfO3JAWiKrf4DOV8Y6eAAD87mJsdfh9mtNhOEeNcgorydSCbDXizog1m6XjWJTPdNw5/Kk9fdFI2s7uPh0gn+nGcYsqIkbW/xo5mfXLIrRNnino71iHGverSY5W8Vg4Mtf2xHTffLbNyAha4j6lca6GdQ9wu16XsbHesfYJdgfo9E0Qn0X8lTBG+DXHpkmlwsUgLd1J9bsxx6vaxEdGip3t91T+GbWlV4SS+h9IrxIInwA2Ty3yJ37yAttPG/9GHhGVLgi1LYJB9n5uC4YQ87sL4udHv3TOAAA=",
+        "assets/menu/entradas/bruschetta/bruschetta-classica-slide-1.webp": "data:image/webp;base64,UklGRmQBAABXRUJQVlA4IFgBAACQBwCdASoYACAAPqlCm0kmI6IhMAgAwBUJbACdMoR7WL5xQN0E0BKge3tF3Co/85HykWBnUXRSAaWLqApcsPxLV5/C/bAA/pmyIWDW70BIAZcLlE3M9JRlrN9t+GJsbWuwsrmrfsMjUiwQFs+w8jJFlrPMeeuYV265Sjjx79H86DWRGO/Y+vJa3bzRUKSx1CurZrjcNPrWoMvBjok5Ez8Yu67Q5z98EW3pXASWWYZfk4Vp1irZUwh2GPOFq5pibw/xl5CtjzjfAFCg3qt3q2xTqtaSQvJGkPhdA3C93AKu2yzWYGJDEsbpUPqwNWydzkZUCCumtNdvrXUd2tv2VHha+qGa/7Rph22Sf4roZqdc1Sl0IJRG2Lsm3lGMgA8QL9Vs8Iee/Ann3QjEo97s663EwOLmlo5SqfEPWYEQitknY7nn5MsZi/j02qS3uQ5ZC+raOh3rPhKAAA=="
+      }
     },
     "carpaccio_bresaola": {
       "source": "assets/menu/entradas/carpaccio-di-bresaola/carpaccio-di-bresaola.webp",
@@ -60,7 +75,11 @@
         ]
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRi4CAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSKsAAAABgFtt27LmwWUDmMCd7qfW0lnCHSIT5FBlAs8ELhugZdzdpf79/98RImICIK1l5jf291aaPig3lq9Y2WlRo8A1YxUf2WWiX6zKW6eE44tVfWsDYJiwhAcaoMSS5qG/oZkixhKHB1S9Q6rNKdXRjOyYamuZaiFNxVjeaW61WKRZBKxnFOdmAJF/dd8OiBP/ar4YSIdOlM1ckLf0n+Xu60YoNqaWtofDnUHGAGkAVlA4IFwBAABQBgCdASoYABgAPpVEnEslo6KhqAgAsBKJbACdLzfAKx532bwa/atdzAglE9xYP6hm2o3YP0v5ZWb9AADNzq3ZcCwfO4m3QJxPXDyDKJRGbXkQSUg6xxVew5b+KXLpxr2CWIF6LRMOiRjqmeBT5CbbeYrUMkfrpSZZoYJi2MTik7Uan3cXS8j9bHYNMzPfAoR5MGfm0CSTbjjLNfDUFzNv9VTTztjMNLJ0snwqstmfSD90k7O0XXd/gSFYf16mjovKHtT2b4mdR/1c6ias+p5iz4jl1Ck+tKOJSy4yahzzNWS/yf4wxZmNI01HzRGEviHemoqcQjpUCw2Z079wqFEzD+d+7qPIG24R6wXc4z45xnG60VJ807jNiUECgFVFpJ73GsPPa3ZqAszPm941VwHMbU+p2Q0dtneZnC1ZDmQy7P/ZFq30zg9sB3qpOxc7L7uUeCWryu787KCsAAA=",
+      "detailSlideLqip": {
+        "assets/menu/entradas/carpaccio-di-bresaola/carpaccio-slide-0.webp": "data:image/webp;base64,UklGRkABAABXRUJQVlA4IDQBAACQBgCdASoYACAAPqlGnEkmI6KhMAgAwBUJYwClzKo4Ydwb6Wk+ZrCsJjcM1yXqlaj+ooAXdPrvELcYuoiAAPexFUNbJIkzB44X3w5UuulobhmyllNFTpDcaImAqemwJRkMRQHZ/NbfqbsV3VDs7Lo9Q6AGqB0PgVglOakWhY1D+/CH/HX2+Ex6NMvG86dqQM13XnN8QBekN4zJ+0v/iVlRi9kT3bOlNn/Jj/x2q/vVLMeKVz0ce4CroCG9oZlCKUHExsvI8Qe/P7+ArkxJdRKHQ1WEicXsPvZWluBcrFiec6uEBpkje2J/BnrMw/EeKiZOsgssKIiR5xphrPkGGTxk/VFfem6KxWh3WUCrQRAh7zQsobTNprzm/NoQwwqxj1vDwS7tG2yhFXFIJMXx7DlsX2AAAA=="
+      }
     },
     "burrata_prosciutto": {
       "source": "assets/menu/entradas/burrata-con-prosciutto/burrata-con-prosciutto.webp",
@@ -72,7 +91,12 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRhwCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSLEAAAABgGJt2zLlGfeZrgtwH9yhk4gckieo7gtgAW7J3Unu2lwTaST//v/vEiJiAiBur5+6+f25nWlwQLZ1JM1IpoetMpJvjOyXuERNjlGYrRYJZBjFmQAA3T1D+KAD2hjSNqjfaF7VRQxxQRdV5yzV/DbVwQbV0RjVQjvVcJCqCjc0P1rU0XQAqn2KZwMA54+yTBBC35+SbDXEvcfyXmKQ1jS+S/33mCFbUz64cnG7P1prhDgAVlA4IEQBAACwBgCdASoYABgAPpVEnEslo6KhqAgAsBKJZgCdMtvvVHgBi2hO6kAStPFLXHzXj4Pt68vyYB4KlGUXDf43YAD+jZ4UduaFfICdK+vffiaKYen5qZuOucLwD2nF9QnnZslbKzKteL/PDgcE5zphylkvfMlTi0Rmj97RgwX0jFh6V3LmbF5h4GodaXmAMMafq2ax2xfPb7nYKLnxOgl6wiT2Dlv5lILSf6C2SbpgAfgLrGQP+po8DbkO3pTa3BTHMzDMsbcSBRtCu3iu8ph7FyyEJku09VzzH6MAQPRccVYAywdkQd7UibYwLpANLM9uZU9rMFe6GoNMM0Kfdd3ClqwraOD8IlZiMqK4QK6A/68uzLo/0RkqK99lC/Nenmw5Y0+xWG7coGUEwf1K84btNuYpHl2hg4dnH6M1T7ixtBI8Bq3MAAA=",
+      "detailSlideLqip": {
+        "assets/menu/entradas/burrata-con-prosciutto/burrata-con-prosciutto-slide-0.webp": "data:image/webp;base64,UklGRnwBAABXRUJQVlA4IHABAABQBwCdASoYACAAPqlKn0smJCKhqAqowBUJQBOmZl7b1g+DlFjRszQPHkQdgyEa0UqDc8XHBQ/HLd19IybC4CpTP9VAAP3VDpkmHk+oLihOAckq+6JwJf8/PPQQMeGXw4G9qn5f6fi6oSro0EAX6QYHK82yCzVx46Yh1S1tE2jFXwIS6aip1HbgyKfUGw/XlV+cEP6j6o8BW9Vkt0EeF9SnbHJErdMlA2fzQoY5Ux8U2IVwozVb305hlaTNc7/+BkTDQC/8i1K/Hmf0suqatDr0KF6XeYyR9jZE2MFlu0lf1ETJB6veeKwb10eaJ45pcwvB1hWdOsiFl/xnbjlXmrSnL3Ah3eXn38Nh7CwmEiFM99der+qF5relxMRXzIYYZ+K8EXoyXAe2P/edSbBROKdRUlEFYvcAKJXIF39dOmj7ZEJeL/H4eA2vQUR/UA7YYiesZWe76PHg+nQZfag5Q3miI8KCFDr2JMPSQCmxmQAAAA==",
+        "assets/menu/entradas/burrata-con-prosciutto/burrata-con-prosciutto-slide-1.webp": "data:image/webp;base64,UklGRoIBAABXRUJQVlA4IHYBAADQBwCdASoYACAAPqlCm0kmI6IhMAgAwBUJZACdMt7A/4Fhqt0DvBqgfAGksZtFYHx1/1V54nreCFAxyDl5zl+xvhBVQCLAmADrFPlT2PhjnQJ4FtbsROjBcA9oD0HKb17WlwubzNmtAQwtPRmL4AEl2KEcbQl56kJJDUEQWFMl9RaW+9KXxnl09/z41MPufrO56hgz45U7pgL2+YOLa8KGIuRGx2dZSUSthIJv4uyPv1JRiw5+L6F1EFWHhzV6uQwaDFEeo1pg72QSw12AqnNN/G/iIXuOz73EmYYWaIiTDHpBT/o2iXHC/f1ntgKp04FHAVGVmSqjwB6NbrPUSBbIYZwRW1iPxryrl5EZ9IySQuuWvyZafOeVxYGM/VRci+klJT4WB40NJBrXp7eg395THX0H8P9VZoxd1pJqpqlKImDvl1mJEJtDH+73tMl9EK0ySamEYHTODDk0WIk0N/+08VY2CLX/jENm8Nz3I0fyKN9OtF8AAA=="
+      }
     },
     "tagliere_misto": {
       "source": "assets/menu/entradas/tagliere-misto/tagliere-misto.webp",
@@ -88,7 +112,13 @@
         ]
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRrQBAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSHwAAAABuS5E9D/gtta2NXnjwemdkppJqBmNMoOwA0tImVTY9704LzJAxARMAMK/DPSlyNGdO3NNO4EAGUNk3EIBpGapBrSRsR4RBGZUNKWaWJsTba2AuHSkoogM1OZI5UgVaFCBUxGpTEW1UeiqiwQoQBAAAAIgoIAzexUowZ8EVlA4IBIBAAAwBgCdASoYABgAPpU+mUkloyIhKA1QsBKJZACdM2cuzG5b7Zdgi+QvULFFQTaE1H3+9vAMh7jX4yVAAP6oombsfT7v3uinIcL7GDU1sUTYBk8LkMuQO5f721ZPCNrmtkXIInYSqnMrmaXNCWzGr6s6MiygvJyd7ClvcyP6+hwHPFlkmT8qA+Xp4NNZwpJAiki6AsOqvNx729CczjzEU+sAglvCIjZt1wPAK1QrhKzo7L/XJHFC4th92DmKvhmo0flTIpy1YM1yZsNEWUTKmaj9xMqoYS/deI4jAQSLw+TTOUri/rLBdQb9YcIXJrCXDYEJcxlFtNLLq+P14WusB9wYQQukvBgQcgihkqfHtl0UnwAA",
+      "detailSlideLqip": {
+        "assets/menu/entradas/tagliere-misto/tagliere-slide-0.webp": "data:image/webp;base64,UklGRigBAABXRUJQVlA4IBwBAABwBgCdASoYACAAPqlInUkmJKKhMAgAwBUJQBWAtgSnkQ/WjFuP29Jf9NVX1iHETrwVBUPO1EituzY9ZAAA/oMTuH7fSdJAzhQV2vqRdT0mBnN14/DPP1H/vKbVgn+Rf6zFWj2odm7GgXekRK/WAZ2hfBWPha5KiXsX+1cGNWWm5MRimVgVYTX1r6o8hqb9RUF3OfMeB+9qJcT991HA0e+TDu6DRNz2W2lyt86as7mcVnTM6CJcgwhyQt8x3E6o6fHVSTyBxDMh+lkq7T8TRPMabONdLieINd9LCscHPiYqdLuAwNvP4MPpg+ARLDxA4PUVX3RabRDYnooE2S8gDz/RdFa0wQCW1DKUi+wparLQS2ssqfFCLVfE9sAAAA==",
+        "assets/menu/entradas/tagliere-misto/tagliere-slide-1.webp": "data:image/webp;base64,UklGRnIBAABXRUJQVlA4IGYBAADQBgCdASoYACAAPqlEnEkmI6KhMAgAwBUJQBOnKCq3yBFbYwK0FAB7pSPApFPH2UZ9lSB1gkTzA2I0IIVvEAAA/oQdz91GATtKUoWk4Rx++ApI7zea2MRlT1M6nLkEeyXGPLF8fA87x/ENtlL3t0ZETXV4kn207O7bXKWKKsnr6ciLqLQEsmML45alKw9mH6/2LS9fYgNWFFumS4VdIS1vA8B4RuEU37fp4r5q6OuWzo80EZAtwwzAh+1s77By3mnogBsqsyfM2N+Mi5j2nJYWiQUMCkR2l36cMO+Ux/BkFEvTWFGPeZbCZ/rNerh4Ezh3fRu2GbTXtcjxiAM/hQHx/bWulKxjU7KYlDK44MZWYMJfqDTR5Bi3bPd32001Si2TPa9JL0cq61xIiIxv2FMWMQvW5mnpq3Dszr9YXV6d+kAcy/I/RGYy8kMGZ6Kk3hc9tj1yQ3Rc26fFT+w6WcVvVxYUAAAA",
+        "assets/menu/entradas/tagliere-misto/tagliere-slide-2.webp": "data:image/webp;base64,UklGRkIBAABXRUJQVlA4IDYBAACQBgCdASoYACAAPqlKnUomJCKhsBgIAMAVCWMAuyiAGs3YIjtaH/x4k1qlzTO6A9DyviL4UU84frQGwc2AAP6HzghgzDHBpD9ObeNpcKHiJJ9pceos+XCI57NUVN+SSEbygXUpM+sXn7cLM8QaaXCYGj29nap9v8XSgLxvffh/PHmfu1/IHQyV5Ed715CDamv2E2YziT9FvOA/0r5nOwN6V2jevREh5JcOIKTqak+ERyO9BH9B2P+zmKgHT+s6CT2b9cUocCcnNIAK77perNQhs4ZJMuDlv1TvY1/4VA8Fj04LLaUyJTXetwG3WbJC1PI9dydeaigEOBNbRDzPd/FygzEGtc226GuF28Vq7+xApx9wzjxTr01phqa5SbLnz2bU6gtNPXkexzJex8I5ubBv2rCdKAQA"
+      }
     },
     "focaccia_rellena": {
       "source": "assets/menu/entradas/focaccia-rellena/focaccia-rellena.webp",
@@ -104,7 +134,11 @@
       "card": "assets/menu/entradas/focaccia-rellena/focaccia-rellena.webp",
       "modal": "assets/menu/entradas/focaccia-rellena/focaccia-rellena.webp",
       "hover": "",
-      "gallery": []
+      "gallery": [],
+      "lqip": "data:image/webp;base64,UklGRgwCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSMIAAAABgFzb2rHn+Rnbtu0KvgJi27Y6sO3MzVlWirA1su3Pz/eWEBETAHzdyJbp0eooExngZSU3tPC2DGW/Totv+GAcdmjsZ69CTOcCRa8aNTYrBCAJ93lO09lCnjj+nZlAgzS6XWCKwJMGr5kATfEWSBxbA8AeCXoewOmPyJ8tTNNkp2CG0C4USPkvouLSs2vLYUDKEoiuSXh0FztF/fbYgqjBP+aFAmQEjf2NwhSjDvIxI7z77iQ//3AnGWCTm9KCHeRAEFZQOCAkAQAAsAUAnQEqGAAYAD6VQphJpaOiISgNULASiWoAsRttpp+AawCPTtoQ3HQwYyEJteQKPQZZyLYAAPp4Xa8IgbPxaho898hsc14cyaeFecBrTUG69k8SU1FcKM1/g4Kbr/Xbm2CZlVOMITmNxlB25AUKQtTibqm13aWVlxgJL0VzS16HEh7FqLP9KxNfgflT3fcfk/j+fV2T49aVQ5fPvfDqVXvfAyjOdfY6WkkhiAIIUfp99nrlCLLa6zaClNyf7rLAEbJQpqeP7sPyT3A6wGGuO2QpXNvvmsFYYxlAS58tL37/VIJy/17SfnVt1QRnPoJ5rVRfa+Wf0+XVa8AkK+uS40GRU2wi1Ch2SmIxUPmBaVi6QJltxYvb6970fVHFO4EuoDAAAA==",
+      "detailSlideLqip": {
+        "assets/menu/entradas/focaccia-rellena/focaccia-rellena-slide-0.webp": "data:image/webp;base64,UklGRhgBAABXRUJQVlA4IAwBAABQBgCdASoYACAAPqlEnkqmI6KhsBgIAMAVCUAVgO8BBAav4Y7fiqgz5fOCSQHOlX2EU/owLDq1mO7YwAD+yWkm48XsUTMTXd1s22Wdwh59kFq6dbIj4q37fcbxpiotT2AgurbnOTx21PYjsaAE9asP6YLTEQXQ5e3y8FDRtkp7fLaylfcgpZprdWfn4NVfMDdes17DINmWmVmICIJupt7n7ShJ+BFthwvHnAxVc1Taf0MXuvJPh0XKcbeFX+Ts0IAMXqRS70vx0pPFULeba9b9IQxZf+/O5ON7thuEH8TAcl5eWduEdmf/bS4/YpeuX8AmlivRcBbsSA6syHysocXrvflNgWoBoaVtrAAA"
+      }
     },
     "margherita": {
       "source": "assets/menu/pizzas/margherita/margherita.webp",
@@ -130,7 +164,12 @@
       "card": "assets/menu/pizzas/margherita/margherita.webp",
       "modal": "assets/menu/pizzas/margherita/margherita.webp",
       "hover": "",
-      "gallery": []
+      "gallery": [],
+      "lqip": "data:image/webp;base64,UklGRioCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSLAAAAABgGpr27Hp/u1/bDvZR8CkZKWZblVHJnuibdsz3c32rw/PIUTEBIBRaZ1fUJSTl+IuAHeroXcd81W9M5f4Ox3XjxIpk8Wuju9mKEObjv93NIDgLwLdnT0woCMdgdszzb9flY64aZZq5Zxq/IJqdoZqsZVqMJmqBR1EDXB9p8kFoh4o/l0BRDwTzMM09IjXrT8DZD08lj3BnnDB4SlXAK7qyu1/k992Z/BWp9fmuEnBDFZQOCBUAQAAMAcAnQEqGAAYAD6VRJxLJaOioagIALASiWwAnTM0MDeV8VZu4w4BvAt6ozMY5cXpNAwJLPgh8CX2zzXNTSM2zZwAAP4/1rc4REyCNQw1LV0vMDbO437iHCKoa/l6zTyvNGKGi7zqDoUBRzOfjEPAEYmjqTb2dPo5CJHWy4FQqVk/KJN4bBpAmAXy+tL/rsbT+Q8SPJ3vLbpI822W2Y8WkDkF/SVaVWip+0fs7vqw1B+CKwNNjuthwmK6jNJonJsqXWqrydMuwAbuPbgdpI39GT2ANkRpMktlW8u+KSIexbtdXxvv0cgPKsWAgQ2DD3/VdcGI++XJAjPmq7xKNKOv/YghH72TCyiqvf2Ob7HzSgKBXJ+iv6fcKTvt9HC1Y440adnwLa/twnT6Mya1ULDLz7xvQLL1PCOzeyifVx1NnGor9Vknvyggys5VOhbIXwCPjYAAAA==",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/margherita/margherita-slide-0.webp": "data:image/webp;base64,UklGRjYBAABXRUJQVlA4ICoBAADQBgCdASoYACAAPqlEnkqmI6KhsBgIAMAVCWQAnTKEf4dAArUncyMh+bXL75/is+pxcrivTkwIa5eqh4+NNYAA9z3O3b12xos8eHbHS9trRpl9BmVYHgqRKIvjhv+DgHsy4vvkMS+Z86xoN9nRD5TK2CLThiWP8vmeZipffrFBuOkH1Gqz5NzzAxlmrn/BONyyBmhx12x742iZfXaT4P4jKbPvX5/zO06PnkPUWLRjW/W2OJdTYcKMf8e7GmSywJWqBGuB7k5VwR9At1x94OBrZjooZrZp6W03WZp7d6Eqrr090XovfHopEC0/Euko6PralNEqc1XLOmKO4DXhN8Uu0wt5mVXKFMME0ijnObYoAmU03MqBxxZHUjY6Z9tTZDe+RYuzIwHeoAAA",
+        "assets/menu/pizzas/margherita/margherita-slide-1.webp": "data:image/webp;base64,UklGRmgBAABXRUJQVlA4IFwBAAAQCACdASoYACAAPqlEnEkmI6KhMAgAwBUJbACdMoR1B67xVThvegwGFZqUFUBE9DEtybs1Ia79pqlO1c51c4HORgFz9kisFHgAAP7vPrcBEdvBfcFSJwQXaW4T7piIxJqGPp4XtW65G+U0FnIpMzn8yfZkhhaPvLpi68JMyX6Se7X9s19J+Vou0r3LygJTtL7wG4fkwy3GCj8t6CJEEncPW1/CcL5+9+mTMcEiuCxc5OET0ZlgYj5OKP1yEARKuDRlgY+HLGVqdjxHyi86+yWqXTFPnQMTwNWH7vNXvFwfQBQ5S13pqhn5PPWre1mxZzxfEoKhboxzeTPDgLBHGHWOQsGeDWKg4ZwWxwAI0tMSruNStH1RprcnKsMlcSBcIqQ8DK+oYiRx6J7TswKg0fdb2njy0POw8/m2A3raYOyAAAimfwo/jtl7XuqvRr/tDpStts8f/fCMFb+AAAA="
+      }
     },
     "marinara": {
       "source": "assets/menu/pizzas/marinara/marinara.webp",
@@ -149,7 +188,12 @@
       "card": "assets/menu/pizzas/marinara/marinara.webp",
       "modal": "assets/menu/pizzas/marinara/marinara.webp",
       "hover": "",
-      "gallery": []
+      "gallery": [],
+      "lqip": "data:image/webp;base64,UklGRgoCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSLQAAAABgGNt2zHnOX81Zj2VrXImttmlc0r2trGCVKntMic7mFSpbNujT0uIiAkA2TKwd3q3UisDZ9r+X4z4Ou9nkdq+Y4zfzQyDMc5ainTOcygjeWPcs6Rdvp8Q4Ygvtk24FhArBmD8E7EGoC4mch1AvZBFAAVCxgFo/kS0AkBURHbKtAhTSljAo5QiRfkWQOzienOSFKc8A6CW/rAdaGmofWZ5d4LVdk97dYHdHKwaXprsni+xggxWUDggMAEAAFAGAJ0BKhgAGAA+lUCYSaWjoiEoDVCwEolsAJ0vbNYAhgNosRvpGcXJMEsynlFZ0pDYZQaT7GXRJGPAAP7l51lOfnxqcqQ+ixD01mHg01kLoTUJREK/MLPW68uqZtALCRPtzmDnM+vnYihR6zDlPbf8jcor+EGPSAStX11/iyZPiAoDxXsKHNZDk9a8YlH84GfjWVmd5kIQgEYpA93kaQbmjXqMC4qhwPGd12J8+Nw6IyPsEBQf53GIMfKMCwvFT28Dz4A8iCuFjH8p+gCTpOj6yGh6C5yTQHnvub30Emc1WXh/WMuRg48IF/+m99Rj06NA2kzrTRLllpSNikMvN4UT532fcg3JWaqDnBNOpvMpN+J1mR0NrhlsAHOlW6JxcC/AL7/NsubV7MgDDbirgAA=",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/marinara/marinara-slide-0.webp": "data:image/webp;base64,UklGRiwBAABXRUJQVlA4ICABAAAQBgCdASoYACAAPqlIoUsmJCMhqAqowBUJaACw8a0W3dnAGFcCPTavrlafJJNkEuj1OWoS5iwke7AA+CaTARJt7gIqLfdrOqEjmhw31ur+kxNpkfBQtEpahR95/S/GazuBZeB0WJPf4b+fkVKNX3eH2e3ATxMNPdiKaGja69eN7D62mxJvDckos+eobfrh55kwedcwR9YOvYGgM+5paq4whuEI07tf8BMkcVCX//OdAgdNFjgQ1tXJZ0wDF1oAyDqPEAosV43Ejik32tTZSMsMVFh2eI4kfcAybmjZJFQO2ZZAGg8XpNRSvmABeS1idt+Uta5g9+tAMfRY+LtmhbFj1gYNVxV+iT5SWZcY+l/XhVNCGWMdRgJVdZZs0AhgAAA=",
+        "assets/menu/pizzas/marinara/marinara-slide-1.webp": "data:image/webp;base64,UklGRlIBAABXRUJQVlA4IEYBAAAwBgCdASoYACAAPqlGnEkmI6KhMAgAwBUJagCxHySxj6Zmx+MA+TjOhJBqHjgSDn6n8fKfHj/kCIIAAP71gxUeZ5uBZvrUusodmrxHirzUIe29KRGuxp1W2DoXP9V2655AML2PGDeHJf2pzB6GZZyT+PU1Vb4GHYnKpOO5+pY7ESpZkTWkkrn8f2OMs4WyUhXoFO898xyHypdGcpguNXtm+ni+hbNqwZTGIG14qEV8vTn8dQDBCiQL19nJJ6UEUskha9ZUW/BXgjx07d73jINkORt1RZeKiQku43JkCycfZRqZUc2sDmzgZTDVg3e0B1MzW8oFJ8Hy8NU0Keo0fehutk8FeRm9MJ2pQGwwdxmYixNxcWveN9N1p7lOWulpgL0Uz5ZLW0d1qjtCMPBmh1ultKP5tYVw1/inYQfr/0VDkgRX+jXgAA=="
+      }
     },
     "cacio_pepe": {
       "source": "assets/menu/pizzas/cacio-e-pepe/cacio-e-pepe.webp",
@@ -161,7 +205,12 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRg4CAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSKQAAAABgKpt+znpHSWrT7OSPbvJTkxWszdaeZMOwdYJeKur7fH8vjmDiJgApFnVWFtUrCMQdofjn48WW9QpVV2EU92zcRLx2sOs5znSuPYw+wgAZP4QhP0AtsKUa4A7TJuPLaJbyTRR2DNONdRHdWimmsEtkQkLNMtAEcmFEtBX37E9WRFfyPSbhcTrDB9lSF5/kcqBGakK5hJ9zPrByNEUD7aW2sRIP1ZQOCBEAQAAsAYAnQEqGAAYAD6VQplKJaOiIagKqLASiWwAnTLQcDeiCJBCAcoNm0IgOorCF8f6Cv7w2pV8Vlq1I9Q7UAAAxxNaZdEmns4Zr5s6pMq7T0uAET5b4v3mT2hfWXWemMpOpddz5g1QyRwG/YVY8Y8hWWcuS/+QX0EuyqNBUzQJOccI19vwt8TiGoKkBwecKGjPwcV0QmXF9rYcHUmklAZ85BEVKNE8BUB7lMsjVq4L3xfABwmFma1eLkjK0mC1IL/FQ9Y76SMzVOdjmL8g/8pWA3IA4AZ6b1kIGPqzs4oSDqb1vNch/heqd/qDj7VHTDOzdiXaawoAACNatz8Huhc/a7hN02oTVd+4/QusHEvKdBNawoL5FRF7r6VesBeol+vvR++7V0HQLUYmO9gb9PlH4cBXh7Q7DOZDzzAMwozigSYzgAAA",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/cacio-e-pepe/cacio-e-pepe-slide-0.webp": "data:image/webp;base64,UklGRiABAABXRUJQVlA4IBQBAADwBgCdASoYACAAPqlKokqmJCMhqAqowBUJQBdmahiEpAL/PHBCakTvyngBoVBKC6MknIhPb2026x9suj2lyh8QAPhF1Xj8rPfqhGXUOlsD2oqC9nmSx/a3+iRYC7+PnVEd/0ISoKgsD43osVFs+Y19WAYDKw7xWrtmPvtmZNFnwIUxwCZBVYqmxP4z1ktpeDqIfY254vNiFgPlBB2uY+FyCkGrh49e+OkYPOvAu6m29yyFght1tc3hb8jxjao6FfMIwaKjxozWPucks8Jbic65/itTMDuljGkUMPWz2yIP17BnvUzHR+93Wx0FdNWEa7Y9OBhip2+YTJ8U9YJWmB2ovKM9ZJF+Uw0lODSuF/lzzTMt4AA=",
+        "assets/menu/pizzas/cacio-e-pepe/cacio-e-pepe-slide-1.webp": "data:image/webp;base64,UklGRjIBAABXRUJQVlA4ICYBAAAQBwCdASoYACAAPqlInUomJCKhsBgIAMAVCUAVhnTIytrw0stxQAe4oh2Ul+NphZxHINxQvNvhdWTMRThZr+igAADOOWb2/mJJa6WHLuCnwoEBiKnPrweGrtTxPDmr6PQEKYMr9afWk3SFU+cc5Hbd5NUsSxUker/2H3jedqUlZR7eWAFiMEiS2WLTSQZCT+MVa1JS0U5eieElR1ve+Nw894i30g37MsQSio7kLnJuBbMYEShSi/SrN7z92u1Whee8R6955i81HSHM6TarpfFi8ytEw3MFlI+odKQytPouSLobQzDIAOJyQgbECGh6zWa4NFXjQNwTIgnouWih5OqnHzM/esYyGGMfrab+V4p9jg0FkU/FL2CDWMGCbmBQWS17kMTGgAA="
+      }
     },
     "margherita_fume": {
       "source": "assets/menu/pizzas/margherita-fume/margherita-fume.webp",
@@ -173,7 +222,12 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRhACAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSK8AAAABgGJt2zLl/scHWIKTvQ7kIbo2zuwAolW35G7N3ZrLJhyaS+b373uXEBETgHd+XefY1cl5KoJ6/o7p+7S6olL6ZyqPBXyi56Zmv1fg2NQeNFwpUzDhOpXoAsJ/EncBSJqiBdAlk4RRmTaYl5mCEZl+qJBphsCtSC5QLvEaANgUaMed+a51HfGgW+ctC+/Istp9Gf6RbZX9bFSNXp+f1gDqxvC/aX7NV8bRT8y3ZKAKAFZQOCA6AQAA8AYAnQEqGAAYAD6VQJhJpaOiISgNULASiWwAnTM0MDeq7x4pgRwIQDV8D1PquOw0wrzy9Hd2/whX9RyDxXXIAAD7hMwnU/W0ttkVHmuGHOZMT8W0SgBWOHNMPaLUZUsqCOqf5PUPzmXaIW8idve6bkH9PdAZ9PMLGOjHM3OZYNLuYoffejlXahnSQVOJkql29OxWSYmLcXx/C+iKtQZiofdfFDR3K1nx7kNa6NZUC/wCINlne5gj5zdV32lJWG17+u8HPqxFpr9R2gp3nRzv/+DkyqT7x8am3Nxy9U2kp3j+17dxEn7Oj56HjfODNXiz85BNe0DeHJSXXpAWCnvF5XXLSplR4buU5QDB+j5TsRkHuThbyqCPP6ms3uSOas83F1Hnyccbga1wzChKYr3ZCZTytkoKgoiAAAA=",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/margherita-fume/margherita-fume-slide-0.webp": "data:image/webp;base64,UklGRiIBAABXRUJQVlA4IBYBAACQBgCdASoYACAAPqlGnkqmI6KhsBgIAMAVCWIAnTMl+W0ik6kaVjiNUI9/nTSkqa6bDppSWoLgPlQ+QsL4APe7z6ngMgf9VPnPqtdubrrbMU9nzjVgA2vStlBw4sC3pSOGBMjb+nfffVDfkIb7OeyLqlLDj1lCrk1NOzPLLEIW5782tTL9Cl/Kz+YAZ4KhwcD3itMcNqc4W7p3+Pm0NE5ga1+uiULqsNPFBoRpEkaGYds/pKESfW7kgzQWrUhn5EgrPOYDM9ttbQyQBaebLH0pY8tjsSWZ0m8wd44kFN42XZLp3DH1knY3FdmoAVFTzxGZu/gWHaSCKAmi3mIpK3IDg0w++7pYgMy/2xgzUX4Bzz3whwAAAA==",
+        "assets/menu/pizzas/margherita-fume/margherita-fume-slide-1.webp": "data:image/webp;base64,UklGRjIBAABXRUJQVlA4ICYBAAAwBwCdASoYACAAPqlInUkmJKKhMAgAwBUJbACdMoSCtaALYEdyuKNd4tHc2TYNttRXOOezfqI7hbSh6J+I6/X3CAAA/vXXJAK5JgO1kmTxK4C8patXOyl3p88vCceOUHmDSMVvHRnONm8rsE+DSBD+Fd6S1AFqQAw30OURj+fel4uUjXrfNzhd9ZhfCnHvAP/gd8Oy7XXZadDtNvC9SA/Hl6PqjZ2xlze9sTJ/kY/sj/0Qh/jqAFt9P2GzgcDulAASfOIWLmit+vSCOjSKkQwFefV/6XMEqcjRtwPNObnPwI2Of7XNw+wSlO2CjpdbNlLzNyfDIYCsLwpT9GgYazoZdXfzlXW2im9tszJrxwTKEVLymO705ZDi3DufUjT6ANjQ09yWQAA="
+      }
     },
     "diavola": {
       "source": "assets/menu/pizzas/diavola/diavola.webp",
@@ -185,7 +239,8 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRmoCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSLMAAAABgGLb2rLl/u7uf/yR6BL/RaJbc9fm0BwmoANwb97cqQ4Vojt8Ls8QImICIBuNV7QPN+QZoDJ99p+VfFpqsSpwrTCs0mmDTPicVbnll0i5ZlXfJwCwvrCExxqgiCXNB7ZpDjQxhobNKGaJu/upzrep1naoJnuoBnKpSsxvNEwEszSPGmQyJJ0AjikmACDzSt2eWQTHqpptN6SNA1+KLtxQmDz/LvUwkqODcnO8rqOjuVYPWQBWUDggkAEAABAJAJ0BKhgAGAA+lUCZSSWjoiEoDVCwEolsAJ0yhHA3oHFHvrwANsBzuemkx6GkB1APYG+Ac3RnSVBAtFEGwKMFC7ocTV3T7tMujflXJtW0AAD3B/Qgu15OItBCQmR9ikQarzCLbtiKtSgARMLd+f9c9OtVVXMJ5pFhsEMp7U7MJe6vvJmJ43kjOBSch0ZDjREaOhssSRnkLRLeYyySlgAszheVaq7zCag/MNJIDDNcvy36zyFQ2647W4QAqRCOaDBZzrHyXrp4KzvEmH83H42fKg9111ciUoj6MS7sfyV7CJ99tPngPQuKoHQb1UfDqwI8evB4134g8VVyRGgGG9pgRQviwqZC7RiDtrCg032ub4tnUu5rJVhWWr8GpMFe1sUj/qagPzZ3v63VSngaIPJO74OKNujYRwCkX6c4iMea3eVhFPGS5daD/Sk5IekUp8EZX6dM7+7c1EebpDZyDPmk3+RvXH9kp3vf3RYMR8x3dWPF2T6aMSJxTV+yniYEL9vDTBt2k1j3e7wi06MToAA="
     },
     "filetti": {
       "source": "assets/menu/pizzas/filetti/filetti.webp",
@@ -197,7 +252,12 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRkoCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSLgAAAABgGPb2rHn/jYHYFfpUjqlUalk7862bTsZQv4qf5uV7h9A7Mqfv+8ZQkRMACSdjdfHi7tj1RHIj+39MOJ/RxoZ/uV/Rm6NVPc3I//JJaa7Z5ROiy0ziv+LBXkMYUoFGFMUTAbQzpD2Aes0SRUuaJgZbBCVo41oDFlEDzbNKw3ToLohStduEIWhTpJ8WoEJivtVALYrggonAFhW/pRsQTK+8CUrYZAC0hKXt2JPVW4oVHnyVwYroxAHVlA4IGwBAACwBwCdASoYABgAPpVEm0slo6IhqAgAsBKJbACdMzQwN5Xw8dAF2OnYDWkbyn24Nd98tzncWVIotba6hp9adLiTmCLL0eTcAP4xczaqTwxGhC3scWtoS4hGNHCyJlt07d25XAqeARffnv1gDOYdFriC/JxTv+lP92/nAC50DMjkFEM3E04E9591XIb9oln4ZsuNbXx1FeOD6dnLas87eOnK99hqUGQcnSdN6bzYBaXzFLqt5PzO8a4UbyFlncz/C5hF1naVEAYK4kfsviypwaKwO4MS3sFfegpJRrsmp4PaR1B1fqT0y4Y30rcyxW/q/1dCW9iXzxQLc/0i8kP3vqcJ/v4zFKMV7omh52rPfS8mu6ouF5WREf56+ySAPSID9I+s4R9oK2ZP4Qile3UnBG06JVahb4eGd4o0WRkTk4OAVHtWofvlM2NE7hoY/6VawzyBWVlaIMdbPEVJKn82gdpt46gLXT2I5XKf3QAA",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/filetti/filetti-slide-0.webp": "data:image/webp;base64,UklGRjgBAABXRUJQVlA4ICwBAADQBgCdASoYACAAPqlMn0smJCKhqAqowBUJQBOmXZ9J2q4um0KFc/p8B8vfEGDfZAWGwqGTyshxkMcAuLKAusgA/InCAhi/Rn1KDh1Oadv82yStWx2wfkIuyxA1xDeLAkRt/TZb8rltkn8mIhHJdQf0saLR8He20PvJd8HCkaL2kMEbPrTyxfpOSEjobhGjxwi48XZERzrqgaaDb+iKMoeroS8+51eLWcuNjOYIlQMmCdEZF+6me30idyxNV2AqjNFordlARteXeM8vo6KfzEZmghOyZvCdB5ndtM/7F5w5kovPeBnpSJh6ZEIKlJHNng+Eq1rpaTgdEDoIlhKcZ3ZHeFXuOGaG1YLYJazpPn48/t2k5wJ8abrjR9XDpidUIQbBKV25CxDM5GzgAAA=",
+        "assets/menu/pizzas/filetti/filetti-slide-1.webp": "data:image/webp;base64,UklGRrQBAABXRUJQVlA4IKgBAABwCACdASoYACAAPqlCm0kmI6IhMAgAwBUJagCdMt6/crbSyrNBbA6wG0CthlgaQJm3d3CcTTW1G1guWb5Cd9KYrdFSESNWnikYlAXAAP7s0FQU3sSsCKlb2QHyqvJeLWljKul6sZQGDMucQ+n6/Fz8+Vfa4RWalAfYxTYZH54bRQ05frcy3nfSrQFmgXIxd++WLwfr8HkZjP29ucHr98G5c7TZ6Mt198cE+g4wVe2irDLaRnG+fYP+ChhyHzzUlbILf4Fh2J900OOu/CE3XxF+WarPuKMevaaGulUEvykZa/MPwlr/SSLqH+g0SEhxq/WMq3WUcqgUETW1FLagrwU1Vp9NoFrzpEcEtAn6DMV8LWJlgjSdLuyNrKWlcCRQyzswEr3XvetyST/XKz9vf0Vj1XxJ1XpTydpiNOfdIFD1jmjcDN0fb14FW3q6e4sAo33BKeZwbd9SLliVfMOdHMoLxbR1P3auTo92N5Tmea8iYjPjAitG0Ig2KKY01bJrfQpMotJM7C2P+0KwDRVaItNP4XDa0NJYdONLC57A1r09nQvaICwc+AAA"
+      }
     },
     "sweet_goat": {
       "source": "assets/menu/pizzas/sweet-goat/sweet-goat.webp",
@@ -213,7 +273,13 @@
         ]
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRjACAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSLcAAAABgLpt2/FX//2zNdtpzVtitdKilbw1pR1L3uLamhvSry3btpP1+X2fiJgAMMYsx4PSWLzx/7ddldrJoau/FFT/ztkS1gVG/0ijVvaTwL6qVyv7FHjXghUFXwL/WQiQ/ypQzgIzAuk1cETzb4v4pxGSBwXi2AaiO3jeaY6AOZpDoJpmEQh8I6kBMEax5wTgOeD7TYMy8YarD+pJjxwreg2kPDNtBYGx0K91P+QBe+Zwa+/0SFuOGeoAVlA4IFIBAACQBwCdASoYABgAPpVEnEslo6KhqAgAsBKJagCdMoR6D5vvMPgB6gMLYsmMr1kzTxqDLZHzVSO8Zl8lA3N0jopSHsYhMGAA/nFrbrkiobK/MFPMi2tBUwUmUtljwvMKUhsSGZ1KTjCX80tb8Z6510O8M3k7MN8zd/Yyi1lUpGLhaoeleo0eG3ehQKa/RIygPHJgRRid59gl4tg+ls/o5AaNtUfHcJmXKYbocuyCPK+ZqHa0Lw3zB+ymGY6zriRgfF5aw4EL6iIJf3enM3EVLbOQCMr2Eb7sVR+lu59r3v7xsp3m/cjtfnrQQAbDjp89AwcXotqhXOSt5PE6wibdC8sh5ZE5bRbGKn4Sha6Grn+fk1qpi9g88otWZjT45LzBB8dWUszNghM2JTDcKAxmPUPzVPZqW0nxsqHH2SMqovOQkRRNwW0tcqOylP2G+uuGL/AAAA==",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/sweet-goat/sweet-goat-slide-0.webp": "data:image/webp;base64,UklGRiYBAABXRUJQVlA4IBoBAABwBgCdASoYACAAPqlKoEsmJCMhqAqowBUJQBWF4AV16B23MjLh2fxwGx6nOcYMlFJHVz+CPSkAP/pCA+AA98Mfd0FNBiL1nXlEviim/ywKXRLhV7/TWoQhNmx2weV/bmBgG4EQzeW7auf0/yNWQ4EqdwcHP8fCgglzci1dpYgk4pr4/k4sd1N0sdz3wbtpJL3OzdDF0p7b0NJW8RB9ZYuD7M3fReg226rqSo46nrmc6FWadDmds4/gdZegXLFrcbN2KZBaC5C9gxg1SdlCBOH8wVvI4YkjgPzo2VThb4hhATfMpAmbRXt7foENS/PO1/p7TdhwkwAJ+FuvIJ7tySjmBjAOPRwS333Ir1xTVgK/U3Fa7PSsOqoEAAA=",
+        "assets/menu/pizzas/sweet-goat/sweet-goat-slide-1.webp": "data:image/webp;base64,UklGRmoBAABXRUJQVlA4IF4BAACQBwCdASoYACAAPqlEnEkmI6KhMAgAwBUJYgCdMzLwwBBjArQZYGlcZ8EnpLbLHqHQc+wsan832q5/3sYMcFKQ6huIjEAA/itust8S2INSbUxMxLDI8YiwekfJf9TXbQOOpH9RwACFriEgDCanTju8HR80gBe1pitBVr1QRREE0aLGJeYOX61ZUK4h8RZSKeAQzyOqZYbNQLsTEEN1ILwKffcdigvjyRgvFWwA6EfUFCAHKCLIqCr5Y8uTwIJxNS28/oNMhtWThOBcMfNhN2fEU08L3zQJi9xIU+4m8jfNIqbcCptExp3G9YjH8bgY7ci9zA8FzxNLTL1itC8i5lJH3Xq8Njt9UTIcBuqwY3XAgU8C6hBHMbVGh2moaX7+yJhaEX4Hb2soedsZ0z3VuWkqbupHtOPfNroCrJPclsdj8n9VPeiF9w0Q42BPHUyd/okSQpfjVQNs8wK6qQAAAA==",
+        "assets/menu/pizzas/sweet-goat/sweet-goat-slide-2.webp": "data:image/webp;base64,UklGRnIBAABXRUJQVlA4IGYBAACQBwCdASoYACAAPqlEnEkmI6KhMAgAwBUJQBOmUI/u/ww/zwBNASoHuWQyqnQ4UYCTIf6bA9lgAL47RPJxYU1uZc3fD5AA/uyy67KrlBeXwtX0ePs6LKf6rNSG0bVIEKWHRVsNcWZbv2SbXIWTE60vbIE52vPBDJ67/CmhVI/kkG26Vky9l8zRH+ulLNtudVWgAHLzg5NdFJb7xK9rzazx15mAwPmZmEiaT/apL5phH7h7ghXbjPg5AbEskeu9yiObFCI7MTMNvxhdETUtBK3NaKfVdZS9qRK3xq6XChjuyQj+GjQNwKtRbZJ9y8knDArEDFnbxhKwo3PzqwVWwilBGI5B4nosVmYm+NaW0ULAMpMoUOKhv+5KbwFyZXVFZkrenYss1AOl/Y7fi4o6lPiFXVZpbii8ORfbRq8S35eNX0hjLxPz2g87khAsY8nFntHxl3o/TDIXFJjjOvonChzEwlDGnvAA"
+      }
     },
     "mamma": {
       "source": "assets/menu/pizzas/mamma/mamma.webp",
@@ -225,7 +291,12 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRhoCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSKgAAAABgLpt2/FX9f2z1bAlNlvdVlq2K/uat2xb1Uq22W39/L7PImICwKpPzQ0Bt9gjf/bNYrFsNOQomBKvLIyHia6i5iycHQonZV8W7g6HTAvhny+gOKOw9AFlFtpG4z3RWp2FuHefqmmMKmmdaA2JRJXIo/nxgfsSySAAcQ/BbxAAyJ742uE08o7nRuMM4qpXtmwwht4x/JaA2dA7sPPupB787hNdibEx+G9WUDggTAEAALAHAJ0BKhgAGAA+lUCZSSWjoiEoDVCwEolsAJ0zWjAwgrUPcawtguwb4Gk7mX+NEf+KfIJvF6991T2qcytczjW7lD7IFAAA/sv7akHHjFLIr4NnCuuX7aKwuziMA7ewnBS97uQjIltlrIwTemvWMNaCsAO4kj1TqG+5I5sBptZuOFEDxIpJJfPFLq7mRQ54S6ICaX2yjtpxzrYWwWCfsDIwZB/pZpo17T/ZIqmS5FPZykxPjh/bv7DUYhK+fgHlJr7zdntF1F9dxgLxym5PjDJlFnQTJmjSwCQiQorknOaJ98P3QGwlemB1Pn5vq8deFFcIRTnediJ5Cuj1C+Zh083Ux8rCgGNWA5CBLAa28balf3bkjtEVGsA3adC1Q1Rrqw0+re/19nYlj8eWagWEfSIJmgRV/LCLzPpxha8Caxczti/hhvn726HqcQAA",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/mamma/mamma-slide-0.webp": "data:image/webp;base64,UklGRkQBAABXRUJQVlA4IDgBAABwBgCdASoYACAAPqlMn0umJCKhqAqowBUJZACdMt9OWZG9Y4LLFUWsoVFchPkpQauz4jcnUKt7V0nl5MAA/GCZ6qeYA8BtsfTav9xJYd8kB4JduugJRMNI9N7BBoGkV8mKTTqmipQyjZ17Bz2YPZiqLgNn2iH8taNH5iQJAhrBD2IwSD5FSWMxJMy/1RnEnVsV4e4n6fo2DGTUaZ9K92Pj+KRUh57xTD9nrpfOsI3yl82mpIVMTi2t8Dg/1DBQmxLMHIj2rhMKvj5pfptlxiMt5FQA444wJvqINHWwQk9S8u6mMTZ0dxvim6vaTy3ebY8UThTxXNGlyER1wGOGWFMv6LOPwFB565XPkkbB/akzbXAoDA6XJ0otOmAQU+E8WPzZUrKO+jz2Gozo8esUS7lwMIFNOaalyAA=",
+        "assets/menu/pizzas/mamma/mamma-slide-1.webp": "data:image/webp;base64,UklGRoABAABXRUJQVlA4IHQBAACQBwCdASoYACAAPqlCm0kmI6IhMAgAwBUJaACdMoR5gRGW4JmRUBYAe5h8ALXFeIFPq5BAyO5FutTqXpwmKVTg3uTigAAA24vzDSfkdyUef/CtanAooLMRY60ZC+B4/TE4Fj7tLRoMKckpxwdbCAh8p495FDDhUrvJ3GDOknk66u2eWOSbuXt/unSnOJkIdR9b31JbGxaOJ9x5J4rGnibIZLmk9gh0RdoWBMh2i+hFJtqJu7ztXL3bQ8uNZtmbqCK1hPtCsIg33+a7mxOu/q/qIN/2FwEYW90ubxlT81A8kVrC697TVLoy/svISZevG5YUyJ4odLk2PnY4HjemcT5WRm6zgNpVz+0AmpioFTqsMyte+E4x2xRM4A0Y/BFsfbYwiYrCU37U4fKruwh1cl4mbOalXBlJuX659N7062F7VzZo/XdZDSXhBKccKLElKi6D3XG6+tBGKj/poxDiURb8kc5dGs50OhAl9kmC50IeOqQAAAA="
+      }
     },
     "tonno": {
       "source": "assets/menu/pizzas/tonno/tonno.webp",
@@ -237,7 +308,13 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRi4CAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSLkAAAABgKtt//nl/du5tsbG/5abvLkmzG12HYDdZB2AbU7cbHuy6+ff93MIETEBUPQpX7gdK4sxgFGXcc/JXpV6qbIOcypfq12Vwvc59Yd+cv7fHOumSWI75NhHbQDSOcoVPQzHJF9GpHCkf676LRouoZIjzmuhCvF9IgpDGs2ZHvpHkmYAXSSpAJw/BL/eADBC0A5p5jfTkYcMQm4Zph1QDL9T1ayDSp/eP4XlWDA6tzluu6/AH+z61TqoBgBWUDggTgEAAPAGAJ0BKhgAGAA+lUCZSSWjoiEoDVCwEolqAJ0yhHA3qoiQOk5zfTXg4/eQoFL3ajAfNcRxxc4BJYhPf+3rIwAA/hG3aPlUd+GDnch2hMdbyv4UmqKEEmJeKM6s7vclampNq+lRdhLxGHFagIYE7QZkXdhILai0Bl44fXX3F3FjVqxg6Yub+gv/ym3Jq58ifH8sqdB7EeNzGeulUIMZMfwzYDR+vZsame5c5jci/xIzUkXllzoYWYkNc/JFwrY2Ql+NxPlJtHiZZ4InciX+chC0xYcD4Lbq8gAaQoIsAv6gvACBEiormD+TDs1UvvUXjuYIz7d6CB+Lk1v8F+ojutxJnzqveJPCL4cxfIXo2+c2UBMv8zdzmYhGEP32WX5DQV0C4LxG0Z5y5O5tBzPzohE79Ip7Avpbt3U2RnezjslQjdJEkU/rlF/ia4Kl8AA=",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/tonno/tonno-slide-0.webp": "data:image/webp;base64,UklGRjQBAABXRUJQVlA4ICgBAADwBQCdASoYACAAPqlGnkqmI6KhsBgIAMAVCUAU6G60CA6wgyFSHRcegmwHFjBzlD9haxkr5UuwQAD+xZyB6WJviWQV9Qs9zEOFv5PftVrqO4+thGVNksSj/fFcKLVIUJeJM8xsr1eOsqXcGP3bokAwDUao+7AIQsvWG+NyYUwbuhYsd/FjkADyJjj797Ciy+URGStRqA8h0eg3XCf3bNvTMXeV1nsvtZVHox60GB3YUMy97MrzpBOFjVh8kpBob9QG3Q7xccGnYA3hal6qb81J1bxQUN99KH9+1svvB3+I8d67+XMb3LACj6FuyY9IyWMGmUl5uc/f1w7Hx1j0phy7XNU7h9PRqZ9kwFS0z3Cu7S4wjE+eMcbVTmTV2b4q5uP5xn77dBTgAA==",
+        "assets/menu/pizzas/tonno/tonno-slide-1.webp": "data:image/webp;base64,UklGRl4BAABXRUJQVlA4IFIBAACQBgCdASoYACAAPqlEnEkmI6KhMAgAwBUJQBOgZcTADSBMyiyD9ALmGYpkutMMP32hiULzqkVP3ASsKvLAAP7xo0ZmSsXckqZlWdTj5j4RBAjUhlt3tDGqSvrpORq8YZDaJ8OR7UTrrdne27KCOA4qRU7fM3B9Gv66cx13vv563duWed7lJvi7sRxjBhZ9LiPv5bnlVVQZL4MuE0PAefH08HS9ecOFOo3nXq5Mpee2muZSP0yNgsuyHSxNTLDwuICY5NNL90D89lLd69meNA2kdEsJP4J+7QGag8MjfiarUyicifDDVnDeh/AVwN4L7aFsCB+m7pYe2ol7SYS99oqIneqwEhK8WPWGzoL9xp1R1niNAkhl6qav7GRFjIuh12DfqaQiN+SItE+O9+2l54ks34PbX+RG+EqTd1wWPWYeBjuzC4Yyl3j6sAYDDSNYf8AAAA==",
+        "assets/menu/pizzas/tonno/tonno-slide-2.webp": "data:image/webp;base64,UklGRmgBAABXRUJQVlA4IFwBAADwBwCdASoYACAAPqlGnEkmI6KhMAgAwBUJQBYhkosAmcEwFaDdxJgSoHt0e8DgWfQ31yno34CcKW9jRWuuaGpYv77W8LIeC/gAzBugrfpZEoblLpYlPlciKWUY44/nhNz8Y4Zdu2lc4wUbyEoTjfcLgdi7zGoUUjPhKIaYI9r0wT5+3bIZ8xfsLrCl5+N3C/RjafUXnm+KhBlbKmtu90B9k1TjbPAvggcQHwiUV7aNh46/cvZiHl8vZXOF/LI6iLOzcne7Maw7s79pwZXFhhOMx5ZpEK7kP7aGW1d9K40fIe71aOkgP70FBnHiQ3leqmtqX7G94Bg3keBuPAU/CaQSy0f4Ykvc9GcHOqDDjPt18XHb3aAFllq+3mPZc7F6SsouZfZTuMlVIMFxl69v1KL2nYmmTskYn+IAc9pk4Ps3uT+sxSd6T3lSclyhFuordtB1242WWSAytoIhAAA="
+      }
     },
     "puta": {
       "source": "assets/menu/pizzas/puta/puta.webp",
@@ -249,7 +326,13 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRvwBAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSKgAAAABgGRt2/HmiW3Wo3TUTZhDe96TDdS2bdv2Bno6c7sC227j5M0OImIC4G5RgF9get3Q8kJ1gsEJafLcu8nJp1KGHe+FD5OrE1wAvF0T4Y4PUGginYbqneZJE20ibjRSjXZQdS5R9Z5SVT1QGdepIgqIfj0UZzQzQDDJkx+AMYoWAJAeEzTYwOfapUzYD/xz7idX7QAZe3eOzroNcJrhn1xcN7DdEcOCuwFWUDggLgEAADAHAJ0BKhgAGAA+lUKaSiWjoiGoCqiwEolsAJ0yhHA3ujKszwBNASoHt7H//jLn+ZDy+R2aXc5OVpUfk/ovtjFlgAD+g7CcPmRe4uaJzB50HnasC583TQSnf/glu4ufJBAOHIuXW3zrZEJy1DyZkFR8kxSr07CLr9eDrvkheV6HL4ffvrslcXfBL2d4CuatDlR3DKs5lcFVEfZaqqB7djqQUqgypQQcZUJN4fLcoxaljdjM2JfLU9rP0UVrB2iAVuKoboBWMvphC6SaAegJT7mG7E9Ih+Uh7d1UdfF1sjG0SQ/LtNIO5+W9ji/DrxbpiEKI5dgoVz+ajvDI+vbMFJyPQNtoosK3c58+cqc3K7aL8fwwZLgpvZHEHcmrlSjkRfydMVGLi/Ebh+1mbxAA",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/puta/puta-slide-0.webp": "data:image/webp;base64,UklGRhQBAABXRUJQVlA4IAgBAABQBgCdASoYACAAPqlGm0kmI6IhMBgMAMAVCUAWHjVkp5uAlaPf+MiG9PO61+5bxzXYtuapUydZc4WnKAD8gF2nKgP970B25HtAqXJn8YnNOlcxW8iF7nW0GWgMEnXwpH6cedUBZ58IpPBJiMjCx2ylirgtKIjWJj2bKRai3YZB/BXpfs+gyR7N30vdUIwZvWOz8wmDKDBGywBT2XnuzJ/SDmcEWB0wviyySIjaZMtpFQ0Gw/lE1vGUNKXJIQ+RlHgZ+fbYYJP4UIFbtbL/A++MYOVUnKlmWk3pJzFc8UikFbDiiT/dELB4kv95gnNADRb8uWsBEPu4YJccHoW0/jKb5nUmjbzAAAA=",
+        "assets/menu/pizzas/puta/puta-slide-1.webp": "data:image/webp;base64,UklGRl4BAABXRUJQVlA4IFIBAABwBgCdASoYACAAPqlGnEkmI6KhMAgAwBUJYgCdEfql34fA0o7MgwVpn5/yD47THAdAUgbt6EFM96SQLgAA/veDxqSpv3+OGIAgKa1qnMCIBM5b6SdaTiYDUJ0PgYY76Vgt/AbgZ5Z8up92ZfkciZ8bqEI46ZNLt7OMfvngk6Gja9l+R3fhzcEkPCx+yHfE7yS142h7jrvCI46Ug0VTMMOHWQD0gLn/47Qf+3dMaOA+urDvbj5+aVFFFEyITlRd2VkQX0obEGVzibNHxJq3fD+KWnc5EXqUIIWKWagwRJCD2WkByThmiT/3FPnIctbKLsmwm2Fpt38uYyPzIU03nZzHGrrFaq5ocYpEkWrVWSU/gMdJZs14fNi1vZLOjsxi3kOO58d7tH1CJxPgpxN/s0hEBxfKxQ99x5lxJQhXECtS+UEBf/8NYCWQCj98R9snU7BwAA==",
+        "assets/menu/pizzas/puta/puta-slide-2.webp": "data:image/webp;base64,UklGRnwBAABXRUJQVlA4IHABAAAwCACdASoYACAAPqlCm0kmI6IhMAgAwBUJYgBWAdL+fVZoLamMCtblm6QJmXeLDhIAGM0IkvTg2inP3m2cGjmuEeGXJc0vPIb0AAD+9bJTiOO3btyBnQWz0x0U1EbM6PY0PuVRekPMgqv4lOGsSH2TnNzs3Ad9E80KLqz6I+GqCctrSVQBp/RrXRH+IiL3A6/71pjWYf+pW/XRvBwqqwFofOE4uu9cmodYwaIjRXNtBazEgpgyq5BqUSCS3ImnmWjmdHM+HC/N044qsqYRvFhxhULcPzkSwGwoBMfj7pmOxDV5AJEd1+hP8epOy2Br8QAS3ItUDocrrWChpjReIieN4LdxHDvbKYZDYUBkc+cHaMtqSi7dl1dIRR/8O2tnmcAZpFQ531kiJ3e5DHtS6Yu11tbZSKhjKVJygaj8fvOVSnBI94h6buLg7SsG+2bPBYE+QIQD4mdpLVn/LiirnMsnEiXbiphJG2ZqoIqILIAAAA=="
+      }
     },
     "figata": {
       "source": "assets/menu/pizzas/figata/pizza-figata.webp",
@@ -261,7 +344,12 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRhACAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSK4AAAABgJtt27Hn/m1WtqPaSWdM8Fexu5RcwSltZwNnB7t058/f94wQERMAcWtRdbELygvXvhiGYb4u9ruNctzTjNz7Fq1E5TujcEHM+skoXqsQNDOEW4Idiu8o4P2lYLaAQYa2EmdEBzgk+gvMEjFzY1TLOapcHVU2+k/zrMIZzTgwQvIbB7TLFKsAoFlTdm4RwLb2peDUBUnP0KOMqzYt5JoGLgQv4xEoNpZUJa0qSANWUDggPAEAADAGAJ0BKhgAGAA+lUaeSyWjoqGoCACwEolqAJ0yhHensYVYHtgH//sMkjcj+D7bteCfRWa43+HWYbQA4dTRJQw5lZzKQ7Qxk6UKG42wXlfP96EXq4S1lX+XmjPzs+9BLyggKEvwUbiJIch9xkgrz/G+bMmeVWwvbYAFLOkxeNf2tJnIVsGtR1T35j4YA1FBglVZ4D+PRUvFDDFo18dPAcEfupzOdIcFWejkvFc7p7220R8B3nnWRh2/wWrE3WzTD3w7Ju39dnjR9ktyVisPF5jCX5piS/XpdK3aN69zxN+ZrZZg70m76jQ/bBqKM3zGn6ZBWUNigJQRQ8kSxg+BwEPgmjkFDsKO4Ogv7hF3H/KXvy3PydkCJI/ZE6r3CBDTWW7cTHG76XcZmhWr3KH1PC4XKNBfMImJFU+J4AA=",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/figata/figata-slide-0.webp": "data:image/webp;base64,UklGRiIBAABXRUJQVlA4IBYBAACQBgCdASoYACAAPqlInkqmJCKhsBgIAMAVCWMAeM67otgTOYQvaeDcVUBv/TIdv1FhHhsK4oadxq0M/7iAAMsy2U0C9a4Uu+OLuqmQditjVYB5YP2JJ6kNB6SkrIR3d5RqQIatQuF+umDHimjui+HtsPaXqs26mBqVnJ5CBfuIxAw9rt8g7F+SQijWWTqjdeAcZIYvv8g92OHEu6daYJTryTqTd3AwtCOmorzVk9agTq452TvRC6OairokQkJqT0mhjvq82YKLSel79umNQGeDdKtKVqcHGX2Cf2JW40vYf3+PHB+rQstfGEs3UIVkq4aBvr1iy07T5gLq1pfM9zqU1aZT/mi835lH6Hjf8henA649xxIAAA==",
+        "assets/menu/pizzas/figata/figata-slide-1.webp": "data:image/webp;base64,UklGRloBAABXRUJQVlA4IE4BAABQBgCdASoYACAAPqlEm0kmI6IhMAgAwBUJYgCsAmwJVE3MnZ6WlY1x/JwH0QtiWIVclcO42cECHy6RAAD+6V9LSO3YCvXIIcuFmhc98Ayrqv8puyRsGO7MHQOI54IPUAPnjVASyGEj0k4SJck7S+idnn0nZeBh3gCawCzJ/VGNharBMCSts8We8Kuf/WAxWnoL4dTBFtXNYsomPX6M1R9Suqpe1DJUm3U/bk/TgNEBpJjwQCm74eCr970UuF14BJct0DFKN/FL4H8gBXJ022HzlH66h05i5RoQbDDvkpw0JVRZgFgEvEQNV0WsbPkkh08x4dFNHJu9FOLvOB54pQuEp22582wKF6lucut6Fz9QESraFim+EOPeMD2otEvHGfkXR3o33U/qZn7f9k7JenBFIPqmMlkCJ8hMg5PoJJ6pwyeM2LPh8AkF0H/YdpwA"
+      }
     },
     "margherita_sbagliata": {
       "source": "assets/menu/pizzas/margherita-sbagliata/margherita-sbagliata.webp",
@@ -273,7 +361,8 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRnICAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSLEAAAABgLpt2/FX+v0zZisbaYuKS/v12dXV9qrtNZvJS7aZtmR9/r4nIiYAks6h8Zn5SeFqKPTr/GFEn/syrGVYD/8xckd0Eq7bjMJFF5HgU0bxtT8A/StDeKgBLAxpDLBKs6vy/qdhwpIZ4soaqrNtqq0dqsk6qqZoqmzbbyJ/TNC8aRBJ0wjgnGJUDSDiRtmJI4TOa0qOvCBu2/or694DMkNmvsVeeqIMkG9nyS0py8s2QhIAVlA4IJoBAABwCACdASoYABgAPpVAmUklo6IhKA1QsBKJbACdMoRwN53xYTqvQBtgOe8snMlW/jH+g/YGCzJyKVJavYL0e0+iuNUX9sy6XG8rWapgAP5UB7GALmYxjMdqZ+PlJ75Diw51aIs3YyqvgIXgZXjhPwCP0fZp1xm7racffdM2WPZPRPhgMchf8m5uCOLE2VT4/DdAvRVUIsJlVI9gwuBP7zVnPnRGVi4Qd7jtIj+0U8HFHZDKjVjseQ89uRmpXrQ16CzDczkzeoQQpSlhwUUJ1fUspx7WZSqqrx8hX/0urApSx7/++GwlfdMe0k9x0Ij2L2z/U35fnOa8FmP8B9PeArTtz4140RARKedi3qM5GHG+SVcfTSZBZYpXYzTwF2G1XXu6mCAXv2e7xuR13piP+pdX+2LxSC8pM1D0fdXFvb8cj64d7L+go94v1cvEDiv8I68hYXpkhkagGZcuwfnQCxKb18/MORNal54eu4VLGZ60M8FtlfduOGEh/Pr1FO4BeZx51H7NBcp+77+ET/yoEKPlqOu8wNdgNKNcAA=="
     },
     "macellaio": {
       "source": "assets/menu/pizzas/macellaio/macellaio.webp",
@@ -288,7 +377,12 @@
         ]
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRi4CAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSLUAAAABgKpt//nn/dtW/F//7nnJPoM1M+9aXLZVzcZj2OI/z16z+fP3+zmEiJgAaJqHTjd7a0LgTmUF5d9enM3Q/ydo/k1FGHSDAvNvvdaAwLmvkfznEUrV5gTurEFR+88nNAOwXQqE50agUSCtANZpZoEDmi3oLmg24XqlGQWWafqAHpoMoF+iuNcB8N8RTELZyXcbUkE3z0se1K0TbF9VYCw+ZLgqAXN49FnlZzEK3uju/FBLQwyaAFZQOCBSAQAAcAcAnQEqGAAYAD6VQJhJpaOiISgNULASiWwAnTMcdF+x8QhsFuAEMCuAlQPZsLbf7gM+PCh5o/ciel4rMyHj3iM8SAAA/rn6Z71YtoFt+6mC9J0vLJ3UMjZCu76dUaUB2+H1lA2fVcGn/ws0pePgQYmGBMKM5TxseAhyT3SgB1j1WVXdQjS5yqHAws9ax8Mo+a8HGQGkS698RZCQi3ZdphOlijjbY7xxOye+R9YhEw4ftlBfBJpCUKwGxsL+PZNAj22H2hbFXaWMyiVnHrVWKIjw+iuzuGBIDHxsnVqyoeYq6W3omyHESypeLVZ6wzVTQPPfN8H5bderewApvO9QTRezxMgGeE3Y9UJWzUVcuY2mQfsejz4gCZ3X5NBcWnaKYjcjTuL4zd3a/vRnmBrE1/un2RL839sSZV0dZkZrMiA3VsrQHRmbf6H1BwnRvR1WAAA=",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/macellaio/macellaio-slide-0.webp": "data:image/webp;base64,UklGRkIBAABXRUJQVlA4IDYBAABwBgCdASoYACAAPqlKn0smJCKhqAqowBUJQBWF54uwWwHGBU6RXnEIby3Qe7w3hV8KQ8z4XdbIKmBq/AAA/pcX011alDl/Q+CWQf1dKQFK+80m+a5G4Z1OJjB47qFh2OTcjPIHZmO5m+G/ubiHg1i0iEoOD12eYErRSBlPLpa0PO47kXpZGLgAeDd5V8UxGC/QnCDBQmp+RCAFCHnYkodQulE02z9WMY5MWzIxHfLjHwO6mTtL7ke8xlu7C3auFxKEjrvaudElDW5UR+mPJbnUd42156HH7Lyq6iEkKDqWIqcwdtMZq9fPa5nzfD/Wgy5sZJ+xtFSC6qqWrFDncADbEox+K8HyaPCTFRsK/aTJm0LFwBV6nQI7lGDqlRrrYeLZo0u7srcLLSQQKFbqXfsuONyR7wAA",
+        "assets/menu/pizzas/macellaio/macellaio-slide1.webp": "data:image/webp;base64,UklGRpgBAABXRUJQVlA4IIwBAABQBwCdASoYACAAPqlEnEkmI6KhMAgAwBUJZACsMzQ8nzM3CigJUD21vjhs4zB1bHg8w9/DVb8yS1FHvMl/htvw5SIAAP7yvX81wA5xgFKWyXoUzD11f2UM4MdNUgdaofKMXLR3KMhOtTCb8S2qSUv/APt/TxyyH9jaTNQ7L2epfeeXpz/W4eX4tJhx1aBwW6nupt+75L8V3jyMgK904KctY+2pKbk7Am+ua9CTPRbADkSu0uB+bLt8I8DKBSb5KDbhm+Ie4Oe+MDfefkWWdOrwFICvPHg8foCr3tTHz1XZY2AWpBTEQ8UPXoEHO+KU/iTA6wrxgrC/2fFc+c15xNLu7OJ2huoaqfqHvwAFvptg18aycNyoNWhJUyjKur4NYuHrrTooH+B+udzJJAZm3BjqRRyNFfDAfIl3hdP7rYs/fD1J0SGXOpeITjBVQdKEmf8zQvJH1kWmALGaaeDh0L3o/2exiWRjhgUQcIRd18LduxEJ9E0HnDMP1wR4LI0SYbGkWfBVUwhJiuAAAAA="
+      }
     },
     "quattro_formaggi_truffle": {
       "source": "assets/menu/pizzas/quattro-formaggi-y-black-truffle/quattroformaggi.webp",
@@ -302,7 +396,11 @@
         ]
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRg4CAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSKkAAAABgLJt2/lX9v23/Z+qrbxlr2912V40mpltO9n7AEy2I3/+/Z5FxARAMrCrLdMD5eYeRni3lJMky9r3yUj/Ndukcp8Y+dfRYnWM4osEgepVGXNsAZDMUDYB6CN5D4D6nIQZQwZD+xvSRcRU9VNN71KtHVLtXVGtXVBNH1IV+vbSDKmhKvki2DIAQOKpkq92N0RNWUeytkIhN6Jy4U7wtpqtguLgopRAFf4dAFZQOCA+AQAA0AYAnQEqGAAYAD6VRJ1KpaOioagIALASiWwAnTKEcDeMH4ueSAYAJnQKBku955QQ7+yeLkf/z1M6dB0B8QOAAMk1Tfd10d1fJpLr2Mu48ppoikkdluai/fniKvwISePaLFs1PdzQm/fEpLPWOjMWMDiL6S+0+CftaeuBgqtNvMMe8JLDxYcm8kHMbE+W9TfErwYMpzlLtTh2pI6KLlIxcGgaRGYPTC09+25IFlKBTGVb1RJqme3NOoG6G7PPVUszo7wdIm6fE/UmX22c6dyG/Pv1gPBBUdio8D0JwIa+VVYvLBQhVfXwwJdI+1xepNgzgeAQj1ztuOk7iGSbYmm/3qlHPRquu8s1h9+Jrz9WthG49eY6/o/PceZWHGFF4ge+c4Xx+ABSU52RhyO9eKnqXU7DpRrTMqQU1zTNoAAA",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/quattro-formaggi-y-black-truffle/quattro-formaggi-slide-0.webp": "data:image/webp;base64,UklGRh4BAABXRUJQVlA4IBIBAAAQBgCdASoYACAAPqlKoUsmJCMhqAqowBUJQBUeu58wMHGfrv+zrz0+sCdkKPr3aKM/79sc15FQ7KQA/eM+1Mtr5xDqf0kUkO4Xk5HKGDSWjhA9KY4I++Qhn69940PtrrqDlKHIGTQcVWsB8vvzEqyZ6yBAu9XL5DBc3hiEO5V/pPhANAXdV31bO0OKWZzpliDD3/Kh4+xQNIF8WXo0CkZRRu7VXpiNx6J6BbJaDFhHiNp5kMals4Zr+fXO4oeZfEMOynacJ1Ng+EaUuo8Lt24Q2wyPAW1L2OCFLg9awAaxnEuc3AuMrHwVz1CXR7acRf0vKdeweCf5YwZ1+4Vcg3fDT7nbMQjCu2l4PEAReGK+AAAA"
+      }
     },
     "boscaiola": {
       "source": "assets/menu/pizzas/boscaiola/boscaiola.webp",
@@ -314,7 +412,12 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRioCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSK8AAAABgGPb2rHn/u6s2G06TcBJn5XOtdNlFh5AOtu2bds2v//z9z1DiIgJgLTJBOLKy8Hpkeq0AFVZDCvp7Y5QZKnzsvJPJUF9AVIB46zaXImILVZ1ukhbz6q/y48GSljSXkQyNGsoYWlr0Ud0qd8kYqMOqEoXqBLyqArCqLKwRPMfhFSaDgCtJMkAbMcETRD7ljEq9otNEkDcmZKNAj0UOjJqvlnm/bizOFoDtc5YMxQDAFZQOCBUAQAAMAcAnQEqGAAYAD6VRJxLJaOioagIALASiWgAnTKEeE+qhrAcOfeC3YvxoXgxNQnAdVagKj7VemoM7fUDNrppyziUAO8Z4FtwaGoDNpiLFgRTBmWcPThGI+8Q/oGb0LS7E7Y4xVia6c+yi+p7btdi+p9w+y+iVUxQzwYnTk/lXUp1bdYR57zVvCCrQ54ONCQYF2DBV9V4Pxh2jFXfu/7/1zCnQY0pBty/ln2qEq8pLjr+6rySAfxEJUg9ZDIjDF9/ruD7KJAGV2VM5xJqNJ1IKxEcXDf3TUXzbE9DhaW0x4zgbU+RJGw5H2Az6r/l1jB7GXR7797cGrVus1RwcT+ftha/o5ryTtGmDHT+kFPhuP6nUgAVG5oQsLyPzK8DPg6ezR02cgJipUaGL2W4BWEjewNwa13G41bCWiKsqaggNCSA4MOQTlayrYN3DakHoJQV2Ja4AA==",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/boscaiola/boscaiola-slide-0.webp": "data:image/webp;base64,UklGRjIBAABXRUJQVlA4ICYBAACwBgCdASoYACAAPqlEnksmIyKhsBgIAMAVCWMAnTOAzgISvWMi3r2nbB+qKSDTTd5ki3X6A85Nh9Cq9PDoAAD994RjKnMoD+Y+i/GkHvEP+2qOhUczN+/QGmDRgNTxWkgxYzloRZKXY19fDkx2hlmJf79eOqaZqagBLYR1lo+PpE0b9ln99ZnfSFXImk76XtDQpL4+QryGU+e0u79V3swnKNtFVnIfMwbnCLEOpEjurXudncFMqDFmp1alz1gBKZkFXQFkiqT/7aJRHSIDyj1e3STVgEtPKuwquITcPkHcJSbm0pAe73jAmK8n89YFT68iJDGkLeTBjOnNk9Kx6IJdfADd+1Z+sRpbISGamKgODxGhqPRfY8nqhShOV+wKO9dKrX99IAA=",
+        "assets/menu/pizzas/boscaiola/boscaiola-slide-1.webp": "data:image/webp;base64,UklGRo4BAABXRUJQVlA4IIIBAACQBgCdASoYACAAPqlEnEkmI6KhMAgAwBUJYwC7BAgXQEqB7WdQAYuj8f92W+8M1KRRc27HF3L4DKShXRCgAP7vkUVUoUFqbRnbk31Qp4jgbVk2geCpLuBVpmSzPQuylZnJrUpmy63eBlX0dZbXV249g0T41i1hQvat3f5gyymVh0xH+9S3EkLl0EmJS7Zb9VU9fjdzsdazdHng+b71ObBf13d6A8XXXRZx/S8i/0xInzkYoA/UlUiIwo3mp7R9RMERDjUloKTgoodjCjFdyGDmDEsoVYg/NC59wPjNDedjKPykkq7aALoDlBgqCbTXFxpWtPwkmrI49VmXAKWspo2GuWx9nDjjTY+E57tqEQmf6+A3KRAniAtF4n2bjU4tsvqeyDtOdGJmxJvHU3q5OuwPI4j/l5q0s8fARgRMHs0rYeSKrjFYw2skvYEqKwp+fvs21MzWxXWEQ/ULGSUj1JzDJpyFzWOMBC3tQPgzilNYnd8wwiE85RKRznBnAcWv4NoAAA=="
+      }
     },
     "calzone": {
       "source": "assets/menu/pizzas/calzone/calzone.webp",
@@ -326,7 +429,13 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRhwCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSNMAAAABgGtrt2lnxZVtqzK7jHS2bXfpbhW1qVilto0qlW07D3BReQV77fUKETEBQNoMnGzvraUCu/Ie/5uuFLZyDSak1WMhEn5KlNbVEt6vyNRYiUqR1l0mO3tGrnsLLN4JXZc5SGchOQrMZSqN80W1MwKRfmFESKwwvPTULMTvqM+KCLinmv1ViGjKJ76IN+jG/7vEHKGCQcEb0UCgS5FgnLDYJXzNZxDxO4CAGK0oDMwy+zodQbLSJBgFfr8AU3ig0P+7ceBBSN8pIm6Z8QDAo2bhwIECAFZQOCAiAQAAkAUAnQEqGAAYAD6VRJ1KpaOioagIALASiWwAnS85JA/gE0xkRUEPdFzvewfNPVo7alSYxkAA+eNXfmu9CdVwDPZlLvI1XakRDejNFIUNv+GoeNJO/FjSa2/hSrIWdRpWBxCrqS6Pp6D3ihKzCOTbrG6jnb4e3FZB8f79fN5XnoYDwZEbxtxhBuCvIWxDM/rPThaRiB8wunI2Y14VrVsqRkkWog4J1fj9TDOuR2VThQ4a+d2982IX1v/geFOps7WveJpthA9w2cMbwK2+L4J4Ccyz5UiU02faOM9UbdVP0HyX8ZhNzRqYIZZ3z57axDzbgmoepgy/EdQG3WL/LdZl24/9fUIH/vpPyd+eK797M+9fE5KPF8hzDCBhtCu8j9/3SAA=",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/calzone/calzone-slide-0.webp": "data:image/webp;base64,UklGRhQBAABXRUJQVlA4IAgBAAAwBgCdASoYACAAPqlInkqmJCKhsBgIAMAVCUAVhmYI2GvKdICtO4GEmG+wNo9oi9Uq2YyqqzgiI5xoANxrJSLVZlMiXWOchzqvnftcOBMSN/hrZCA5HO2G2YxJ0kvS4dO93P84V9VgVpO9bgovOFzRp+RqN8iCDKeBq6X0UVIdOgDtpxIFau4KX3ti+HaC8q8UuMOv2lk0ojDYJn5kLUbJmriZv5ddEcwE5iAbXh6aIGLM/4kIO9i+Evj5p0FEqP4zQkzfxAL+L7Gbrf7fGQYNWYeTweMvij5lQKuefXD8dcQ9yMLBLjp4d0sfnkUPMdoe7bTN1xqPOSsYesPkT5FWTcvCixaQAAA=",
+        "assets/menu/pizzas/calzone/calzone-slide-2.webp": "data:image/webp;base64,UklGRiQBAABXRUJQVlA4IBgBAABwBgCdASoYACAAPqlGnkqmI6KhsBgIAMAVCWIAuzMl/O/rUpebwB2eNg+rQ4pYP2Lvui3it7tPq740PPwA/vebBmQ049uXFZHR3Vn91iYKeqiJHLDDYaNrCEUfVTgHjoWcO94wSD3CwzoSNnsS+OiIW3Py8kHRcO31JZRor4UYvwZ6geQZgDQjikyXD6dwfdKJWVZvMadN0W2s2jJFk06V7fYQJBDePe5OFHEU4GL9bQKTULxSEbbc4wYtQQS6727INhxeNRfI7igTxeoxYRr1CYGckaM9QwYx7DQFsDNj2f70m/2w6sqp1D0VysQ7P539KaXLl5q4WWIFEoKsPMmmgjUm9DGEFK9zfBKOU530pq2VQvp1TQAA",
+        "assets/menu/pizzas/calzone/calzone-slide-3.webp": "data:image/webp;base64,UklGRjwBAABXRUJQVlA4IDABAACQBgCdASoYACAAPqlGnUkmJCKhMAgAwBUJaACdL3+gQJVi3enl171BT36AqUR7cGdzL52qD7v6/AhboD8gAP6yJt4+kWOb3gCfFwrHhwPdDgCaB/AKmGoN/5d4pLpNy4dNA6lFGI6zX3p9laxNZ6x1RPliyqQBg+9YhRmwJgQlfLOzDyYdmJzD2f7gTB1D5zc9GWLCUN0XJyASOEKdgQoF+p4sa+ZqiJaWW6x4xp/qIwZvYr66HRuFwpoDN0vFntlROiDO+3cRZnwdl9b20N/TKPkqBjfNtNvJCAsPHuIqKk0t98X5TEWhuZnKVPMcHM2HZOLJ0h/XZ2PELMOI4C2L8lPx1AhZ2kdEEpq8+agHc3+7S9SL089IpIevcMOj9BN66+dX0AgNJsBz4CR3AAAA"
+      }
     },
     "corazon_burrata": {
       "source": "assets/menu/pizzas/corazon-de-burrata/corazon-de-burrata.webp",
@@ -338,7 +447,13 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRj4CAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSK0AAAABgGLb1vLmBi3TABjkn0hGnUhy0MqqVjJYruN2AIyK2wkwk0LFGP6+N4SImAAwi2SCB5yibGfv7O79d7E4r2MQBZL7RcavOVedXJH3u18JQDVbJPxb1VtPirQz8SJxIkU1HCKLUI12U+1vUo2OUDWtE70ah4lG0Upzq4dA8mAD5C8E/wEA6CNoRrX9i2tZXAONPMcq1BYJAwcM32N6sIqC4xdVGy0m8CvcXhNYAQBWUDggagEAABAHAJ0BKhgAGAA+lUKbSiWjoiGoCqiwEolsAJ0yhH8HgMbWjQVK+tbjW51aO0pf5UB5seqMPZtPqprf5mZ2vZPwAP6lld4YBDEbVwLBK88PZTbnyVuihSz4B0ACSsBXottTfJ36dNGIlYwU17RuX2gMLGQ0mXlGhQs7Y/kwXMillrWqNkPFdgR3bsfocTQ4+YVgA31a25LsoGu9hMuwaf/ZEfm40zH+B5rD0/Dnm3vRzerW268mpg2PBeMsdYfLNbiLrF6bJpft/Tv3K2diXfhhtIa6cagEP/Jhtmc1UER/4cS0nsGJxyWtBe753QqvA3wVwf1gi54QvuKoX8X5rFbZbq1JlGqq0Rb3T9imffLUWPBKge5fVcWxj1efTfw5SxH/FYEa2AHxQdDpUGexAiWZ+b/kDnZuAeve2H9w0FsccD8nf6BGMwy1NyfCv2ECR4rO7K7dwysn6ZqVeWsdxM4VB03Hbb+DjoAA",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/corazon-de-burrata/corazon-de-burrata-slide-0.webp": "data:image/webp;base64,UklGRj4BAABXRUJQVlA4IDIBAACQBgCdASoYACAAPqlGnkqmI6KhsBgIAMAVCUABYKTs8imr4JeHyVN4tUp/X9meBxaZd8NP69e+6j0Q152wAPyn/1XL0FGbzacWiLb2CHUKjoiTP20gSSXQOkUPU+0qNJthYLM65PRIVC/IaFJ6LiveoY3AB5mb40zXPQ0rl/oHb7m8MPk/bZapweC0d98lgFk/XEhLd/AdCNZhaEzv45i/f08My+t/Y26hZeRGCZMl42JJNfjz7q4Gr1sHy1aftMNTzeaqPxt166azZCkFLdMvcf7QrMUkmzsgilcGtnKh+YmtRQvPY045KVThuMsDvn1vDaEduymJwElj4dzW87N8VYJpQz0OsjKZZQcEG7L57w+KPZDAIGbOZ+6MKGpbT9NzdB8Y31nR0Y1ceov99JC8CAA=",
+        "assets/menu/pizzas/corazon-de-burrata/corazon-de-burrata-slide-1.webp": "data:image/webp;base64,UklGRoIBAABXRUJQVlA4IHYBAACwBwCdASoYACAAPrVKnUmnJCKhMAgA4BaJZACsL4ET/gEHP1M0FuvGBWgoKPcmg08SyOKPz8g2Q9u0rdfKbPfD+lLeyxgAAP7b6aVBjxcp/NSpgm3upfxR9AUNp5xHtJEdSwOzBHvuOSGZfEayS3ReQxa9HmK1S49lqCZSUr4wpVI3s6GWXapYMsUUh8zSBPATTxR9to7PT3BOiRuFMPTqOdjjiBzfrX9sGU7iSuMESRcfBCeqa2nZ/yZWrG5tashWZ2v747Si6Wgtft+A3COX8tGqZQCzbKyNhdJWdJbp2mzESfHf1PjISwdinUIkGjhPHzgDGCSLACGKPj+JyPCqSt7iD/uhv4eEnGveqZSRof95rn9lH4gf/CVaeMgLwCfbJlEDPRqgW6zwujjBMvtQ4InrMcohrvRzlGOctzir1Yen8mp29K7VYHCgJEwDMISpWKYnbojuabfZok2a3sqd6S2rBX3Rs0+suRVHIVPLTzpWgAAAAA==",
+        "assets/menu/pizzas/corazon-de-burrata/corazon-de-burrata-slide-2.webp": "data:image/webp;base64,UklGRkABAABXRUJQVlA4IDQBAADQBgCdASoYACAAPrVQo0unJKMhqAqo4BaJQBOmYmBUCAmcR5iZwCuY42QV+2mS3q4QQoS6aCi/0ZHYb/G6jzgA/sjXslKFvQ0B60I/LRbvVV8g5Bsmjp58OzbbnBznROeaqDQ+NEyeyFDk90UxBf8TJTjHY7xMC1BVkcG4ie5UHvVrb0ybj502J6NB9GqLKP2Jt8rzGmGfeEwEST0v7XqRwzsrACbDXoZWsElYnfm2exu1M1aIHKFimhqHvujfAAKhGI3gSUZxlKMc2ryNcwtJjKQBF23qrQdTWQzPSD+GDT5keBSg6ga8skF9UcMW+3pcgpAMavrqaPvdlW83/qEsR/V8FJ+8c7NdrCu1HUiQEewfe1GGt4Xi05gupiOBfpfvVpz6+U0i4RV+GntatpUEFgAAAA=="
+      }
     },
     "fantasia_pistachos": {
       "source": "assets/menu/pizzas/fantasia-de-pistachos/fantasia-de-pistachos.webp",
@@ -354,7 +469,13 @@
       "card": "assets/menu/pizzas/fantasia-de-pistachos/fantasia-de-pistachos.webp",
       "modal": "assets/menu/pizzas/fantasia-de-pistachos/fantasia-de-pistachos.webp",
       "hover": "",
-      "gallery": []
+      "gallery": [],
+      "lqip": "data:image/webp;base64,UklGRiwCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSK8AAAABgLLt/3lX/CcdxdPsk05iOkO07SXb3pqttOU1pkW9AqvZa/b+/v+/ETEBkBuTGAJhRNv6N/O/sehToJ9jJD8WPHJKnxi5nwVSY4zCn7CIepxRfOYU5DGEawCc7xR3KqCDIc0GjmnmEcHQ7mCC6BnbRIzllCp8TeVdojLmUdl150T9iPygOIvOBhop2iGs+VeynxAUQdqTrNceNaQNS79i/6d9esgPlVSMTE8XGSANAFZQOCBWAQAA8AYAnQEqGAAYAD6VRJlKJaOiIagKqLASiWgAnTKEdF+xyYC3wC7BZMmV94cD0e90wpPjf8CfJTt0QdHLbqmJ0AD+nufaGuHjp+6rBhbmDzCjY7XI4GntsFaBN6Lk64z8DRhG8cV/aqUZeXE/wxy7NHjSfv4ENU5nQUdBMEKvmTsCN48K01xCIGVFmW7fxPZD5PNB4q94GgsxTCXCP1iB2qa0ssiV+65F0WS/Ayl/Tj+0J9rVOdQTzYFHniXjc3XPTpGvJ1/OPgIAsFGOS46inH1ni1QCl0U71BUFl5qxjKdnw2Xvmlve2Sh2c0UKnOhU3m7J2xCg+lMC3joU/jDaKpcEz6pSYtHORiQwqykg8Jc4j23a9Jpbzg2UfNjMIbXOG8evXuM9pnJWUx0DqdkI/meoz9c0LG3oThhX9xDA/mveqmX3DCB2X1QTO+crF/WFIfaPdAAA",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/fantasia-de-pistachos/fantasia-de-pistachos-slide-0.webp": "data:image/webp;base64,UklGRi4BAABXRUJQVlA4ICIBAABwBgCdASoYACAAPqlEnkqmI6KhsBgIAMAVCUAVhmyM4DSXs5BC6WHfodWfkJtnFs+lcOmflOYR4BEh6JgA/KsqHQP6QzZGt6giHDQjM2wAOZJoJVwx5JnF7jd1yx5fPtUW3Yk3hFlYND5EVRuAkPPivCAvND7NW3oUMIuU0cXIUmie/tF/OV2XIhBH5/7ST3OdPWyiVBdPKNalp5Y5DT3b+kbMLtMmF/fNE2C9KyGd6wnAI2n9O0/pqLAQuH4TO0a0cD7crpcoOb1C9Y4Q84PzkDTRSlkzzBcfuLnorjWydWvuw6690r1LNaXyOFnJcWZhMfa/9y6vuMiH1JbO3LPD+VbeNR/4oK+NwgPCYyea7giiSgWmk/rfHNzhcurJS0AAAA==",
+        "assets/menu/pizzas/fantasia-de-pistachos/fantasia-de-pistachos-slide-1.webp": "data:image/webp;base64,UklGRo4BAABXRUJQVlA4IIIBAAAwBwCdASoYACAAPqlEm0kmI6IhMAgAwBUJZgCdEf/qV1yQ0QNIEzgMS2GvxHwdTsSaEuA/emY38YO1GdANIJnT5AAA/vFIKcnudKpL40BO/Mi8+4tahG6saMSd0tnebOhYX9LBH66WQrSB0Hk/I2pk+5QdHqWc3QktRPG+GW5Ijm6Re8kmK7EAaZySKk/zsSTEGZuXe9Lj1u5Y6zvQLPhxGwHJBPeG9+TF5MCgyIztw1Rac1o7UH5hTifO2i6ustFvsksR95fb/g5TEbUPHz0l97FH80VUE2U481AVlnQP6oP6InSDCuiyuNahw12LPvP7tsqfmE6sBnD9v39nsdszOng8CEcqSnqsawe4YPG5FJ2mGgzwK6PFWACD8Vi0i7JKOhfAhbqrOUQIHVubis2+0OFeEeOnp64o66oXL6Xh0bSgdO/esDmZuJM+kEMUHTm8foEUC0u9p+cZi+Cf2BL6N8vzwmlYJ9LGc8frjz6U/vUW2yOkT1HD2ox4Lotst/gAAA==",
+        "assets/menu/pizzas/fantasia-de-pistachos/fantasia-de-pistachos-slide-2.webp": "data:image/webp;base64,UklGRoQBAABXRUJQVlA4IHgBAABwBwCdASoYACAAPqlEnEkmI6KhMAgAwBUJaACdMoPEJeWi/2LP2AdzBeldsPGHdcsPI9l1Qyuvumu0oB3A2IR8zO9jgAD9Ty7bevC5q5QofrY3aAz3OeUWhOLq0gOHCgZPP4pkiMCG05rhM52RIBGd7jURQP3V241PSs/sd88dk5NC8WtzccXotu9hZkKDCAEec+pp20wPrHSPbm53cawLvPboNa88pHUdAvIshN3Huj2uFhdGneKfcOgFN2lzE+9zFkVt8vo+BR6fGKgODueirbokZ0m70xmcptslWkGa4Rqt5UOYsFXPO2A+togrAG+33uV3k9HJcGnaZ+PPV3jdzSRdDNuY5QN4sRw3wC3KOWfjhbzC9rlETblCVkmXmjx+GPz21nO1t09PEmfYsEsnd9IreZICq0+BFEgKEmAr3Fh0Y+1gDY6X2WT+6DRvpDaTQ0Ke+O8vaaBOWIUY0T8MP/H5pNgTv+4lDh5XgSM2/LhwuDXB3tAA"
+      }
     },
     "vulcano": {
       "source": "assets/menu/pizzas/vulcano/vulcano.webp",
@@ -366,26 +487,33 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRhgCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSKcAAAABgGJt2zLlGdfm7j6DJGvuJHfYAmSHqI0VUJ3GCjy7xEm4++++gYiYACg50DnSW+UWVLx8/E8wzycsfKzj3wTP62ou2wnB/2/exKLbIQSPMfL7hPCCCmj/IsRMwn1PiDqKRULcDRyJtJe6EWlzaFekFUyLNAfbrTitQN2rGD8+ANHVb2HzYC1+EvA3q2IrrZx/53PSDL7WvrUC43KpTAXBwbaujApKBQBWUDggSgEAAHAGAJ0BKhgAGAA+lUadSyWjoqGoCACwEolsAJ0zaH0fs0SYwv8Wteen4v4PZPshrZW6kOFcUR1oYm26AADW/sA1xxHfV0oNEnuxCKw+HGPZX6Pzi74L/VK3FtieV1v4H+fFxwVCbLLzSf/x/NJ4qvB7RLd1TelIKdsRQ1fAiQSOrJI7Ggnwha0Dk/CHF99nobRBKNN+UatH4wb+SwhnDVJS5rDpPr7YACxRAueQn6VQLHvucIH9EMHlc9yVs1YbbW+GRfM7vxj/tDBa2KfJjhZO6iLh9JICc2ZrFLxKpYab8B3jcF89FrvOpHOhhdacaBNc+zAwNHR/HG7PT4XPoU3I7rrvVHwKz8ERUrV4zPOpijO6Q0LQd3g9VUhK7KXEUx/50HbyYr5MnWQRFuE2YLxM/gTHju0P1Gf6/9P78+U+IG/xlb/b5YAAAA==",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/vulcano/vulcano-slide-0.webp": "data:image/webp;base64,UklGRkABAABXRUJQVlA4IDQBAAAQBgCdASoYACAAPqlKoEsmJCMhqAqowBUJYgCsBvAdoza7v4GF2Olf28sgG0+znV/q4uqA/L6ccZgA8pyhfR7chR32FN6z3STj+BDQj/Tr6s47oYSScLhlgHc0fdpcbeiHeNxhD/7q87KwWGpOLS9Qyx0agnC9qHNQVjBqF2tWn/4htEYs2XBN+3vmg9gqo7ST8kgMo0Q3RHObCMghKLG1HnFFud/hyz5XQcdAclffeiZUUNr6cr4ltK8QFpgk1Sz64jW+KT1ohnKzp9YmMegjZtpa2qqFtjsNWTjRfXS4A8dPF3oWFNVEJeLwpTsvCdBapyXbpZXbiI2BIqY7TQw9VN/gQG5wCZdsYYPDHofiT8ErvoOfkVpHioo9IvPz9aKyc6kybR5T6gW5Q/9rrykX8jwAAA==",
+        "assets/menu/pizzas/vulcano/vulcano-slide-1.webp": "data:image/webp;base64,UklGRpIBAABXRUJQVlA4IIYBAACQBwCdASoYACAAPqlCmkkmI6IhMAgAwBUJagCdMzLktRKVYG4BpAmbBibj9hYx9DGJ/1LF1gCAV80BErZLC0Z6M64xzTAA/u9MxzC3gQyBIkr6CWnKAa1wtGSXaXD8zMpLDmq8XXGMsrLYBdkP6K4WlT7aeAg3+aTjPMVaxs6opW12JHkkyejy5qr8219GW6x0+LWO5KVWwd3TzrwX78ETXXT+4vlEOyvwuXlwCypZ68rDA9CE7qm8vG8PN1th3Lt3bYTXbRXd5qTYqxbsbN8+ME+NutMaetIXybpDrbbgTR2FWNhkf8n4bAKogga4701Q5Ton6g0NEL6a1f69sEK4xf3ZnduzhSVwgk/plcE4nQicgVqmN3YPQPeNwLqOJkipuJnBc2SMSBVIHxs1L8kS0rRL0IENg/Udh3NS27jo3OxfLRNNGwUPdSFidW97fQZmltxgu1tq3CE/fdPV5tAG/4tVN8erNxmHDYQ6qNLYrwJLxa2JM30jD0nhUSEBVAud+shpAAA=",
+        "assets/menu/pizzas/vulcano/vulcano-slide-2.webp": "data:image/webp;base64,UklGRooBAABXRUJQVlA4IH4BAABQBwCdASoYACAAPqlCm0kmI6IhMAgAwBUJZgCdMzGhP5/9mgggI8D22IZ6hrz/8xWABxgSax28MabDL4lUscgkXFPgAPy0oyS5E47V858zcSxZ02veQnR5Kbv2Wg1IgIhFbOpiQkqxa6URUq19Dv+8KCeU7f/DD8g/oD/KDnZOQpQ1k7+Sv2mqtlszTv54fYwuZgXfI5a4Ox8bv+Y0g8GTy/5RIOeOiNbcDvpvh5Q6CGoRdKkoTgBONn9DYUXOUiatA+Z3tpl8a3jFTvFjPc91GMaX8t/mgeQmGgkkbDMbTRiHC6xzoCOWt+4fAlj4L2B4bOjC5xjm4IsMAnbe7Un45wBICjKqd7pbzqlYR1yLa3gjoHHwXIxUv9B/0Q9kSbDF4R1zzIFk7WEvBFAe1wtFQB8zKritNvlGe3uf4EWUQmfOQZaAzv3RCFVDucAQVdG7tsJK0ayr05Ma6XXqA6eSUIywpy+FLXM67isYy4rDi7FzNw3g9Yx89xKOAAAA"
+      }
     },
     "bellezza": {
       "source": "assets/menu/pizzas/bellezza/bellezza.webp",
       "alt": "Bellezza",
       "overrides": {
-        "card": "assets/menu/pizzas/bellezza/bellezza-card-420x420-q80.webp",
+        "card": "",
         "hover": "",
         "modal": "",
         "gallery": [
           "assets/menu/pizzas/bellezza/bellezza-slide-0.webp",
-          "assets/menu/pizzas/bellezza/bellezza-slide-1.webp",
-          "assets/menu/pizzas/bellezza/bellezza-slide-2.webp",
-          "assets/menu/pizzas/bellezza/bellezza-slide-3.webp",
-          "assets/menu/pizzas/bellezza/bellezza-slide-4.webp",
-          "assets/menu/pizzas/bellezza/bellezza-slide-5.webp"
+          "assets/menu/pizzas/bellezza/bellezza-slide-1.webp"
         ]
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRkICAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSK8AAAABgKpt//nn/dv2f25Ljmz/tJ0G45ptn8Gi1cxkM3lLdvrj59/vcwgRMQGQ7cmwG1RQ7G26TDBM/OU4Ii8y/89I7xVLaEsGY4zsaLmI9ZJRnGizAQWPDOUYbPcM6RZaGdptHBFd++NEz9UM8csu1dsN1eMF1UUP1VrqJ1E3amgS2dAtkUwD8F5SVABAfoygTIANRYkmiBpqn+QdlULakDmycPov+BnNgmK1LZySqoc4AFZQOCBsAQAAMAcAnQEqGAAYAD6VRJ1KpaOioagIALASiWoAnTKEdJC4OZhdg3wKmQqABixifFJdMhUpiPUKW+qrOT64h3auqTYAAP7LyRaLJfyMmN3rNEw5Lx+pTU2fUxjpcnz8mBF+jynXLHUH6dP6iAGY8cPtC5LpDMvr0DbvDmw9sl+9qirqmzw8OGTKYx55bnisMSboqWOd5fCQmWj+S03Mf42vjrgBvfXpThsL1c46yhsOxnUbcBl4DxD+UE4WbQR16MlN6txMGj87Z5ChwnnZLdHMymBCbQfP/reRtzcHwPgZo72ZduKFQdfdD4UTlNObMKruQZ9ILD0Pn3h7zRRyLmesFMN1HprHr1O6kObmRN0qFeHX0sX5h6ybddwKx3qU7zVv1RyhDFFKLAK/6/JX11mxMs7Nv0uFVTY132uoIA0Ssso+9dtAN7p9Rreo8jbrR4V0lkzeRKgPO+zxUIlK855tcQO5H4gvyhvbOgAAAA==",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/bellezza/bellezza-slide-0.webp": "data:image/webp;base64,UklGRkIBAABXRUJQVlA4IDYBAADwBgCdASoYACAAPqlKoUsmJCMhqAqowBUJQBOmW1jAjAO0Ds3YQEBD9nQV6c5JmjoereBQz42XB00ROnYqjFQ4AP7T4XsedRoAfyEsdRESBh/aVeBJZifyNPPOAn5NHjD6OsDE2I8RPRfOMW9vH/Q9jp5VCQOkqh4ioY6RSfyHlRe8fLWvcwseLgl7LlPqHi3AvB6Srl+HFPkpoVnis4f0Ce5/no4GpYE+RY1Qm9CnaGkKYE+SSD6Y5zuSngO7XeOvcFFktR/1x5oPuHDTfqztYw3nbernMzTEJTp/gTxtGGECdy6vrEt4E3TKu/6iTDNQClzFNYHJEU/CU3rU8KMLAVGLk2/Jp1Md3/h3hI0C5F9noLA0fbd7lG2IYxg65Q1AznQXYf/T0MAlArQu6ZDBzCclP+AA",
+        "assets/menu/pizzas/bellezza/bellezza-slide-1.webp": "data:image/webp;base64,UklGRogBAABXRUJQVlA4IHwBAACQBgCdASoYACAAPqlEnEkmI6KhMAgAwBUJYgCdAyweAGkC9zbFctSI9s/vSvIU0touNppkb3IlvjGaH/EAAP7vqn8UI508ivEXYEPAymQcMNqVsHdISJHpf8AiTrWBIDgTPX+LFqLxJ182W0MphdOP2+kJpeLopQwHlCX3OxC7s/Cms0gnq+pLpw3wz949brStzT6y0f58FEiYTY4sRmUNez8s/Gpj1F/3kK7h2fB8D/c4VhXEHxnscuqh8xS7D5cH3vLd9Y2UCk3mUA6OopNUJccFAxWkBopVffpNyiWie/bOT4CtarDeW6PNGn4kr3Iay9aQyqewqTi3d2bx3TGGYzyYkacOmwoK5hdRR9r7rWMryzODpvITUasWvYh6DY1LGeedF4YHtzZQO4c+l15txHRBo/+LwilL8qejO1Q8Lk/v9YfKWsi71HGYugjw0bDZamvoxpsDH5IcH+mMP1Fkiqxzdnv6bna0dFWnA8KdVGHA71Dbdjc8gAAAAA=="
+      }
     },
     "passione_del_sud": {
       "source": "assets/menu/pizzas/passione-del-sud/passione-del-sud.webp",
@@ -397,7 +525,12 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRkYCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSLAAAAABgLJt2/lX+f23NdvJTEvsTLZt7yOsemnJbmtuSt6St279/Ps9/4iYALhbW7i7e1pgVJZ+zQi3sw3yVGXvjORdnU5G4hEj+zFATDX4xii8rRCJZpT/lQg6CJifOACTFMwW4PVG8u2Jboa2EadEZ/21RMxcM9F32gjRPDqJSpH6S/LjA+xR/I0D6CY4DAIA7Y6iXQdErQPrf3J+RzWQ6T/2KvY9GwWFppzF2dWZnlC4H1ZQOCBwAQAA8AcAnQEqGAAYAD6VRJxLJaOioagIALASiWwAnTKEdQe6cVNQBt/98wo0EIBya2b5UACM88aYaDBFpyzbLCaPxx2mgNYjdZIAAP0fMo5VzlaPnVhXcpKu9NZAPNfpRAxXg+m4RPeHL1iRqfrK3PWmZcr86ErI6ie7kMzBm33LFjmn4c7thia/+oZ4xzICKYknp4T+nXyVeFRcEGfmjntmvlkISUjco6ndr1Zg0qiGVxrsa0CK2XXQF8NMpX8kIl09synAUPVqaDwUaylfZas2tXJHsvkaNtqn4RGd2+a656Fvm48J2MFUVb4Nv1NH7KZHroEbEn4x/T2NGkHW9B5gvJ47zyBERjkXbdwc17KPDFhFdKvo8StFsV11GwYrMlP3bHuIAaP4jyrqMJzP2DguIPKy3QL5uMmrPYYaRoG6wGeTLNjb5rVOFJvFajWWzi/+kh5c3pxn614jBUS4V6AuEXwKMYSeX5qM6v8VTCcAAAA=",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/passione-del-sud/passione-del-sud-slide-0.webp": "data:image/webp;base64,UklGRkwBAABXRUJQVlA4IEABAACQBwCdASoYACAAPqlEnkqmI6KhsBgIAMAVCUAWI/CgU6QEd5uAlbzcyOI1MpRx6oor/eMaEYrTtNJ9sJW81bstLSGcjAAA/rHlZSzCeYv3CcZQm5uqGb5m917WCpvgcmcVzg1vJ0TbWnXBGLbXYzxx/rgpd4BFcKEHACtZtmF5qklP+h2lTOvjd1mNqRLwgRvtk66aAEP5R0Po3CVPAxTTgLaVQsmxkCAa1ph60DlfRuDuGpZORof9HtOBvuhVnIFOf/SJhVKv4KPdOJLrVqXlpZ7MFaHE0DHPQBrf9Kemp0gM9ob/tXjju3dVdpA237kl3Dl3+0Rp/8kLZ4zeLBobN9AAmwP7Ood3Xq2lYVXvd7B89MtsxhR3eUVH3+8u7endnCu4U6SE9qnz7E+KMBllbygNNisnqDIp8PF9wcAAAA==",
+        "assets/menu/pizzas/passione-del-sud/passione-del-sud-slide-1.webp": "data:image/webp;base64,UklGRqABAABXRUJQVlA4IJQBAABQBwCdASoYACAAPqlEm0kmI6KhMAgAwBUJZgBT9NIBnvpnPkATKxobpTwiqF7kbK8DTPHbeeKZErLAznpa/rp/VVsAAP73r1BS+OxAxdwN2J2K/y3CgbiL3f8/M888y1QM1JVT+0nWhCKb69ugXf50JxuvDruUOJ6dXjCGhSDW2JthMKLEU4/oyn6D6M2v87bRavkqAsPOSUflT/YQoS32F42f8wOoDVgzmPjzdfWvmEcjTL63Y64Dx7meqt4agm3FLkc2ffGPhG8U0XEcas5kZ/Cmgz2Ze5Yq9JjKJcCrXUm2+r+jsZ/4OPsb/kSxbdsG45H0GGPgOkh2EiFu7wCMQZAKCkjsH0qwkc655vaWd5YUwH8b9RHr8bf4zQqD3DGO3DRvkOVk/kGKUoqC8llDOypzxCx7jhST1+Wy2FdClOdRyJAGl0zYmO3/b+mq30aZIhXit3jIWBKMUQ82ZfMn/AApQmp6ulT0Hzxmv+IEGjM9InQzrTFNlJs44ex0b+GpnQeB7S8sgp6uG7FgsI7l9EXAAA=="
+      }
     },
     "soppressata": {
       "source": "assets/menu/pizzas/soppressata/soppressata.webp",
@@ -409,7 +542,12 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRkoCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSLAAAAABgGPb2rHn/rYxg3/9rRVXHII6O71TpU1vq00623Zv2/r9fs8QImICwCwApTizpfehzKlnE+Q2j1wHor53WRmETQHmn055NNlMgOuJLYI3FOB+LQJQFaAsA9SXJH/xSA3Q9qCQ6L2knSgwukY1tkC1OkxVn0fl1j3TPEnRSFMPaI8ptqUAfF/cNs2IzPrhMqZF9Lh9psdqEWKLi89ibVrAriyfuPv5+ehP4YGQBx4YAVZQOCB0AQAAcAgAnQEqGAAYAD6VQplKJaOiIagKqLASiWwAnTKEdJeq8P5vFsmpfgrQQyjxWagfSQ9CAOKGk3H4plkEyVZfqJpx2jjKnVqYRndnwAD+nvw0M63HTzpgnVztfpXrCo8Te94WNJVvWqCLN8rJ5G04WA3uxnwX6/zWShub+TAmWiOMmNPUQHms4vVJQJgF764XvQPWaHyGXx8lqmJ1RJ9tYl5q1ajEReRS9+seHMpnD8XYSP0/RGYPU9mdGG3Z1Y+yANbiv+m0qentiGnAtDftCxqr2YeF5p8SU0+LrfEmOdljmfWbc3rMpo7y2irmPIlBo/JDVecc1Mkn12g9AGTdzNQjEU30fEylNjho4Nom2j0Fyo0YbifoOl0lCpyot7Io3LHZB4sEWB8QZW8LT7Txb2D7XC9VWdJMgcteuHnR1g3bvB+WhSGKpX9U4uw+zTl45vokYKwcN8/fMDs+sQZ0xzTA02DYuKKZzL5kpFy5L1T8QAAA",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/soppressata/soppressata-slide-0.webp": "data:image/webp;base64,UklGRkABAABXRUJQVlA4IDQBAACwBgCdASoYACAAPqlKoUsmJCMhqAqowBUJQBaja0dJpFFwDSms2hXP7go1Z7ywH4CKwbLHOqYgjXPLzaXpMAD99vPmh0qa3wHZZfdbfWDOC2rNgtoN1hlyxNamvk8UOeUGitNxHhKO9TJaAJ8zS/T3QKpIfMDBP4BqgWVxcxnzwVZMhnsYIArH+ZuA/SzCIW7/PLyRBtquXYPsCYbZpx7hZ618HyjFGFFIFrDZwJCLY382shj9/qiEI8P30em338LLzq9E1xKvOV0uVLHFx2a0GiPxsheHyyLjI21BgD5A/fjhB+Zzy4dhLDt1kWWm5yH2PUcVClis2yLI7rHBfIaYdO+qqi3VU8Pz7rzALCWgM+9T5vnAfooR+K0p96WmItY4MzzUUoUpAZ4wewkZx9D6NYUAAA==",
+        "assets/menu/pizzas/soppressata/soppressata-slide-1.webp": "data:image/webp;base64,UklGRswBAABXRUJQVlA4IMABAACwBwCdASoYACAAPqlEm0kmI6IhMAgAwBUJZACdMtVCv3XOW7weqXuBlAqX/ji1AAoKQvqcJl0+0jgCn2i5aeilPqA5Y2AAAP715qk6OHYs0zkVXDZBTxyVI0Y1fIw4b/+Q2mOER1KWplcbhZ2xp+q5KLVe/BuRVJM6ZmUdDMfRXQ7f8b39jvgBUtkdCJLUgT0IL2mSr2IeQ9RM6NDvUWa+O+9nHTkpIA5z8O9Pn525mOtwANmdw3mc7ERMFif/rHD9+FHpjshZBO6tqBWVlHePQopEMdtImjqbh4bIXGOW6OXox3d1NtTO9FsXy/zrptbevQSd+qa5yZoovslDdqq8zMuA1/NVm7Ti1viJlu1E/BnPDF5wq2VjdkTyhSGGsRfOlv9k1A4a6sXC560YQjJCed4n9dPUi03Ma1LTrk9LSzxboIJAMUREMs8BYigGphQiY3dVrqhbM3PMVFHLCl71RGk0Wm443c4y9vuf0dtj2zF10U6DuL6tIUwmLyGPw71S3yne/T/bnn+y7LuMcgb50zC3J67DgHjq08yHfsSGqtrR+5H3gtf36Om/rYxakrDvYe8IzwuX+9m4xH4nkgAA"
+      }
     },
     "parmesana": {
       "source": "assets/menu/pizzas/parmesana/pizza-parmesana.webp",
@@ -421,7 +559,12 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRkICAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSK0AAAABgLJt2/lX9/23rWZ8hP+xZjdvfWtuW1w0k9eYbVdbXdHez7/fExETAHFX1eDt/mpXjhbyS8ffGfGrGoMc3Qwj96nWJGHYZhQeBMV6GcWXXkH6rzLmtADANkNahsQfzTAGGNo23BP1e/+JNooZ4r0uqq1ZquUDqq5mquoYVQQTNPOA7Y7iPgAgdq3sPgah71TJcwrinlV5v2WQVjedSP3MpkF+srBl+HCrtcgFcQBWUDggbgEAAJAHAJ0BKhgAGAA+lUScSyWjoqGoCACwEolqAJ0yhH0fpsSAwqMjAJVPM98eP0uEJl9YMHBJtMzK3McQC5Dr+NN52qBBkAD9mXZyQR6O4oC9HCuMGkBWckCaprcM6APUc3bNm0OWXbY7+Ti6CZYAnYyON3NJFjOsP0Gkk3rdmCsC2TROqTmIBfRuzQEG05c7y0gMVXZvUnwz8Qujh/7QV6XfOFAtSP6Rzj5FHE3G0Q0fvX82hohyE0COLxewQb7oIyYLgSjXGEwaQ0kZu4vEcZp7ytTlFcZnKNxjZi/0fc2WeeRh9zqEmW3+3+yOViEOxHpZMUjO7rxYX3wxZyaKRZ9tnJ3fCpFMUi4XEyilnrmMazmHwxbl9s5+UaeUjro2Y6KyZG4jkxyiP15FQbLa7nHgYl9OSyFYI5/LnupW8aHxL3GaY0Fre4z9DZaRjJMhDb7W78bT7vIXmCxqgWvP+vZjo4aDb3gkRoxp8qFAAA==",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/parmesana/pizza-parmesana-slide-0.webp": "data:image/webp;base64,UklGRjYBAABXRUJQVlA4ICoBAACQBgCdASoYACAAPqlInUqmJCKhsBgIAMAVCUAWHl4E+CObSR6u8feWNXVaX9d1sZROxwk3DBNiLLp5YmSAAP6NenNYgVfZNC5tjS5OABAn59sWmmGTullw3rIR7ivB43C+CBQnh6138Jdho2L3/MGfHzaQbbkL9F2K9LChV84OeuPguhBHVrbF3LRRai3WvT/leiZl/nvf86ek28LYSkQXUzJYSNQDUf4Nsb2/wmqj3AIaJM7HqPgOEvg12Lj+LLSud3GsnLZh+UDg1P+B/JfVLxi+SziTQo+f7tIWTFaWENGfTnwJFGFzf2h6pZ0NU8BuwfDRY+6Ev41USgeuYqk8+ky/MzmZpTU74qX8SyAh6bubFqWzaqdcsSGKSA+tgbB0ulKeOBR6UAAA",
+        "assets/menu/pizzas/parmesana/pizza-parmesana-slide-1.webp": "data:image/webp;base64,UklGRoABAABXRUJQVlA4IHQBAABwBwCdASoYACAAPqlCmkkmI6IhMAgAwBUJZgC7MzQ8nxlxUPoHEC33HMWLIGU/gy7vOzO675CEvSlwU0yR95w24YoVAAD+3iBuN/5RnSZYjHSyohHwTTKSEHrS8Rbl9n83DxpP2kvC7L++LdX0x9YjcXGAFSNC6wNlarPtdcH4GpPvVHqElLywn1wKEe9qL69z1ad2dfaXGEhy0eRSPmex61cBT0tu2NdSKKN7Nj3GqFQhGOVXFBSRY7SymBwxjjB4fz72lfmbnuppNEB7ugwsI4o18HHxA6CjXW40qZ8sEri3ks7Mm+FA5+x7P/0D5DrF4XO+mdkv9NANre0Kpc4J8j1xjanDGVTD4pnEKzkhY1PLGlQmWiz4rNtdNf6lYDZxCGZQpUOnHhxM7ReX/+7YJuQmLWBLHtM2pC9fYNRqGoj1kdaWsF86AEwAcoaMj8o64AqUm46umiAZVAfvw4ExcsnyKA05i5YopEMNKdS2Zm4sAAA="
+      }
     },
     "prosciutto_rucula": {
       "source": "assets/menu/pizzas/prosciutto-y-rucula/prosciutto-y-rucula.webp",
@@ -433,7 +576,13 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRkgCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSK0AAAABgKpt+/rk3bW2f543d0sWd+0INLm7QNdkR+Du2ljGSSSoJHeiw3z7DiEiJgCtWeagq3eo14cumfRZtfXTuK4DZ+W72un/rrhV8afa7WtPi/0qoQcA+4rikQMEq6Ql6O5pLjFcJVYdUcWXqdbItveoZg+oyhdUwjMqQZ7mzw/JB8kYgCmKawaAk+DdAgAsx0Y35wq07fvsaIJBh9LN7za3SXTJjfZX3v8X7Wy0BQBWUDggdAEAAJAHAJ0BKhgAGAA+lUScSyWjoqGoCACwEolsAJ0yhHtfoHES5AbZ3nqrzKQwGy8IPn9PegAcAvyoHLnCnHhX2pZl3VxiAAD+QLIRYH6lPn751GabyzmA9flIDdk+CJecgnWOU/THgclKpUD9lXs7zpxYAn1lqZxs4U6g9oLjbrkoxZYb77g5PuUTEBxHfOgBEmc/s4089TtJr1tZkkTayjX7EIeaZcfAlMobclL8PYrJJyDmNhOM8t01IQDICyeXrXakfQy4aJf8/beCD0fiCo6HH0a/Zxo/+i/hd3ML78GeSobavDcioacHvJc0GTtrGr32ZjOTKVutE9rs1Si60bjjQDU9ulQdvIEEpS8wblFKgxXzhI4ai41DK/5i7UHoClp6BqW/uB31f16N+2EZNWDZMzUTXHPCeG465oX7zXIdGG+PhWTRYROg/5/AxXbb/ByLnM6HL6Vp/+gWgWpCmWG7aUzR2kvPThNWzYD8/ViOdrAAAA==",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/prosciutto-y-rucula/prosciutto-y-rucula-slide-0.webp": "data:image/webp;base64,UklGRjoBAABXRUJQVlA4IC4BAADwBgCdASoYACAAPqlCnkqmIyKhsBgIAMAVCUAVhmaHwQgGCCAJlZTc+OIvNn6ejOMeA5C0Sv1AWXHKpRYAgNYAAP3jDqXK9CKgHWJdRGW0br+6WdWeplPemFflg+J6Xlh1cQ+U7eVApOd8l4/QbboBcc1JkCLWiNZv6LSJdMEoHsWdOU7HsjMmXW1GAzqv5z+tn97jojdg+dFCpyTNJZ7J4g6Cgw7eB5KI++xHCOSvfRLzGDWL7ORiZPR98XdL40w5c+zBXVjKPDq+ZMdM8x5TbVsNwXpUUp+Y4NiorPtoeH0GmEeErrr5rkdHfX/v6SOTIVhjnAUspzDxyJL5/TYxM8OXtwocVmj7SDtJ/a8HF9veCdg0WZbOr99VTVJzfyxTYrC+hl4mAqzTA19gAA==",
+        "assets/menu/pizzas/prosciutto-y-rucula/prosciutto-y-rucula-slide-1.webp": "data:image/webp;base64,UklGRm4BAABXRUJQVlA4IGIBAAAQBwCdASoYACAAPqlGnEkmI6KhMAgAwBUJaACdIE3JgHgDKk4AaSxnYWEmFhjCcSq11R+4k2ZBTrI0QwlOGkSIhAD+9LaZ63zcxZ7n3yd0iS5/6zV9WPZBqICiUXO+yozoeWOWg3c68XDcSCBAlENiiGN7UMnXj4FCCSPqfsobcpRYOUDTGz0nKJm5d7s9iRQ0WggFPJpUF7lbeSIvsF9vb6Vns5RePKcaTwfsEW3Q4KqZL3wFtvijWELtfZe7cS4fM4pn+9f0Knkw8535/DnKr8QBn7HwBf41E1w7i7rQFo7+tGyooRJx9golSxUn2MH/b2195vMK7F05jdpTE57Ak6Fa4S82ZfBWVDT9z/MqtZDWk4FKFqWtLRnl6IhZSWyUM9+Y6+db9I36bQdjGUa4HtB558VBqWqPW7NXFhvmzvqof0mr7LG3BbDh/MSdzA7bjLADMJBWwxCu2Lyn72WcxgA=",
+        "assets/menu/pizzas/prosciutto-y-rucula/prosciutto-y-rucula-slide-2.webp": "data:image/webp;base64,UklGRoQBAABXRUJQVlA4IHgBAACQBwCdASoYACAAPqlEm0kmI6IhMAgAwBUJYgCxHuIsmngUr0IBpJmaPtSGHh4PUjngFPvI0OyTyTXb+qusc7RD2j+cRwAA/uaODg+a7+kIpccB9djoshG0h2hkc2GdY8/Z7fXfjOs8rwxI8BZzk1BiOFMEdfCrH/Gz6E/MdBD5M64BFcShfzDE7Y+ycVzlyT4XQk6lWv7wltYJoiKOA9TvPkErflyPaeYyTLnemt+XyUYZpTjiqxqguI1rxZO4CBILXzEpcENuLhS32TfSpAtWpEvs1V9JhCp5vW+aD2bGltkGe6KEdKax0HDpybhajhSK2NaOMPl3x2WXqtGDKh5Wu9BJSu3O3g7VWIlONE0ZIq4bro+rFTDFnZEmv+mp6e+0bRqaz8QqEFHxkcICFgKbwECl8euRKU4m/MjCZ/yA/+Ge+3Lng3xvdwwy1W2rC9TbXM0/WwXxoojv1arHGifMGErp1whK0wTUfsPL67Kg9hvMEwqiAAAA"
+      }
     },
     "pizza_nutella": {
       "source": "assets/menu/postres/pizza-nutella/pizza-nutella.webp",
@@ -445,7 +594,8 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRhoCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSLMAAAABgCsAkGFnnl292L31By6N0knp2ujMykn50rK1Xdqq7GSK2dudT4iICQAa1lUfrgMAcAWEJfuCdsQJIj7XQPIlIuK5t4bfLQrLF1B4aBHNo/jxS4QVggJUf4ok7QzoIW0cK2SGY5fschwRD8cmqeOYJvkckySGo5SYHtRuzARqlf6zQKgfVBkF7Ra5Q28JXZvMewhI90pUgGLtv+AmEZTTDxHxqwAYDVM45AbWhCcbMKeBLABWUDggQAEAAJAGAJ0BKhgAGAA+lUKaSiWjoiGoCqiwEolsAJ0vOXrvCCPGjsBrAt4D7oHPqWvS1GJgLGn0iNznjtPJvsAAziFe+6bzbVgBsakwgn7+AjZOWXOpW5Tsi0Ysb1dwCYXnnN7NGE99jBkzAqSSrNHGatr6J+rFMaspa3EfgZje+Q+yuvMPuuKrdtuu1mv8ss2GGDWEg0e6jZYiGmXJYojYPaC63vNTxOmHJtTRDRsShQoVEyIIfK+GWbTUzUT0RU/1hAEncu13j7tpsGCpbH0+C6dPdurDyeW2Pyh2ZfarF8PbwEFsf5AtOBYwcTtBgrCrbLQ+wtl95CbuGyfKOHUjGaq8tWX4Z9mXPt6aSsaA9FBr/l4wh3/FunNXfGfoZWEE2VvnvpW/+rjR8Tvn+TnsQMPd8RqjRUrnd9fHJKdrtAAA"
     },
     "tiramisu": {
       "source": "assets/menu/postres/tiramisu/tiramisu.webp",
@@ -457,7 +607,12 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRt4BAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSL8AAAAFgGtb2zHnHduTfrrYdm/bnc3KTjVlrMp2LoClUdm2recSImIC6EexhbFGR8x5vdxbn59/pZ9locGOHPrjyVDNHBGxkgtl9O++uCNOrwch122yywhb6GsFmmBYgsZvXEEzt26ghsNYUPVZJqj1OQ/Udl4Fqj1pBNVcdYG0l5OgvJspUMbZKqh8/4yFibpqD4asmJNyzAaw5LFBxM/P5P7jrSbzgb7rZgQq/nDZq52n3zmWFnoaMeduZ2Vu5om+AwBWUDgg+AAAAFAGAJ0BKhgAGAA+lUSdSqWjoqGoCACwEolAE6ZQkCl4ojko79SP8NxNLNomB6CeKXo0ZEhCe73u5SbgAP7ZjYTUnbuO7VzRB+7WiOURL6RJWPH7clEuAPWltpu4XB4UHwbtutDYYV3PPYNka+T/Hufna6JKkWwGA1UhnIvvvVNmdvWeLvUyFPWG8etDqftl9wGGK0SsCsBfYBVngKCKd0Am86MoQSjwhvtfH0iWOwl4wsTajKqTbnpi5/GqwFGEZOAVeRuaDYdFD8a/psnibr63a0pOuzfKnMJKWjD2XsLXGgeS+7JuJoc0Yt716jJUj61OzSXfFcAA",
+      "detailSlideLqip": {
+        "assets/menu/postres/tiramisu/tiramisu-slide-0.webp": "data:image/webp;base64,UklGRuIAAABXRUJQVlA4INYAAACQBQCdASoYACAAPqlInUomJCKhqA1QwBUJYwCsAEXh3MEFzssN0uuf8RuRgqgj8IsUB/nYwAD++xUTVcZ0wJL+WCLZ4isKdroNKMQ64u41rAOu1aZt7hfyzOFey+dtotMcSRk0ic6O0tF8oQg3QiwntROiP98OxoqlCrqBMIMhw3e8UU6DEXwFJF8LPBuV3NiufsT9uPB1aNgMh1f68E6CFtEXMVt+ZktG/vYn/Ei4vgiz+PKZuBErg1mp9zqRY5iBtTZvRMW+DuYqhhHT2XDDJUEcQ8AA",
+        "assets/menu/postres/tiramisu/tiramisu-slide-1.webp": "data:image/webp;base64,UklGRgQBAABXRUJQVlA4IPgAAAAQBgCdASoYACAAPqlKnkumJCKhqAqowBUJQBYj4wCfwRHfXY78AQAuCnG5nG7AD+CWoqGrnVWclQAA/vnl/fI9rGu3aoab0qC09IbpPpiuJ/rpi0iDBdIdb6wZPX+Cnd9buSb/X2xa9/zre3lwbgY3w59PUR9BXIQjxt3sq1PrA2+dLPhfj7Mzy5ihH08pelFE8mTGlFhxMpHvOfDbSMG59VnPUhOTW2ElHvQ3JXk/q+GQb89Huo+YVbY74RZE3AebMzztqKzT9EbLKP9ZiZwGy/4O396aMUAbeZsyKTpIYffUxcFrimuJVk7debNLVUD7Q6QZOQgAAA=="
+      }
     },
     "helado_artesanal": {
       "source": "assets/menu/postres/helado-artesanal/helado-artesanal.webp",
@@ -469,7 +624,11 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRmwBAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSJoAAAABgFtt27Lmxd3dYQCHBRjBK7eejs6lcqf6RoCOEZJULJDa3T3BHfqImAA4/LxowqdZAyb2PhqN/hFrOUp/eD2af4a0uHkkg+RmtPR1WTITOhu9jFZFGIINjkdrfEKDX53gaA2zCDCWztc6ugAAptvVTrEzcLLSpxvmJpe6StVzVphPGy4Th6V5vf95v0XscgAaT6rTKfjkcPABVlA4IKwAAADwBACdASoYABgAPpVAmUmlo6IhKA1QsBKJZAC7AYv0cLZVwx3rd7fS4DQp48C2K7gA/ovbz3Bx3zVUabQstqLKM6KrMUMqelh3rIeXHoL4djC66ThCEaNAmS0o09He+39tUZGRf2xehLWyGNp6goLMawGi+9ldtOpMwxqsvpARSfTcFqnqe7NL3wHZCeQLyOHz6fx1R0HQM++YcNxN9oUIDF844JAf1ufCihAA",
+      "detailSlideLqip": {
+        "assets/menu/postres/helado-artesanal/helado-artesanal-slide-0.webp": "data:image/webp;base64,UklGRvoAAABXRUJQVlA4IO4AAACQBQCdASoYACAAPqlEnEkmI6KhMBgMAMAVCUAToAXmNOAe2dBNlWx8aRu5LGe433OglDA8AAD+81w/QZRS3JFJfyZM55PXrrZHn+u/P3Mz4nPF4WAfu6NxOeOrSAfIbeblbOdytTN0KTae2d7CdYHjSLOioXek8s+Ecxmudv96G6gJeCbYzDC1wHKRazGJZPXOrkAtA+P/kN6CvEnYClthXcZINB3EErMOnsutxWJZG5KQS4eVgP07k4F3q3hbPLmetNmXiseorpypHySb6GydCmTtZJQPe04c4ZsD4Xy5AUY5K3kgOg+sPaJm9pgA"
+      }
     },
     "delicia_coco": {
       "source": "assets/menu/postres/delicia-de-coco/delicia-de-coco.webp",
@@ -481,7 +640,11 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRgwCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSM8AAAABgGNt2zHnmb+a2GY5ZWyWyQKMDdhOlpDOrmw7lW3btvlrZr4vWUFETAD+o8TcydfXwURCYJrUv7c2NTK/ujhW4KmEXeX79c/3/dHhxfX2zOhBm448tSlW6c9XdpyRk8aSO8ipohAop41CBACVwl8K/oDBJEvxyxpqMyzNYaCMpToIu186nchjaY1RasCQ6H2bQhjLsr1W8UTHDNK/Uxj4ETV7AaYA1O4IfmRxkB9JUGuZowDx78o8DwVJFUFWfCr63coN0FcHoaGti40u/hoAVlA4IBYBAABQBwCdASoYABgAPpVCm0olo6IhqAqosBKJYgCdMxGsoKBz7FKzNEEABKge4oT/i+Mxj4JfkJiWGpW6ynQPzorGwyOAAJ7/vcNPnFT8SIOzGMF2Bu5PaRS8aapWrtcjvGxIZ4T32GKkfRJgyA5A1vETMVevKI0HNUk9wF63UzBqGeyjBPYRc7Etm6CXzbwQjZJ+hd/e/ML/FAeA+AFd235Sl88Qs01mhoRYUgOuk0zj+LoY5sg2/BXd/+0cPbZpLVKRs5kg61nyX7i853km3fAQ3URFLYfTxCfhZSy5mhdsWXuo2illSQzVvIDG55lzidQSDMT+KUad+YvOwZjvX3wOoKtacn5qoXTHsbsBZiv7eCaBAHYgAA==",
+      "detailSlideLqip": {
+        "assets/menu/postres/delicia-de-coco/delicia-de-coco-slide-0.webp": "data:image/webp;base64,UklGRtgAAABXRUJQVlA4IMwAAABwBQCdASoYACAAPqlAnUkmI6KhMBgMAMAVCUAW9wr9/uyV4z+GQ44lrzBXdjUlUryp4vIYAP768SCXR/3MVay0CIfkpuv0O/1gre1irSfmD+jOBPMtCeUy2dflnN/InbvuztFpjgxtGDE0n0K0nWqk2hKpUmiFIKN5PM92pBxUNhPNuiCevO58aZ80LlDybIadKAYe0Y3bnhwCiS2E94XIKwH5OKNsyml/6w2ikIJ8YN1asU3hmaXdrdOepPnaUHHow5kBBbTwaBUAAAA="
+      }
     },
     "tartufo_affogato": {
       "source": "assets/menu/postres/tartufo-affogato/tartufo-affogato.webp",
@@ -493,7 +656,8 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRiQCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSK8AAAABgGNt2zHnGXumcmcj2MGcVHaVPkvISZfKRjnZgK1F2EZrW+P3f7ODiJgA/L91eP/4YsgoSNZ0ncjctQmQjiRybqppzQliB0l5SfmwUooT5HpKC62RIG6jNWQTl43cJ+hfKz35AEYTnH99EL2yJD6kxgSz3c9VGOaKWLnMokueayDOMwLk/bIUARjgmAAA2bKwVUMGZP1/AmYMyFkYP/7L8TJXCromGKusq4m5JMgOAFZQOCBOAQAAUAcAnQEqGAAYAD6VRJxKpaOioagIALASiWwAnTM0NPcZu2nlHPVMMQPUeVM8tDhk4izrdygiVvWLsQo/tP1jUiMZAAD+nZoZDQuO47RZ/xVQxbTVi8UZsxKTjW32/lsrxcp/GGC2unLA2zFXrcnBiD69UvlT8ow4HxPzxGDKrca31m/ZT5E0AbfkrmZKUXSXPWd18kswUAz49btFdJHD+qOgp0tNzgld4GE+eH5LUBVjItaZL9azZQ2NY1uYrC2mSgfPs1AHOwjtG1hkRPUwfB4hppzv735+JKryrU54IUzKLcQyn4s7K2bnJc/sKGL6x/UFyd+FYE9GfZIRka+wct7mz8qd5PUIJM+ZsixBH5818oWaA6TFYbFp5bK16YyOYsXJTSYp/7myp+H2PY3uMGkOOmjfAY/kRpez09KIkVG3CrT+u32ehfoD0AAAAA=="
     },
     "negroni": {
       "source": "assets/menu/bebidas/negroni/negroni.webp",
@@ -505,7 +669,12 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRvQBAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSL8AAAABgGPb2rHn+c3Ydp1UyVelsu3KtjEAm5Vbo/q72ENgZdv5fb9vCBExAWRYEsIjTu26522shVwwK0flDHEpa/xdcLawZmeWmfayyXjyWMVcq9XqET9nW3LERE9qtVp9lhjTERvgBPmoDaoOzk8PW2uz/S2NiC4NgF9KQ5T6yeKUjLvNYAcAtWCrSBW2gpRgM0gWNo1kYqNIItaGhGHNSBBWjoRgBUgglosobpF/X4TKkX6CJYVjK6t7B1uq/nCeAQBWUDggDgEAAHAGAJ0BKhgAGAA+lUCYSaWjoiEoDVCwEolsAJ0gvwgG2YmliYAStQYoTBn23dsrtrnsK8E0ypp1V0U8AAD+Uyr8xERFSCF4UD8ZVUNq7Q3xN/5fNeJHRdpY8iAD5lJ3N1hHqIyjz1xzdHnqUn+GkyPvf5Sab1/5kQ2tFvFFZESQIjqJ+3se1j9uwYW+RgcF/s+cYUg3T9k2ZLcOBGlCcQD+m0406o1uMzXfTjUdhHrsyj4fNsP3Ob5CtrFKXWMWgI6W984LcALv9nJ6Wcv/ZpiiX3gZSnIG7EsaqQ+QnYmJa0umuKyGivXRDEZ67rvfDiE504AP/FmJA2/5vMstME/DtsL5TG6rVJlxmUqAAA==",
+      "detailSlideLqip": {
+        "assets/menu/bebidas/negroni/negroni-slide-0.webp": "data:image/webp;base64,UklGRv4AAABXRUJQVlA4IPIAAACQBgCdASoYACAAPqFEmEkmJCIhMAwAwBQJbACdMt0VsNmSi7cZj9w6LXLJOH8fz01uUlDnoSKRx8s9t1SAAP71nzzATmOmfd/QwXK9y19iJOhfeKM1f9gRwkQXNU0eN1ZWvmROln7GbM1E4A33dMC47GNEXuKGm4Fp9U5GnxWvzlnydyKani07/J2MItY6J8i7CvHKFkzrEBCbL+CfkmZKXeH1V4A8yDvBeOtVwRvoLCLCxyxXzq/HmbXn+GMWilXUpqn0I6i6TuQwrmUipYVNmGKV5WBoJjrFoMnzaMra8CF/OSipxmgLM5Cn9SL27gAAAA==",
+        "assets/menu/bebidas/negroni/negroni-slide-1.webp": "data:image/webp;base64,UklGRjgBAABXRUJQVlA4ICwBAAAQBwCdASoYACAAPqlKoEsmJCMhqAqowBUJZACdOUFS3g0UwBvAt+uoJlnnsM0VMdHU23Sw9W+X2niUX+xi+yZZxAD++4N9/wKK926NyeJC/FpfvWGAMgWBS5u6WGaIfOXjtP6XsZcpFD31fN8MGhFDpNXfJCmba3BaFhm3hWVtnPt7zX0/qKX/Ylinh8rFkNQIkqCiXnJBsqUz+5kn2uUVTpkX9fDjBdDuQEysgK9V++JvHL9oksRx9eK53GvIjMSAAbvKINkaqqIXsKI9LIDJ8gBDxVto7GQiUHgPKNg8XucWpEDpRHTB4VnFk7bc0PCAHSF5vGtypc16E7F4szYV8i5DhKatssDgYQ1ZTJuYl7VZxPcdTQauzvCUo1hxuw6hlORXns/tSV6LsAA="
+      }
     },
     "passion_spritz": {
       "source": "assets/menu/bebidas/passion-spritz/passion-spritz.webp",
@@ -517,7 +686,8 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRsABAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSKMAAAABgJtt27Hn/W2zt5O0qVjZE/xpOUBS/QP8E8RtOtvcwbatz/f7jhARE0Dkc4Rx+tXOqIfrYDTKjTNa5G4TKgZtw/ccx10UqEo4+VKqerkPK5XuROZqbG55a6Y/n0spkLwM+F+tEKXhQgpkkyao1EzjUNIcUeiVSC/2owK899A7QfugJ6gduobaoGOoBtqDqpmVQSuQYRf4qoKIsaWw8S8ZjREpAFZQOCD2AAAAMAYAnQEqGAAYAD6VRJpKJaOiIagKqLASiWwAuy+wlAbx27QByqB8FVQe09Cu8BOLa7DwacTZddQKeADvSmObvoOfSUYAq53J5qY2GjasDW4Dv7DyMH7jh6HNDKDK0z0qXKUSflVL3nL0MqDi+Gtig+QOLyrZYkXZcmSBQem7IT4M+//1RtlzgxWnJI/9w/dJFdRExCIDymPEi7R7a1r98dyy+SH1e9SKkFw32vp1GGiwjOyVTOLZEKgcw3J3zyRSS03PtsPNZyV5XUT/cC/kL17CzPTY2qY6yghAhCF+kUbX5P1mJkBy55cr2wN3S78L0GPn9zAA"
     },
     "gin_tonic": {
       "source": "assets/menu/bebidas/gin-tonic/gin-tonic.webp",
@@ -529,7 +699,8 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRtoBAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSK8AAAABgJtt27Hn/W3ETuekygC2zSqVWSWdtUEqO21G+EeIStu2Pj3P+7wjRMQEMNQQmGHTm6fakmMMjFfX/CBJnxe90rskXTVxxPgk7r9cwDA5dysRHyI0/ZLAEc20gP9lTb2AklBNvoB4pk0V4AFSaN96II52z8Bo2hEUSNuE7DQfpP8hbUDsgTSDnJImkT1SH3JA6kROSG3ILqkWGaB8eBFdzynXSyXj1BWuvyFHjQwEAFZQOCAEAQAAUAUAnQEqGAAYAD6VOJhIJaMioTf1WACwEolsAAPl6H1QOxUmiAr7QaSTzxDlLBwH9xOYAPzVf0nVYWhczQ6v9P2JNos3lVMX7ty+ZysVb6/6gYPJkuc4Xcq9aTz4Pgo1GxRLiZRWH/eb0jfOAi/zmBnBF840K/g3+fxiAZeLX9NZT/9hXj2ElEN2Kzhch31MvVlKLzn5fzpKhWif3Grxsc3yz4qsoKPJsQZaaBl2yWHeJKlf8dqlyQEvnm4zvzl1X+vlvakTr4e9klzhQBAGX3KPHS3Ve8IJ+PUxX5eG4Xf+/rC5+MAecySnVt1DMoy+FzlKOvWvqD/P4nR7en0+Q1QAAAA="
     },
     "sangria": {
       "source": "assets/menu/bebidas/sangria/sangria.webp",
@@ -541,7 +712,8 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRpoBAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSKYAAAABgGNt2/HoixdglulUZQVZgJMdWFXK1CntlBqzNTZgm53tib5v3ncJETEB5J9cLvEeTisINPb29/f9126Pg1pt6s08aJU2aoHw32lJAtW16Q2QlbEASjBOQC3GFxeSYtzxIaIByqWZwON/7faCmGBG2isigsq5thPkGT3WoBarLsdqoI1psVZMSNLnIIYnN37afijEtKDdNv1DAbFXFjb3N5drDg4DVlA4IM4AAABwBQCdASoYABgAPpVEnEslo6KhqAgAsBKJZAC26QWwSjlGkHyMdbsIoieSBeMBjvsJkZScAP7o0F6m1FAET2yhoTcqvo3lAyT0Y2Xp5iTrjsDgTh/dDpqlZWuQ4TbRNd3B6jWypcaNwtlxdgAZG7oJ+RTbp/U9e4//8qaKNEECfw/c//dpQMMW5sRFqYiZrO1KkQcAEnMBONry0bOhlwqzKjuTfIXpYh7t8BqzYm6LbuFAmq+jpaoxibrux+cxNX4JkmEIwZoaTeIVmGgAAA=="
     },
     "aperol_spritz": {
       "source": "assets/menu/bebidas/aperol-spritz/aperol-spritz.webp",
@@ -553,7 +725,12 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRiQCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSLQAAAABgKtt//nl8zezbdua/1O2zampjoKH0MS5q9UaXWOTbbs+n9/7P4SImABiPWuHxsZHWt0JTJp6+2bvB4r8FASMf34r/drpd2Sybr7hg6x/nd92vPIhIv20Hb57iIjUTXtY7z+iVKybi8RaOV+sjnPByjjzF5TPqV8hG0e3UJ5wDKUJ+1CssAGFCmuQnzCLfFmFCeRKLaQhhSSqOtaVnC6aJSLb3hJz9/4YS2jfVOXoTK6HE7FWUDggSgEAAPAHAJ0BKhgAGAA+lUScSyWjoqGoCACwEolsAJ0ogaIIMxtgOZ01Cv0Of2A61MrwPbqPC1YaA7VptcTjn0poBWsb46thBY14gAD+4I5ggGVqj+ygs17rR8NwdEmBd59zKe8Ql4yVZ00lRUm1lwaQd4QrbLTWG91iiWbuPOVrtBoN6piVGYn+KlG6JR/5RVT+XRHJOzO/LktoRy+lB9TGsRx/8HTKrnZRwUwPnqZqw9MfvFu6+UWLH6TRkO9a/6T2clwsogz0qLBId9lm/Zo7PZbRSxdc5GKt8uEp/LqfX5vpEOH4jOVTbKThYWzbYDRClMD2+XTdRB+TqpXTCm24nPN/2SeOvYYzW3wU/z02ga27VL7xbrXsHrpRSrk0HfS/5R9fTWSZ6cV2tVZGTao3sqrnAumAV+9SR4K9J5r8p2Pd9dguzp1PKxSgAA==",
+      "detailSlideLqip": {
+        "assets/menu/bebidas/aperol-spritz/aperol-spritz-slide-0.webp": "data:image/webp;base64,UklGRkwBAABXRUJQVlA4IEABAAAQBwCdASoYACAAPqlKoUsmJCMhqAqowBUJYgCdMoLT9xHKCA1en0Vv7gt/e4wqJknYTIS0idHoKtp5p6iy6l2pgAD+6eP4gJ3knvVPxgkI6fz/RBE94VuBc2drpXoNkG4yack6K0tIii+Ns5i0zsN1jO9mKL49IvhzCX0CGZy0bNxbbLefG9N8bZalRCP9ZTKe00UxAEqq31+b2d6e38VBMXs3Yw3f8R7XJVo+jQFnJeBvdwB3PoMGYNav00zPmS3gbWC1g3k/Z7ed9L1AqLb0rQtZAhDZaih+IdIYlEPLGyV3GgNHb2eqgKjoYiD6QdGtnoucvNbhVNFkalzSyoS87hPhjk/hiMOe6uBNensoIxkkW41qbI7rIp33f5OFUP/nEyAEbNl5Q3m7DnRMcavEB0MN3F3Y8hBzIR+s/gAAAA==",
+        "assets/menu/bebidas/aperol-spritz/aperol-spritz-slide-1.webp": "data:image/webp;base64,UklGRsQAAABXRUJQVlA4ILgAAAAwBgCdASoYACAAPqlMnUomJKKhsBgIAMAVCWgAnTKDyhhFbnVfllcV22ySC8RdYbQR6ivMLxoP3TIAAP7zJXvLDvVliWcza0EImAGd2iExBPt/gaQBVUT4uTHQZKN4VKm4PRNxT48JYZBAzpspo65ZJdhHpBex57pm6k1QM5RsxRbNw6Iiq5xZhLB82EDqGvlVc4s0iOhzq5yo+MtsvSZFIHpciXNGFEd4rYDF26xSfEEoi7SKiAAA"
+      }
     },
     "tequila_sour": {
       "source": "assets/menu/bebidas/tequila-sour/tequila-sour.webp",
@@ -565,7 +742,8 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRsoBAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSJ4AAAABgJtt27Hn/TGB0aqzuYGCiivYrFJiBKe3bZROZWcAG8/z3hkhIiZA0OpU59jq/ECtW4D5x1/sUlJG0f4l+1EjUfcFljCqa+RKTQW/4DiVxHIoHxam7JiFMkMvakoDXQva+InsMIoHZIYRF0gvt4t0/Fsrd4SUcgdIM7eNVHA9SJBzPsptKjhR8CZz7xCysXVuySrAUE3X1NxgW1QhaFZQOCAGAQAAUAYAnQEqGAAYAD6VRp1LJaOioagIALASiWwAnTLevQraVMCgmdvBC37ZO/HJb5M3pZua+6lGLKpj6oAA/uNB1aXwVrNybA9VUHJICfe7Y1BchIQZ39Oji0zs3ZXI6VhE7qbW/f3Ci3osIDIVtf1XQUsnKHnsLjfzfyS5J/1Iq1qn6HqGDX3j/UwR+zpRZhN9lD+Op8qn4W/RKM/m394x7Kyk75IP+nDL66df7bPThtJJBJzWdlEX4fwN8nDiyoTIi+7RwtxmVOioSkVbHjNveETbxrfagKG/3g4a4w3kkobcKCccbXJqNKpNVw5OQf8O4rhBKAkrS06whTn17MBfXCu/AAAAAA=="
     },
     "cuba_libre": {
       "source": "assets/menu/bebidas/cuba-libre/cuba-libre.webp",
@@ -577,7 +755,8 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRvoBAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSKwAAAABgGLb2rLl/u7u1QbwowMgkhiBQ+OvuCerHl2qu7u7S2bRnKQPa313CBExAQBi2Y39k+tHV7fXxysjPS2JDBsAeHe+lX92aYD4NzUEhDlGIET5AOCgPALQfjHuAOCNcSieGCvigTEjThgjYo0xLMYY3WKA0S66GC2ikdEgqhkloopRLCoZhaKMkSOKGFki9KHsOSiQeaPkLB3/q5ITrSOb53d3N0fz3SVpKgAAVlA4ICgBAADwBgCdASoYABgAPpVCmUolo6IhqAqosBKJbACdMt648ICAPNhXvfMDBnx79tIQ+oj5fYqMHn5n/26T61hwYr7gAP7iXiEI2xH9eZIwvQVH4fWCAZqDUq6Q6rpJeAIPn+yzIcAJmL9l8go1l3ZnrA6DFlsi+bkrjaBQOvrkOvKfa15fIab+ECx2xjBFfOj/hODr7ztjzX8XQypqltZKhGxmDidRanqV9pjmTY8GQGid/D2W9PodVXr7OA0pU2SFjZQRbUgQAp6V5GLrum/z0ittCd5JyCoggN7XVLsk4Md12wCcLNS0h7Fo7f0TsJ/7BT7zjQyTORsHax2SJx85JAmCvcfOGVGxFTVCSkpd0a3vUHOqV7MWttlZtnb1Jk816gxxUaPs8wAAAA=="
     },
     "mermelada_della_mamma": {
       "source": "assets/menu/productos/producto-meremelada-della-mamma/producto-meremelada-della-mamma.webp",
@@ -589,7 +768,8 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRuABAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSNUAAAABgKpt//nn+7e2bNtGdNuaeQRbU1Ra+/cdwJZsJduqtu3Pp/y+v/f3O4SImAABtrjNQte4IR4+ukjW1k7MzMNGLUFt0/+Kh66GAKydlMxM1IyF/zCx9NULq/hl1a9ibI3BOWwHWcP2kXXsQLdDZE23VSQ0eoeUkhkg6/j2VSId97SrjBN+/9WgMsAaaTNNlv2LEDM99cga/wkhpmqrLPron4lJ5XspRMiNaR0nCqKfn/e1Ck8BWgsP//4eZt31dUWxFgFbCro7ayNcVqvRIDSafL1tAgcAVlA4IOQAAACQBQCdASoYABgAPpVCnEmlo6KhKAqosBKJbACxAQAGeCZyC9W5jCOAq7f/N/89oDIYrLpAAAD+8NSsi8tTDET9TuphnJI42YbBj0WAl6304tcFhpgwNBUoVXfvxpEexbVUOTsL5/QCrUjOREi9O25FVRPi7VzM/cZEJ8TTfjfgGxY+mJ1cqhAZ/F529Aeq6CAa16lydVTznhDkqlKxJHMt9Aiq6Vcl6cvFu288PPpN6X8IS76YE79O1Zr5mRS+3HFLWADs9/bhZAfd9BcKvrbVLGPmB/XZ9wJG8W0cJl68gDY1AAA="
     },
     "burrata_fresca_producto": {
       "source": "assets/menu/productos/producto-burrata/producto-burrata.webp",
@@ -601,7 +781,8 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRqwBAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSKkAAAABgKtt2yHnW1a27d3OG9uVzd6dK/MAnJyC0zptKiddTiBTxRnPrA4gIiYAsnKklpsczz/ayGHEVVL1oig6yoR3PF1OMq2hKNrJpKIpZgf1wh1KXucxaFfVycofUdr9ei1F08z67fUPyvjvrEcIMHCDoEl8KYA/NLmfRWiyn5L2lbTXpO19JQlxNX0k5S0GEDxlhyxJgRzafmfyfTWmAHphbnc/ZW+hCLItAFZQOCDcAAAA0AUAnQEqGAAYAD6VQp1JpaOjISgKqLASiWMAyy3cC4GC2FJ+UxGVBZXBi3J7gl66vcSDyYghAADW/2YdV+CqQGBABCxhX77ou7MVb9Md+rTcJww3A19mWr8133o/5/2w1886tuRd+DetTRFHzrt7b9UYl4vCBDKK9wVLtHUjm32ei/V48pxwbjcpQHxt9rLrGjflKWw2n3+sP0QpS8C1WSibDfdJ/AwIVGAsZRMXntDDF79DAPlMn9PrY+3ptG7Vyi+gn8JoE8s+Qr63WhRrds0RTApylHXOI5oAAA=="
     },
     "aceite_evoo_aromatizado": {
       "source": "assets/menu/productos/aceite-evoo/aceite-evoo.webp",
@@ -613,7 +794,8 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRuYBAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSMsAAAABgKRt27HlzY1s25raLaDp37+ARh52NLRt29qFbdt2/ehO3/O+S4iICWDE3v3DMSZScwvY1xBhqwAUliK0zoDrEGcB7gC+ilwEOLwAUCzGcWmm498HHZ4uSIZxWEI6i8OZMMXhRlCb0zwJkNO8KJ2C6uTeggIZp7dUAE+4lC/JL3RoSsrLmhB0BmpJZqyBRC3oirZY/3+M1zkAxbjVn6SLS2CVBEXMH+bdXFcxkT9zeHl58fnPscY/TEtLw9RAnzFml5iWkCGTxWsyBgBWUDgg9AAAABAFAJ0BKhgAGAA+lT6XSCWjIiEwGAwAsBKJZgCw7YuHWhGTE4Zp2F7C0eEsvTnjkAAA/v3bRlKDvL6BEk8e+4b2szzO1ujl9XGHyhr1ZGytvnCnpryDYUOx0Yxf6selKZro9Ec9h7yBo1Yw/sfWbW8Cu8/jtP/TU3fYdOIUwODUhByN8fQDiOrVrbQxmbH9fW3/vlINd1TW4O0nDkLEAbDl2V9bTw719wxaUXDp6Yirt+VISVvy2S3KIY0IPOzYlIxIBReK8AyeDh7S3yRgj3ym4bFmzHfvmBwR48/Ur64jvCaL/xqEDar0l3HPTImczGwd4AA="
     },
     "pesto_artesanal": {
       "source": "assets/menu/productos/pesto/pesto.webp",
@@ -625,7 +807,8 @@
         "gallery": []
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRhACAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSMMAAAABgGPb2rHn/o5t207HklVK22XWV8a2jY4lJ/Ct9KntEdh4wud9M4OImAD8bucXHhsfHxPm66ABWyXmnom1z7myYNVxlsAu46iuHK8XDo1yYom9J418pFVLW5d2ZfgrToDS/ooX6folND8mUWT3l2KiU97r3poBgGXrBwl646dmh4Rr+oMBoFCM6FnRwv5YBn1MOQ2R3HvFNK0KvD8RbdfWa9DecPnwspeb2zg6vzjV1ZWTvq3AIQQAArOT8LeVGQAN/hMAVlA4ICYBAABwBgCdASoYABgAPpU+lkglo6IhMBgMALASiWQAtQiq8Eo5MqKAGtHBRvFQO/Dty/g5s6LgMbys1Z+FaYAA/hZdauCyVle4mst9LBjEKNQ6ZghJXKrlC6BygTt1wgUZLf23XH6QpBVvgLw5YzIbkRunwZnZKieRqKVNWagvmIF8fa7ARkJqe28296SWf1kA5IGlmDlyJ1yUtNKD6YIculWvwJgO2XWVL7HCroWyqr9DtkHYWWPn7ZaRBn4Koit9DkWyiPgbt0qBb9xYY0Mmg4Vt5PsN8c7Ulp/TqJF+WyKUHH+O1vTHSDpQzJm+6WfNs+4bwVjKNfe/z+THUPCUYNUa36ncq1JBWZ1VzNY72MpImnGW4MNse3E1ekwZ6yi0sbd5GkQYgAA="
     },
     "pan_ciabatta": {
       "source": "assets/menu/productos/sourdough-ciabatta/sourdough-ciabatta.webp",
@@ -671,7 +854,14 @@
         ]
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRrgBAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSKMAAAABgGNt2zHnHba2p/YErTeQLdh2N8kG1Nq2U9m2UzlpU/KJ32r6iJgACvZSR1RiWSA7zq8R/CEIL+lauXnF3+2++RYrEfWAu7YFPOvIB/bBE4A6iuedXAN4d+fzrmYAILuGtz/5I2ead/rLwjXvaPBH9R1vu+9HUQNvsRfAh189+MEZDQCoJCJnTt3ey39q9YtHuQL6XWI0hcSmVVZVlEfIKMgDAFZQOCDuAAAA8AUAnQEqGAAYAD6VRJxLJaOioagIALASiWQAnTMl/Qq/9s+3/xvAt7k4XHFQDXcnmggfW3cSSAAA/t6ULRqblrvAItz+QU33Ex9fzIfonroVObtvCp2h5dis99/LI27kNHoz1ttsiYvZoZh5+lQAgZeValN8MnOUi7KkW06IK8gfTw+JY59YOBbIykl44vAuVFcW+vjwDucKfDabZyzLxAjnlyZj7my5gTMX8G0B8bbXhS7cShX5apDzBjtosd2f/TQonZ6c1XnzDHy4Mnc4JaSFqaJ1u8EqUAq2BGbRzTPitQOwc2HXceteFlAAAA==",
+      "detailSlideLqip": {
+        "assets/menu/productos/sourdough-ciabatta/ciabatta-slide-0.webp": "data:image/webp;base64,UklGRmoBAABXRUJQVlA4IF4BAADwBgCdASoYACAAPqlEm0kmI6KhMAgAwBUJZACdMoCpAsI0AHt7NX7rwc364MIUi6JWVVokUXb4fXFmLC8DKyMYAP7x4Jb03FJbfi4I+xHwANNS6ORxmm8f9nX6Aa74hwxSIoR+Ho9+DaMxvvvMcT3Jdw76RxtQM6PNk0R4nz/pVyJ5iaI/UffFB/ww8CDRNDiVBFMWkejerenSsdrNHuxeGpRMmgYw8zWkaNdQ/8SV+zNUaDwBsPm8J0l29JMUM6EXIStNIqyqGBCAytYXhX1cpL71WkjumfcPJgjel22pGxDsNcgU45ofApPj9EsZoluOYGU8jK11Yyu8Hnz/3gz3ITxrbXgh9yUFdRG3Rns9fsws/XqgAnhmiCMsiozI9WvjoxEvfCnKQRIBL85hKmsq8GsgIr7cjfJA3XIhuA2mQtK1C7TaztFQuAqUN0a8I3KFVNdOWReOrPAeCS0AAA==",
+        "assets/menu/productos/sourdough-ciabatta/ciabatta-slide-3.webp": "data:image/webp;base64,UklGRooBAABXRUJQVlA4IH4BAACwBgCdASoYACAAPqlEnEkmI6KhMAgAwBUJQBUfNQSgK4CVBDPfGKZVpp+fOVJz7yXGyhNjPIJLbTLPLdtZAAD87xjPDDV3eCAaRm431yqPGBq7R9ANNNN/oaHo+pvayEtJd5/53XFyJ7TnbxyrsXti/0rPT6lbZb3eoPLd+gOiOdMtcwrudhB0/zR+Hdza9l+x8iumtPG/irSva08FCDqmFGl1dayzEjO5kU7As+Zki/uIQslJdmv0zQschkmS45OOyZVn8IaK7+K3zL4FDtYEPkDN9CVvRnfLhJPmqL6q3ZfIrD49O8ed+3qp7fh/E6tXcGQmFgu6kAYTDjRWMS+VlRP+zsOt1WIp62jNsVsKvKl4E122argVP3EIowQ/QQh7CWJDR3jAfRMuHmfUAfAnoDUfQEHVuxBb9ibNrfCWenS5AbJn0PdVJ7r2iR6TDnxuqJJkjRHrxveBU+9LSD5Z3l2FAkvNfib0tmnuZ/dzmcjpYBcBtw7lOIVSAAAA",
+        "assets/menu/productos/sourdough-ciabatta/ciabatta-slide-4.webp": "data:image/webp;base64,UklGRlABAABXRUJQVlA4IEQBAACwBgCdASoYACAAPqlGnUkmI6KhMAgAwBUJQBUlqA6v8u9xdYjJczQMy5ku72oZZIVq3JZhqvQU87VMYyoMAAD+9tSPKiRye+K/9FQAFJJwt7NR7G/Prt1JEuviI3jIInulxyskS4HasJUPTfTSVT7bTu0twz54T86q/kB+ULg1rpZnb1zBmcrIsumBgcOca6m0YZDb7N+pe/ngbrJ9LdqVesUfmLWuuoYC+g0yQv/sqWs5I0z98nHHz34bXOFNc7g06CKq8gMuCJZuHvXi6ZV8ps7qFgoDkqUhu77Ob+za47jDze0WbCOmdcFqfHOUfbgT8To9P/M5LId2rrhRxQXh0t4TBcTwccBi3R0D3+/Vrl+hbdQLNJW+RjGRbeHHbfeudZdXT7HwsKiBScdEM/QkR1/i9kt7axXur79X1+1Jze6zAAA=",
+        "assets/menu/productos/sourdough-ciabatta/ciabatta-slide-5.webp": "data:image/webp;base64,UklGRoIBAABXRUJQVlA4IHYBAABQBwCdASoYACAAPqlCm0kmI6IhMAgAwBUJaACdOUFS3imU/1KCqBHM7gJUD2/GR0M0rfaXiPVFnfo/xIhLFBbb13wAAPZu4ODCVeGdqke0ILkt7EOdl3Tiunm6DHeB2JVcCIzj4bxifNbq9FteYGwyNiLUf/0NDfbOc2a1muA7FjOxUGUrHuvGJjz9O+L0ho5AhV2+4PZlxZiZZ7dFcRtw3I4O4GwdnAXmrQCyd0sug6v7504saOiqhU12464NS3AewOcuo22I9PztgHxXMFESUpV33YvXI91JD+m4xsPGIEGvoG28U3LVpqy+fQaZ0si+BSZ5MoGPMROwjngEvONqFveVAz7izK7HTNkb1GA7lFddg1EsvVzdpg6+Nv9+2+N9GJbnFTebVwR05phUeIeNTANPOLnx1dGIZ3XTFHcJRaUuA6qTlbR4w/8hkhW5g2W9lkwFoOL0efb8MLMvXG3oRjcA3dDaNwXnQFSO6Xhs3XqDqgAAAA=="
+      }
     },
     "tartufina": {
       "source": "assets/menu/pizzas/tartufina/tartufina.webp",
@@ -686,7 +876,12 @@
         ]
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRjYCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSLEAAAABgLpt2/FX9f2zZqMbzUltadl10VZesq1q27ZRjWjv8/c9ETEBkBu1VmMDxbapnZv/DPPSEy5LlbLzzUgvxWmkmhmFIxqx5D8lTLaIzROj+Cta0M4Q3lkBXn8UTCxQzpCWAMc0vXD+pXlURzHEtmlEz8gnukAM0RQ8fmnKgH6aSCCU5EoHYI0iDQCCvpSNawWoUnRogahnw7esv3Y7SAePv0nN+0O+Kb5n5PJ0vDRCBXEAVlA4IF4BAABQBwCdASoYABgAPpVEnEslo6KhqAgAsBKJaACdMoR0X7GytXTAN52mHBoDZij4v9XyG7fbbHX+zICpjBUsvTBr9rkkAO5XspPpdxDFWJohekIX16ntP/zaAU1+SLElRRTf3/2noTdmx9VawPByke1ZIJwBJTeaAm+Mj84gJnKOIVKrz8/FFtScfi6LZQ/gcBODL3GG0iVgkOURuP5yTrPMFi8HDBZI1RLITsGYPW1XC2Exn1QPhTSLtw0R1DV9vLglWzbOl1jZ9tw8RuonlApH5cAtKRYn1QIjBpsA4dVIVUPVWuPb/WxlKymPZNIX6GMOre+d9jcFpcT1q99t83uy7lpM4h9p6b2NPfJo34l32IUCILtxgG42s+Xn0zJguulxexzvC+NmZgo4ySIY80sIol5hsfs2cBTK+wGadxQUh4vZJvs1XPqlQk37LYZV/wg48CKuvhb1L4R8VEAAAA==",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/tartufina/tartufina-slide-0.webp": "data:image/webp;base64,UklGRkgBAABXRUJQVlA4IDwBAADQBgCdASoYACAAPqlGn0qmI6KhsBgIAMAVCUAVH29TFBjArgPb2Nx91rtn84kdfNEFLYy0R8sNUxZ/bpJ0DwAA/sfkRrhgNbqIJ77TjU9f8P7fw+/W2qbNjXEa7pu0/L0tZIOWg61FvNDxUjynaoacIMAn5VETNWa/SMu7qRvyoLkRoASHaTQZnD+IRT3KqW94wmrB+nmINL12KhCbXG85xOnsXKW8DOuSmfEPDTLwFIWVSNdi8kg4fVWEl1WYM4Up8rRydgznNm1ZkAxQA/zWR+1hED9TvgwpTRupWE+9MJfntmAuU2Nm+3y94fZUXcdDJalQy29oGp/AoXn4t/qfuJiApebZk0+21Ckh1f9Qt/sq0U5m+Cbkj1Oa3rTOkCR84GOCRokjpduOGi3i6nnsnfaiyxNHSuYWgAAA",
+        "assets/menu/pizzas/tartufina/tartufina-slide-1.webp": "data:image/webp;base64,UklGRpYBAABXRUJQVlA4IIoBAACQBgCdASoYACAAPqlCmkkmI6IhMAgAwBUJZgCdMtqnAgAJWZ22GGVey2gAA1CRZDWFiTAtN5TRYQL8Ic2AAP6s2EDgPDDoYX1Ie2FoqR6jMkVG9uucloaj+gRdTvFY7TBvOi36AxGEuvfFIbe3+MdMtLl8DHyN6xLXuVjZE23p69IDQhUCBKHykHyy5sTwu92Q33ZY4AWJ+sguFjmmj8IgzD6v0293XQZu/p0tjWcgPzr7ZF2iY1wnKs8u/fng10yXlk8eRirUZpl0hBs2cNgDranMLxTS+IhbltmSRg/iELkhTjyZ6Mjt8DsEaqpLX3Ml47LIkq/IKT9dtSuDx4kcDEwN4N7qnyBnjREJp7hV0o/gtKCLFoAIiWyh34MF48zu//HPFREO1TixAx2IjVdci+3HP9HTD6BFlgxgJue1wCnsF03Ara5nwuaYI13LtxXqvYzo1eiY58XPVWa5PFdbjqTDk3L8TCThyl6Rqvf+7bwJEtgB2MEdtARwQJMGZv70AMWPA6JzQi4A"
+      }
     },
     "polpettine": {
       "source": "assets/menu/pizzas/polpettine/polpettine.webp",
@@ -701,7 +896,12 @@
         ]
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRjoCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSK4AAAABgLpt2/FX/f2zjfSbl1aVzLjGvuYt2bbXbFTWX523tGo1e/v8fU9ETABEq6sqBqpzY8PsKigMMpLvJ00uGbolRvZZokRgj1H4lytiPWYU/xYCMO4yhI/RQAlDOgkEaTbh/qG5RT1DHDlDlbNBVTRDVdxClZpA9GzQPtHMAcM06YDvieJcDaCJIhcAsgmmILqm6MkvZtn4l/U2EgXp6N4LqW4nFMaU9c53VpcWQBJWUDggZgEAABAIAJ0BKhgAGAA+lUScSqWjoqGoCACwEolqAJ0yhHPvrm8wyUCwmGgQgHgd88fN9OgxUQCQS0aGOpi9Zce0/YGv3WABPZ3iCoAA/rl5ahO5FpCa5lFSZqwl0ObK3rRgsJ1pABP/c9EyDT04QjCDNW5YU3+UaPn7AmohP7IB4wsQSkIOSdxWfk1E3B3v6bjOi/r3EB0zgrk/R8hN6Q56lKD3vaeScbs+rvl2Ow2LzfKlpsbJKzIOQD+HkxONQtqjXWI+8Q+WlsikGf8LeYMweFege7khuQLMlOh1/BBO2GQtp7QvaEFLFUjBiKCEPpHtODpX7vU/fz6hvGH8+n5NA6FOONPb8gl8SHYTeAipqCOEXbVp9DrCdHbrp+L7bZLyO2aCMlXqdyH+r08ymKVTl3Qsov5ZqA+cIJQqOJJ9BLM//BDvgJxKDadjxcDbty7X9SIc7M1+3oV9HQs+4fZHedKJnQMAAAA=",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/polpettine/polpettine-slide-0.webp": "data:image/webp;base64,UklGRj4BAABXRUJQVlA4IDIBAABwBgCdASoYACAAPqlKn0smJCKhqAqowBUJQBOmasHNVoe90DSH9tMGfGBsbDl1yE5us7f5g2++8ew4fHAA/rXTZNBKqFdPZLGH6aqI0UADC5ELB2zb7wU+A7jC9mwQiMGrEgGrwuM61OdvfXqzxhWqHdBqiNIJh3XELmF74KxZrjW+cS207t9noo5kX/XhMElmUhnfbOAmyfyHy0A86YY7UXyhjlDf8cO7rZo3hVMSITz/9gRoblZHfB6lETUUN+H4xKmx2g8LjeQ658c4qDy1MDvJGoFxS9BODY3U9Xj8+mMs7y8sMGM7JFqeLHk5ufwY9jVY+LrSlcifPB1qkXIDZLMGR8la+QW6cC2pASNNbT1wHxET0DZmztcYQOb7nIz2sfsfUZD57mcM5nX2O2oUAAA=",
+        "assets/menu/pizzas/polpettine/polpettine-slide-1.webp": "data:image/webp;base64,UklGRnABAABXRUJQVlA4IGQBAACQBwCdASoYACAAPqlEnEkmI6KhMAgAwBUJZACdMoR7T5C6UFx2MFcBUsTPAqeztb2q6vN0bW23YXqeUjV1VfJSvchCuvgA/vbYx+Wija4AoD86UBeUmnzBz1sv+RYPR7ihntr9y5tLblHT0gvENMb3zyGvOp8dsta7GAYR2b/4bbY5cCn8J7svg+SUGqawkMBlTWj92+9Q+J9LF++4z5JmXHEBzyNx5qAXfuSpsntRLSAvgErzdixyfr1dtFAmzCjmeBZ0xiD4iBhpI1xOEqASTDPwSjQ8tN85txKkQBiS4dCmo0xh2HRwLykNeA/logTaPL9zkn4CNpmVN/uyLhOzb3TKJ6qD3qv2Og4bDcHwQSWsbOpkalIHkjHiDsWWoHVEsIAKkdo8jQWloFPS/dWGy/f1E/QBFv10u+d/d0j/jFxC7Sxr+GT+zfAaDxp2WeWRvJ5x4RQSWgGMZVK7kX+tYprAAA=="
+      }
     },
     "spettacolo": {
       "source": "assets/menu/pizzas/spetaccolo/spettacolo.webp",
@@ -713,17 +913,17 @@
         "gallery": [
           "assets/menu/pizzas/spetaccolo/spettacolo-slide-0.webp",
           "assets/menu/pizzas/spetaccolo/spettacolo-slide-1.webp",
-          "assets/menu/pizzas/spetaccolo/spettacolo-slide-2.webp",
-          "assets/menu/pizzas/spetaccolo/spettacolo-slide-3.webp",
-          "assets/menu/pizzas/spetaccolo/spettacolo-slide-4.webp",
-          "assets/menu/pizzas/spetaccolo/spettacolo-slide-5.webp",
-          "assets/menu/pizzas/spetaccolo/spettacolo-slide-6.webp",
-          "assets/menu/pizzas/spetaccolo/spettacolo-slide-7.webp",
-          "assets/menu/pizzas/spetaccolo/spettacolo-slide-8.webp"
+          "assets/menu/pizzas/spetaccolo/spettacolo-slide-2.webp"
         ]
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRiwCAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSKsAAAABgKtt+/nmjScbm6ZsOYCsHjNZtd1z6NXNto3NXe32DHp1sh0nX84gIiYAeZcGqlu7epotrKwYhpbr/1j620GZKZ1i/COW/esPL0V4E8u9mwFgJEbZxoD4nyRWB22M9kMRIIrVu6nWIlQ7AarlNqqZZaox/h7NnwFFNH2AmeRLB+CQohsAqgnO5Cn8npzujEi/m8ODGxm5tRWL3+m+18tEyF7laeirdFllyDsAVlA4IFoBAACwBwCdASoYABgAPpVCmEmlo6IhKA1QsBKJbACdMoR0X7s4zvPVaYA+Kr8DSBTIfF4P9lKntEx+2/K+u7tImP2Hdw1QN0AAAP2ZcAU+XiyZEs3u/8kAjEJrMRi7ufcrjn5/LWMYYC9lh8u3zX4BI6pvPlOKe2RlxpUTl/8SAPw3iT8ZdX+S9qLr2IqpHhJT1N34qlqNTMrH6BGZFzP7mdroVb/Z0ULtR1ksIhQcGdeZ52nePJ8rvufYqQwl8CLe9eGXu9/YtJpIEjlgzvrzYZyX4wahsCx7xM8ExHCAWGG5W+A3uJ61vOJV/uMEzPW64hI3lvyLeJ0KdSpz3kThvqHWnPUpfOe0g0aOdDSzMo7q/j5qyN/FD7i4bDIw57cUC7BzxHsGdHEr4nwTCJ7ZPnlLPpWNf8Gh9RC30wX8dkSEiUcLUP+8Z+jAEt45D8lqq69mN8w7U5kmAAAA",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/spetaccolo/spettacolo-slide-0.webp": "data:image/webp;base64,UklGRjABAABXRUJQVlA4ICQBAABQBgCdASoYACAAPqlInkqmJCKhsBgIAMAVCUAX5zFtDbQfkNELpjL9oNhLLGl7cjUC2Cu9xnY2CxoQYAD82BaJVOm351aDTgqDe+rI5jcyETpi7R+f7Ovo9+U5sQR1l5F8gEUM27yJnSBCXCnXqlrgjP+6rmB9pfPz0PMObaf+v0by3Dfvl+Jj2cXLbLVNZKc99T0L4Cjb8f+1/JBZn/8kdX/VRVxAFEY19r//vsZyUUOpFUazZy1JrJ27ZTvNGzthmHZea2qhO1zhkbiJLYWv/AifcMKy/m+loVGwR8krqzfSTb74BWFtD9Ku0tr0aVUmaV7laMObE5fNDxjtihiH/eFWs4kEjS11wOWox+r3NFJwFow7VAoUf6fn9jZzwUFa1tAA",
+        "assets/menu/pizzas/spetaccolo/spettacolo-slide-1.webp": "data:image/webp;base64,UklGRpQBAABXRUJQVlA4IIgBAABwBwCdASoYACAAPqlCm0kmI6IhMAgAwBUJagCdMoR6b2IqgtwLB+WBpJmbRY26Y7rQjC5hbloz2n764c7diUBlLRk64AD9nBVrAj5bC3p9x9iB3Pfb/kmfknV90vF4ZY6CNx5YTD50IQ773OPGu3QDODECg0dQCG0Mn1szaibU6ZFto2mRF0/inTsKVgOigo36CozcyG6iTV/flgyT8JG2APsvpaQnRhjcCnz7tBrPIZvbyjPaLQqXg9pI77H3LYZtWbDhfqJtLVxFuG74n15vuT3JtXrfMmmefiNu+B+egpxHAMvI1QJd1TE2QGPPFWtYIf/weGs4N7hL0UvtRbDHnrxplt6DLvS4WdMCmild5HT1/tCR54BzjTG92AV9hpDsrXhDid3LXCUMV3UxqxUZwZJ3GhOoG2Lxl78ykC36EIsI+I2rJSnbOjXnvlP6P9Jdy6g5r1aWIYPOnA8/HC1irjxVeHQwVCC1ohtQzmuYWl2zPzKbu7JLuwGwJ8sXfcorjiuwHEAAAA==",
+        "assets/menu/pizzas/spetaccolo/spettacolo-slide-2.webp": "data:image/webp;base64,UklGRmwBAABXRUJQVlA4IGABAACQBgCdASoYACAAPqlKnUomJCKhsBgIAMAVCUAVIo4xP9StnI6AErW7nGXF4/YV0IKiPr0EmCqN5zzCDqcAAP5BPdQ2Ul9aOywEMatCTdcjWOiO+XM3opdJ2ONijMw2x5n7yTHUpyyaEdsvd8K23ODv1QrgGEsk9fBZ2iHzbNa2VQTpGw9a/rbJ+vSp911Zeduw1ce0P+s+90T24AOCGHBmHcYpgNFDUzRPcoXe13HrUNvDNXWsuyPWOr05m6mLgpkIutH8PiQMNsjLJAa57Xj/XFv5NbCJaXC9YRYdZjfyxlvpSLg8f4OUa6i0x3EaygSmemsLzgaZvSbfy697T2BW3e/1iErNXUHErLCReXs68aurlP9/tHT51VoaKNIavcXfVYdxJ+uoVp0z6JXo56hJawZuytuRGygd16agGQNXSvnnjOF51PV05OkpmNqc6NuLoQjCgmQN7760FACA6wAA"
+      }
     },
     "bruschetta_golosa": {
       "source": "assets/menu/entradas/bruschetta-golosa/bruschetta-golosa.webp",
@@ -738,7 +938,12 @@
         ]
       },
       "dominantColor": "",
-      "version": 2
+      "version": 2,
+      "lqip": "data:image/webp;base64,UklGRlACAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSL0AAAABgGNt2zHnGdueCrG1AJsrsJNqTnbBzqycasrYaVOzzpkydvL7/98lRMQEQDI0EIa4BrLt10xyczXe5UHiY1iGb+WbEb8fYZi/EgnLNaPwv0FEvcAovlQJRhnluwBQ+0/QBiDyxhDOAuZthrQT3Qzto2uKiGm5oKq6otpJEH1UNf6RPOUDkyQDALI+Ca6NAFD/rawGon2KXjRimFSyA0nNvrxkihQcx3JeayFXVRrveRC8zqRCsbeusbXWBUkAVlA4IGwBAAAwBwCdASoYABgAPpVCmkolo6IhqAqosBKJbACdMoR48L6sGjJZAB0rKNBcgOCO93C10ib+oB4G+0q6Il1mKymMm0AA2gKmIVhHrPuO5AMnxSRV4oDVFkIFzGVdtU+NwQrn7F4yxogitZs1RTUP5Nd5gZdvN12v+POVt3e5RX825F6is4qAI5Q2m7XfFG36FeA/KHJI+IuIG7kHG7wB1vIqiykiwdeBnAI6e/Lw2l4J3FgMmsTnkt2ZW6IH1bcdCypdZVOE7Eg3tanN4Eq4IbBm7uUhuMR3e4h/kUN6Bpfr8Z0/j/j/nbuPoHP822/6vuUpGWTwNL7TtXnmCeOncdnwPP/6U/ZIO/uEU2r0ZjWGW1AWf5c9lLRk+P+vJbLSudFTM5X/V1r6Czb9UV/50PYEkKt4kgmuucpkToj3uFWwy6T2s9NHSCHplU6ZQp9B/Qb5i9QECnquoApEi7iTDNoR1m5r67Ip/TDIUgAA",
+      "detailSlideLqip": {
+        "assets/menu/entradas/bruschetta-golosa/bruschetta-golosa-slide-0.webp": "data:image/webp;base64,UklGRlABAABXRUJQVlA4IEQBAACQBgCdASoYACAAPqlEn0qmI6KhsBgIAMAVCUATplmVIDWBcBxOa+SSGASLsBsFtOA2qwnZrVRckq33lCyAAP7HTG3dvpwDuoI+y+l45tb2mSBG5Je38vG003NES4DGbt97tAj5CcBEUHhq4wnnOVLWH8JWhlmrJId3LcV5dXMspPiKnEx/QB/rzpKbmzdKemD5mb1/Pn+GYHVP3T5/MdFDXti1imfiBGKqPFRiIocOU3RLl6NUAu2Y8mdEeuERYWp6x5zjKYG9KJ43sBvZZD36BwfymLtVZ3/Mg/4ATmJLNdKEDoFqq/C/KRiIOFEgzuggTeyrrpXD6xFWc2J8mr9UrhgwMSMNHTBl1xektft1AlKPoi/DGl40w7Mu3KCE3og812AZcBSd8HRu7jza9At5F2A9QgV95sY7nPmEO7xND0hUAAA=",
+        "assets/menu/entradas/bruschetta-golosa/bruschetta-golosa-slide-1.webp": "data:image/webp;base64,UklGRnIBAABXRUJQVlA4IGYBAADwBQCdASoYACAAPqlEnEkmI6KhMAgAwBUJZACxHspxjrAcnU1DFYpnog4Gs+NWJFrGmv7Z2ryJIAD+6f4OWAxvmnxhibYv0RdL4u3q9ful9Tj7gCCiacBGGDgS5qDm2ZDCoVGxqbuI/NYXEgpe2m3dRSE0GyMwfPR/4OWCtn/eUsFLlJvClgppzSJjsA//eZPlFpt4Efc/1HPZxfmJrKg/jDHT7gQtpSfjSgqXFBkAWcyqs5/PkUVb0PdHDF/4k3PL+I8uv1RmLfacS0tzdOTmN9XY2Q21qHTM9oPh31TOKLH+V9uE3rQK3mWWpRlHw+9gUu37oCiE5G1SPnXQ8b9sAGHGMG0+15H81nVP81ERqdBUiKWMT80WtBeaqASx3Z4R+bSuOLEVsTCVO5W+wNty5n8n8eJGJ1BajQv9HtSzAFC4GUkRKgfahRynv00cwhRpw6g+X+TYTAPltuEaKYxrPp7/qAAA"
+      }
     }
   },
   "defaults": {

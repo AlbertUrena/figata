@@ -74,7 +74,7 @@ The page is structured as a single scrollable document. Major sections in `index
 | Route HTML | `nosotros/index.html` | About/brand story shell used for controlled transition experiments |
 | Route styles | `nosotros/nosotros.css` | Route layout plus premium fullscreen entry loader visuals |
 | Lottie helper | `js/nosotros-lottie-runtime.js` | Boots the self-hosted local `lottie-web` player, embeds the `/nosotros/` loader JSON, and mounts it in source/destination overlays |
-| Shared first-load entry loader | `shared/public-entry-loader.js` | Reuses the fullscreen loader on hard opens/reloads across home, menú, eventos y nosotros with a 1-second minimum hold |
+| Shared first-load entry loader | `shared/public-entry-loader.js` | Reuses the fullscreen loader on hard opens/reloads across home, menú, eventos y nosotros with a 1-second minimum hold; menu detail URLs (`/menu/<slug>`) wait for a dedicated detail-ready signal before the overlay exits |
 | Shared hybrid engine | `shared/public-hybrid-route-transition.js` | Reusable same-document transition motor that keeps one overlay alive while route-specific wrappers prepare and mount the destination |
 | Entry loader runtime | `js/nosotros-entry-loader.js` | Handles the hard-navigation fallback into `/nosotros/`, mounts the local Lottie loader, enforces min duration, and exits safely |
 | Route script | `js/nosotros-page.js` | Lightweight reveal/intersection enhancements for placeholder sections |
@@ -220,6 +220,8 @@ Full menu page runtime controller for `/menu/`. Handles:
 - Rendering category sections with menu cards (including empty-state sections such as Bebidas)
 - Scroll-synced active category state
 - Dynamic item detail subview via URL (`/menu/<id>`) with browser back/forward
+- Routing list-to-detail and detail-to-list through the shared fullscreen overlay/Lottie curtain instead of the old horizontal slide transition
+- Hard-refreshing a detail URL now promotes the essential detail view first, then hydrates slower extras (ingredient/icon payloads and legacy editorial fallbacks) without bouncing back through the catalog
 - Rendering the structured sensory profile section in detail view when `item.sensory_profile` is available, including an editorial subtitle under the section heading, a compact right-aligned Radar/Bars toggle on the same heading row (radar by default), icon-based radar axes in place of text labels, shared tap/focus icon tooltips across radar axes and bars X-axis icons (axis guidance + 5-second auto-dismiss), a consolidated Bars visualization (vertical bars, Y scale 1–10, icon-only X axis, shared accent color with value-based opacity), plus a smoothed radar area without per-axis point markers and a subtle stroke halo
 - Exposing `window.FigataMenuPage` so route-local enhancers can sync category state and search without duplicating logic
 
@@ -331,7 +333,7 @@ Public route transition binder:
 Shared hard-open/reload entry loader:
 - Reuses the static fullscreen overlay already present in each public route shell
 - Mounts the shared local Lottie loader during first load or browser reload
-- Waits for route-ready signals plus a hard 1-second minimum hold before exiting
+- Waits for route-ready signals plus a hard 1-second minimum hold before exiting; `/menu/<slug>` listens for a detail-ready signal instead of the generic catalog-ready milestone
 - Skips itself when `/nosotros/` is already entering through the route-handoff loader
 
 #### `shared/public-hybrid-route-transition.js`

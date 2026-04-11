@@ -17,10 +17,16 @@
       { eventName: 'figata:home-page-ready', target: 'window', timeoutMs: 7000 },
       { eventName: 'figata:home-featured-rendered', target: 'document', timeoutMs: 7000 },
     ],
-    '/menu': [{ eventName: 'figata:menu-page-ready', target: 'window', timeoutMs: 8000 }],
+    '/menu': [
+      { eventName: 'figata:menu-catalog-lqip-ready', target: 'window', timeoutMs: 18000 },
+    ],
+    '/menu/detail': [
+      { eventName: 'figata:menu-detail-ready', target: 'window', timeoutMs: 22000 },
+    ],
     '/eventos': [{ eventName: 'figata:eventos-page-ready', target: 'window', timeoutMs: 6000 }],
     '/nosotros': [{ eventName: 'figata:nosotros-page-ready', target: 'window', timeoutMs: 5000 }],
   };
+  const SKIP_LOAD_WAIT_PATHS = new Set(['/menu', '/menu/detail']);
 
   if (!(root instanceof HTMLElement) || !(loader instanceof HTMLElement)) {
     root?.classList.remove('public-entry-pending');
@@ -62,6 +68,12 @@
   };
 
   const currentPath = normalizePathname(window.location.pathname);
+  const readySignalPath =
+    currentPath === '/menu'
+      ? '/menu'
+      : currentPath.startsWith('/menu/')
+        ? '/menu/detail'
+        : currentPath;
 
   const toModuleUrl = (value) =>
     publicPaths?.toAbsoluteUrl
@@ -188,8 +200,14 @@
     });
 
   const waitForPageReady = async () => {
-    const routeSignals = READY_SIGNAL_CONFIGS[currentPath] || [];
-    await Promise.allSettled([waitForLoad(), ...routeSignals.map(waitForSignal)]);
+    const routeSignals = READY_SIGNAL_CONFIGS[readySignalPath] || [];
+    const pendingTasks = routeSignals.map(waitForSignal);
+
+    if (!SKIP_LOAD_WAIT_PATHS.has(readySignalPath)) {
+      pendingTasks.unshift(waitForLoad());
+    }
+
+    await Promise.allSettled(pendingTasks);
   };
 
   const delay = (ms) =>

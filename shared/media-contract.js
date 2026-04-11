@@ -25,6 +25,12 @@
       return /^(https?|mailto|tel):/i.test(str) || str[0] === '/' || !/:/.test(str);
     }
 
+    function isInlineImageDataUri(value) {
+      if (!value) return true;
+      var str = String(value).trim();
+      return /^data:image\/[a-z0-9.+-]+;base64,[a-z0-9+/=]+$/i.test(str);
+    }
+
     function normalizePath(value) {
       return String(value || '').trim().replace(/^\/+/, '');
     }
@@ -256,6 +262,35 @@
 
         if (!normalizeText(entry.alt)) {
           itemsWithEmptyAlt++;
+        }
+
+        var lqip = normalizeText(entry.lqip);
+        if (lqip && !isInlineImageDataUri(lqip)) {
+          pushIssue('warning', 'Formato invalido en media.items["' + key + '"].lqip');
+        }
+        if (lqip && lqip.length > 12000) {
+          pushIssue('warning', 'LQIP muy pesado en media.items["' + key + '"].lqip');
+        }
+
+        if (isObject(entry.detailSlideLqip)) {
+          Object.keys(entry.detailSlideLqip).forEach(function (slidePath) {
+            var normalizedSlidePath = normalizePath(slidePath);
+            var slideLqip = normalizeText(entry.detailSlideLqip[slidePath]);
+
+            if (!normalizedSlidePath) {
+              pushIssue('warning', 'Clave invalida en media.items["' + key + '"].detailSlideLqip');
+            } else if (!isSafeUrl(normalizedSlidePath)) {
+              pushIssue('error', 'Unsafe URL en media.items["' + key + '"].detailSlideLqip["' + slidePath + '"]');
+            }
+
+            if (slideLqip && !isInlineImageDataUri(slideLqip)) {
+              pushIssue('warning', 'Formato invalido en media.items["' + key + '"].detailSlideLqip["' + slidePath + '"]');
+            }
+
+            if (slideLqip && slideLqip.length > 12000) {
+              pushIssue('warning', 'LQIP de slide muy pesado en media.items["' + key + '"].detailSlideLqip["' + slidePath + '"]');
+            }
+          });
         }
       });
 

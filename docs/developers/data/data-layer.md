@@ -557,6 +557,10 @@ Maps visual assets (images and optional editorial videos) to entities, evolving 
     "berenjenas_parmesana": {
       "source": "assets/menu/berenjenas.webp",
       "alt": "Berenjenas a la parmesana gratinadas",
+      "lqip": "data:image/webp;base64,...",
+      "detailSlideLqip": {
+        "assets/menu/pizzas/margherita/margherita-slide-0.webp": "data:image/webp;base64,..."
+      },
       "overrides": {
         "card": "",
         "hover": "assets/menu/hover/berenjenas-hover.webp",
@@ -571,6 +575,8 @@ Maps visual assets (images and optional editorial videos) to entities, evolving 
 ```
 
 The system uses `source` by default, but falls back to the `overrides` dictionary to specify distinct visual intents (not merely resolutions) for contexts like card or modal.
+`lqip` is an optional inline tiny image (`data:image/...;base64,...`) used by catalog cards for a blurred first paint before the full image loads.
+`detailSlideLqip` is an optional per-slide inline map (`path -> data:image/...;base64,...`) used by `/menu/` detail editorial slides so the active slide can render an inline blurred placeholder before the full slide image is decoded.
 **Validated by:** `shared/media-contract.js`, `scripts/validate_media_json.js`
 
 #### Editorial Detail Slides (`overrides.editorialSlides` + `overrides.gallery`)
@@ -581,20 +587,13 @@ The system uses `source` by default, but falls back to the `overrides` dictionar
   - `video`: `{ "type": "video", "poster": "...", "sources": [{ "src": "...webm", "type": "video/webm" }, { "src": "...mp4", "type": "video/mp4" }] }`
 - Use only real sources; if mp4 fallback is not available yet, keep only the valid webm source.
 - `items[<itemId>].overrides.gallery` remains supported as the legacy image-only list.
+- `items[<itemId>].detailSlideLqip` stores inline placeholders for image slides used in detail (`<slide-path> -> data URI`), avoiding additional network requests for placeholder assets. When `overrides.gallery` is empty, the public runtime can reuse these declared slide paths as a legacy image-only editorial gallery source.
 - Runtime priority in `/menu/<item-id>` detail view:
   1. `media.items[itemId].overrides.editorialSlides` only when it includes typed video slides (`type: "video"`)
-  2. Auto-detected assets by naming convention (repo-first)
-  3. `media.items[itemId].overrides.gallery` (legacy image-only fallback)
+  2. `media.items[itemId].overrides.gallery` (configured image-only gallery)
+  3. `media.items[itemId].detailSlideLqip` keys reused as a declared legacy image-only gallery when `gallery` is empty
   4. `media.items[itemId].overrides.editorialSlides` image-only entries (legacy compatibility fallback)
-  5. Catalog image fallback (`modal`/`card`)
-- Auto-detection convention (progressive, no required JSON edit):
-  - Folder: same folder as the item source image (for example `assets/menu/pizzas/margherita/`)
-  - Image patterns: `<editorial-slug>-slide-<n>.webp` and compact legacy `<editorial-slug>-slide<n>.webp`
-  - Video patterns: `<editorial-slug>-video-slide-<n>.(webm|mp4)` and compact legacy `<editorial-slug>-video-slide<n>.(webm|mp4)`
-  - `editorial-slug` accepts item-id variants and source basename variants, including underscore/hyphen equivalents
-  - Example: `assets/menu/pizzas/margherita/margherita-slide-0.webp`
-- Detection is contiguous from `slide-0` forward; first missing index stops detection.
-- This keeps editorial support optional: items without editorial slides continue using the existing catalog flow.
+  5. No catalog image fallback in detail view; if no editorial media is configured, the hero stays empty
 
 ---
 

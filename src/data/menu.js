@@ -548,13 +548,22 @@
         defaultValue: null,
       }),
     ]);
-    const sections = Array.isArray(menu?.sections) ? menu.sections : [];
-    const categories = buildCategoriesStore(categoriesJson, sections);
-    const availability = buildAvailabilityStore(availabilityJson);
     const ingredientsPayload =
       ingredientsJson && typeof ingredientsJson === 'object'
         ? ingredientsJson
         : { ingredients: {}, allergens: {} };
+    const ingredientsApi = window.FigataData?.ingredients || null;
+    if (typeof ingredientsApi?.primeIngredientsStore === 'function') {
+      try {
+        ingredientsApi.primeIngredientsStore(ingredientsPayload);
+      } catch (error) {
+        console.warn('[menu] No se pudo reutilizar el cache de ingredients.json.', error);
+      }
+    }
+
+    const sections = Array.isArray(menu?.sections) ? menu.sections : [];
+    const categories = buildCategoriesStore(categoriesJson, sections);
+    const availability = buildAvailabilityStore(availabilityJson);
     const items = [];
     const byId = new Map();
     const itemsByCategory = new Map();
