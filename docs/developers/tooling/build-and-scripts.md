@@ -110,7 +110,7 @@ Includes:
 
 | File | Purpose |
 |------|---------|
-| `wrangler.public.jsonc` | Pages config for `figata-public` |
+| `wrangler.public.jsonc` | Pages config for `trattoriafigata` |
 | `wrangler.admin.jsonc` | Pages config for `figata-admin` |
 | `wrangler.jobs.jsonc` | Worker config for `figata-jobs` |
 

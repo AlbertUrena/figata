@@ -10,7 +10,7 @@ const TARGETS = {
   public: {
     buildScript: 'build-cloudflare-public',
     outputDir: 'dist-public',
-    projectName: 'figata-public',
+    projectName: 'trattoriafigata',
     configFile: 'wrangler.public.jsonc',
   },
   admin: {

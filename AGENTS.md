@@ -321,7 +321,7 @@ npm test                       # smoke tests for Menu Traits V2 + Menu Allergens
 ### Deployment
 
 The supported runtime path is now Cloudflare:
-- `figata-public` Cloudflare Pages deploys the public site from `dist-public/`, using `_redirects` for `/menu/:item` deep-link rewrites, `_headers` for cache policy, and `_worker.js` for `/api/analytics/collect`.
+- `trattoriafigata` Cloudflare Pages deploys the public site from `dist-public/`, using `_redirects` for `/menu/:item` deep-link rewrites, `_headers` for cache policy, and `_worker.js` for `/api/analytics/collect`.
 - `figata-admin` Cloudflare Pages deploys the Admin from `dist-admin/`, using `_worker.js` for `/api/session`, `/api/publish`, `/api/analytics/snapshot`, and `/api/analytics/ai-analyst`.
 - `figata-jobs` Cloudflare Worker runs scheduled AI-report and optimization jobs and exports the Durable Object used to serialize publish operations.
 

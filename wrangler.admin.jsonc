@@ -41,6 +41,26 @@
   },
   "env": {
     "preview": {
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "PUBLISH_COORDINATOR",
+            "class_name": "PublishCoordinator",
+            "script_name": "figata-jobs"
+          },
+          {
+            "name": "RESERVATION_COORDINATOR",
+            "class_name": "ReservationCoordinator",
+            "script_name": "figata-jobs"
+          }
+        ]
+      },
+      "r2_buckets": [
+        {
+          "binding": "ANALYTICS_BUCKET",
+          "bucket_name": "figata-analytics"
+        }
+      ],
       "d1_databases": [
         {
           "binding": "RESERVATIONS_DB",
@@ -49,11 +69,35 @@
         }
       ],
       "vars": {
+        "ANALYTICS_BUCKET_NAME": "figata-analytics",
+        "FIGATA_ANALYTICS_RAW_PREFIX": "raw",
+        "FIGATA_ANALYTICS_ARTIFACT_PREFIX": "artifacts",
+        "FIGATA_ACCESS_TEAM_DOMAIN": "https://trattoriafigata.cloudflareaccess.com",
         "FIGATA_ENV": "preview",
         "FIGATA_ADMIN_HOST": "preview-admin.trattoriafigata.com"
       }
     },
     "production": {
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "PUBLISH_COORDINATOR",
+            "class_name": "PublishCoordinator",
+            "script_name": "figata-jobs"
+          },
+          {
+            "name": "RESERVATION_COORDINATOR",
+            "class_name": "ReservationCoordinator",
+            "script_name": "figata-jobs"
+          }
+        ]
+      },
+      "r2_buckets": [
+        {
+          "binding": "ANALYTICS_BUCKET",
+          "bucket_name": "figata-analytics"
+        }
+      ],
       "d1_databases": [
         {
           "binding": "RESERVATIONS_DB",
@@ -62,6 +106,10 @@
         }
       ],
       "vars": {
+        "ANALYTICS_BUCKET_NAME": "figata-analytics",
+        "FIGATA_ANALYTICS_RAW_PREFIX": "raw",
+        "FIGATA_ANALYTICS_ARTIFACT_PREFIX": "artifacts",
+        "FIGATA_ACCESS_TEAM_DOMAIN": "https://trattoriafigata.cloudflareaccess.com",
         "FIGATA_ENV": "production",
         "FIGATA_ADMIN_HOST": "admin.trattoriafigata.com",
         "FIGATA_ACCESS_ALLOWED_AUDS": "e4a39b975b28a23843665dc32bbdf26019cf56c2ab89f1cd2a163ec6b53edd81"
