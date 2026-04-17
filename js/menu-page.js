@@ -1,5 +1,11 @@
 (() => {
   const publicPaths = window.FigataPublicPaths || null;
+  const analyticsCommerce = window.FigataAnalyticsCommerce || null;
+  const analyticsPerformance = window.FigataAnalyticsPerformance || null;
+  const analyticsSdk = window.FigataAnalyticsSDK || null;
+  const ROOT_URL = publicPaths?.baseUrl
+    ? new URL(publicPaths.baseUrl.toString())
+    : new URL(document.baseURI || '/', window.location.origin);
   const PILL_MS = 390;
   const PILL_EASE = createBezierEasing(0.45, 0, 0.55, 1);
   const SEARCH_FADE_OUT_MS = 180;
@@ -44,6 +50,15 @@
   const MENU_CART_FALLBACK_COMMIT_DELAY_MS = 140;
   const DETAIL_ADD_QTY_MIN = 1;
   const DETAIL_ADD_QTY_MAX = 99;
+  const DEFAULT_RESTAURANT_WHATSAPP_URL = 'https://wa.me/18095245117';
+  const DEFAULT_COMMERCE_CURRENCY = 'DOP';
+  const MENU_DETAIL_ORIGIN_GRID = 'menu_grid';
+  const MENU_DETAIL_ORIGIN_DIRECT = 'menu_direct';
+  const MENU_DETAIL_ORIGIN_ROUTE = 'menu_detail';
+  const MENU_DETAIL_ORIGIN_ACCOUNT = 'account_modal';
+  const MENU_DETAIL_ORIGIN_UNDO = 'account_undo';
+  const MENU_IMPRESSION_LIST_SEARCH = 'menu_search_results';
+  const MENU_IMPRESSION_LIST_SEARCH_NAME = 'Resultados de busqueda';
   const ACCOUNT_STORAGE_KEY = 'figata:menu-account:v2';
   const ACCOUNT_STORAGE_VERSION = 2;
   const ACCOUNT_STORAGE_TTL_MS = 3 * 60 * 60 * 1000;
@@ -109,6 +124,13 @@
   const MENU_CATALOG_LQIP_READY_EVENT = 'figata:menu-catalog-lqip-ready';
   const MENU_DETAIL_READY_EVENT = 'figata:menu-detail-ready';
   const INITIAL_MOBILE_CATALOG_SEED_ATTR = 'data-initial-mobile-catalog-seed';
+  const menuCommerceImpressionObserver =
+    analyticsCommerce?.createImpressionObserver
+      ? analyticsCommerce.createImpressionObserver({
+          rootMargin: '0px 0px -12% 0px',
+          threshold: 0.45,
+        })
+      : null;
   const MENU_GROUPS = [
     {
       id: 'entradas',
@@ -376,6 +398,8 @@
   const accountTotalInfoToggle = document.getElementById('menu-account-total-info-toggle');
   const accountTotalInfoTitle = document.getElementById('menu-account-total-info-title');
   const accountTotalInfoCopy = document.getElementById('menu-account-total-info-copy');
+  const accountCheckoutButton = document.getElementById('menu-account-checkout');
+  const accountCheckoutNote = document.getElementById('menu-account-checkout-note');
   const accountToast = document.getElementById('menu-account-toast');
   const accountToastTitle = document.getElementById('menu-account-toast-title');
   const accountToastCopy = document.getElementById('menu-account-toast-copy');
@@ -745,6 +769,8 @@
     appliedFilters: createDefaultFilters(),
     detailSensoryView: DEFAULT_DETAIL_SENSORY_VIEW,
     detailItemId: '',
+    detailOrigin: '',
+    detailDepthIndex: 0,
     detailComparisonItemId: '',
     detailAddQuantity: DETAIL_ADD_QTY_MIN,
     compareSearchQuery: '',
@@ -793,6 +819,11 @@
   let accountRemovalToastTimerId = 0;
   let accountRemovalToastSnapshot = null;
   let accountCardViewTransitionActive = false;
+  let restaurantCommerceContactPromise = null;
+  let restaurantCommerceContact = {
+    currency: DEFAULT_COMMERCE_CURRENCY,
+    whatsappUrl: DEFAULT_RESTAURANT_WHATSAPP_URL,
+  };
   let accountCardViewTransitionTask = Promise.resolve();
   let menuRouteViewTransitionTask = Promise.resolve();
   let menuDetailOverlayRuntimePromise = null;
@@ -820,11 +851,16 @@
   let detailHeroBadgeFirstSlideOnly = false;
   let catalogLqipReadyEmitted = false;
   let detailRenderToken = 0;
+  let detailEditorialObserver = null;
+  let detailEditorialVideoCleanupFns = [];
+  let currentDetailEditorialItem = null;
+  let currentDetailEditorialSlides = [];
   let catalogCardMediaRecoveryToken = 0;
   let adminPreviewRenderToken = 0;
   let searchHelperWordIndex = 0;
   let searchHelperHasStarted = false;
   let searchHelperAnimating = false;
+  const detailEditorialSeenKeys = new Set();
 
   const bridgeReadyPromise = new Promise((resolve) => {
     bridgeReadyResolver = resolve;
@@ -844,6 +880,15 @@
     CARD_HOVER_MEDIA_QUERY.matches && !MENU_ROUTE_MOBILE_QUERY.matches;
 
   const normalizeText = (value) => String(value || '').trim();
+  const toAnalyticsEntityId = (value, fallback = '') =>
+    normalizeText(value)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '') ||
+    normalizeText(fallback)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
   const normalizeInlineImageDataUri = (value) => {
     const normalized = normalizeText(value);
 
@@ -2403,7 +2448,11 @@
       }
     });
   };
-  const commitMenuCartVisualAdd = (itemId, quantity = 1) => {
+  const commitMenuCartVisualAdd = (
+    itemId,
+    quantity = 1,
+    { detailOrigin = MENU_DETAIL_ORIGIN_GRID } = {}
+  ) => {
     const normalizedItemId = normalizeText(itemId);
     if (!normalizedItemId) {
       return;
@@ -2414,9 +2463,17 @@
       DETAIL_ADD_QTY_MIN,
       DETAIL_ADD_QTY_MAX
     );
-    addItemToAccount(normalizedItemId, delta, { pulse: true });
+    addItemToAccount(normalizedItemId, delta, {
+      pulse: true,
+      detailOrigin,
+    });
   };
-  const runMenuCartVisualAdd = async (sourceImage, itemId, quantity = DETAIL_ADD_QTY_MIN) => {
+  const runMenuCartVisualAdd = async (
+    sourceImage,
+    itemId,
+    quantity = DETAIL_ADD_QTY_MIN,
+    options = {}
+  ) => {
     const target = getPreferredMenuCartTarget();
     const safeQuantity = clampNumber(
       Math.round(Number(quantity) || DETAIL_ADD_QTY_MIN),
@@ -2424,7 +2481,7 @@
       DETAIL_ADD_QTY_MAX
     );
     await animateMenuCartFlight(sourceImage, target);
-    commitMenuCartVisualAdd(itemId, safeQuantity);
+    commitMenuCartVisualAdd(itemId, safeQuantity, options);
   };
   const roundAccountValue = (value) =>
     Math.round((Number(value) + Number.EPSILON) * 100) / 100;
@@ -2871,11 +2928,118 @@
           image: media.card || media.detail || '',
           imageAlt: normalizeText(media.alt || item?.name || item?.id),
           quantity,
+          unitPrice,
           linePrice,
           groupId,
         };
       })
       .filter(Boolean);
+  const buildMenuCommerceSnapshot = () => {
+    if (!analyticsCommerce?.buildCartSnapshot) {
+      return null;
+    }
+
+    return analyticsCommerce.buildCartSnapshot(buildAccountEntries(), {
+      currency:
+        normalizeText(restaurantCommerceContact?.currency).toUpperCase() ||
+        DEFAULT_COMMERCE_CURRENCY,
+      value: state.account.totals.total,
+    });
+  };
+  const syncAccountCheckoutState = () => {
+    if (accountCheckoutButton instanceof HTMLButtonElement) {
+      const hasItems = state.account.totals.units > 0;
+      accountCheckoutButton.disabled = !hasItems;
+      accountCheckoutButton.setAttribute('aria-disabled', hasItems ? 'false' : 'true');
+    }
+
+    if (accountCheckoutNote instanceof HTMLElement) {
+      accountCheckoutNote.textContent = state.account.totals.units > 0
+        ? 'Compartimos tu cuenta con el equipo de Figata para confirmar disponibilidad y siguientes pasos.'
+        : 'Agrega platos a tu cuenta para preparar el pedido por WhatsApp.';
+    }
+
+    syncAccountCheckoutTarget();
+  };
+  const buildMenuAccountWhatsappMessage = (snapshot) => {
+    const safeSnapshot = snapshot && Array.isArray(snapshot.items)
+      ? snapshot
+      : { items: [] };
+    const itemLines = safeSnapshot.items
+      .map((entry) => {
+        const linePrice = roundAccountValue(Number(entry.price || 0) * Number(entry.quantity || 0));
+        return `- ${entry.quantity} x ${entry.item_name}: ${formatAccountCardMoney(linePrice)}`;
+      })
+      .filter(Boolean);
+
+    return [
+      'Hola, quiero ordenar lo siguiente desde el menu de Figata:',
+      '',
+      ...itemLines,
+      '',
+      'Resumen estimado:',
+      `- Subtotal: ${formatAccountCardMoney(state.account.totals.subtotal)}`,
+      `- ITBIS (18%): ${formatAccountCardMoney(state.account.totals.itbis)}`,
+      `- Propina legal (10%): ${formatAccountCardMoney(state.account.totals.legalTip)}`,
+      `- Total estimado: ${formatAccountCardMoney(state.account.totals.total)}`,
+      '',
+      'Quiero confirmar disponibilidad y completar mi pedido.',
+    ].join('\n');
+  };
+  const buildWhatsappCheckoutUrl = (baseUrl, message) => {
+    const normalizedBaseUrl = normalizeAbsoluteUrl(
+      baseUrl,
+      DEFAULT_RESTAURANT_WHATSAPP_URL
+    );
+    const encodedMessage = encodeURIComponent(normalizeText(message));
+
+    if (!encodedMessage) {
+      return normalizedBaseUrl;
+    }
+
+    return `${normalizedBaseUrl}${normalizedBaseUrl.includes('?') ? '&' : '?'}text=${encodedMessage}`;
+  };
+  const trackMenuCartView = () => {
+    const snapshot = buildMenuCommerceSnapshot();
+
+    if (!snapshot || !snapshot.items.length) {
+      return;
+    }
+
+    analyticsCommerce?.trackCartView?.(snapshot.items, {
+      snapshot,
+    });
+  };
+  const trackMenuAccountMutation = ({
+    item,
+    previousQuantity = 0,
+    nextQuantity = 0,
+    detailOrigin = '',
+  } = {}) => {
+    if (!item || previousQuantity === nextQuantity) {
+      return;
+    }
+
+    const snapshot = buildMenuCommerceSnapshot();
+    if (!snapshot) {
+      return;
+    }
+
+    if (nextQuantity > previousQuantity) {
+      analyticsCommerce?.trackAddToCart?.(item, {
+        quantity: nextQuantity - previousQuantity,
+        detailOrigin,
+        snapshot,
+      });
+      return;
+    }
+
+    analyticsCommerce?.trackRemoveFromCart?.(item, {
+      quantity: previousQuantity - nextQuantity,
+      detailOrigin,
+      snapshot,
+    });
+  };
   const buildAccountEntryGroups = (entries = []) => {
     const orderByGroupId = new Map();
     const labelByGroupId = new Map();
@@ -3281,6 +3445,7 @@
     computeAccountTotals();
     syncMenuCartBadges();
     syncAccountFooter({ animate });
+    syncAccountCheckoutState();
     renderAccountModalBody({ animate });
     window.FigataScrollIndicators?.refresh?.();
 
@@ -3379,13 +3544,26 @@
       },
       { enterItemId: itemId }
     );
+    trackMenuAccountMutation({
+      item: state.itemsById.get(itemId),
+      previousQuantity: 0,
+      nextQuantity: quantity,
+      detailOrigin: MENU_DETAIL_ORIGIN_UNDO,
+    });
     hideAccountRemovalToast();
     return true;
   };
   const setAccountItemQuantity = (
     itemId,
     quantity,
-    { persist = true, pulse = false, animate = true, showUndoToast = true } = {}
+    {
+      persist = true,
+      pulse = false,
+      animate = true,
+      showUndoToast = true,
+      detailOrigin = '',
+      emitAnalytics = true,
+    } = {}
   ) => {
     const normalizedItemId = normalizeText(itemId);
     if (!normalizedItemId || !state.itemsById.has(normalizedItemId)) {
@@ -3395,6 +3573,11 @@
     const previousQuantity = getAccountQuantity(normalizedItemId);
     const previousOrderIndex = state.account.order.indexOf(normalizedItemId);
     const nextQuantity = clampNumber(Math.round(Number(quantity) || 0), 0, 999);
+    const item = state.itemsById.get(normalizedItemId);
+
+    if (previousQuantity === nextQuantity) {
+      return false;
+    }
 
     const isItemRemoval = previousQuantity > 0 && nextQuantity <= 0;
     const isItemInsertion = previousQuantity <= 0 && nextQuantity > 0;
@@ -3429,6 +3612,16 @@
         orderIndex: previousOrderIndex,
       });
     }
+
+    if (emitAnalytics) {
+      trackMenuAccountMutation({
+        item,
+        previousQuantity,
+        nextQuantity,
+        detailOrigin,
+      });
+    }
+
     return true;
   };
   const addItemToAccount = (itemId, delta = 1, options = {}) => {
@@ -5154,6 +5347,7 @@
       return;
     }
 
+    void loadRestaurantCommerceContact();
     clearAccountModalCloseTimer();
     setAccountTotalInfoOpen(false);
     hideAccountRemovalToast();
@@ -5180,6 +5374,7 @@
     setFilterModalDocumentState();
     setAccountTriggerExpanded(true);
     emitBridgeState();
+    trackMenuCartView();
     accountModal.setAttribute('data-state', 'opening');
     accountDialog.setAttribute('data-footer-shadow', 'hidden');
 
@@ -5507,6 +5702,81 @@
     }
 
     return `/${cleaned}`;
+  };
+
+  const normalizeAbsoluteUrl = (value, fallback = '') => {
+    const raw = normalizeText(value);
+    const fallbackUrl = normalizeText(fallback);
+    const candidate = raw || fallbackUrl;
+
+    if (!candidate) {
+      return '';
+    }
+
+    try {
+      return new URL(candidate, ROOT_URL).toString();
+    } catch (_error) {
+      return fallbackUrl || '';
+    }
+  };
+
+  const syncAccountCheckoutTarget = () => {
+    if (!(accountCheckoutButton instanceof HTMLButtonElement)) {
+      return;
+    }
+
+    accountCheckoutButton.dataset.analyticsTarget = normalizeAbsoluteUrl(
+      restaurantCommerceContact?.whatsappUrl,
+      DEFAULT_RESTAURANT_WHATSAPP_URL
+    );
+  };
+
+  const loadRestaurantCommerceContact = () => {
+    if (restaurantCommerceContactPromise) {
+      return restaurantCommerceContactPromise;
+    }
+
+    restaurantCommerceContactPromise = fetch(
+      new URL('data/restaurant.json', ROOT_URL).toString(),
+      {
+        credentials: 'same-origin',
+        cache: 'default',
+      }
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`restaurant.json respondió ${response.status}`);
+        }
+
+        return response.json();
+      })
+      .then((payload) => {
+        restaurantCommerceContact = {
+          currency:
+            normalizeText(payload?.currency || payload?.contact?.currency).toUpperCase() ||
+            DEFAULT_COMMERCE_CURRENCY,
+          whatsappUrl: normalizeAbsoluteUrl(
+            payload?.whatsapp || payload?.contact?.whatsapp,
+            DEFAULT_RESTAURANT_WHATSAPP_URL
+          ),
+        };
+        syncAccountCheckoutTarget();
+        return restaurantCommerceContact;
+      })
+      .catch((error) => {
+        console.warn('[menu-page] No se pudo resolver restaurant.json para checkout.', error);
+        restaurantCommerceContact = {
+          currency: DEFAULT_COMMERCE_CURRENCY,
+          whatsappUrl: normalizeAbsoluteUrl(
+            DEFAULT_RESTAURANT_WHATSAPP_URL,
+            DEFAULT_RESTAURANT_WHATSAPP_URL
+          ),
+        };
+        syncAccountCheckoutTarget();
+        return restaurantCommerceContact;
+      });
+
+    return restaurantCommerceContactPromise;
   };
 
   const isMenuPlaceholderPath = (value) =>
@@ -6862,6 +7132,39 @@
     };
   };
 
+  const buildDetailStoryId = (itemId, story) =>
+    toAnalyticsEntityId(
+      story?.storyId || story?.id || story?.slug || story?.title,
+      `story_${normalizeText(itemId) || 'detail'}`
+    );
+
+  const buildDetailPairingId = (itemId, pairing, index) =>
+    toAnalyticsEntityId(
+      pairing?.pairingId ||
+        pairing?.id ||
+        pairing?.slug ||
+        pairing?.ctaTarget ||
+        pairing?.name ||
+        pairing?.meta,
+      `pairing_${normalizeText(itemId) || 'detail'}_${index + 1}`
+    );
+
+  const buildDetailMediaId = (itemId, slide, index) => {
+    const primaryVideoSource =
+      Array.isArray(slide?.sources) && slide.sources[0]?.src
+        ? slide.sources[0].src
+        : '';
+    return toAnalyticsEntityId(
+      slide?.mediaId ||
+        slide?.id ||
+        slide?.slug ||
+        slide?.src ||
+        primaryVideoSource ||
+        slide?.poster,
+      `media_${normalizeText(itemId) || 'detail'}_${normalizeText(slide?.type) || 'slide'}_${index + 1}`
+    );
+  };
+
   const resolveDetailEditorialModel = (item) => {
     const detailEditorial = isObject(item?.detail_editorial) ? item.detail_editorial : {};
 
@@ -6870,7 +7173,10 @@
       detailEditorial.pairings.forEach((entry) => {
         const normalizedEntry = normalizeDetailEditorialPairingEntry(entry);
         if (isObject(normalizedEntry) && normalizedEntry.enabled !== false) {
-          pairingEntries.push(normalizedEntry);
+          pairingEntries.push({
+            ...normalizedEntry,
+            pairingId: buildDetailPairingId(item?.id, normalizedEntry, pairingEntries.length),
+          });
         }
       });
     } else if (isObject(detailEditorial.pairings)) {
@@ -6878,16 +7184,26 @@
         detailEditorial.pairings
       );
       if (isObject(normalizedPairingsObject) && normalizedPairingsObject.enabled !== false) {
-        pairingEntries.push(normalizedPairingsObject);
+        pairingEntries.push({
+          ...normalizedPairingsObject,
+          pairingId: buildDetailPairingId(item?.id, normalizedPairingsObject, pairingEntries.length),
+        });
       }
     } else if (isObject(detailEditorial.pairing)) {
       const normalizedLegacyPairing = normalizeDetailEditorialPairingEntry(
         detailEditorial.pairing
       );
       if (isObject(normalizedLegacyPairing) && normalizedLegacyPairing.enabled !== false) {
-        pairingEntries.push(normalizedLegacyPairing);
+        pairingEntries.push({
+          ...normalizedLegacyPairing,
+          pairingId: buildDetailPairingId(item?.id, normalizedLegacyPairing, pairingEntries.length),
+        });
       }
     }
+
+    const normalizedStory = normalizeDetailEditorialStory(
+      detailEditorial.story || detailEditorial.history
+    );
 
     return {
       compareMode: normalizeDetailEditorialCompareMode(detailEditorial.compare_mode),
@@ -6897,7 +7213,12 @@
       ),
       sensoryIntro: normalizeText(detailEditorial.sensory_intro || detailEditorial.sensory_subtitle),
       pairings: pairingEntries,
-      story: normalizeDetailEditorialStory(detailEditorial.story || detailEditorial.history),
+      story: normalizedStory
+        ? {
+            ...normalizedStory,
+            storyId: buildDetailStoryId(item?.id, normalizedStory),
+          }
+        : null,
     };
   };
 
@@ -8709,6 +9030,8 @@
         + '<p class="menu-page-detail__pairing-description"></p>';
     }
 
+    entryNode.dataset.pairingId = normalizeText(pairing.pairingId);
+
     const pairingsCopy =
       menuDetailEditorialCopy?.pairings || MENU_DETAIL_EDITORIAL_COPY_DEFAULTS.pairings;
     const nameNode = entryNode.querySelector('.menu-page-detail__pairing-name');
@@ -8735,6 +9058,7 @@
       const ctaTarget = normalizeText(pairing.ctaTarget);
       ctaNode.setAttribute('aria-label', ctaLabel);
       ctaNode.title = ctaLabel;
+      ctaNode.dataset.pairingId = normalizeText(pairing.pairingId);
       if (ctaTarget) {
         ctaNode.dataset.pairingTarget = ctaTarget;
       } else {
@@ -9207,6 +9531,11 @@
 
     if (detailHistorySection instanceof HTMLElement) {
       detailHistorySection.hidden = !shouldShowHistory;
+      if (shouldShowHistory && story?.storyId) {
+        detailHistorySection.dataset.storyId = normalizeText(story.storyId);
+      } else {
+        delete detailHistorySection.dataset.storyId;
+      }
     }
 
     if (detailHistoryDivider instanceof HTMLElement) {
@@ -9409,6 +9738,439 @@
     }
 
     return normalizeText(firstSlide.src);
+  };
+
+  const createDetailEditorialObserver = ({
+    threshold = 0.55,
+    rootMargin = '0px 0px -10% 0px',
+  } = {}) => {
+    if (typeof window === 'undefined' || typeof window.IntersectionObserver !== 'function') {
+      return null;
+    }
+
+    const observers = new WeakMap();
+    const observer = new window.IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry?.target || !entry.isIntersecting) {
+          return;
+        }
+
+        if (
+          typeof entry.intersectionRatio === 'number' &&
+          entry.intersectionRatio < threshold
+        ) {
+          return;
+        }
+
+        const resolver = observers.get(entry.target);
+        observers.delete(entry.target);
+        observer.unobserve(entry.target);
+
+        if (typeof resolver === 'function') {
+          resolver(entry.target, entry);
+        }
+      });
+    }, {
+      root: null,
+      rootMargin,
+      threshold: [0, threshold, 1],
+    });
+
+    return {
+      disconnect() {
+        observer.disconnect();
+      },
+      observe(node, resolver) {
+        if (!(node instanceof HTMLElement) || typeof resolver !== 'function') {
+          return;
+        }
+
+        observers.set(node, resolver);
+        observer.observe(node);
+      },
+    };
+  };
+
+  const disconnectDetailEditorialTracking = () => {
+    if (detailEditorialObserver) {
+      detailEditorialObserver.disconnect();
+      detailEditorialObserver = null;
+    }
+
+    detailEditorialVideoCleanupFns.forEach((cleanup) => {
+      if (typeof cleanup === 'function') {
+        cleanup();
+      }
+    });
+    detailEditorialVideoCleanupFns = [];
+    currentDetailEditorialItem = null;
+    currentDetailEditorialSlides = [];
+  };
+
+  const trackMenuEditorialEvent = (eventName, payload, { dedupeKey = '' } = {}) => {
+    if (!analyticsSdk?.track || !payload || typeof payload !== 'object') {
+      return Promise.resolve({ ok: false, skipped: true, eventName });
+    }
+
+    const normalizedDedupeKey = normalizeText(dedupeKey);
+    if (normalizedDedupeKey && detailEditorialSeenKeys.has(normalizedDedupeKey)) {
+      return Promise.resolve({ ok: true, deduped: true, eventName, payload });
+    }
+
+    if (normalizedDedupeKey) {
+      detailEditorialSeenKeys.add(normalizedDedupeKey);
+    }
+
+    return analyticsSdk.track(eventName, payload);
+  };
+
+  const buildCurrentDetailEditorialPayload = (extra = {}) => {
+    if (!isObject(currentDetailEditorialItem)) {
+      return null;
+    }
+
+    const payload = {
+      item_id: normalizeText(currentDetailEditorialItem.item_id),
+      item_name: normalizeText(currentDetailEditorialItem.item_name),
+      category: normalizeText(currentDetailEditorialItem.category),
+    };
+    const detailDepthIndex = clampNumber(
+      Math.round(Number(state.detailDepthIndex) || 0),
+      0,
+      9
+    );
+
+    if (detailDepthIndex > 0) {
+      payload.detail_depth_index = detailDepthIndex;
+    }
+
+    Object.keys(extra).forEach((key) => {
+      const value = extra[key];
+      if (value === undefined || value === null || value === '') {
+        return;
+      }
+      payload[key] = value;
+    });
+
+    return payload;
+  };
+
+  const trackDetailStoryView = (storyId) => {
+    const normalizedStoryId = toAnalyticsEntityId(storyId);
+    const payload = buildCurrentDetailEditorialPayload({
+      story_id: normalizedStoryId,
+    });
+    if (!payload?.story_id) {
+      return;
+    }
+
+    void trackMenuEditorialEvent('item_story_view', payload, {
+      dedupeKey: ['item_story_view', payload.item_id, payload.story_id].join('|'),
+    });
+  };
+
+  const trackDetailPairingView = (pairingId) => {
+    const normalizedPairingId = toAnalyticsEntityId(pairingId);
+    const payload = buildCurrentDetailEditorialPayload({
+      pairing_id: normalizedPairingId,
+    });
+    if (!payload?.pairing_id) {
+      return;
+    }
+
+    void trackMenuEditorialEvent('item_pairing_view', payload, {
+      dedupeKey: ['item_pairing_view', payload.item_id, payload.pairing_id].join('|'),
+    });
+  };
+
+  const trackDetailGalleryExpand = (mediaId) => {
+    const normalizedMediaId = toAnalyticsEntityId(mediaId);
+    const payload = buildCurrentDetailEditorialPayload({
+      media_id: normalizedMediaId,
+    });
+    if (!payload?.media_id) {
+      return;
+    }
+
+    void trackMenuEditorialEvent('item_gallery_expand', payload, {
+      dedupeKey: ['item_gallery_expand', payload.item_id, payload.media_id].join('|'),
+    });
+  };
+
+  const trackDetailVideoPlay = (mediaId, mediaDurationMs) => {
+    const normalizedMediaId = toAnalyticsEntityId(mediaId);
+    const safeDurationMs = Math.max(1, Math.round(Number(mediaDurationMs) || 0));
+    const payload = buildCurrentDetailEditorialPayload({
+      media_id: normalizedMediaId,
+      media_duration_ms: safeDurationMs,
+    });
+    if (!payload?.media_id || !(payload.media_duration_ms > 0)) {
+      return;
+    }
+
+    void trackMenuEditorialEvent('item_video_play', payload, {
+      dedupeKey: ['item_video_play', payload.item_id, payload.media_id].join('|'),
+    });
+  };
+
+  const trackDetailVideoComplete = (mediaId, mediaDurationMs) => {
+    const normalizedMediaId = toAnalyticsEntityId(mediaId);
+    const safeDurationMs = Math.max(1, Math.round(Number(mediaDurationMs) || 0));
+    const payload = buildCurrentDetailEditorialPayload({
+      media_id: normalizedMediaId,
+      media_duration_ms: safeDurationMs,
+      media_percent_complete: 100,
+    });
+    if (!payload?.media_id || !(payload.media_duration_ms > 0)) {
+      return;
+    }
+
+    void trackMenuEditorialEvent('item_video_complete', payload, {
+      dedupeKey: ['item_video_complete', payload.item_id, payload.media_id, 100].join('|'),
+    });
+  };
+
+  const syncDetailEditorialTracking = (detail) => {
+    disconnectDetailEditorialTracking();
+
+    if (!isObject(detail)) {
+      return;
+    }
+
+    currentDetailEditorialItem = {
+      item_id: normalizeText(detail.id),
+      item_name: normalizeText(detail.title),
+      category: normalizeText(detail.category),
+    };
+    currentDetailEditorialSlides = Array.isArray(detail.editorialSlides)
+      ? detail.editorialSlides.slice()
+      : [];
+
+    detailEditorialObserver = createDetailEditorialObserver();
+
+    if (detailEditorialObserver && detailHistorySection instanceof HTMLElement && !detailHistorySection.hidden) {
+      const storyId = normalizeText(detail.story?.storyId || detailHistorySection.dataset.storyId);
+      if (storyId) {
+        detailEditorialObserver.observe(detailHistorySection, () => {
+          trackDetailStoryView(storyId);
+        });
+      }
+    }
+
+    if (detailEditorialObserver && detailPairingsList instanceof HTMLElement && !detailPairingsList.hidden) {
+      Array.from(detailPairingsList.querySelectorAll('.menu-page-detail__pairing-entry')).forEach((entryNode) => {
+        if (!(entryNode instanceof HTMLElement)) {
+          return;
+        }
+
+        const pairingId = normalizeText(entryNode.dataset.pairingId);
+        if (!pairingId) {
+          return;
+        }
+
+        detailEditorialObserver.observe(entryNode, () => {
+          trackDetailPairingView(pairingId);
+        });
+      });
+    }
+
+    if (!(detailEditorialTrack instanceof HTMLElement)) {
+      return;
+    }
+
+    Array.from(
+      detailEditorialTrack.querySelectorAll('.menu-page-detail__editorial-video')
+    ).forEach((videoNode) => {
+      if (!(videoNode instanceof HTMLVideoElement)) {
+        return;
+      }
+
+      const mediaId = normalizeText(videoNode.dataset.mediaId);
+      if (!mediaId) {
+        return;
+      }
+
+      const resolveDurationMs = () =>
+        Number.isFinite(videoNode.duration) && videoNode.duration > 0
+          ? Math.round(videoNode.duration * 1000)
+          : 0;
+
+      const handleLoadedMetadata = () => {
+        if (!videoNode.paused) {
+          trackDetailVideoPlay(mediaId, resolveDurationMs());
+        }
+      };
+
+      const handlePlay = () => {
+        trackDetailVideoPlay(mediaId, resolveDurationMs());
+      };
+
+      const handleTimeUpdate = () => {
+        if (!Number.isFinite(videoNode.duration) || !(videoNode.duration > 0)) {
+          return;
+        }
+
+        if (videoNode.currentTime / videoNode.duration >= 0.95) {
+          trackDetailVideoComplete(mediaId, resolveDurationMs());
+        }
+      };
+
+      videoNode.addEventListener('loadedmetadata', handleLoadedMetadata);
+      videoNode.addEventListener('play', handlePlay);
+      videoNode.addEventListener('timeupdate', handleTimeUpdate);
+
+      detailEditorialVideoCleanupFns.push(() => {
+        videoNode.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        videoNode.removeEventListener('play', handlePlay);
+        videoNode.removeEventListener('timeupdate', handleTimeUpdate);
+      });
+
+      if (!videoNode.paused || videoNode.currentTime > 0) {
+        trackDetailVideoPlay(mediaId, resolveDurationMs());
+      }
+
+      if (
+        Number.isFinite(videoNode.duration) &&
+        videoNode.duration > 0 &&
+        videoNode.currentTime / videoNode.duration >= 0.95
+      ) {
+        trackDetailVideoComplete(mediaId, resolveDurationMs());
+      }
+    });
+  };
+
+  const trackDetailGalleryExpandByIndex = (activeIndex) => {
+    const safeIndex = Math.max(0, Math.round(Number(activeIndex) || 0));
+    if (safeIndex <= 0 || !Array.isArray(currentDetailEditorialSlides) || !currentDetailEditorialSlides.length) {
+      return;
+    }
+
+    const slide = currentDetailEditorialSlides[safeIndex];
+    if (!isObject(slide)) {
+      return;
+    }
+
+    trackDetailGalleryExpand(slide.mediaId);
+  };
+
+  const markMenuListPerformanceReady = () => {
+    if (!analyticsPerformance) {
+      return;
+    }
+
+    analyticsPerformance.markMetric('menu_tabs_visible_ms');
+
+    if (contentRoot instanceof HTMLElement && contentRoot.querySelector('[data-menu-item-id]')) {
+      analyticsPerformance.markMetric('menu_first_row_hydrated_ms');
+    }
+
+    analyticsPerformance.markMetric('menu_full_hydration_ms');
+    analyticsPerformance.markRouteReady();
+  };
+
+  const syncDetailPerformanceTracking = (detail) => {
+    if (!analyticsPerformance || !isObject(detail)) {
+      return;
+    }
+
+    analyticsPerformance.markMetric('detail_open_ms');
+
+    if (
+      detailAddCtaSection instanceof HTMLElement &&
+      !detailAddCtaSection.hidden &&
+      detailAddButton instanceof HTMLButtonElement &&
+      !detailAddButton.disabled
+    ) {
+      analyticsPerformance.markMetric('detail_cta_ready_ms');
+    }
+
+    let routeReadyBoundToAsset = false;
+    const bindAssetReady = (element, options = {}) => {
+      if (!(element instanceof Element)) {
+        return false;
+      }
+
+      const tracked = analyticsPerformance.trackAssetFromElement(element, {
+        ...options,
+        itemId: detail.id,
+        itemName: detail.title,
+      });
+
+      if (tracked && typeof options.onReady === 'function' && !routeReadyBoundToAsset) {
+        routeReadyBoundToAsset = true;
+      }
+
+      return tracked;
+    };
+
+    if (detailEditorialTrack instanceof HTMLElement) {
+      const firstEditorialPane = detailEditorialTrack.querySelector(
+        '.menu-page-detail__editorial-slide[data-slide-index="0"]'
+      );
+
+      if (firstEditorialPane instanceof HTMLElement) {
+        const firstEditorialMediaId = normalizeText(firstEditorialPane.dataset.mediaId);
+        const firstEditorialImage = firstEditorialPane.querySelector(
+          '.menu-page-detail__editorial-image--full'
+        );
+        const firstEditorialVideo = firstEditorialPane.querySelector(
+          '.menu-page-detail__editorial-video'
+        );
+
+        if (firstEditorialImage instanceof HTMLImageElement) {
+          bindAssetReady(firstEditorialImage, {
+            assetType: 'image',
+            mediaId: firstEditorialMediaId,
+            metricName: 'detail_image_visible_ms',
+            onReady() {
+              analyticsPerformance.markRouteReady();
+            },
+          });
+        } else if (firstEditorialVideo instanceof HTMLVideoElement) {
+          bindAssetReady(firstEditorialVideo, {
+            assetType: 'video',
+            mediaId: firstEditorialMediaId,
+            metricName: 'detail_video_ready_ms',
+            onReady() {
+              analyticsPerformance.markRouteReady();
+            },
+          });
+        }
+      }
+
+      Array.from(
+        detailEditorialTrack.querySelectorAll('.menu-page-detail__editorial-video')
+      ).forEach((videoNode) => {
+        if (!(videoNode instanceof HTMLVideoElement)) {
+          return;
+        }
+
+        bindAssetReady(videoNode, {
+          assetType: 'video',
+          mediaId: normalizeText(videoNode.dataset.mediaId),
+          metricName: 'detail_video_ready_ms',
+        });
+      });
+    }
+
+    if (
+      !routeReadyBoundToAsset &&
+      detailImage instanceof HTMLImageElement &&
+      !detailImage.hidden &&
+      detail.image
+    ) {
+      bindAssetReady(detailImage, {
+        assetType: 'image',
+        metricName: 'detail_image_visible_ms',
+        onReady() {
+          analyticsPerformance.markRouteReady();
+        },
+      });
+    }
+
+    if (!routeReadyBoundToAsset) {
+      analyticsPerformance.markRouteReady();
+    }
   };
 
   const syncDetailEditorialVideoPlayback = (activeIndex) => {
@@ -10122,12 +10884,14 @@
       const pane = document.createElement('figure');
       pane.className = 'menu-page-detail__editorial-slide';
       pane.setAttribute('data-slide-index', String(index));
+      pane.dataset.mediaId = normalizeText(slide.mediaId);
 
       if (slide.type === 'video') {
         pane.setAttribute('data-slide-type', 'video');
 
         const video = document.createElement('video');
         video.className = 'menu-page-detail__editorial-video';
+        video.dataset.mediaId = normalizeText(slide.mediaId);
         video.muted = true;
         video.loop = true;
         video.playsInline = true;
@@ -10215,6 +10979,7 @@
             left: slideWidth * index,
             behavior: reducedMotionQuery.matches ? 'auto' : 'smooth',
           });
+          trackDetailGalleryExpandByIndex(index);
           setDetailEditorialActiveDot(index);
           syncDetailEditorialVideoPlayback(index);
           syncDetailHeroBadgeVisibility(index);
@@ -10240,6 +11005,7 @@
       detailEditorialDotsFrameId = window.requestAnimationFrame(() => {
         detailEditorialDotsFrameId = 0;
         const activeIndex = getDetailEditorialActiveIndex();
+        trackDetailGalleryExpandByIndex(activeIndex);
         setDetailEditorialActiveDot(activeIndex);
         syncDetailEditorialVideoPlayback(activeIndex);
         syncDetailHeroBadgeVisibility(activeIndex);
@@ -10254,10 +11020,16 @@
     const media = resolveItemMedia(item);
     const isAvailable = item?.available !== false;
     const soldOutReason = normalizeText(item?.soldOutReason);
+    const categoryId = normalizeText(item?.category);
+    const categoryLabel =
+      normalizeText(item?.categoryLabel || resolveCategoryLabel(categoryId)) ||
+      formatFallbackLabel(categoryId);
 
     return {
       id: normalizeText(item?.id),
       title: normalizeText(item?.name || item?.id),
+      category: categoryId,
+      categoryLabel,
       description: resolveItemDescriptionText(item),
       price: normalizeText(item?.priceFormatted),
       available: isAvailable,
@@ -10298,6 +11070,10 @@
     const media = resolveItemMedia(item);
     const editorial = resolveDetailEditorialModel(item);
     const editorialAltBase = normalizeText(media.alt || item?.name || item?.id);
+    const categoryId = normalizeText(item?.category);
+    const categoryLabel =
+      normalizeText(item?.categoryLabel || resolveCategoryLabel(categoryId)) ||
+      formatFallbackLabel(categoryId);
     const manualEditorialSlides = buildDetailEditorialSlides(media.editorialSlides, editorialAltBase);
     const manualSlidesIncludeVideo = manualEditorialSlides.some((slide) => slide?.type === 'video');
     const configuredGallerySlides = buildDetailEditorialSlides(
@@ -10311,6 +11087,10 @@
         : manualEditorialSlides;
 
     editorialSlides = hydrateDetailEditorialSlidesWithLqip(item?.id, editorialSlides);
+    editorialSlides = editorialSlides.map((slide, index) => ({
+      ...slide,
+      mediaId: buildDetailMediaId(item?.id, slide, index),
+    }));
     const staticDetailHeroAsset = resolveStaticDetailHeroAsset(editorialSlides);
 
     const homeMenuDetailContext = await loadHomeMenuDetailContext();
@@ -10322,6 +11102,8 @@
     return {
       id: normalizeText(item?.id),
       title: normalizeText(item?.name || item?.id),
+      category: categoryId,
+      categoryLabel,
       description: resolveItemDescriptionText(item),
       price: formatDetailPrice(item),
       reviews: normalizeText(item?.reviews),
@@ -10674,7 +11456,7 @@
     state.tabsBound = true;
   };
 
-  const openDetailFromListCard = (itemId) => {
+  const openDetailFromListCard = (itemId, detailOrigin = MENU_DETAIL_ORIGIN_GRID) => {
     const normalizedItemId = normalizeText(itemId);
 
     if (!normalizedItemId) {
@@ -10706,6 +11488,8 @@
         fromMenuList: true,
         returnCategoryId,
         returnScrollY,
+        detailOrigin: normalizeText(detailOrigin) || MENU_DETAIL_ORIGIN_GRID,
+        detailDepthIndex: 1,
       },
       '',
       detailUrl
@@ -10762,6 +11546,112 @@
     };
   };
 
+  const canTrackCatalogItem = (itemId) =>
+    Boolean(itemId) && !normalizeText(itemId).startsWith('__menu-seed-');
+
+  const getMenuCardListContext = (article) => {
+    if (!(article instanceof HTMLElement)) {
+      return {
+        listId: 'menu_catalog',
+        listName: 'Menu',
+        listPosition: 0,
+      };
+    }
+
+    const grid = article.parentElement;
+    const section = article.closest('.menu-page-category');
+    const subgroup = article.closest('.menu-page-category__subgroup');
+    const sectionId = normalizeText(section?.getAttribute('data-category-id'));
+    const sectionTitle = normalizeText(
+      section?.querySelector('.menu-page-category__title')?.textContent
+    );
+    const subgroupId = normalizeText(subgroup?.dataset.sourceCategoryId);
+    const subgroupTitle = normalizeText(
+      subgroup?.querySelector('.menu-page-category__subgroup-title')?.textContent
+    );
+    const isSearchList = !section && normalizeText(state.renderedSearchQuery);
+    const trackableSiblings =
+      grid instanceof HTMLElement
+        ? Array.from(grid.querySelectorAll('.mas-pedidas-card[data-menu-item-id]')).filter(
+            (node) => canTrackCatalogItem(node.getAttribute('data-menu-item-id'))
+          )
+        : [];
+
+    if (isSearchList) {
+      return {
+        listId: MENU_IMPRESSION_LIST_SEARCH,
+        listName: MENU_IMPRESSION_LIST_SEARCH_NAME,
+        listPosition: trackableSiblings.indexOf(article) + 1,
+      };
+    }
+
+    if (sectionId && subgroupId) {
+      return {
+        listId: `menu_${sectionId}_${subgroupId}`,
+        listName: subgroupTitle || sectionTitle || subgroupId,
+        listPosition: trackableSiblings.indexOf(article) + 1,
+      };
+    }
+
+    if (sectionId) {
+      return {
+        listId: `menu_${sectionId}`,
+        listName: sectionTitle || sectionId,
+        listPosition: trackableSiblings.indexOf(article) + 1,
+      };
+    }
+
+    return {
+      listId: 'menu_catalog',
+      listName: 'Menu',
+      listPosition: trackableSiblings.indexOf(article) + 1,
+    };
+  };
+
+  const observeMenuCardImpression = (article, item) => {
+    const itemId = normalizeText(item?.id || article?.dataset?.menuItemId);
+
+    if (!menuCommerceImpressionObserver || !(article instanceof HTMLElement) || !canTrackCatalogItem(itemId)) {
+      return;
+    }
+
+    const registerObservation = (attempt = 0) => {
+      if (!(article instanceof HTMLElement)) {
+        return;
+      }
+
+      if (!article.isConnected) {
+        if (attempt >= 8) {
+          return;
+        }
+
+        window.requestAnimationFrame(() => {
+          registerObservation(attempt + 1);
+        });
+        return;
+      }
+
+      menuCommerceImpressionObserver.observe(article, (node) => {
+        const listContext = getMenuCardListContext(node);
+
+        if (!listContext.listPosition || !listContext.listId || !listContext.listName) {
+          return null;
+        }
+
+        return {
+          item,
+          context: {
+            listId: listContext.listId,
+            listName: listContext.listName,
+            listPosition: listContext.listPosition,
+          },
+        };
+      });
+    };
+
+    registerObservation();
+  };
+
   const syncCardInteractionState = (
     { article, cardActionButton },
     nextCard,
@@ -10811,16 +11701,18 @@
         event.stopPropagation();
 
         if (nextCard.available === false) {
-          openDetailFromListCard(nextCard.id);
+          openDetailFromListCard(nextCard.id, MENU_DETAIL_ORIGIN_GRID);
           return;
         }
 
         const sourceImage = resolveCardAddSourceImage(baseImage, hoverImage);
-        void runMenuCartVisualAdd(sourceImage, nextCard.id);
+        void runMenuCartVisualAdd(sourceImage, nextCard.id, DETAIL_ADD_QTY_MIN, {
+          detailOrigin: MENU_DETAIL_ORIGIN_GRID,
+        });
         return;
       }
 
-      openDetailFromListCard(nextCard.id);
+      openDetailFromListCard(nextCard.id, MENU_DETAIL_ORIGIN_GRID);
     });
 
     cardActionButton.addEventListener('keydown', (event) => {
@@ -10836,12 +11728,14 @@
       event.stopPropagation();
 
       if (nextCard.available === false) {
-        openDetailFromListCard(nextCard.id);
+        openDetailFromListCard(nextCard.id, MENU_DETAIL_ORIGIN_GRID);
         return;
       }
 
       const sourceImage = resolveCardAddSourceImage(baseImage, hoverImage);
-      void runMenuCartVisualAdd(sourceImage, nextCard.id);
+      void runMenuCartVisualAdd(sourceImage, nextCard.id, DETAIL_ADD_QTY_MIN, {
+        detailOrigin: MENU_DETAIL_ORIGIN_GRID,
+      });
     });
 
     article.addEventListener('click', (event) => {
@@ -10854,7 +11748,7 @@
         return;
       }
 
-      openDetailFromListCard(nextCard.id);
+      openDetailFromListCard(nextCard.id, MENU_DETAIL_ORIGIN_GRID);
     });
 
     article.addEventListener('keydown', (event) => {
@@ -10867,7 +11761,7 @@
       }
 
       event.preventDefault();
-      openDetailFromListCard(nextCard.id);
+      openDetailFromListCard(nextCard.id, MENU_DETAIL_ORIGIN_GRID);
     });
 
     article.addEventListener(
@@ -10902,15 +11796,22 @@
       return;
     }
 
-    if (mediaContainer._hasSettledMediaLoad) {
+    const alreadyReady = mediaContainer.classList.contains('is-media-ready');
+    const lqipSrc = normalizeText(
+      lqipImage instanceof HTMLImageElement ? lqipImage.getAttribute('src') : ''
+    );
+    const lqipStillVisible =
+      lqipImage instanceof HTMLImageElement &&
+      !lqipImage.hidden &&
+      Boolean(lqipSrc);
+
+    if (mediaContainer._hasSettledMediaLoad && alreadyReady && !lqipStillVisible) {
       return;
     }
 
-    const hasLqip =
-      lqipImage instanceof HTMLImageElement &&
-      !lqipImage.hidden &&
-      Boolean(normalizeText(lqipImage.getAttribute('src')));
+    const hasLqip = lqipStillVisible;
 
+    clearCardLqipTimers(mediaContainer);
     mediaContainer._hasSettledMediaLoad = true;
     mediaContainer.classList.remove('is-media-loading');
 
@@ -11004,6 +11905,58 @@
 
       reconcileCardMediaState(cardNode);
     });
+  };
+
+  const hasPendingCatalogCardMedia = (root = contentRoot) => {
+    if (!(root instanceof HTMLElement)) {
+      return false;
+    }
+
+    return Array.from(root.querySelectorAll('.mas-pedidas-card')).some((cardNode) => {
+      const parts = getCardParts(cardNode);
+      if (!parts) {
+        return false;
+      }
+
+      const baseSrc = normalizeText(parts.baseImage.getAttribute('src'));
+      if (parts.baseImage.hidden || !baseSrc) {
+        return false;
+      }
+
+      return !parts.mediaContainer.classList.contains('is-media-ready');
+    });
+  };
+
+  const scheduleCatalogCardMediaRecovery = (
+    root = contentRoot,
+    {
+      maxAttempts = CATALOG_CARD_MEDIA_RECOVERY_MAX_ATTEMPTS,
+      intervalMs = CATALOG_CARD_MEDIA_RECOVERY_INTERVAL_MS,
+    } = {}
+  ) => {
+    if (!(root instanceof HTMLElement)) {
+      return;
+    }
+
+    const recoveryToken = ++catalogCardMediaRecoveryToken;
+
+    const runAttempt = (attempt) => {
+      if (recoveryToken !== catalogCardMediaRecoveryToken) {
+        return;
+      }
+
+      reconcileCatalogCardMediaStates(root);
+
+      if (attempt >= maxAttempts || !hasPendingCatalogCardMedia(root)) {
+        return;
+      }
+
+      window.setTimeout(() => {
+        runAttempt(attempt + 1);
+      }, intervalMs);
+    };
+
+    runAttempt(0);
   };
 
   const populateCardNode = (
@@ -11142,6 +12095,7 @@
       { article, baseImage, hoverImage, cardActionButton },
       nextCard
     );
+    observeMenuCardImpression(article, nextCard);
   };
 
   const hydrateCardNode = (article, item, options = {}) => {
@@ -12318,6 +13272,7 @@
     state.renderedSearchSignature = renderSignature;
     state.renderedSearchQuery = query;
     const primedCount = primeInitialMobileCatalogCards(hydrationQueue, token);
+    scheduleCatalogCardMediaRecovery(contentRoot);
 
     return {
       token,
@@ -12361,6 +13316,7 @@
       setStatus('', { hide: true });
       state.renderedSearchSignature = renderSignature;
       state.renderedSearchQuery = query;
+      scheduleCatalogCardMediaRecovery(contentRoot);
       return;
     }
 
@@ -12378,9 +13334,26 @@
     setStatus('', { hide: true });
     state.renderedSearchSignature = renderSignature;
     state.renderedSearchQuery = query;
+    scheduleCatalogCardMediaRecovery(contentRoot);
   };
 
   const showListView = () => {
+    const activeDetailItemId = normalizeText(state.detailItemId || getRouteItemId());
+    const activeDetailItem = activeDetailItemId
+      ? state.itemsById.get(activeDetailItemId)
+      : null;
+
+    if (activeDetailItem) {
+      analyticsCommerce?.trackItemDetailClose?.(activeDetailItem, {
+        detailOrigin: normalizeText(state.detailOrigin) || MENU_DETAIL_ORIGIN_DIRECT,
+        detailDepthIndex: clampNumber(
+          Math.round(Number(state.detailDepthIndex) || 1),
+          1,
+          9
+        ),
+      });
+    }
+
     if (menuPageBody instanceof HTMLElement) {
       menuPageBody.setAttribute('data-menu-page-view', 'list');
       menuPageBody.removeAttribute('data-menu-detail-hero');
@@ -12390,7 +13363,10 @@
       closeCompareModal({ restoreFocus: false, immediate: true });
     }
 
+    disconnectDetailEditorialTracking();
     state.detailItemId = '';
+    state.detailOrigin = '';
+    state.detailDepthIndex = 0;
     state.compareSearchQuery = '';
     if (compareSearchInput instanceof HTMLInputElement) {
       compareSearchInput.value = '';
@@ -12408,9 +13384,7 @@
     listView.hidden = false;
     setDetailStatus('', { hide: true });
     updatePageTitle();
-    window.requestAnimationFrame(() => {
-      reconcileCatalogCardMediaStates(contentRoot);
-    });
+    scheduleCatalogCardMediaRecovery(contentRoot);
 
     const renderedCategories = getRenderedCategories();
     const activeId = renderedCategories.some(
@@ -12649,6 +13623,7 @@
       closeCompareModal({ restoreFocus: false, immediate: true });
     }
 
+    disconnectDetailEditorialTracking();
     hideDetailInfoChipTooltip({ immediate: true });
 
     const renderToken = ++detailRenderToken;
@@ -12866,6 +13841,21 @@
     setDetailStatus('', { hide: true });
     showDetailView();
     updatePageTitle(detail.title);
+    const detailHistoryState = toHistoryStateObject(window.history.state);
+    state.detailOrigin =
+      normalizeText(detailHistoryState.detailOrigin) ||
+      (detailHistoryState.fromMenuList ? MENU_DETAIL_ORIGIN_GRID : MENU_DETAIL_ORIGIN_DIRECT);
+    state.detailDepthIndex = clampNumber(
+      Math.round(Number(detailHistoryState.detailDepthIndex) || 1),
+      1,
+      9
+    );
+    analyticsCommerce?.trackItemDetailOpen?.(detail, {
+      detailOrigin: state.detailOrigin,
+      detailDepthIndex: state.detailDepthIndex,
+    });
+    syncDetailEditorialTracking(detail);
+    syncDetailPerformanceTracking(detail);
 
     window.requestAnimationFrame(() => {
       if (
@@ -12923,6 +13913,7 @@
     if (!requestedItemId) {
       showListView();
       restoreListScrollFromHistory();
+      markMenuListPerformanceReady();
       lastRenderedRouteItemId = '';
       return;
     }
@@ -12935,6 +13926,7 @@
       window.history.replaceState({}, '', toMenuListUrl());
       setStatus('El ítem solicitado no existe.', { isError: true });
       showListView();
+      markMenuListPerformanceReady();
       window.requestAnimationFrame(() => {
         emitMenuDetailReady({
           itemId: requestedItemId,
@@ -13138,7 +14130,9 @@
         DETAIL_ADD_QTY_MIN,
         DETAIL_ADD_QTY_MAX
       );
-      void runMenuCartVisualAdd(sourceImage, itemId, requestedQuantity);
+      void runMenuCartVisualAdd(sourceImage, itemId, requestedQuantity, {
+        detailOrigin: MENU_DETAIL_ORIGIN_ROUTE,
+      });
     });
   }
 
@@ -13605,7 +14599,9 @@
         const action = normalizeText(actionButton.dataset.accountAction);
         if (action === 'increase') {
           pulseAccountStepperGlyph(actionButton);
-          addItemToAccount(itemId, 1);
+          addItemToAccount(itemId, 1, {
+            detailOrigin: MENU_DETAIL_ORIGIN_ACCOUNT,
+          });
           return;
         }
 
@@ -13613,16 +14609,51 @@
           pulseAccountStepperGlyph(actionButton);
           const nextQuantity = getAccountQuantity(itemId) - 1;
           if (nextQuantity <= 0) {
-            removeItemFromAccount(itemId);
+            removeItemFromAccount(itemId, {
+              detailOrigin: MENU_DETAIL_ORIGIN_ACCOUNT,
+            });
           } else {
-            setAccountItemQuantity(itemId, nextQuantity);
+            setAccountItemQuantity(itemId, nextQuantity, {
+              detailOrigin: MENU_DETAIL_ORIGIN_ACCOUNT,
+            });
           }
           return;
         }
 
         if (action === 'remove') {
-          removeItemFromAccount(itemId);
+          removeItemFromAccount(itemId, {
+            detailOrigin: MENU_DETAIL_ORIGIN_ACCOUNT,
+          });
         }
+        return;
+      }
+
+      if (target.closest('[data-account-checkout]')) {
+        event.preventDefault();
+        if (!(accountCheckoutButton instanceof HTMLButtonElement) || accountCheckoutButton.disabled) {
+          return;
+        }
+
+        const snapshot = buildMenuCommerceSnapshot();
+        if (!snapshot || !snapshot.items.length) {
+          return;
+        }
+
+        const checkoutUrl = buildWhatsappCheckoutUrl(
+          restaurantCommerceContact?.whatsappUrl,
+          buildMenuAccountWhatsappMessage(snapshot)
+        );
+        accountCheckoutButton.dataset.analyticsTarget = checkoutUrl;
+        window.open(checkoutUrl, '_blank', 'noopener');
+        Promise.all([
+          analyticsCommerce?.trackBeginCheckout?.(snapshot.items, { snapshot }),
+          analyticsCommerce?.trackPurchase?.(snapshot.items, { snapshot }),
+        ]).finally(() => {
+          analyticsSdk?.flush?.({
+            reason: 'menu_account_checkout',
+            useBeacon: true,
+          });
+        });
         return;
       }
 
@@ -13871,6 +14902,9 @@
     hideAccountRemovalToast();
     hydrateAccountSession();
   });
+
+  syncAccountCheckoutTarget();
+  void loadRestaurantCommerceContact();
 
   void (async () => {
     try {

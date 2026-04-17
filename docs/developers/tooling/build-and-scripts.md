@@ -1,194 +1,147 @@
 # Build Tools and Scripts
 
-> **Read this doc when** running the dev server, using validation scripts, or working with any file in `scripts/`, `package.json`, `_redirects`, `_headers`, or `netlify.toml`.
-
----
+> **Read this doc when** running the dev server, building Cloudflare outputs, using validation scripts, or touching files in `scripts/`, `package.json`, `_redirects`, `_headers`, or `wrangler.*.jsonc`.
 
 ## Overview
 
-The Figata repository has **no compile/build step** for production code. The public site and admin panel run as static files, while deploy tooling ships the public site to Cloudflare Pages (primary) and can also target Netlify/GitHub Pages fallback flows. All tooling is for **local development**, **data validation**, **static packaging**, and **analysis**.
+The repo is still mostly static HTML/CSS/JS, but it now has an explicit **Cloudflare packaging step** for production deployment:
+- `dist-public/` for the public site + Pages worker
+- `dist-admin/` for the Admin + Pages worker
+- `dist-jobs/` for the scheduled Worker runtime
 
-| Aspect | Details |
-|--------|---------|
-| Dev server | `scripts/dev-server.js` (Node.js HTTP server) |
-| Validation | 6 validation scripts in `scripts/` |
-| Analysis | `check_admin_ui.js`, `dynamic_probe.js` |
-| Cloudflare Pages | `_redirects` (deep-link rewrites), `_headers` (cache policy) |
-| Netlify | `netlify.toml` + `netlify/functions/publish.js` (admin publish pipeline) |
-| GitHub Pages | `.github/workflows/github-pages.yml` packages the public site into a Pages artifact |
-| Package manager | npm (`package.json`) |
-| Runtime dependency | playwright (used for analysis/testing, not production) |
-
----
+| Area | Files |
+|------|------|
+| Local dev | `scripts/dev-server.js` |
+| Cloudflare public build | `scripts/build-cloudflare-public.js`, `wrangler.public.jsonc` |
+| Cloudflare admin build | `scripts/build-cloudflare-admin.js`, `wrangler.admin.jsonc` |
+| Cloudflare jobs build | `scripts/build-cloudflare-jobs.js`, `wrangler.jobs.jsonc` |
+| Shared bundle helper | `scripts/build-cloudflare-utils.js` |
+| Validation | `scripts/validate-*.js` |
+| Analytics/report jobs | `scripts/run-analytics-*.js` |
 
 ## npm Scripts
 
-From `package.json`:
+| Script | Purpose |
+|------|---------|
+| `npm run dev` | Start local dev server |
+| `npm run build-cloudflare-public` | Build `dist-public/` |
+| `npm run build-cloudflare-admin` | Build `dist-admin/` |
+| `npm run build-cloudflare-jobs` | Build `dist-jobs/worker.mjs` |
+| `npm run build:cloudflare` | Run all three Cloudflare builds |
+| `npm run generate:home-featured` | Regenerate `data/home-featured.json` |
+| `npm run analytics:curate` | Build local curated analytics facts |
+| `npm run analytics:health-report` | Build quality snapshot + health report |
+| `npm run analytics:kpis` | Build KPI snapshot artifacts |
+| `npm run analytics:report:weekly` | Generate weekly AI report |
+| `npm run analytics:report:monthly` | Generate monthly AI report |
+| `npm run analytics:optimization` | Build optimization artifacts |
+| `npm run validate:*` | Run schema/runtime validators |
+| `npm run check:admin-ui` | Validate admin DOM IDs |
+| `npm test` | Menu traits + allergens smoke tests |
 
-| Script | Command | Purpose |
-|--------|---------|---------|
-| `dev` | `node scripts/dev-server.js` | Start local development server |
-| `generate:home-featured` | `node scripts/generate-home-featured.js` | Derive `data/home-featured.json` + responsive homepage featured assets from canonical data |
-| `test` | `node scripts/test-menu-traits.js && node scripts/test-menu-allergens.js` | Run menu traits + allergens smoke tests |
-| `validate:menu` | `node scripts/validate-menu.js` | Validate `data/menu.json` |
-| `validate:home` | `node scripts/validate_home_json.js` | Validate `data/home.json` |
-| `validate:media` | `node scripts/validate_media_json.js` | Validate `data/media.json` |
-| `validate:ingredients` | `node scripts/validate-ingredients.js` | Validate `data/ingredients.json` |
-| `validate:categories` | `node scripts/validate-categories.js` | Validate `data/categories.json` |
-| `validate:restaurant` | `node scripts/validate-restaurant.js` | Validate `data/restaurant.json` |
-| `check:admin-ui` | `node scripts/check_admin_ui.js` | Check admin UI element IDs |
+## Local Dev Server
 
----
-
-## Dev Server (`scripts/dev-server.js`)
-
-A lightweight Node.js HTTP server (297 lines, zero external dependencies).
-
-### Usage
+Run:
 
 ```bash
 npm run dev
-# → Homepage running at http://127.0.0.1:5173
 ```
 
-Environment variables:
-- `HOST` — default `127.0.0.1`
-- `PORT` — default `5173`
+Default URL:
 
-### Features
-
-| Feature | Details |
-|---------|---------|
-| **Static file serving** | Serves all files from repo root with correct MIME types |
-| **Directory index** | Serves `index.html` for directory requests (e.g., `/admin/app/`) |
-| **Path safety** | Validates all paths stay within repo root (prevents traversal) |
-| **Streaming** | Uses `fs.createReadStream()` for efficient file delivery |
-| **Derived featured sync** | Regenerates `data/home-featured.json` on startup, on local draft saves, and whenever `/data/home-featured.json` is requested |
-
-### Special Endpoints
-
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/__local/save-drafts` | POST | Write draft data directly to `data/*.json` files |
-| `/__local/menu-media-paths` | GET | List all WebP/SVG files in `assets/menu/` |
-
-#### `/__local/save-drafts`
-Accepts JSON body with keys: `menu`, `availability`, `home` (required), plus optional `ingredients`, `categories`, `media`. Writes each key's value as pretty-printed JSON to the corresponding `data/*.json` file, then regenerates `data/home-featured.json`.
-
-Body size limit: 5 MB.
-
-#### `/__local/menu-media-paths`
-Returns `{ root: "assets/menu", paths: [...] }` — a sorted list of all `.webp` and `.svg` files under `assets/menu/`, with paths relative to repo root. Used by the admin panel's media picker to show available images.
-
-### MIME Types Supported
-
-`.html`, `.css`, `.js`, `.json`, `.svg`, `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.ico`, `.woff`, `.woff2`
-
----
-
-## Validation Scripts
-
-All validators read a `data/*.json` file and check its structure against expected rules. They exit with code 0 on success, non-zero on failure. Output goes to stdout.
-
-### `scripts/validate-ingredients.js` (62 lines)
-
-Uses `shared/ingredients-contract.js` to validate `data/ingredients.json`.
-
-```bash
-npm run validate:ingredients
+```txt
+http://127.0.0.1:5173
 ```
 
-Checks: required fields, valid icon/tag/allergen references, alias format, cross-reference integrity.
+### Local API surface
 
-### `scripts/validate-categories.js` (61 lines)
+The dev server now mirrors the Cloudflare routes used in production:
 
-Uses `shared/categories-contract.js` to validate `data/categories.json`.
+| Endpoint | Method | Notes |
+|------|--------|-------|
+| `/api/session` | GET | Returns local bypass session payload |
+| `/api/publish` | POST | Returns `501` in local dev |
+| `/api/analytics/collect` | POST | Alias to local analytics ingest |
+| `/api/analytics/snapshot` | GET | Alias to local inspect snapshot |
+| `/api/analytics/ai-analyst` | POST | Alias to local AI analyst endpoint |
+| `/__local/save-drafts` | POST | Writes drafts to local disk |
+| `/__analytics/collect` | POST | Local analytics ingest |
+| `/__analytics/inspect` | GET | Local analytics snapshot |
+| `/__analytics/ai-analyst` | POST | Local AI analyst |
 
-```bash
-npm run validate:categories
-```
+That split lets the Admin behave like production while still supporting local-only tooling.
 
-Checks: required fields, unique IDs, valid order values, cross-reference with menu sections.
+## Cloudflare Build Outputs
 
-### `scripts/validate_home_json.js` (441 lines)
+### `dist-public/`
 
-Standalone validator for `data/home.json`. The largest validator.
+Built by `scripts/build-cloudflare-public.js`.
 
-```bash
-npm run validate:home
-```
+Includes:
+- public static site files
+- `_headers`
+- `_redirects`
+- generated `_worker.js` for `/api/analytics/collect`
 
-Checks: hero section structure, popular section (featured IDs exist in menu), events structure, testimonials structure, footer columns/links/socials, delivery platforms, navbar links, announcement structure.
+### `dist-admin/`
 
-Side effect: regenerates `data/home-featured.json` after a successful validation pass so homepage featured order/media stay in sync with `home.json`.
+Built by `scripts/build-cloudflare-admin.js`.
 
-### `scripts/validate_media_json.js` (264 lines)
+Includes:
+- `admin/app/`
+- `assets/`
+- `data/`
+- `shared/`
+- root redirect page to `/admin/app/`
+- generated `_worker.js` for admin APIs
 
-Validates `data/media.json` against `data/menu.json` and file system.
+Not included:
+- `admin/cms/`
 
-```bash
-npm run validate:media
-```
+### `dist-jobs/`
 
-Checks: all menu items have media entries, all media items reference valid menu items, variant completeness (card/hover/modal), broken file paths, duplicate paths.
+Built by `scripts/build-cloudflare-jobs.js`.
 
-Side effect: regenerates `data/home-featured.json` after a successful validation pass so homepage featured variants stay aligned with media/image changes.
+Includes:
+- `worker.mjs` for scheduled AI reports / optimization refresh
+- named Durable Object export for publish coordination
 
-### `scripts/validate-restaurant.js` (179 lines)
-
-Validates `data/restaurant.json` structure.
-
-```bash
-npm run validate:restaurant
-```
-
-Checks: required fields (name, phone, address, opening hours), opening hours format, address completeness.
-
----
-
-## Analysis Scripts
-
-### `scripts/check_admin_ui.js` (63 lines)
-
-Scans `admin/app/index.html` for element IDs and cross-references them with `admin/app/app.js` to find:
-- IDs referenced in JS but missing from HTML
-- IDs in HTML but never referenced in JS
-
-```bash
-npm run check:admin-ui
-```
-
-### `scripts/dynamic_probe.js` (245 lines)
-
-Runtime analysis tool using Playwright. Loads the admin panel in a headless browser and:
-- Inventories all registered modules on `window.FigataAdmin`
-- Lists all exported functions per module
-- Checks for naming conflicts
-- Reports the state object shape
-
-Requires Playwright to be installed (`npm install`).
-
-```bash
-node scripts/dynamic_probe.js
-```
-
----
-
-## Hosting Configuration Files
-
-### Cloudflare Pages (`_redirects`, `_headers`)
-
-Cloudflare Pages uses root-level flat files in the publish output:
+## Wrangler Configs
 
 | File | Purpose |
 |------|---------|
-| `_redirects` | Handles deep-link rewrites for `/menu/:item` to `menu/index.html` while preserving static menu CSS requests |
-| `_headers` | Forces all repo-served runtime assets and `data/*.json` to revalidate so deploys do not depend on manual cache-busting |
+| `wrangler.public.jsonc` | Pages config for `figata-public` |
+| `wrangler.admin.jsonc` | Pages config for `figata-admin` |
+| `wrangler.jobs.jsonc` | Worker config for `figata-jobs` |
 
-These files are versioned so Cloudflare behavior stays reproducible across deploys.
+Important bindings across those configs:
+- `ANALYTICS_BUCKET` -> R2 bucket for raw events + artifacts
+- `PUBLISH_COORDINATOR` -> Durable Object binding for publish lock
+- `FIGATA_ACCESS_*` vars -> Access validation config
+- `OPENAI_API_KEY`, `GITHUB_TOKEN`, `GITHUB_OWNER`, `GITHUB_REPO` -> worker secrets/vars
 
-### Netlify (`netlify.toml`)
+## Validation Guidance
 
-`netlify.toml` still controls Netlify runtime behavior (fallback full-stack hosting and admin/publish flow support), including cache headers and legacy redirect handling for Netlify deploys.
+Good default validation sweep after Cloudflare/runtime changes:
 
-The Netlify function at `netlify/functions/publish.js` is auto-detected from the conventional `netlify/functions/` directory.
+```bash
+npm run build:cloudflare
+npm run validate:analytics
+npm run validate:analytics-ai-analyst
+npm run validate:analytics-ai-reports
+npm run check:admin-ui
+npm test
+```
+
+If the change touches publish/data contracts, also run:
+
+```bash
+npm run validate:restaurant
+npm run validate:reservations
+npm run validate:media
+```
+
+## Legacy Notes
+
+- `netlify.toml` and `netlify/functions/*` are legacy/archive context and are no longer the supported runtime path.
+- `admin/cms/` is legacy/archive and excluded from Cloudflare deploys.

@@ -4,6 +4,7 @@
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const grid = document.getElementById('mas-pedidas-grid');
   const featuredApi = window.FigataData?.homeFeatured;
+  const analyticsCommerce = window.FigataAnalyticsCommerce || null;
   const publicPaths = window.FigataPublicPaths || null;
 
   if (!desktopMedia.matches || !grid || !featuredApi?.getFeaturedItemMap) {
@@ -642,6 +643,10 @@
 
       detailsButton.addEventListener('click', () => {
         primeCardAssets();
+        analyticsCommerce?.trackItemDetailOpen?.(card, {
+          detailOrigin: 'home_featured_preview',
+          detailDepthIndex: 1,
+        });
         void openPreview({
           ...card,
           priceFormatted: card.priceFormatted || `$${Math.round(Number(card.price || 0)).toLocaleString('es-DO')}`,

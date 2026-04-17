@@ -3059,6 +3059,33 @@ html[data-account-card-vt="active"]::view-transition-new(menu-account-toast) {
   font-weight: 700;
 }
 
+.menu-account-modal__actions {
+  margin-top: 18px;
+  display: grid;
+  gap: 10px;
+}
+
+.menu-account-modal__checkout {
+  width: 100%;
+  min-width: 0;
+}
+
+.menu-account-modal__checkout:disabled {
+  background: rgba(182, 116, 60, 0.44);
+  color: rgba(255, 250, 246, 0.72);
+  cursor: not-allowed;
+}
+
+.menu-account-modal__checkout-note {
+  margin: 0;
+  color: rgba(240, 239, 237, 0.68);
+  font-size: 0.86rem;
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: -0.008em;
+  text-wrap: balance;
+}
+
 .menu-account-modal__toast {
   position: absolute;
   right: 12px;

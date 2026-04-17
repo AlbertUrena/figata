@@ -1,0 +1,46 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "figata-admin",
+  "pages_build_output_dir": "./dist-admin",
+  "compatibility_date": "2026-04-16",
+  "compatibility_flags": ["nodejs_compat"],
+  "r2_buckets": [
+    {
+      "binding": "ANALYTICS_BUCKET",
+      "bucket_name": "figata-analytics"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "PUBLISH_COORDINATOR",
+        "class_name": "PublishCoordinator",
+        "script_name": "figata-jobs"
+      }
+    ]
+  },
+  "vars": {
+    "ANALYTICS_BUCKET_NAME": "figata-analytics",
+    "FIGATA_ANALYTICS_RAW_PREFIX": "raw",
+    "FIGATA_ANALYTICS_ARTIFACT_PREFIX": "artifacts",
+    "FIGATA_ACCESS_TEAM_DOMAIN": "https://trattoriafigata.cloudflareaccess.com",
+    "FIGATA_ENV": "production",
+    "FIGATA_ADMIN_HOST": "admin.trattoriafigata.com"
+  },
+  "env": {
+    "preview": {
+      "vars": {
+        "FIGATA_ENV": "preview",
+        "FIGATA_ADMIN_HOST": "preview-admin.trattoriafigata.com",
+        "FIGATA_ACCESS_ALLOWED_AUDS": "<preview-admin-access-aud>"
+      }
+    },
+    "production": {
+      "vars": {
+        "FIGATA_ENV": "production",
+        "FIGATA_ADMIN_HOST": "admin.trattoriafigata.com",
+        "FIGATA_ACCESS_ALLOWED_AUDS": "<admin-access-aud>"
+      }
+    }
+  }
+}

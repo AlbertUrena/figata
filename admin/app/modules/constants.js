@@ -17,6 +17,7 @@
       availability: "/data/availability.json",
       home: "/data/home.json",
       restaurant: "/data/restaurant.json",
+      reservations: "/data/reservations-config.json",
       media: "/data/media.json"
     },
 
@@ -30,11 +31,17 @@
     LOCAL_DRAFTS_INGREDIENTS_KEY: "figata_admin_drafts_ingredients",
     LOCAL_DRAFTS_CATEGORIES_KEY: "figata_admin_drafts_categories",
     LOCAL_DRAFTS_RESTAURANT_KEY: "figata_admin_drafts_restaurant",
+    LOCAL_DRAFTS_RESERVATIONS_KEY: "figata_admin_drafts_reservations",
     LOCAL_DRAFTS_MEDIA_KEY: "figata_admin_drafts_media",
     LOCAL_DRAFTS_FLAG_KEY: "figata_admin_has_drafts",
     LOCAL_SAVE_DRAFTS_ENDPOINT: "/__local/save-drafts",
     MENU_MODAL_PLACEHOLDER_IMAGE: "assets/menu/placeholders/modal.svg",
     DEV_AUTH_BYPASS_KEY: "figata_admin_dev_auth_bypass",
+    CLOUDFLARE_SESSION_ENDPOINT: "/api/session",
+    CLOUDFLARE_PUBLISH_ENDPOINT: "/api/publish",
+    CLOUDFLARE_ANALYTICS_SNAPSHOT_ENDPOINT: "/api/analytics/snapshot",
+    CLOUDFLARE_AI_ANALYST_ENDPOINT: "/api/analytics/ai-analyst",
+    CLOUDFLARE_LOGOUT_PATH: "/cdn-cgi/access/logout",
 
     UX_TIMING: {
       accordionSwitchDelayMs: 260,

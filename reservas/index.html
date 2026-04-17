@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="es" class="reservas-page-root">
+<head>
+  <meta charset="UTF-8">
+  <base href="../">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#191919">
+  <script src="shared/public-navbar-bootstrap.js"></script>
+  <title>Reservas | Figata Pizza &amp; Wine</title>
+  <meta
+    name="description"
+    content="Reserva tu mesa en Figata con un flujo guiado por pasos para personas, fecha, hora, zona y datos de contacto.">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="reservas/reservas.css">
+</head>
+<body class="reservas-page-body home-page-body" data-nav-collapse-threshold="420">
+  <header class="site-header" data-public-navbar-host data-public-navbar-hide-cta>
+    <nav class="navbar" aria-label="Navegación principal">
+      <div class="navbar__inner">
+        <a class="navbar__brand" href="./" aria-label="Figata Pizza &amp; Wine">
+          <img class="navbar__brand-icon" src="assets/svg-icons/logo-icon.svg" alt="" aria-hidden="true">
+          <img class="navbar__brand-text" src="assets/svg-icons/logo-text.svg" alt="" aria-hidden="true">
+        </a>
+
+        <ul class="navbar__links" role="list">
+          <li><a href="menu/">Menú</a></li>
+          <li><a href="eventos/">Eventos</a></li>
+          <li><a href="nosotros/">Nosotros</a></li>
+          <li><a href="#ubicacion">Ubicación</a></li>
+          <li><a href="#contacto">Contacto</a></li>
+        </ul>
+
+        <div class="navbar__actions"></div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="reservas-main" data-reservas-app>
+    <div class="top-bg reservas-top-bg">
+      <section class="hero reservas-hero" id="inicio" aria-labelledby="reservas-hero-title">
+        <div class="hero__media">
+          <div class="hero__content reservas-hero__content">
+            <p class="cta-button btn-liquid-glass cta-button--eyebrow hero__eyebrow reservas-hero__eyebrow">
+              <span>Reservas Figata</span>
+            </p>
+
+            <h1 class="hero__title" id="reservas-hero-title">
+              Reserva tu mesa
+            </h1>
+
+            <p class="hero__subtitle reservas-hero__subtitle">
+              Elige cuántos vienen, cuándo prefieren visitarnos y el lugar ideal que mejor se adapte a tu visita.
+            </p>
+          </div>
+        </div>
+
+        <div class="hero__middle-media reservas-hero__middle-media" aria-hidden="true">
+          <img src="assets/home/middle-hero.webp" alt="" loading="eager" decoding="async" fetchpriority="high">
+        </div>
+      </section>
+
+      <section class="hero-mobile-panel reservas-hero-mobile-panel" aria-label="Introducción de reservas">
+        <p class="hero-mobile-title">Reserva tu mesa</p>
+        <p class="hero__subtitle hero__subtitle--mobile reservas-hero__subtitle reservas-hero__subtitle--mobile">
+          Elige cuántos vienen, cuándo prefieres visitarnos y el lugar ideal que mejor se adapte a tu visita.
+        </p>
+      </section>
+    </div>
+
+    <section class="reservas-stage" aria-label="Flujo de reserva">
+      <div class="reservas-stage__meta">
+        <div class="reservas-stage__progress" data-reservas-progress aria-hidden="true"></div>
+      </div>
+
+      <div class="reservas-stage__cards" data-reservas-cards></div>
+    </section>
+
+    <footer class="reservas-footer" data-reservas-footer>
+      <div class="reservas-footer__actions">
+        <button class="reservas-footer__secondary" type="button" data-reservas-back>
+          Atrás
+        </button>
+      </div>
+
+      <button class="reservas-footer__primary" type="button" data-reservas-next>
+        Siguiente
+      </button>
+    </footer>
+  </main>
+
+  <script src="shared/public-paths.js"></script>
+  <script src="shared/public-navbar.js"></script>
+  <script src="js/navbar-collapse.js"></script>
+  <script src="js/reservas-page.js"></script>
+</body>
+</html>

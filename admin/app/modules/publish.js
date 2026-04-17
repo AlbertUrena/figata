@@ -1,12 +1,14 @@
 // admin/app/modules/publish.js
 // Extracted from admin/app/app.js — Phase 4 refactor
-// Publish flow: validate → JWT → fetch → update UI → reset buttons.
+// Publish flow: validate → fetch → update UI → reset buttons.
 // Receives all dependencies via a context object.
 
 (function () {
   "use strict";
 
   var ns = window.FigataAdmin = window.FigataAdmin || {};
+  var constants = ns.constants || {};
+  var PUBLISH_ENDPOINT = constants.CLOUDFLARE_PUBLISH_ENDPOINT || "/api/publish";
 
   async function publishChanges(target, ctx) {
     var publishTarget = target === "production" ? "production" : "preview";
@@ -18,6 +20,9 @@
     ctx.ensureMediaStore();
     if (typeof ctx.ensureRestaurantDraft === "function") {
       ctx.ensureRestaurantDraft();
+    }
+    if (typeof ctx.ensureReservationsDraft === "function") {
+      ctx.ensureReservationsDraft();
     }
     if (typeof ctx.ensureMediaDraft === "function") {
       ctx.ensureMediaDraft();
@@ -32,6 +37,7 @@
       !ctx.state.drafts.ingredients ||
       !ctx.state.drafts.categories ||
       !ctx.state.drafts.restaurant ||
+      !ctx.state.drafts.reservations ||
       !ctx.state.drafts.media
     ) {
       ctx.setCurrentEditorStatus("Error: no hay drafts para publicar.");
@@ -51,16 +57,6 @@
       if (!confirmed) {
         return;
       }
-    }
-
-    var identity = ns.auth.getIdentity();
-    var user = identity && typeof identity.currentUser === "function"
-      ? identity.currentUser()
-      : null;
-    if (!user || typeof user.jwt !== "function") {
-      ctx.setCurrentEditorStatus("Inicia sesión para publicar.");
-      ctx.setDataStatus("Publicacion bloqueada: inicia sesion para publicar.");
-      return;
     }
 
     var ingredientsValidation = ctx.validateIngredientsDraftData(ctx.state.drafts.ingredients);
@@ -121,6 +117,17 @@
       }
     }
 
+    if (window.FigataReservationsContract) {
+      var reservationsValidation = window.FigataReservationsContract.validateReservationsContract(ctx.state.drafts.reservations);
+      if (reservationsValidation.errors.length) {
+        ctx.setCurrentEditorStatus(
+          "No se puede publicar: corrige " + reservationsValidation.errors.length + " errores en Reservations."
+        );
+        ctx.setDataStatus("Publicacion bloqueada: Reservations tiene errores de validacion.");
+        return;
+      }
+    }
+
     ctx.state.isPublishing = true;
     var publishButtonSets = typeof ctx.getAllPublishButtonSets === "function"
       ? ctx.getAllPublishButtonSets()
@@ -160,12 +167,11 @@
     ctx.setDataStatus(publishTarget === "production" ? "Publicando produccion..." : "Publicando preview...");
 
     try {
-      var token = await user.jwt();
-      var response = await fetch("/.netlify/functions/publish", {
+      var response = await fetch(PUBLISH_ENDPOINT, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer " + token
+          "X-Requested-With": "XMLHttpRequest"
         },
         body: JSON.stringify({
           menu: ctx.state.drafts.menu,
@@ -174,6 +180,7 @@
           ingredients: ingredientsPayloadForPublish,
           categories: ctx.state.drafts.categories,
           restaurant: ctx.state.drafts.restaurant,
+          reservations: ctx.state.drafts.reservations,
           media: ctx.state.drafts.media,
           target: publishTarget
         })

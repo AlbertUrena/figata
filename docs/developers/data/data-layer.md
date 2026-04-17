@@ -1,12 +1,12 @@
 # Data Layer
 
-> **Read this doc when** working with JSON data in `data/`, validation contracts in `shared/`, or any code that reads/writes menu, ingredient, category, home, or restaurant data.
+> **Read this doc when** working with JSON data in `data/`, validation contracts in `shared/`, or any code that reads/writes menu, ingredient, category, home, restaurant, or reservations data.
 
 ## Contents
 
 - [Overview](#overview)
-- [Data Files](#data-files) — menu, categories, ingredients, availability, home, home-featured, restaurant, media, media-variants, media-report
-- [Validation Contracts](#validation-contracts) — menu traits, menu allergens, menu sensory profile, ingredients, categories, restaurant, media
+- [Data Files](#data-files) — menu, categories, ingredients, availability, home, home-featured, restaurant, reservations-config, media, media-variants, media-report
+- [Validation Contracts](#validation-contracts) — menu traits, menu allergens, menu sensory profile, ingredients, categories, restaurant, reservations, media
 - [Data Flow](#data-flow) — from admin drafts to live site
 - [Key Rules](#key-rules)
 
@@ -14,9 +14,11 @@
 
 ## Overview
 
-The data layer consists of **10 JSON files** in `data/` that serve as the shared data store between the public website and the admin panel. These files are committed to Git and deployed statically. The admin panel modifies them through a publish pipeline (Netlify serverless function).
+The data layer consists of **11 JSON files** in `data/` that serve as the shared data store between the public website and the admin panel. These files are committed to Git and deployed statically. The admin panel modifies them through a Cloudflare-backed publish pipeline that commits changes to GitHub.
 
-The shared layer now includes a central **Menu Traits V2** engine, a separate **Menu Allergens** derivation engine, a structured **Menu Sensory Profile** contract, plus validation contracts for ingredients, categories, restaurant, and media. These modules are used by both the admin panel (client-side validation before publish) and the publish pipeline (server-side validation before commit).
+The shared layer now includes a central **Menu Traits V2** engine, a separate **Menu Allergens** derivation engine, a structured **Menu Sensory Profile** contract, plus validation contracts for ingredients, categories, restaurant, reservations, and media. These modules are used by both the admin panel (client-side validation before publish) and the publish pipeline (server-side validation before commit).
+
+Analytics architecture, event taxonomy, payload contracts, and governance rules now live separately in `shared/analytics-*.js` and are validated through `scripts/validate-analytics.js`. They are part of the runtime/platform layer, not the editable content data layer in `data/`.
 
 ---
 
@@ -442,6 +444,8 @@ Canonical ownership is:
       "id": "quattro_formaggi_truffle",
       "slug": "quattro-formaggi-truffle",
       "title": "Quattro Formaggi y Black Truffle",
+      "category": "pizza_autor",
+      "categoryLabel": "Pizza de Autor",
       "description": "Cuatro quesos italianos con crema de trufa aromática.",
       "previewDescription": "Cuatro quesos italianos con crema de trufa aromática.",
       "price": 800,
@@ -468,6 +472,8 @@ Canonical ownership is:
 **Key relationships:**
 - `sourceFeaturedIds[]` mirrors `home.popular.featuredIds` in order, after dedupe + limit
 - `items[].id` matches an existing menu item id from `data/menu.json`
+- `items[].category` mirrors the canonical menu item category id and is the analytics join key for commerce funnel events
+- `items[].categoryLabel` stores the editorial label resolved from `data/categories.json` or the menu subgroup fallback used by UI/analytics list reporting
 - `items[].cardImage*` is generated specifically for homepage card rendering; do not edit those paths by hand
 - `items[].hoverImage` and `items[].modalImage` are only consumed by the desktop `Detalles` preview
 - `items[].ingredients[]` is flattened during generation so the home no longer needs to fetch `data/ingredients.json`
@@ -519,6 +525,71 @@ Business information: name, phone, address, hours.
 **Read by:** `js/restaurant-config.js` (public site)
 
 **Validated by:** `shared/restaurant-contract.js`, `scripts/validate-restaurant.js`
+
+---
+
+### `data/reservations-config.json` — Reservation Rules & Static Config
+
+Static configuration for the `/reservas/` flow and the future reservations API. In the current V1 scope, reservations are **zone-based** (`interior`, `terraza`), not table-based.
+
+```
+{
+  "version": 1,
+  "schema": "figata.reservations.config.v1",
+  "timezone": "America/Santo_Domingo",
+  "currency": "DOP",
+  "zones": [
+    {
+      "id": "interior",
+      "label": "Interior",
+      "enabled": true,
+      "sortOrder": 1,
+      "partySize": { "min": 1, "max": 12 }
+    }
+  ],
+  "serviceWindows": {
+    "wed": [{ "start": "17:00", "end": "23:00" }],
+    "sun": [{ "start": "12:00", "end": "23:00" }]
+  },
+  "bookingRules": {
+    "confirmationMode": "manual",
+    "slotIntervalMinutes": 15,
+    "defaultDurationMinutes": 120,
+    "minAdvanceMinutes": 120,
+    "maxAdvanceDays": 30,
+    "gracePeriodMinutes": 15,
+    "notesMaxLength": 300,
+    "partySize": { "min": 1, "max": 12 }
+  },
+  "slotLimits": {
+    "interior": {
+      "maxReservationsPerSlot": 12,
+      "maxCoversPerSlot": 36
+    }
+  },
+  "statusCatalog": [
+    { "id": "pending", "label": "Pendiente", "publicLabel": "Pendiente" }
+  ],
+  "uiCopy": {
+    "hero": {
+      "title": "Reserva tu mesa",
+      "subtitle": "Elige cuántos vienen..."
+    }
+  }
+}
+```
+
+**Key relationships:**
+- `zones[].id` is the canonical zone identifier shared by the public reservations flow, the future API, and admin operations.
+- `serviceWindows` defines which weekdays expose time slots at all.
+- `bookingRules` defines slot interval, reservation duration, advance window, grace period, and party-size bounds.
+- `slotLimits[zoneId]` is the static capacity guardrail for each zone per slot.
+- `statusCatalog` is the canonical source for reservation lifecycle labels (`pending`, `confirmed`, `cancelled`, `rejected`, `no_show`).
+- `uiCopy` is the static copy surface for the public flow; the current admin/publish plumbing supports the JSON even though there is no dedicated editor panel yet.
+
+**Read by:** future reservations API/runtime and any UI that needs reservation rules or copy
+
+**Validated by:** `shared/reservations-contract.js`, `scripts/validate-reservations.js`
 
 ---
 
@@ -670,8 +741,50 @@ Validates the categories data structure. Checks:
 
 Both contracts used by:
 - `admin/app/app.js` → `validateIngredientsDraftData()`, `validateCategoriesDraftData()`
-- `netlify/functions/publish.js` → server-side validation before Git commit
+- `cloudflare/common/publish-service.js` → server-side validation before Git commit
 - `scripts/validate-ingredients.js`, `scripts/validate-categories.js` → CLI validation
+
+### `shared/restaurant-contract.js`
+
+Validates the restaurant metadata structure. Checks:
+- top-level object shape
+- safe URLs across `contact`, `social`, `links`, and `seo`
+- coordinate bounds in `location`
+- presence of the expected nested objects
+
+Used by:
+- `admin/app/modules/publish.js` → client-side publish guard
+- `cloudflare/common/publish-service.js` → server-side validation before Git commit
+- `scripts/validate-restaurant.js` → CLI validation
+
+### `shared/reservations-contract.js`
+
+Validates the reservation configuration structure. Checks:
+- top-level metadata (`version`, `schema`, `timezone`, `currency`)
+- unique zone IDs and per-zone party-size limits
+- weekday service windows in `HH:MM-HH:MM` 24h format
+- booking rules for slot interval, duration, advance window, grace period, and notes length
+- per-zone slot limits (`maxReservationsPerSlot`, `maxCoversPerSlot`)
+- canonical reservation statuses
+- required `uiCopy` groups for the public flow
+
+Used by:
+- `admin/app/modules/publish.js` → client-side publish guard
+- `cloudflare/common/publish-service.js` → server-side validation before Git commit
+- `scripts/validate-reservations.js` → CLI validation
+
+### `shared/media-contract.js`
+
+Validates the media registry. Checks:
+- top-level `global`, `defaults`, and `items` object shape
+- versioned `source + overrides` structure
+- item-entry integrity and fallback fields
+- path/reference sanity before publish
+
+Used by:
+- `admin/app/modules/publish.js` → client-side publish guard
+- `cloudflare/common/publish-service.js` → server-side validation before Git commit
+- `scripts/validate_media_json.js` → CLI validation
 
 ---
 
@@ -682,10 +795,10 @@ flowchart TD
   A["Admin Panel (browser)"] -->|edits| B["state.drafts (in memory)"]
   B -->|user clicks Publish| C["publish.js (client)"]
   C -->|validates via shared contracts| C
-  C -->|POST JSON payload| D["publish.js (server)"]
+  C -->|POST JSON payload| D["/api/publish (Cloudflare worker)"]
   D -->|validates again| D
   D -->|commits changed files| E["GitHub API"]
-  E -->|new commit triggers| F["Netlify auto-deploy"]
+  E -->|new commit triggers| F["Cloudflare Pages deploy"]
   F -->|serves updated| G["data/*.json"]
   G -->|fetched by| H["Public site JS<br/>(home-config, mas-pedidas, menu-page, restaurant-config)"]
 ```
@@ -705,3 +818,4 @@ flowchart TD
 9. **Structured sensory profiles live in `item.sensory_profile`** and do not replace the existing traits/experience tag system used for filters and badges.
 10. **When `item.sensory_profile` exists**, it must include a non-empty `summary` plus all 8 official axes as `axes.<axisId>.value` integers from `1` to `10`.
 11. **Public data loaders must fetch from site root** (`/data/*.json`) so nested routes (for example `/menu/`) resolve JSON correctly.
+12. **Reservation config stays zone-based in V1**. Do not add table/floorplan fields back into `data/reservations-config.json` unless the scope explicitly reintroduces table selection.

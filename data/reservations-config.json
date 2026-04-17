@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "schema": "figata.reservations.config.v1",
+  "timezone": "America/Santo_Domingo",
+  "currency": "DOP",
+  "zones": [
+    {
+      "id": "interior",
+      "label": "Interior",
+      "enabled": true,
+      "sortOrder": 1,
+      "partySize": {
+        "min": 1,
+        "max": 12
+      }
+    },
+    {
+      "id": "terraza",
+      "label": "Terraza",
+      "enabled": true,
+      "sortOrder": 2,
+      "partySize": {
+        "min": 1,
+        "max": 12
+      }
+    }
+  ],
+  "serviceWindows": {
+    "mon": [],
+    "tue": [],
+    "wed": [
+      {
+        "start": "17:00",
+        "end": "23:00"
+      }
+    ],
+    "thu": [
+      {
+        "start": "17:00",
+        "end": "23:00"
+      }
+    ],
+    "fri": [
+      {
+        "start": "17:00",
+        "end": "23:00"
+      }
+    ],
+    "sat": [
+      {
+        "start": "17:00",
+        "end": "23:00"
+      }
+    ],
+    "sun": [
+      {
+        "start": "12:00",
+        "end": "23:00"
+      }
+    ]
+  },
+  "bookingRules": {
+    "confirmationMode": "manual",
+    "slotIntervalMinutes": 15,
+    "defaultDurationMinutes": 120,
+    "gracePeriodMinutes": 15,
+    "minAdvanceMinutes": 120,
+    "maxAdvanceDays": 30,
+    "notesMaxLength": 300,
+    "partySize": {
+      "min": 1,
+      "max": 12
+    }
+  },
+  "slotLimits": {
+    "interior": {
+      "maxReservationsPerSlot": 12,
+      "maxCoversPerSlot": 36
+    },
+    "terraza": {
+      "maxReservationsPerSlot": 8,
+      "maxCoversPerSlot": 24
+    }
+  },
+  "statusCatalog": [
+    {
+      "id": "pending",
+      "label": "Pendiente",
+      "publicLabel": "Pendiente",
+      "tone": "warning"
+    },
+    {
+      "id": "confirmed",
+      "label": "Confirmada",
+      "publicLabel": "Confirmada",
+      "tone": "success"
+    },
+    {
+      "id": "cancelled",
+      "label": "Cancelada",
+      "publicLabel": "Cancelada",
+      "tone": "muted"
+    },
+    {
+      "id": "rejected",
+      "label": "Rechazada",
+      "publicLabel": "Rechazada",
+      "tone": "danger"
+    },
+    {
+      "id": "no_show",
+      "label": "No show",
+      "publicLabel": "No show",
+      "tone": "muted"
+    }
+  ],
+  "uiCopy": {
+    "hero": {
+      "title": "Reserva tu mesa",
+      "subtitle": "Elige cuántos vienen, cuándo prefieres visitarnos y el lugar ideal que mejor se adapte a tu visita."
+    },
+    "steps": {
+      "partySize": "¿Cuántos vienen?",
+      "date": "¿Qué día prefieren?",
+      "time": "¿A qué hora?",
+      "zone": "¿Qué zona prefieren?",
+      "details": "Tus datos",
+      "confirmation": "Reserva exitosa"
+    },
+    "statusLabels": {
+      "pending": "Pendiente",
+      "confirmed": "Confirmada",
+      "cancelled": "Cancelada",
+      "rejected": "Rechazada",
+      "no_show": "No show"
+    },
+    "details": {
+      "whatsappCountryLabel": "RD",
+      "whatsappCountryCode": "+1"
+    }
+  }
+}

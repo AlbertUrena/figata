@@ -141,6 +141,7 @@
       ingredients: null,
       categories: null,
       restaurant: null,
+      reservations: null,
       media: null
     },
     indexes: {
@@ -554,13 +555,16 @@
   function isDevAuthBypassEnabled() { return A.isDevAuthBypassEnabled(); }
   function applyDevAuthBypassQueryToggle() { return A.applyDevAuthBypassQueryToggle(); }
   function createLocalBypassUser() { return A.createLocalBypassUser(); }
+  function fetchSession() { return A.fetchSession(); }
+  function beginLogin() { return A.beginLogin(); }
+  function logoutSession() { return A.logout(); }
   function getUserEmail(user) { return A.getUserEmail(user); }
   function getUserDisplayName(user) { return A.getUserDisplayName(user); }
 
   function activateLocalAuthBypass() {
     setDevAuthBypass(true);
     showDashboardShell(createLocalBypassUser());
-    setDataStatus("Modo local sin login activo. Publish requiere Netlify Identity real.");
+    setDataStatus("Modo local sin login activo. Publish local usa el endpoint Cloudflare del Admin cuando el backend este disponible.");
   }
 
   function getInitials(value) { return U.getInitials(value); }
@@ -570,6 +574,7 @@
   }
 
   function setDataStatus(message) {
+    if (!elements.dataStatus) return;
     elements.dataStatus.textContent = message || "";
   }
 
@@ -665,6 +670,7 @@
       ensureIngredientsDraft: ensureIngredientsDraft,
       ensureCategoriesDraft: ensureCategoriesDraft,
       ensureRestaurantDraft: ensureRestaurantDraft,
+      ensureReservationsDraft: ensureReservationsDraft,
       ensureMediaDraft: ensureMediaDraft,
     });
   }
@@ -678,6 +684,7 @@
     ensureIngredientsDraft();
     ensureCategoriesDraft();
     ensureRestaurantDraft();
+    ensureReservationsDraft();
     ensureMediaDraft();
     if (
       !state.drafts.menu ||
@@ -686,6 +693,7 @@
       !state.drafts.ingredients ||
       !state.drafts.categories ||
       !state.drafts.restaurant ||
+      !state.drafts.reservations ||
       !state.drafts.media
     ) {
       setCurrentEditorStatus("No hay drafts cargados para exportar.");
@@ -708,6 +716,7 @@
     downloadJsonFile("ingredients.updated.json", ingredientsExportPayload);
     downloadJsonFile("categories.updated.json", state.drafts.categories);
     downloadJsonFile("restaurant.updated.json", state.drafts.restaurant);
+    downloadJsonFile("reservations-config.updated.json", state.drafts.reservations);
     downloadJsonFile("media.updated.json", state.drafts.media);
 
     if (elements.dataStatus) {
@@ -730,7 +739,7 @@
           " removidos)";
       }
       setDataStatus(
-        "JSON exportados: menu.updated.json + availability.updated.json + home.updated.json + ingredients.updated.json + categories.updated.json + restaurant.updated.json + media.updated.json" +
+        "JSON exportados: menu.updated.json + availability.updated.json + home.updated.json + ingredients.updated.json + categories.updated.json + restaurant.updated.json + reservations-config.updated.json + media.updated.json" +
           menuValidationSuffix +
           validationSuffix +
           categoriesValidationSuffix +
@@ -748,6 +757,7 @@
       !state.drafts.ingredients ||
       !state.drafts.categories ||
       !state.drafts.restaurant ||
+      !state.drafts.reservations ||
       !state.drafts.media
     ) return;
     ensureMediaStore();
@@ -765,6 +775,7 @@
           ingredients: state.drafts.ingredients,
           categories: state.drafts.categories,
           restaurant: state.drafts.restaurant,
+          reservations: state.drafts.reservations,
           media: state.drafts.media
         })
       });
@@ -781,10 +792,11 @@
         state.data.ingredients = deepClone(state.drafts.ingredients);
         state.data.categories = deepClone(state.drafts.categories);
         state.data.restaurant = deepClone(state.drafts.restaurant);
+        state.data.reservations = deepClone(state.drafts.reservations);
         state.data.media = deepClone(state.drafts.media);
       }
 
-      setDataStatus("Guardado local en /data (menu, availability, home, ingredients, categories, restaurant, media).");
+      setDataStatus("Guardado local en /data (menu, availability, home, ingredients, categories, restaurant, reservations-config, media).");
     } catch (error) {
       var message = error && error.message ? error.message : "Unknown error";
       setDataStatus("Error guardando JSON local: " + message + " (usa Exportar JSON).");
@@ -863,6 +875,7 @@
       ensureMediaStore: ensureMediaStore,
       ensureMediaDraft: ensureMediaDraft,
       ensureRestaurantDraft: ensureRestaurantDraft,
+      ensureReservationsDraft: ensureReservationsDraft,
       ensureIngredientsDraft: ensureIngredientsDraft,
       ensureCategoriesDraft: ensureCategoriesDraft,
       normalizeIngredientsAliasesPayload: normalizeIngredientsAliasesPayload,
@@ -1295,14 +1308,11 @@
   }
 
   function openIdentityModal() {
-    var identity = getIdentity();
-    if (!identity) return;
-    identity.open("login");
+    beginLogin();
   }
 
   function handleTokenFlow() {
     if (!hashHasAuthToken()) return;
-    openIdentityModal();
     window.setTimeout(clearHash, 50);
   }
 
@@ -1465,6 +1475,16 @@
 
     if (!state.drafts.restaurant || typeof state.drafts.restaurant !== "object") {
       state.drafts.restaurant = {};
+    }
+  }
+
+  function ensureReservationsDraft() {
+    if (!state.drafts.reservations || typeof state.drafts.reservations !== "object") {
+      state.drafts.reservations = deepClone((state.data && state.data.reservations) || {});
+    }
+
+    if (!state.drafts.reservations || typeof state.drafts.reservations !== "object") {
+      state.drafts.reservations = {};
     }
   }
 
@@ -3191,6 +3211,7 @@
       state.drafts.ingredients = deepClone(state.data.ingredients || {});
       state.drafts.categories = deepClone(state.data.categories || {});
       state.drafts.restaurant = deepClone(state.data.restaurant || {});
+      state.drafts.reservations = deepClone(state.data.reservations || {});
       state.drafts.media = deepClone(state.data.media || {});
       state.indexes.localMenuMediaPaths = await fetchLocalMenuMediaPaths();
       var restoredFromLocalDrafts = hydrateDraftsFromLocalStorage();
@@ -3200,6 +3221,7 @@
       ensureIngredientsDraft();
       ensureCategoriesDraft();
       ensureRestaurantDraft();
+      ensureReservationsDraft();
       ensureMediaDraft();
       buildIndexes();
       state.hasDataLoaded = true;
@@ -3256,6 +3278,7 @@
       !state.data.ingredients ||
       !state.data.categories ||
       !state.data.restaurant ||
+      !state.data.reservations ||
       !state.data.media
     ) {
       clearPersistedDraftsStorage();
@@ -3269,6 +3292,7 @@
     state.drafts.ingredients = deepClone(state.data.ingredients || {});
     state.drafts.categories = deepClone(state.data.categories || {});
     state.drafts.restaurant = deepClone(state.data.restaurant || {});
+    state.drafts.reservations = deepClone(state.data.reservations || {});
     state.drafts.media = deepClone(state.data.media || {});
     ensureMenuDraft();
     ensureAvailabilityDraft();
@@ -3276,6 +3300,7 @@
     ensureIngredientsDraft();
     ensureCategoriesDraft();
     ensureRestaurantDraft();
+    ensureReservationsDraft();
     ensureMediaDraft();
     buildIndexes();
     updateDashboardMetrics();
@@ -6333,6 +6358,9 @@
   function _dbCtx() {
     return {
       state: state,
+      views: {
+        dashboardPanel: views.dashboardPanel
+      },
       elements: {
         metricMenu: elements.metricMenu,
         metricCategories: elements.metricCategories,
@@ -11474,9 +11502,11 @@
   }
 
   function bindMenuBrowserEvents() {
-    elements.openMenuBrowserButton.addEventListener("click", function () {
-      openMenuBrowser({ skipRoute: false });
-    });
+    if (elements.openMenuBrowserButton) {
+      elements.openMenuBrowserButton.addEventListener("click", function () {
+        openMenuBrowser({ skipRoute: false });
+      });
+    }
 
     if (elements.openHomepageEditorButton) {
       elements.openHomepageEditorButton.addEventListener("click", function () {
@@ -12833,9 +12863,7 @@
         window.location.reload();
         return;
       }
-      var identity = getIdentity();
-      if (!identity) return;
-      identity.logout();
+      logoutSession();
     });
 
     elements.refreshDataButton.addEventListener("click", function () {
@@ -12908,174 +12936,41 @@
     });
   }
 
-  function initAuth() {
+  async function initAuth() {
     applyDevAuthBypassQueryToggle();
     if (isDevAuthBypassEnabled()) {
       activateLocalAuthBypass();
       return;
     }
 
-    var identity = getIdentity();
-    if (!identity) {
-      if (isLocalDevHost()) {
-        activateLocalAuthBypass();
-        return;
-      }
-      showLoginView("No se pudo cargar Netlify Identity.");
-      elements.loginButton.disabled = true;
+    if (isLocalDevHost()) {
+      activateLocalAuthBypass();
       return;
     }
+    elements.loginButton.disabled = true;
+    showLoginView("Verificando acceso protegido por Cloudflare...");
+    setDataStatus("Verificando acceso del Admin...");
+    handleTokenFlow();
 
-    identity.on("init", function (user) {
-      if (user) {
-        showDashboardShell(user);
-      } else {
-        showLoginView();
-        handleTokenFlow();
+    try {
+      var sessionPayload = await fetchSession();
+      var sessionUser = sessionPayload && sessionPayload.user ? sessionPayload.user : null;
+      if (!sessionPayload || sessionPayload.authenticated !== true || !sessionUser) {
+        throw new Error("No hay una sesion valida en Cloudflare Access.");
       }
-    });
-
-    identity.on("login", function (user) {
-      showDashboardShell(user);
+      showDashboardShell(sessionUser);
       clearHash();
       navigateToRoute("/dashboard", { replace: true });
-    });
-
-    identity.on("logout", function () {
-      showLoginView();
-      closeCommandPalette({ immediate: true, returnFocusToSearch: false });
-
-      state.data = null;
-      state.drafts.menu = null;
-      state.drafts.availability = null;
-      state.drafts.home = null;
-      state.drafts.ingredients = null;
-      state.drafts.categories = null;
-      state.drafts.restaurant = null;
-      state.drafts.media = null;
-      state.hasDataLoaded = false;
-      state.currentPanel = "dashboard";
-      state.visiblePanel = "dashboard";
-      state.sidebarAccordionOpenKey = "";
-      state.menuActiveAnchor = { categoryId: "", subcategoryId: "" };
-      state.menuViewGroups = [];
-      state.menuAnchorTargets = [];
-      state.homeActiveSectionId = "";
-      state.homeAnchorTargets = [];
-      state.pagesActiveSectionId = "";
-      state.pagesAnchorTargets = [];
-      state.ingredientsAnchorTargets = [];
-      state.categoriesAnchorTargets = [];
-      if (state.menuScrollSpyFrame) {
-        window.cancelAnimationFrame(state.menuScrollSpyFrame);
-        state.menuScrollSpyFrame = 0;
-      }
-      if (state.homeScrollSpyFrame) {
-        window.cancelAnimationFrame(state.homeScrollSpyFrame);
-        state.homeScrollSpyFrame = 0;
-      }
-      if (state.pagesScrollSpyFrame) {
-        window.cancelAnimationFrame(state.pagesScrollSpyFrame);
-        state.pagesScrollSpyFrame = 0;
-      }
-      if (state.ingredientsScrollSpyFrame) {
-        window.cancelAnimationFrame(state.ingredientsScrollSpyFrame);
-        state.ingredientsScrollSpyFrame = 0;
-      }
-      if (state.categoriesScrollSpyFrame) {
-        window.cancelAnimationFrame(state.categoriesScrollSpyFrame);
-        state.categoriesScrollSpyFrame = 0;
-      }
-      clearAllSidebarAccordionOpeningMotions();
-      clearSidebarIndicatorSyncTimers();
-      clearPanelTransitionTimers();
-      clearPanelPostNavigationActions();
-      clearProgrammaticScrollLock({ syncScrollSpy: false });
-      state.navigationTimelineToken = 0;
-      state.navigationTimelineActiveToken = 0;
-      state.navigation = {
-        currentState: NAVIGATION_STATES.idle,
-        currentPanel: "dashboard",
-        currentSection: "",
-        isProgrammaticScroll: false
-      };
-      state.itemEditor = {
-        isOpen: false,
-        isNew: false,
-        activeTab: "editorial",
-        sourceSectionId: "",
-        sourceItemIndex: -1,
-        draft: null,
-        ingredients: [],
-        pairings: [],
-        tags: [],
-        availability: { available: true, soldOutReason: "" }
-      };
-
-      applySidebarAccordionState("");
-      if (elements.dashboardContent) {
-        elements.dashboardContent.classList.remove("is-panel-fading");
-        elements.dashboardContent.classList.remove("is-panel-fade-out");
-      }
-      updateSidebarActiveIndicator();
-      state.ingredientsEditor = {
-        view: "catalog",
-        search: "",
-        activeCategoryId: "",
-        catalogSections: null,
-        selectedIngredientId: "",
-        selectedIsNew: false,
-        draft: null,
-        validationReport: null
-      };
-      state.categoriesEditor = {
-        activeCategoryId: "",
-        validationReport: null,
-        usageByCategoryId: {},
-        draftBySourceIndex: {},
-        newDraft: null
-      };
-      state.commandPalette = {
-        isOpen: false,
-        selectedIndex: 0
-      };
-
-      setDataStatus("Inicia sesion para cargar datos.");
-      setMenuBrowserStatus("");
-      setItemEditorStatus("");
-      setHomeEditorStatus("");
-      setIngredientsEditorStatus("");
-      setCategoriesEditorStatus("");
-      setRestaurantEditorStatus("");
-      setMediaEditorStatus("");
-      setPagesEditorStatus("");
-      setModalEditorStatus("");
-      showItemEditorErrors([]);
-      setDraftsBanner(false);
-      updateDashboardMetrics();
-    });
-
-    identity.on("error", function (error) {
-      var message = "Error de autenticacion.";
+    } catch (error) {
+      var message = "No se pudo validar tu acceso al Admin.";
       if (error && error.message) {
         message = error.message;
       }
-      if (isLocalDevHost()) {
-        activateLocalAuthBypass();
-        return;
-      }
       showLoginView(message);
-    });
-
-    var existingUser = identity.currentUser();
-    if (existingUser) {
-      showDashboardShell(existingUser);
-    } else {
-      showLoginView();
-      setDataStatus("Inicia sesion para cargar datos.");
+      setDataStatus("Acceso del Admin pendiente. Entra con Google via Cloudflare Access.");
+    } finally {
+      elements.loginButton.disabled = false;
     }
-
-    identity.init();
   }
 
   bindEvents();

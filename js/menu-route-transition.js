@@ -17,6 +17,16 @@
   const OVERLAY_ATTR = 'data-nosotros-route-loader';
   const DYNAMIC_SCRIPT_ATTR = 'data-public-hybrid-dynamic-script';
   const SKIPPED_SCRIPT_PATHS = new Set([
+    'shared/analytics-config.js',
+    'shared/analytics-taxonomy.js',
+    'shared/analytics-governance.js',
+    'shared/analytics-contract.js',
+    'shared/analytics-identity.js',
+    'shared/analytics-attribution.js',
+    'shared/analytics-internal.js',
+    'shared/analytics-sdk.js',
+    'shared/analytics-replay.js',
+    'shared/public-analytics.js',
     'shared/public-hybrid-route-transition.js',
     'js/menu-route-transition.js',
     'js/nosotros-route-transition.js',
@@ -24,6 +34,16 @@
   ]);
   const PERSISTENT_SCRIPT_GUARDS = new Map([
     ['shared/public-paths.js', () => Boolean(window.FigataPublicPaths)],
+    ['shared/analytics-config.js', () => Boolean(window.FigataAnalyticsConfig)],
+    ['shared/analytics-taxonomy.js', () => Boolean(window.FigataAnalyticsTaxonomy)],
+    ['shared/analytics-governance.js', () => Boolean(window.FigataAnalyticsGovernance)],
+    ['shared/analytics-contract.js', () => Boolean(window.FigataAnalyticsContract)],
+    ['shared/analytics-identity.js', () => Boolean(window.FigataAnalyticsIdentity)],
+    ['shared/analytics-attribution.js', () => Boolean(window.FigataAnalyticsAttribution)],
+    ['shared/analytics-internal.js', () => Boolean(window.FigataAnalyticsInternal)],
+    ['shared/analytics-sdk.js', () => Boolean(window.FigataAnalyticsSDK)],
+    ['shared/analytics-replay.js', () => Boolean(window.FigataAnalyticsReplay)],
+    ['shared/public-analytics.js', () => Boolean(window.FigataPublicAnalytics)],
     [
       'shared/public-hybrid-route-transition.js',
       () => Boolean(window.FigataPublicHybridRouteTransition?.createBinder),

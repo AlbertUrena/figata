@@ -1,3 +1,8 @@
 # Local Netlify folder
 .netlify
 alberturena_Netlify_files/
+analytics-output/
+dist-public/
+dist-admin/
+dist-jobs/
+.wrangler/

@@ -1,6 +1,7 @@
 (() => {
   const root = document.documentElement;
   const publicPaths = window.FigataPublicPaths || null;
+  const analyticsPerformance = window.FigataAnalyticsPerformance || null;
   const MOBILE_BREAKPOINT = 820;
   const MOBILE_MENU_PANEL_ID = 'navbar-mobile-menu-panel';
   const MOBILE_MENU_CLOSE_COMMIT_MS = 460;
@@ -17,6 +18,7 @@
     }
 
     readyDispatched = true;
+    analyticsPerformance?.markRouteReady?.();
     window.dispatchEvent(new CustomEvent(READY_EVENT));
   };
   const MOBILE_MENU_ENTRY_BY_KEY = {
@@ -2903,6 +2905,10 @@
     if (!(heroVideo instanceof HTMLVideoElement)) {
       return;
     }
+
+    analyticsPerformance?.trackAssetFromElement?.(heroVideo, {
+      assetType: 'video',
+    });
 
     const playAttempt = heroVideo.play();
     if (playAttempt && typeof playAttempt.catch === 'function') {

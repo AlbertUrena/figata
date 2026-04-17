@@ -1,0 +1,33 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "figata-public",
+  "pages_build_output_dir": "./dist-public",
+  "compatibility_date": "2026-04-16",
+  "compatibility_flags": ["nodejs_compat"],
+  "r2_buckets": [
+    {
+      "binding": "ANALYTICS_BUCKET",
+      "bucket_name": "figata-analytics"
+    }
+  ],
+  "vars": {
+    "ANALYTICS_BUCKET_NAME": "figata-analytics",
+    "FIGATA_ANALYTICS_RAW_PREFIX": "raw",
+    "FIGATA_ENV": "production",
+    "FIGATA_SITE_HOST": "trattoriafigata.com"
+  },
+  "env": {
+    "preview": {
+      "vars": {
+        "FIGATA_ENV": "preview",
+        "FIGATA_SITE_HOST": "preview.trattoriafigata.com"
+      }
+    },
+    "production": {
+      "vars": {
+        "FIGATA_ENV": "production",
+        "FIGATA_SITE_HOST": "trattoriafigata.com"
+      }
+    }
+  }
+}

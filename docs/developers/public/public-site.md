@@ -6,21 +6,22 @@
 
 ## Overview
 
-The public site is a static multi-route surface served primarily by Cloudflare Pages, with Netlify/GitHub Pages fallback flows. It currently has:
+The public site is a static multi-route surface served by Cloudflare Pages. It currently has:
 - Homepage: `index.html`
 - Full menu page: `menu/index.html` (`/menu/`)
 - Events landing page: `eventos/index.html` (`/eventos/`)
 - Nosotros landing page: `nosotros/index.html` (`/nosotros/`)
+- Reservations prototype: `reservas/index.html` (`/reservas/`)
 
 There is no build step — the HTML, CSS, and JavaScript are deployed directly.
 
 | Aspect | Details |
 |--------|---------|
-| Entry points | `index.html` (homepage), `menu/index.html` (full menu page), `eventos/index.html` (Pizza Party editorial landing), `nosotros/index.html` (brand/about landing) |
+| Entry points | `index.html` (homepage), `menu/index.html` (full menu page), `eventos/index.html` (Pizza Party editorial landing), `nosotros/index.html` (brand/about landing), `reservas/index.html` (UI-only reservations prototype) |
 | Styles | `styles.css` (~2,600 lines, 75KB) |
-| Scripts | 18 files in `js/` + shared runtime modules/assets in `shared/` + data loaders in `src/data/` |
+| Scripts | 20 files in `js/` + shared runtime modules/assets in `shared/` + data loaders in `src/data/` |
 | Data | Fetches from `data/*.json` at runtime |
-| Hosting | Cloudflare Pages runtime (primary) plus Netlify/GitHub Pages fallback for the public surface |
+| Hosting | Cloudflare Pages runtime for production + preview, with `_worker.js` handling public analytics ingest |
 
 ---
 
@@ -81,6 +82,16 @@ The page is structured as a single scrollable document. Major sections in `index
 | Shared public-route binder | `js/menu-route-transition.js` | Reuses the shared hybrid motor for home/menu/eventos by fetching and mounting the destination in-document before the URL update |
 | Isolated source transition binder | `js/nosotros-route-transition.js` | Intercepts only links targeting `/nosotros/` on home/menu/eventos, keeps one live overlay running, preloads `/nosotros/` in-document, and falls back to session handoff only if the swap fails |
 
+## Reservas Route Map (`/reservas/`)
+
+| Area | File | Purpose |
+|------|------|---------|
+| Head bootstrap | `shared/public-navbar-bootstrap.js` | Seeds the compact mobile navbar state before route CSS paints so `/reservas/` inherits the shared public navbar behavior from first paint |
+| Shared navbar runtime | `shared/public-navbar.js` | Mounts the canonical public navbar on `/reservas/` using the same route shell as other public pages |
+| Route HTML | `reservas/index.html` | Standalone reservations shell for the Child 1 prototype, now wrapped in the homepage hero/nav treatment |
+| Route styles | `reservas/reservas.css` | Dark mobile-first reservations styling that reuses the homepage hero language while keeping one active Airbnb-style step card at a time |
+| Route script | `js/reservas-page.js` | UI-only reservation stepper with mock data for group size, date, time, zone, details, and a Lottie-backed success confirmation |
+
 ---
 
 ## JavaScript Architecture
@@ -91,46 +102,70 @@ Homepage (`index.html`) runs a mixed boot pipeline: critical route/runtime scrip
 
 ```
 1.  shared/public-paths.js      — Shared site-base helper for root + GitHub Pages subpath hosting
-2.  shared/public-entry-loader.js — Hard-open/reload overlay runtime with a 1-second minimum hold
-3.  shared/public-hybrid-route-transition.js — Shared same-document transition engine for reusable overlay + Lottie route swaps
-4.  js/menu-route-transition.js — Shared public route binder for home/menu/eventos links and CTAs
-5.  js/nosotros-route-transition.js — Route-local `/nosotros/` config wrapper on top of the shared hybrid engine
-6.  shared/public-navbar.js     — Captures canonical navbar markup for cross-route reuse
-7.  js/navbar-collapse.js       — Navbar collapse/expand animation controller
-8.  js/public-burger-menu.js    — Homepage-only lightweight burger/menu runtime for the mobile navbar
-9.  src/data/home.js            — Home data loader
-10. src/data/home-featured.js   — Mobile-first featured-card data loader
-11. src/data/restaurant.js      — Restaurant data loader
-12. js/home-lazy-images.js      — Lazy image loading (IntersectionObserver)
-13. js/home-config.js           — Homepage section rendering (hero, delivery, footer, etc.)
-14. js/home-featured.js         — Featured-card renderer; injects `js/mas-pedidas.js` only on desktop
-15. inline secondary loader   — Defers desktop-only events tabs + scroll indicator to idle and mounts `js/testimonials.js` only when `#testimonials` approaches the viewport
+2.  shared/analytics-config.js  — Route catalog, environment resolution, and analytics architecture constants
+3.  shared/analytics-taxonomy.js — Canonical event + property registry used by runtime instrumentation
+4.  shared/analytics-governance.js — Privacy/internal-traffic/sampling rules enforced before emit
+5.  shared/analytics-contract.js — Shared envelope validation helpers
+6.  shared/analytics-identity.js — Persistent `visitor_id`/`session_id` helpers
+7.  shared/analytics-attribution.js — UTM/referrer/vanity-path attribution resolution
+8.  shared/analytics-internal.js — Dev/preview/internal traffic detection
+9.  shared/analytics-sdk.js     — Shared queue, batch, and flush runtime
+10. shared/analytics-performance.js — Shared performance/connectivity runtime for route-ready marks, network sampling, and heavy asset timing
+11. shared/analytics-commerce.js — Shared commerce funnel helpers for featured/menu impressions, detail, cart, checkout, and purchase
+12. shared/analytics-replay.js  — Deferred heatmap/session-replay runtime with route tags and privacy masking
+13. shared/public-analytics.js  — Public lifecycle, CTA, section, scroll, and same-document navigation instrumentation
+14. shared/public-entry-loader.js — Hard-open/reload overlay runtime with a 1-second minimum hold
+15. shared/public-hybrid-route-transition.js — Shared same-document transition engine for reusable overlay + Lottie route swaps
+16. js/menu-route-transition.js — Shared public route binder for home/menu/eventos links and CTAs
+17. js/nosotros-route-transition.js — Route-local `/nosotros/` config wrapper on top of the shared hybrid engine
+18. shared/public-navbar.js     — Captures canonical navbar markup for cross-route reuse
+19. js/navbar-collapse.js       — Navbar collapse/expand animation controller
+20. js/public-burger-menu.js    — Homepage-only lightweight burger/menu runtime for the mobile navbar
+21. src/data/home.js            — Home data loader
+22. src/data/home-featured.js   — Mobile-first featured-card data loader
+23. src/data/restaurant.js      — Restaurant data loader
+24. js/home-lazy-images.js      — Lazy image loading (IntersectionObserver)
+25. js/home-config.js           — Homepage section rendering (hero, delivery, footer, etc.)
+26. js/home-featured.js         — Featured-card renderer; injects `js/mas-pedidas.js` only on desktop
+27. inline secondary loader     — Defers desktop-only events tabs + scroll indicator to idle and mounts `js/testimonials.js` only when `#testimonials` approaches the viewport
 ```
 
 Additionally loaded (non-deferred):
 - `shared/public-navbar-bootstrap.js` — synchronous head bootstrap that seeds the compact mobile navbar and first-paint loader shell before first paint
-- Conditional Netlify Identity loader — fetches `netlify-identity-widget.js` only when auth hash tokens are present
 
 Menu page (`menu/index.html`) loads:
 
 ```
 head. shared/public-navbar-bootstrap.js
 1. shared/public-paths.js
-2. shared/public-entry-loader.js
-3. shared/public-hybrid-route-transition.js
-4. js/menu-route-transition.js
-5. js/nosotros-route-transition.js
-6. shared/public-navbar.js
-7. js/navbar-collapse.js
-8. shared/menu-traits.js
-9. shared/menu-allergens.js
-10. shared/menu-sensory.js
-11. src/data/media.js
-12. src/data/menu.js
-13. src/data/ingredients.js
-14. js/menu-page.js
-15. js/menu-page-navbar.js
-16. shared/public-scroll-indicator.js
+2. shared/analytics-config.js
+3. shared/analytics-taxonomy.js
+4. shared/analytics-governance.js
+5. shared/analytics-contract.js
+6. shared/analytics-identity.js
+7. shared/analytics-attribution.js
+8. shared/analytics-internal.js
+9. shared/analytics-sdk.js
+10. shared/analytics-performance.js
+11. shared/analytics-wifi-assist.js
+12. shared/analytics-commerce.js
+13. shared/analytics-replay.js
+14. shared/public-analytics.js
+15. shared/public-entry-loader.js
+16. shared/public-hybrid-route-transition.js
+17. js/menu-route-transition.js
+18. js/nosotros-route-transition.js
+19. shared/public-navbar.js
+20. js/navbar-collapse.js
+21. shared/menu-traits.js
+22. shared/menu-allergens.js
+23. shared/menu-sensory.js
+24. src/data/media.js
+25. src/data/menu.js
+26. src/data/ingredients.js
+27. js/menu-page.js
+28. js/menu-page-navbar.js
+29. shared/public-scroll-indicator.js
 ```
 
 Eventos page (`eventos/index.html`) loads:
@@ -138,14 +173,26 @@ Eventos page (`eventos/index.html`) loads:
 ```
 head. shared/public-navbar-bootstrap.js
 1. shared/public-paths.js
-2. shared/public-entry-loader.js
-3. shared/public-hybrid-route-transition.js
-4. js/menu-route-transition.js
-5. js/nosotros-route-transition.js
-6. shared/public-navbar.js
-7. js/navbar-collapse.js
-8. js/eventos-page.js
-9. shared/public-scroll-indicator.js
+2. shared/analytics-config.js
+3. shared/analytics-taxonomy.js
+4. shared/analytics-governance.js
+5. shared/analytics-contract.js
+6. shared/analytics-identity.js
+7. shared/analytics-attribution.js
+8. shared/analytics-internal.js
+9. shared/analytics-sdk.js
+10. shared/analytics-performance.js
+11. shared/analytics-wifi-assist.js
+12. shared/analytics-replay.js
+13. shared/public-analytics.js
+14. shared/public-entry-loader.js
+15. shared/public-hybrid-route-transition.js
+16. js/menu-route-transition.js
+17. js/nosotros-route-transition.js
+18. shared/public-navbar.js
+19. js/navbar-collapse.js
+20. js/eventos-page.js
+21. shared/public-scroll-indicator.js
 ```
 
 Nosotros page (`nosotros/index.html`) loads:
@@ -153,21 +200,45 @@ Nosotros page (`nosotros/index.html`) loads:
 ```
 head. shared/public-navbar-bootstrap.js
 1. shared/public-paths.js
-2. shared/public-entry-loader.js
-3. shared/public-hybrid-route-transition.js
-4. js/menu-route-transition.js
-5. js/nosotros-entry-loader.js
-6. shared/public-navbar.js
-7. js/navbar-collapse.js
-8. js/public-burger-menu.js
-9. js/nosotros-page.js
-10. shared/public-scroll-indicator.js
+2. shared/analytics-config.js
+3. shared/analytics-taxonomy.js
+4. shared/analytics-governance.js
+5. shared/analytics-contract.js
+6. shared/analytics-identity.js
+7. shared/analytics-attribution.js
+8. shared/analytics-internal.js
+9. shared/analytics-sdk.js
+10. shared/analytics-performance.js
+11. shared/analytics-replay.js
+12. shared/public-analytics.js
+13. shared/public-entry-loader.js
+14. shared/public-hybrid-route-transition.js
+15. js/menu-route-transition.js
+16. js/nosotros-entry-loader.js
+17. shared/public-navbar.js
+18. js/navbar-collapse.js
+19. js/public-burger-menu.js
+20. js/nosotros-page.js
+21. shared/public-scroll-indicator.js
+```
+
+Reservations page (`reservas/index.html`) loads:
+
+```
+head. shared/public-navbar-bootstrap.js
+1. shared/public-paths.js
+2. shared/public-navbar.js
+3. js/navbar-collapse.js
+4. js/reservas-page.js
 ```
 
 ### GitHub Pages Notes
 
-- `index.html` uses `<base href="./">` and route pages such as `menu/index.html`, `eventos/index.html`, and `nosotros/index.html` use `<base href="../">` so public assets and route links resolve correctly both at site root (`/`) and under the GitHub Pages project prefix (`/figata/`).
+- `index.html` uses `<base href="./">` and route pages such as `menu/index.html`, `eventos/index.html`, `nosotros/index.html`, and `reservas/index.html` use `<base href="../">` so public assets and route links resolve correctly both at site root (`/`) and under the GitHub Pages project prefix (`/figata/`).
 - `shared/public-paths.js` is the canonical helper for converting site-relative URLs and stripping the GitHub Pages project prefix from `window.location.pathname`.
+- The analytics bootstrap on public pages must run immediately after `shared/public-paths.js` so lifecycle and CTA events resolve `visitor_id`, `session_id`, attribution, internal-traffic flags, and replay eligibility before any route instrumentation executes.
+- `shared/analytics-wifi-assist.js` is optional and currently mounted on `/menu/` and `/eventos/`; it must load after `shared/analytics-performance.js` so QR sessions can reuse network/context signals without reimplementing route-local logic.
+- `shared/analytics-replay.js` must load before `shared/public-analytics.js` so it can listen for the first `figata:analytics-page-context` event and retag same-document route swaps without adding route-local vendor snippets.
 - `404.html` redirects GitHub Pages deep-link misses back into the public menu shell so `/menu/:item` still works after direct navigation or refresh.
 
 ### Cloudflare Pages Notes
@@ -198,6 +269,7 @@ Homepage featured-card renderer. Handles:
 - Rendering the mobile-first grid using generated homepage-specific image variants and `srcset`
 - Removing the `Detalles` button and all preview hooks on mobile so no desktop preview runtime ships there
 - Deferring desktop-only hover media and injecting `js/mas-pedidas.js` only on desktop after cards render
+- Registering homepage `item_impression` events through `shared/analytics-commerce.js` using the canonical `home_featured` list context
 
 **Data source:** `data/home-featured.json` (generated by `scripts/generate-home-featured.js`)
 
@@ -207,6 +279,7 @@ Desktop-only homepage preview enhancer. Handles:
 - Opening the “Detalles” overlay with the shared cover transition feel
 - Hydrating preview content from the derived `data/home-featured.json`
 - Prefetching modal/hover media only on desktop interaction intent
+- Emitting homepage `item_detail_open` for desktop preview exploration without duplicating route-local logic
 
 **Data source:** `data/home-featured.json`
 
@@ -221,6 +294,10 @@ Full menu page runtime controller for `/menu/`. Handles:
 - Scroll-synced active category state
 - Dynamic item detail subview via URL (`/menu/<id>`) with browser back/forward
 - Routing list-to-detail and detail-to-list through the shared fullscreen overlay/Lottie curtain instead of the old horizontal slide transition
+- Emitting the commercial funnel (`item_impression`, `item_detail_open`, `add_to_cart`, `remove_from_cart`, `cart_view`, `begin_checkout`, `purchase`) through `shared/analytics-commerce.js`
+- Emitting editorial decision signals (`item_story_view`, `item_pairing_view`, `item_gallery_expand`, `item_video_play`, `item_video_complete`) from the structured detail sections without duplicating route-local SDK logic
+- Building the account-modal WhatsApp checkout flow from `data/restaurant.json` so the menu funnel stays reusable for future routes
+- Feeding the local analytics inspect panel with session-level detail-depth context so QA can verify `detailOpensBeforeAddToCart` / `detailOpensBeforePurchase` against the same runtime events
 - Hard-refreshing a detail URL now promotes the essential detail view first, then hydrates slower extras (ingredient/icon payloads and legacy editorial fallbacks) without bouncing back through the catalog
 - Rendering the structured sensory profile section in detail view when `item.sensory_profile` is available, including an editorial subtitle under the section heading, a compact right-aligned Radar/Bars toggle on the same heading row (radar by default), icon-based radar axes in place of text labels, shared tap/focus icon tooltips across radar axes and bars X-axis icons (axis guidance + 5-second auto-dismiss), a consolidated Bars visualization (vertical bars, Y scale 1–10, icon-only X axis, shared accent color with value-based opacity), plus a smoothed radar area without per-axis point markers and a subtle stroke halo
 - Exposing `window.FigataMenuPage` so route-local enhancers can sync category state and search without duplicating logic
@@ -366,6 +443,13 @@ Temporary `/nosotros/` animation helper:
 - Reveals content blocks tagged with `data-nosotros-reveal` using `IntersectionObserver`
 - Keeps progressive enhancement lightweight so the transition test remains the focus
 
+#### `js/reservas-page.js`
+`/reservas/` UI-only route controller:
+- Owns the standalone Child 1 reservation stepper on top of the shared public navbar + homepage-inspired hero shell
+- Keeps exactly one active step card visible at a time instead of rendering collapsed summaries for the other steps
+- Manages mock state for party size, date, time, zone, guest details, direct submit, and a Lottie-backed success confirmation state
+- Keeps the current V1 flow focused on zone selection, leaving table-level selection for a future backlog item
+
 #### `js/home-lazy-images.js` (1KB, ~40 lines)
 Homepage image deferral helper. Uses `IntersectionObserver` + `data-home-lazy-src` to keep below-the-fold mobile media out of the initial request burst.
 
@@ -468,6 +552,7 @@ js/menu-page.js fetches grouped category items for the 5 visible menu tabs
 | Change full menu page layout/navigation | `menu/index.html`, `menu/menu-page.css`, `js/menu-page.js` | Keep category/item order driven by `src/data/menu.js` APIs |
 | Change events landing layout/content | `eventos/index.html`, `eventos/eventos.css`, `js/eventos-page.js` | Keep one-service narrative focused on Pizza Party by Figata |
 | Change nosotros landing layout/content | `nosotros/index.html`, `nosotros/nosotros.css`, `js/nosotros-page.js` | Entry transition behavior lives in `js/nosotros-entry-loader.js` + source interception in `js/nosotros-route-transition.js` |
+| Change reservations prototype flow/layout | `reservas/index.html`, `reservas/reservas.css`, `js/reservas-page.js` | Keep it UI-only unless the task explicitly includes backend/contracts |
 | Modify navbar links | `data/home.json` (navbar.links) + `shared/public-navbar.js` | `home-config` sets labels/URLs; shared module mounts canonical navbar on secondary routes |
 | Change testimonials | `data/home.json` (testimonials.items) | Carousel in `js/testimonials.js` |
 | Add new section | `index.html` (add HTML), `styles.css` (add styles) | May need new JS file in `js/` |

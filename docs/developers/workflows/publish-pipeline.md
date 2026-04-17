@@ -1,194 +1,193 @@
 # Publish Pipeline
 
-> **Read this doc when** working on publishing, the Netlify serverless function, the admin publish module, or understanding how data flows from the admin panel to the live site.
-
-## Contents
-
-- [Overview](#overview)
-- [End-to-End Flow](#end-to-end-flow)
-- [Server Function Detail](#server-function-detail-abordfabordfabordfabordnetlifyfunctionspublishjs) — env vars, data files, behavior, errors
-- [Client Module Detail](#client-module-detail-adminappmodulespublishjs) — publishChanges steps, ctx
-- [Local Development](#local-development)
-- [Shared Validation Contracts](#shared-validation-contracts)
-
----
+> **Read this doc when** working on publishing, Cloudflare admin APIs, GitHub commit automation, or the Admin buttons that push content to preview/production.
 
 ## Overview
 
-The publish pipeline moves data from the admin panel to the live website via Git commits. It has two sides:
+The publish pipeline now runs on **Cloudflare**, not Netlify.
 
-| Side | File | Purpose |
-|------|------|---------|
-| **Client** | `admin/app/modules/publish.js` | Validates drafts, acquires JWT, sends payload to Netlify function |
-| **Server** | `netlify/functions/publish.js` | Validates payload, reads current files from GitHub, diffs, and commits changed files |
+The end-to-end path is:
+- Admin browser validates local drafts
+- Admin browser `POST`s to `/api/publish`
+- Cloudflare Admin worker validates the authenticated Access session
+- A Durable Object acquires a short publish lease and rate-limits repeat clicks
+- The publish service diffs `data/*.json` against GitHub and commits only changed files
+- Cloudflare Pages deploys from the updated branch
 
-The pipeline supports two publish targets:
+## Runtime Pieces
+
+| Piece | File | Responsibility |
+|------|------|----------------|
+| Client publish module | `admin/app/modules/publish.js` | Validates drafts, confirms production intent, sends the payload to `/api/publish` |
+| Admin worker | `cloudflare/admin/worker.js` | Handles `POST /api/publish`, requires Cloudflare Access session, acquires publish lock |
+| Publish coordinator | `cloudflare/common/publish-lock.js` | Durable Object lease + per-user rate limit |
+| Publish service | `cloudflare/common/publish-service.js` | Validates payloads and writes changed files to GitHub |
+| Shared validators | `shared/*-contract.js` | Same schema guards used by the browser and the worker |
+
+## Targets and Branches
 
 | Target | Branch | Effect |
-|--------|--------|--------|
-| `preview` | `cms-preview` (configurable via `CMS_PREVIEW_BRANCH`) | Deploys to Netlify preview. Safe for testing. |
-| `production` | `master` (configurable via `GH_BRANCH` / `GITHUB_BRANCH`) | Deploys to the live site. Requires user confirmation. |
+|------|--------|--------|
+| `preview` | `cms-preview` (`CMS_PREVIEW_BRANCH`) | Safe preview branch used by `preview.trattoriafigata.com` |
+| `production` | `master` (`GITHUB_BRANCH`) | Live production branch used by `trattoriafigata.com` |
 
----
+The client can only send `preview` or `production`. Arbitrary branch names are not accepted.
 
 ## End-to-End Flow
 
-```
-1. Admin user clicks "Publish Preview" or "Publish Production"
-      ↓
-2. admin/app/modules/publish.js — publishChanges(target, ctx)
-      ├── Guards: not already publishing, drafts exist
-      ├── If production: window.confirm() dialog
-      ├── Gets JWT from Netlify Identity user
-      ├── Validates ingredients via validateIngredientsDraftData()
-      ├── Validates categories via validateCategoriesDraftData()
-      ├── Normalizes ingredient aliases
-      ├── Disables all publish buttons across all panels
-      ├── Updates status indicators
-      ↓
-3. POST /.netlify/functions/publish
-      Headers: Authorization: Bearer <JWT>
-      Body: { menu, availability, home, ingredients, categories, restaurant, media, target }
-      ↓
-4. netlify/functions/publish.js — handler(event, context)
-      ├── Auth check: context.clientContext.user must exist
-      ├── Env var check: GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO
-      ├── Parse and normalize JSON payload
-      ├── Rate limit check (30s window per user)
-      ├── Validate ingredients payload (shared/ingredients-contract.js)
-      ├── Validate categories payload (shared/categories-contract.js)
-      ├── If preview: ensure preview branch exists (created from production if missing)
-      ├── Read current file contents from GitHub (GET /repos/.../contents/...)
-      ├── Diff: compare normalized JSON of each file
-      ├── If no changes: return { skipped: true }
-      ├── For each changed file: PUT to GitHub Contents API (sequential commits)
-      └── Return { success: true, changed: {...}, commit: sha }
-      ↓
-5. Netlify detects new commit → auto-deploys
-      ↓
-6. Client receives response
-      ├── Updates status indicators
-      ├── Re-enables publish buttons (after 1.8s delay)
-      └── Shows success/failure/skip message
+```text
+1. Staff clicks "Publicar preview" or "Publicar produccion"
+2. admin/app/modules/publish.js
+   -> ensures drafts exist
+   -> validates ingredients/categories/menu/restaurant/reservations/media
+   -> confirms production publishes
+   -> disables publish buttons
+3. POST /api/publish
+4. cloudflare/admin/worker.js
+   -> requireAccessSession(request, env)
+   -> acquirePublishLease(env, session)
+   -> publishDrafts(body, { env, session })
+5. cloudflare/common/publish-service.js
+   -> validates payloads again
+   -> ensures preview branch exists when needed
+   -> reads current GitHub file SHAs
+   -> skips unchanged files
+   -> writes changed files through GitHub Contents API
+6. Worker returns JSON result to the browser
+7. Browser restores button state and shows success / skipped / error status
 ```
 
 ```mermaid
 sequenceDiagram
   participant User as Admin User
-  participant Client as publish.js (client)
-  participant Server as publish.js (server)
+  participant Client as publish.js (browser)
+  participant Worker as /api/publish
+  participant Lock as Publish DO
   participant GitHub as GitHub API
 
-  User->>Client: Click Publish
-  Client->>Client: Validate drafts + JWT
-  Client->>Client: Disable publish buttons
-  Client->>Server: POST /.netlify/functions/publish
-  Server->>Server: Auth check + rate limit
-  Server->>Server: Validate payload (contracts)
-  Server->>GitHub: Read current files (GET)
-  GitHub-->>Server: File contents + SHAs
-  Server->>Server: Diff (skip unchanged)
-  loop Each changed file
-    Server->>GitHub: Write file (PUT with SHA)
-    GitHub-->>Server: Commit SHA
+  User->>Client: Click publish
+  Client->>Client: Validate drafts + confirm prod
+  Client->>Worker: POST /api/publish
+  Worker->>Worker: Verify Cloudflare Access session
+  Worker->>Lock: Acquire lease / rate limit
+  Lock-->>Worker: Lease granted
+  Worker->>Worker: Validate payload again
+  Worker->>GitHub: GET current file contents + SHAs
+  GitHub-->>Worker: Current JSON files
+  loop changed files only
+    Worker->>GitHub: PUT updated file with SHA
+    GitHub-->>Worker: Commit SHA
   end
-  Server-->>Client: { success, changed, commit }
-  Client->>Client: Update UI status
-  Client->>Client: Re-enable buttons (1.8s delay)
+  Worker-->>Client: { success | skipped | error }
+  Client->>Client: Update status + re-enable buttons
 ```
 
----
+## Auth Model
 
-## Server Function Detail (`netlify/functions/publish.js`)
+The browser no longer acquires a JWT from an in-app identity widget.
 
-### Environment Variables
+Production/preview auth now comes from **Cloudflare Access**:
+- users sign in with Google before the app loads
+- the Admin worker verifies the Access JWT from the request cookies/headers
+- the publish endpoint trusts the verified Access identity, not browser-supplied user fields
 
-| Variable | Aliases | Default | Purpose |
-|----------|---------|---------|---------|
-| `GITHUB_TOKEN` | `GH_TOKEN` | — | **Required.** Personal access token with repo write access |
-| `GITHUB_OWNER` | `GH_OWNER` | — | **Required.** GitHub repository owner |
-| `GITHUB_REPO` | `GH_REPO` | — | **Required.** GitHub repository name |
-| `GH_BRANCH` | `GITHUB_BRANCH` | `master` | Production branch name |
-| `CMS_PREVIEW_BRANCH` | — | `cms-preview` | Preview branch name |
+Local development still supports `?devAuthBypass=1`, but the local dev server returns a `501` for `/api/publish` because it does not push to GitHub.
 
-### Data Files Written
+## Request Contract
 
-| Path | Payload Key | Required | Validation |
-|------|------------|----------|------------|
-| `data/menu.json` | `menu` | **Yes** | None (structure assumed valid) |
-| `data/availability.json` | `availability` | **Yes** | None |
-| `data/home.json` | `home` | Optional | None |
-| `data/ingredients.json` | `ingredients` | Optional | `shared/ingredients-contract.js` |
-| `data/categories.json` | `categories` | Optional | `shared/categories-contract.js` |
-| `data/restaurant.json` | `restaurant` | Optional | `shared/restaurant-contract.js` |
-| `data/media.json` | `media` | Optional | `shared/media-contract.js` |
+`POST /api/publish`
 
-### Key Behaviors
+```json
+{
+  "menu": {},
+  "availability": {},
+  "home": {},
+  "ingredients": {},
+  "categories": {},
+  "restaurant": {},
+  "reservations": {},
+  "media": {},
+  "target": "preview"
+}
+```
 
-- **Diff-based commits:** Each file is read from GitHub before writing. If the normalized JSON is identical, the file is skipped. Only changed files are committed.
-- **Sequential commits:** Files are committed one at a time in order: menu → availability → home → ingredients → categories → restaurant → media. Each commit gets its own message (e.g., `"CMS: update menu (production)"`).
-- **Preview branch auto-creation:** If the preview branch doesn't exist, it's created from the production branch's HEAD.
-- **Rate limiting:** 30-second window per user. Returns HTTP 429 with `retryAfterSeconds` if exceeded.
-- **SHA tracking:** Each file read returns its current SHA. This SHA is passed to the write operation to prevent concurrent overwrite conflicts.
+Required keys:
+- `menu`
+- `availability`
+- `home`
+- `ingredients`
+- `categories`
+- `restaurant`
+- `reservations`
+- `media`
 
-### Error Responses
+Optional:
+- `target` -> `preview` or `production`
 
-| Status | Condition |
-|--------|-----------|
-| 400 | Invalid payload, missing required keys, validation errors |
-| 401 | No authenticated user |
-| 405 | Non-POST request |
-| 429 | Rate limit exceeded |
-| 500 | Missing env vars, GitHub API errors, internal errors |
+## Environment Variables / Secrets
 
----
+These values belong in Cloudflare Admin worker config/secrets, not in the frontend:
 
-## Client Module Detail (`admin/app/modules/publish.js`)
+| Variable | Required | Purpose |
+|------|----------|---------|
+| `GITHUB_TOKEN` | Yes | GitHub token with repo write access |
+| `GITHUB_OWNER` | Yes | Repository owner |
+| `GITHUB_REPO` | Yes | Repository name |
+| `GITHUB_BRANCH` | No | Production branch, default `master` |
+| `CMS_PREVIEW_BRANCH` | No | Preview branch, default `cms-preview` |
+| `FIGATA_ACCESS_TEAM_DOMAIN` | Yes | Access team domain used to validate session JWTs |
+| `FIGATA_ACCESS_ALLOWED_AUDS` | Yes | Allowed Cloudflare Access audience IDs |
 
-### `publishChanges(target, ctx)`
+## File Writes
 
-The single exported function. Steps:
+The publish service can write these files:
 
-1. **Guard:** If `state.isPublishing`, exit
-2. **Guard:** All required draft types must be non-null (menu, availability, home, ingredients, categories, restaurant, media)
-3. **Normalize:** Calls `ctx.normalizeIngredientsAliasesPayload()` to clean up aliases before sending
-4. **Confirm:** For production target, shows `window.confirm()` dialog
-5. **Auth:** Gets Netlify Identity user and extracts JWT via `user.jwt()`
-6. **Validate:** Runs ingredient/category validators plus `restaurant-contract.js` and `media-contract.js`
-7. **Lock UI:** Disables all publish buttons across all native panels, including Restaurant and Media when those buttons are mounted
-8. **Fetch:** POST to `/.netlify/functions/publish`
-9. **Handle response:** Success, skip (no changes), or error messages
-10. **Restore UI:** Re-enables buttons after 1.8s timeout
+| Path | Payload key | Validation |
+|------|-------------|------------|
+| `data/menu.json` | `menu` | menu-specific browser validation before submit |
+| `data/availability.json` | `availability` | browser/runtime shape assumed valid |
+| `data/home.json` | `home` | `validate:home` in repo tooling |
+| `data/ingredients.json` | `ingredients` | `shared/ingredients-contract.js` |
+| `data/categories.json` | `categories` | `shared/categories-contract.js` |
+| `data/restaurant.json` | `restaurant` | `shared/restaurant-contract.js` |
+| `data/reservations-config.json` | `reservations` | `shared/reservations-contract.js` |
+| `data/media.json` | `media` | `shared/media-contract.js` |
 
-### Ctx Dependencies
+## Safety Guarantees
 
-The publish module requires a large ctx with ~20 callbacks and references. See `docs/developers/admin/admin-modules.md` for the full ctx shape.
-
----
+- **Lease lock:** prevents two tabs from publishing at the same time
+- **Rate limit:** blocks repeated publish attempts within a short cooldown
+- **Diff-based writes:** unchanged files are skipped
+- **SHA checks:** GitHub Contents API rejects stale overwrites
+- **Dual validation:** browser validates first, worker validates again
+- **No arbitrary branch writes:** only `preview` and `production`
 
 ## Local Development
 
-In local development (`npm run dev`), publishing to Netlify functions is not available. Instead, the dev server provides a **local save endpoint**:
+`npm run dev` exposes a Cloudflare-shaped API surface so the Admin can boot locally:
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/__local/save-drafts` | POST | Writes draft data directly to `data/*.json` files on disk |
+| Endpoint | Method | Behavior |
+|------|--------|----------|
+| `/api/session` | GET | Returns a local bypass session |
+| `/api/publish` | POST | Returns `501` with a clear local-only message |
+| `/__local/save-drafts` | POST | Writes draft JSON files directly to disk for local experimentation |
 
-This endpoint accepts the same payload shape as the publish function and writes files synchronously. It does **not** validate via shared contracts and does **not** commit to Git.
+Use the local save endpoint only for local iteration. It is not part of the production Cloudflare publish flow.
 
----
+## Validation and Testing
 
-## Shared Validation Contracts
+Recommended checks after publish-pipeline changes:
 
-Both the client (pre-publish) and server (during publish) use the same contract validators:
+```bash
+npm run check:admin-ui
+npm run validate:restaurant
+npm run validate:reservations
+npm run validate:media
+npm run validate:analytics-ai-analyst
+npm test
+```
 
-| Contract | File | Used for |
-|----------|------|----------|
-| Ingredients | `shared/ingredients-contract.js` | `validateIngredientsContract(payload, options)` |
-| Categories | `shared/categories-contract.js` | `validateCategoriesContract(payload, options)` |
-| Restaurant | `shared/restaurant-contract.js` | `validateRestaurantContract(payload, options)` |
-| Media | `shared/media-contract.js` | `validateMediaContract(payload)` |
+## Legacy Notes
 
-Both return `{ errors: [...], warnings: [...] }`. If `errors.length > 0`, publish is blocked.
-
-The server-side function runs validation with `normalizeAliases: true` for ingredients, which means aliases are cleaned up before committing.
+- `netlify/functions/publish.js` is now **legacy/archive context**, not the supported runtime path.
+- `admin/cms/` is archived and excluded from Cloudflare build outputs.

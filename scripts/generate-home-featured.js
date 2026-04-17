@@ -356,6 +356,8 @@ const buildFeaturedPayload = ({ rootDir, home, menu, media, availability, ingred
       id: itemId,
       slug: normalizeText(menuItem.slug) || slugify(itemId),
       title,
+      category: normalizeText(menuItem.category),
+      categoryLabel: normalizeText(menuItem.categoryLabel || menuItem.category),
       description,
       previewDescription: previewDescription || description,
       reviews: normalizeText(menuItem.reviews),

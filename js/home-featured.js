@@ -2,6 +2,7 @@
   const grid = document.getElementById('mas-pedidas-grid');
   const template = document.getElementById('mas-pedidas-card-template');
   const featuredApi = window.FigataData?.homeFeatured;
+  const analyticsCommerce = window.FigataAnalyticsCommerce || null;
   const publicPaths = window.FigataPublicPaths || null;
   const DESKTOP_MEDIA = window.matchMedia('(min-width: 1024px)');
   const HOVER_MEDIA = window.matchMedia('(hover: hover) and (pointer: fine)');
@@ -13,6 +14,8 @@
   const ROW_AUTOSCROLL_MAX_TRACK_COPIES = 8;
   const ROW_AUTOSCROLL_RESIZE_EPSILON_PX = 1;
   const PREVIEW_SCRIPT_ATTR = 'data-home-featured-preview-script';
+  const HOME_FEATURED_LIST_ID = 'home_featured';
+  const HOME_FEATURED_LIST_NAME = 'Mas pedidas';
   const createMediaQueryList = (query) =>
     typeof window.matchMedia === 'function'
       ? window.matchMedia(query)
@@ -25,6 +28,13 @@
         };
   const mobileRowMedia = createMediaQueryList(MOBILE_ROW_QUERY);
   const reduceMotionMedia = createMediaQueryList('(prefers-reduced-motion: reduce)');
+  const impressionObserver =
+    analyticsCommerce?.createImpressionObserver
+      ? analyticsCommerce.createImpressionObserver({
+          rootMargin: '0px 0px -12% 0px',
+          threshold: 0.45,
+        })
+      : null;
   let rowAutoScrollStates = [];
   let rowAutoScrollCleanup = [];
   let rowAutoScrollFrameId = 0;
@@ -513,6 +523,35 @@
     });
   };
 
+  const getFeaturedCardNodes = () =>
+    Array.from(grid.querySelectorAll('.mas-pedidas-card')).filter(
+      (card) =>
+        card instanceof HTMLElement &&
+        !card.hasAttribute(MOBILE_ROW_CLONE_ATTR)
+    );
+
+  const observeFeaturedCardImpression = (article, item) => {
+    if (!impressionObserver || !(article instanceof HTMLElement) || !item?.id) {
+      return;
+    }
+
+    impressionObserver.observe(article, (node) => {
+      const listPosition = getFeaturedCardNodes().indexOf(node) + 1;
+      if (listPosition <= 0) {
+        return null;
+      }
+
+      return {
+        item,
+        context: {
+          listId: HOME_FEATURED_LIST_ID,
+          listName: HOME_FEATURED_LIST_NAME,
+          listPosition,
+        },
+      };
+    });
+  };
+
   const setBaseImage = (imageElement, item) => {
     if (!(imageElement instanceof HTMLImageElement) || !item.cardImage) {
       if (imageElement instanceof HTMLImageElement) {
@@ -701,6 +740,16 @@
     window.FigataHomeFeatured = window.FigataHomeFeatured || {};
     window.FigataHomeFeatured.itemsById = cardById;
     window.FigataHomeFeatured.previewEnhancerReady = false;
+
+    getFeaturedCardNodes().forEach((cardNode) => {
+      const cardId = cardNode.dataset.cardId;
+      const item = cardId ? cardById.get(cardId) : null;
+      if (!item) {
+        return;
+      }
+
+      observeFeaturedCardImpression(cardNode, item);
+    });
 
     document.dispatchEvent(
       new CustomEvent('figata:home-featured-rendered', {

@@ -1,0 +1,39 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "figata-jobs",
+  "main": "./dist-jobs/worker.mjs",
+  "compatibility_date": "2026-04-16",
+  "compatibility_flags": ["nodejs_compat"],
+  "r2_buckets": [
+    {
+      "binding": "ANALYTICS_BUCKET",
+      "bucket_name": "figata-analytics"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "PUBLISH_COORDINATOR",
+        "class_name": "PublishCoordinator"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["PublishCoordinator"]
+    }
+  ],
+  "triggers": {
+    "crons": [
+      "0 11 * * 1",
+      "0 12 1 * *",
+      "30 11 * * *"
+    ]
+  },
+  "vars": {
+    "ANALYTICS_BUCKET_NAME": "figata-analytics",
+    "FIGATA_ANALYTICS_RAW_PREFIX": "raw",
+    "FIGATA_ANALYTICS_ARTIFACT_PREFIX": "artifacts"
+  }
+}

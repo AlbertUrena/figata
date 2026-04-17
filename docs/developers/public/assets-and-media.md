@@ -11,7 +11,7 @@
 - [Ingredient Icons](#ingredient-icons) — directory, naming, resolution
 - [Homepage Assets](#homepage-assets)
 - [UI Icons](#ui-icons-assetssvg-icons)
-- [Caching](#caching) — Netlify cache rules
+- [Caching](#caching) — Cloudflare cache rules
 - [Adding a New Menu Item Image](#adding-a-new-menu-item-image)
 - [Adding a New Ingredient Icon](#adding-a-new-ingredient-icon)
 
@@ -19,7 +19,7 @@
 
 ## Overview
 
-The Figata project uses static image assets organized by type. There is no image processing pipeline — assets are served directly from the repository by the hosting runtime (Cloudflare Pages primary, Netlify fallback).
+The Figata project uses static image assets organized by type. There is no image processing pipeline — assets are served directly from the repository by the Cloudflare runtime.
 
 | Asset type | Directory | Format | Count |
 |-----------|-----------|--------|------:|
@@ -221,7 +221,7 @@ Referenced directly in `index.html` and `styles.css` via `<img>` tags and CSS `b
 
 ## Caching
 
-Cloudflare Pages caching rules (from `_headers`) and Netlify fallback rules (`netlify.toml`) share the same policy:
+Cloudflare Pages caching rules (from `_headers`) and the Cloudflare build outputs share the same policy:
 
 | Path | Cache behavior |
 |------|---------------|

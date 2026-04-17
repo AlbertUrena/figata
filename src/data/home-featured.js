@@ -85,6 +85,8 @@
       id,
       slug: normalizeText(input?.slug),
       title,
+      category: normalizeId(input?.category),
+      categoryLabel: normalizeText(input?.categoryLabel || input?.category),
       description: normalizeText(input?.description),
       previewDescription:
         normalizeText(input?.previewDescription || input?.description),

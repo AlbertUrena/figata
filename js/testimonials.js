@@ -44,7 +44,7 @@
         "We ordered for delivery, it was 10 out of 10. Great ingredients and real Neapolitan pizza from wood oven.",
       name: "Awilda Suero",
       role: "Local Guide",
-      avatarSrc: "assets/reviews/awilda.png",
+      avatarSrc: "assets/reviews/awilda.webp",
       stars: 5,
     },
     {
@@ -52,7 +52,7 @@
         "Sus pizzas son excelentes, hechas con ingredientes de alta calidad y con muy buen ambiente en el local.",
       name: "Fabio Reyes",
       role: "Cliente frecuente",
-      avatarSrc: "assets/reviews/fabio.png",
+      avatarSrc: "assets/reviews/fabio.webp",
       stars: 5,
     },
     {
@@ -60,7 +60,7 @@
         "La pizza artesanal es excelente. Si te gusta probar cervezas diferentes, este lugar vale la pena.",
       name: "Karla Villar",
       role: "Food lover",
-      avatarSrc: "assets/reviews/karla.png",
+      avatarSrc: "assets/reviews/karla.webp",
       stars: 4,
     },
     {
@@ -68,7 +68,7 @@
         "Tienen una variedad deliciosa de pizza, muy buen cafe y cocteles. Siempre regresamos.",
       name: "Liecel Franco",
       role: "Cliente",
-      avatarSrc: "assets/reviews/liecel.png",
+      avatarSrc: "assets/reviews/liecel.webp",
       stars: 5,
     },
     {
@@ -76,7 +76,7 @@
         "La mejor pizza napolitana que he probado. Textura, sabor y servicio, todo excelente.",
       name: "Prysla Rodriguez",
       role: "Local Guide",
-      avatarSrc: "assets/reviews/prysla.png",
+      avatarSrc: "assets/reviews/prysla.webp",
       stars: 5,
     },
     {
@@ -84,7 +84,7 @@
         "Desde que abres la puerta el olor a pizza te gana. Servicio excelente y pizzas espectaculares.",
       name: "Angel Tejeda Pina",
       role: "Cliente",
-      avatarSrc: "assets/reviews/angel.png",
+      avatarSrc: "assets/reviews/angel.webp",
       stars: 5,
     },
     {
@@ -92,7 +92,7 @@
         "Mi restaurante favorito en Santo Domingo Este. Buenisimas pizzas, excelente servicio y ambiente.",
       name: "Massiel Beltre",
       role: "Cliente frecuente",
-      avatarSrc: "assets/reviews/massiel.png",
+      avatarSrc: "assets/reviews/massiel.webp",
       stars: 5,
     },
     {
@@ -100,7 +100,7 @@
         "Cocteles riquisimos, pizzas llenas de sabor y un tiramisu increible. Muy recomendado.",
       name: "Vianneris Morillo",
       role: "Foodie",
-      avatarSrc: "assets/reviews/vianneris.png",
+      avatarSrc: "assets/reviews/vianneris.webp",
       stars: 5,
     },
     {
@@ -108,7 +108,7 @@
         "Great pizzas, very good value and attentive staff. Sweet Goat and Figata are must-tries.",
       name: "Ricardo Restituyo",
       role: "Local Guide",
-      avatarSrc: "assets/reviews/ricardo.png",
+      avatarSrc: "assets/reviews/ricardo.webp",
       stars: 5,
     },
   ];

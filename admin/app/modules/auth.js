@@ -1,16 +1,19 @@
 // admin/app/modules/auth.js
-// Extracted from admin/app/app.js — Phase 2 refactor
-// Netlify Identity helpers and dev bypass logic.
-// No state, no DOM elements, no rendering.
+// Cloudflare Access + local dev bypass helpers.
+// The browser does not authenticate inside the app anymore; it only verifies the
+// already-authenticated session via /api/session.
 
 (function () {
   "use strict";
 
   var ns = window.FigataAdmin = window.FigataAdmin || {};
-  var DEV_AUTH_BYPASS_KEY = ns.constants.DEV_AUTH_BYPASS_KEY;
+  var constants = ns.constants || {};
+  var DEV_AUTH_BYPASS_KEY = constants.DEV_AUTH_BYPASS_KEY;
+  var SESSION_ENDPOINT = constants.CLOUDFLARE_SESSION_ENDPOINT || "/api/session";
+  var LOGOUT_URL = constants.CLOUDFLARE_LOGOUT_PATH || "/cdn-cgi/access/logout";
 
   function getIdentity() {
-    return window.netlifyIdentity || null;
+    return null;
   }
 
   function isLocalDevHost() {
@@ -75,6 +78,8 @@
       metadata.name ||
       appMetadata.full_name ||
       appMetadata.name ||
+      user.display_name ||
+      user.name ||
       "";
 
     if (name) return String(name).trim();
@@ -86,14 +91,67 @@
     return "Usuario";
   }
 
+  function buildRequestHeaders() {
+    return {
+      "X-Requested-With": "XMLHttpRequest",
+      "Cache-Control": "no-store"
+    };
+  }
+
+  async function fetchSession() {
+    var response = await fetch(SESSION_ENDPOINT, {
+      method: "GET",
+      headers: buildRequestHeaders()
+    });
+
+    if (!response.ok) {
+      var errorMessage = "No se pudo verificar la sesion protegida.";
+      try {
+        var payload = await response.json();
+        if (payload && payload.error) {
+          errorMessage = String(payload.error);
+        }
+      } catch (_error) {
+        errorMessage = errorMessage + " HTTP " + response.status;
+      }
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  }
+
+  function beginLogin() {
+    if (isLocalDevHost()) {
+      window.location.reload();
+      return;
+    }
+
+    // Access normally challenges before this view appears. If we land here, a reload
+    // is enough to re-enter the Access gate and/or refresh the application token.
+    window.location.reload();
+  }
+
+  function logout() {
+    if (isLocalDevHost()) {
+      window.location.reload();
+      return;
+    }
+
+    window.location.assign(LOGOUT_URL);
+  }
+
   ns.auth = {
-    getIdentity: getIdentity,
-    isLocalDevHost: isLocalDevHost,
-    setDevAuthBypass: setDevAuthBypass,
-    isDevAuthBypassEnabled: isDevAuthBypassEnabled,
-    applyDevAuthBypassQueryToggle: applyDevAuthBypassQueryToggle,
+    beginLogin: beginLogin,
+    buildRequestHeaders: buildRequestHeaders,
     createLocalBypassUser: createLocalBypassUser,
+    fetchSession: fetchSession,
+    getIdentity: getIdentity,
+    getUserDisplayName: getUserDisplayName,
     getUserEmail: getUserEmail,
-    getUserDisplayName: getUserDisplayName
+    isDevAuthBypassEnabled: isDevAuthBypassEnabled,
+    isLocalDevHost: isLocalDevHost,
+    logout: logout,
+    setDevAuthBypass: setDevAuthBypass,
+    applyDevAuthBypassQueryToggle: applyDevAuthBypassQueryToggle
   };
 })();

@@ -10,6 +10,7 @@ var menuAllergens = require("../../shared/menu-allergens.js");
 var menuSensory = require("../../shared/menu-sensory.js");
 var categoriesContract = require("../../shared/categories-contract.js");
 var restaurantContract = require("../../shared/restaurant-contract.js");
+var reservationsContract = require("../../shared/reservations-contract.js");
 var mediaContract = require("../../shared/media-contract.js");
 var RATE_LIMIT_WINDOW_MS = 30 * 1000;
 var publishRateLimitByUser = Object.create(null);
@@ -120,6 +121,10 @@ function validateRestaurantPayload(payload) {
 
 function validateMediaPayload(payload) {
   return mediaContract.validateMediaContract(payload);
+}
+
+function validateReservationsPayload(payload) {
+  return reservationsContract.validateReservationsContract(payload);
 }
 
 function getUserKey(user) {
@@ -357,6 +362,8 @@ exports.handler = async function (event, context) {
   var normalizedCategories = hasCategoriesPayload ? normalizeJsonValue(body.categories) : null;
   var hasRestaurantPayload = typeof body.restaurant !== "undefined";
   var normalizedRestaurant = hasRestaurantPayload ? normalizeJsonValue(body.restaurant) : null;
+  var hasReservationsPayload = typeof body.reservations !== "undefined";
+  var normalizedReservations = hasReservationsPayload ? normalizeJsonValue(body.reservations) : null;
   var hasMediaPayload = typeof body.media !== "undefined";
   var normalizedMedia = hasMediaPayload ? normalizeJsonValue(body.media) : null;
   if (
@@ -366,6 +373,7 @@ exports.handler = async function (event, context) {
     (hasIngredientsPayload && !normalizedIngredients) ||
     (hasCategoriesPayload && !normalizedCategories) ||
     (hasRestaurantPayload && !normalizedRestaurant) ||
+    (hasReservationsPayload && !normalizedReservations) ||
     (hasMediaPayload && !normalizedMedia)
   ) {
     return jsonResponse(400, { error: "Invalid payload" });
@@ -434,6 +442,23 @@ exports.handler = async function (event, context) {
     }
   }
 
+  var reservationsValidation = hasReservationsPayload
+    ? validateReservationsPayload(body.reservations)
+    : { errors: [], warnings: [] };
+  if (reservationsValidation.errors.length) {
+    return jsonResponse(400, {
+      error: "Invalid reservations payload",
+      details: reservationsValidation.errors.slice(0, 30),
+      warnings: reservationsValidation.warnings.slice(0, 20)
+    });
+  }
+  if (hasReservationsPayload) {
+    normalizedReservations = normalizeJsonValue(body.reservations);
+    if (!normalizedReservations) {
+      return jsonResponse(400, { error: "Invalid payload" });
+    }
+  }
+
   var mediaValidation = hasMediaPayload
     ? validateMediaPayload(body.media)
     : { errors: [], warnings: [] };
@@ -458,6 +483,7 @@ exports.handler = async function (event, context) {
     var ingredientsPath = "data/ingredients.json";
     var categoriesPath = "data/categories.json";
     var restaurantPath = "data/restaurant.json";
+    var reservationsPath = "data/reservations-config.json";
     var mediaPath = "data/media.json";
 
     if (target === "preview" && targetBranch !== productionBranch) {
@@ -541,6 +567,17 @@ exports.handler = async function (event, context) {
       );
     }
 
+    var reservationsRemote = null;
+    if (hasReservationsPayload) {
+      reservationsRemote = await readGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        reservationsPath,
+        githubToken
+      );
+    }
+
     var menuChanged = menuRemote.normalized !== normalizedMenu;
     var availabilityChanged = availabilityRemote.normalized !== normalizedAvailability;
     var homeChanged = hasHomePayload ? homeRemote.normalized !== normalizedHome : false;
@@ -553,15 +590,19 @@ exports.handler = async function (event, context) {
     var restaurantChanged = hasRestaurantPayload
       ? restaurantRemote.normalized !== normalizedRestaurant
       : false;
+    var reservationsChanged = hasReservationsPayload
+      ? reservationsRemote.normalized !== normalizedReservations
+      : false;
     var mediaChanged = hasMediaPayload ? mediaRemote.normalized !== normalizedMedia : false;
     var validationWarnings = menuValidation.warnings
       .concat(ingredientsValidation.warnings)
       .concat(categoriesValidation.warnings)
       .concat(restaurantValidation.warnings)
+      .concat(reservationsValidation.warnings)
       .concat(mediaValidation.warnings)
       .slice(0, 20);
 
-    if (!menuChanged && !availabilityChanged && !homeChanged && !ingredientsChanged && !categoriesChanged && !restaurantChanged && !mediaChanged) {
+    if (!menuChanged && !availabilityChanged && !homeChanged && !ingredientsChanged && !categoriesChanged && !restaurantChanged && !reservationsChanged && !mediaChanged) {
       return jsonResponse(200, {
         success: true,
         skipped: true,
@@ -652,6 +693,19 @@ exports.handler = async function (event, context) {
       ) || latestCommitSha;
     }
 
+    if (reservationsChanged) {
+      latestCommitSha = await writeGithubFile(
+        githubOwner,
+        githubRepo,
+        targetBranch,
+        reservationsPath,
+        githubToken,
+        "CMS: update reservations-config (" + target + ")",
+        body.reservations,
+        reservationsRemote.sha
+      ) || latestCommitSha;
+    }
+
     if (mediaChanged) {
       latestCommitSha = await writeGithubFile(
         githubOwner,
@@ -677,6 +731,7 @@ exports.handler = async function (event, context) {
         ingredients: ingredientsChanged,
         categories: categoriesChanged,
         restaurant: restaurantChanged,
+        reservations: reservationsChanged,
         media: mediaChanged
       },
       validationWarnings: validationWarnings,

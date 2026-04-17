@@ -1001,6 +1001,20 @@
               <p class="menu-account-modal__value" id="menu-account-total">RD$ 0.00</p>
             </div>
           </div>
+          <div class="menu-account-modal__actions">
+            <button
+              class="menu-filter-modal__apply menu-account-modal__checkout"
+              id="menu-account-checkout"
+              type="button"
+              data-account-checkout
+              data-analytics-id="menu_account_checkout"
+              data-analytics-target="https://wa.me/18095245117">
+              Ordenar por WhatsApp
+            </button>
+            <p class="menu-account-modal__checkout-note" id="menu-account-checkout-note">
+              Compartimos tu cuenta con el equipo de Figata para confirmar disponibilidad y siguientes pasos.
+            </p>
+          </div>
           <div
             class="menu-account-modal__toast"
             id="menu-account-toast"
@@ -1276,6 +1290,19 @@
   </script>
 
   <script src="shared/public-paths.js" defer></script>
+  <script src="shared/analytics-config.js" defer></script>
+  <script src="shared/analytics-taxonomy.js" defer></script>
+  <script src="shared/analytics-governance.js" defer></script>
+  <script src="shared/analytics-contract.js" defer></script>
+  <script src="shared/analytics-identity.js" defer></script>
+  <script src="shared/analytics-attribution.js" defer></script>
+  <script src="shared/analytics-internal.js" defer></script>
+  <script src="shared/analytics-sdk.js" defer></script>
+  <script src="shared/analytics-performance.js" defer></script>
+  <script src="shared/analytics-wifi-assist.js" defer></script>
+  <script src="shared/analytics-commerce.js" defer></script>
+  <script src="shared/analytics-replay.js" defer></script>
+  <script src="shared/public-analytics.js" defer></script>
   <script src="shared/public-entry-loader.js" defer></script>
   <script src="shared/public-hybrid-route-transition.js" defer></script>
   <script src="js/menu-route-transition.js" defer></script>
