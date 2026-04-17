@@ -922,6 +922,86 @@ body.reservas-page-body button {
   color: transparent;
 }
 
+.reservas-turnstile {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px rgba(240, 239, 237, 0.05);
+}
+
+.reservas-turnstile__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.reservas-turnstile__badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(180, 118, 54, 0.16);
+  color: rgba(255, 250, 246, 0.94);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.reservas-turnstile__status {
+  margin: 0;
+  color: rgba(240, 239, 237, 0.68);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  text-align: right;
+}
+
+.reservas-turnstile.is-complete .reservas-turnstile__status {
+  color: rgba(240, 239, 237, 0.9);
+}
+
+.reservas-turnstile__challenge {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    max-height 220ms ease,
+    opacity 180ms ease,
+    margin-top 180ms ease;
+}
+
+.reservas-turnstile__challenge.is-visible {
+  max-height: 140px;
+  opacity: 1;
+}
+
+.reservas-turnstile__shell {
+  display: grid;
+  justify-content: center;
+  padding: 12px 0 0;
+  overflow: hidden;
+}
+
+.reservas-turnstile__widget {
+  min-height: 65px;
+  width: 100%;
+}
+
+.reservas-turnstile__error {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #f3d0aa;
+}
+
+.reservas-turnstile.is-loading .reservas-turnstile__badge {
+  background: rgba(180, 118, 54, 0.22);
+}
+
 .reservas-review__list {
   display: grid;
   gap: 18px;

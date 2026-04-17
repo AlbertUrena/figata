@@ -2,6 +2,11 @@
   const READY_EVENT = 'figata:reservas-page-ready';
   const STEP_ORDER = ['who', 'date', 'time', 'zone', 'details'];
   const RESERVATIONS_API_BASE = '/api/reservations';
+  const TURNSTILE_SITE_KEY = typeof window.FIGATA_TURNSTILE_SITE_KEY === 'string'
+    ? window.FIGATA_TURNSTILE_SITE_KEY.trim()
+    : '';
+  const TURNSTILE_LOCAL_BYPASS = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+  const TURNSTILE_ENABLED = Boolean(TURNSTILE_SITE_KEY) && !TURNSTILE_LOCAL_BYPASS;
   const REDUCED_MOTION_QUERY = window.matchMedia('(prefers-reduced-motion: reduce)');
   const MAX_CALENDAR_MONTHS = 8;
   const reservationsRuntime = window.FigataReservationsRuntime || null;
@@ -146,6 +151,7 @@
 
   let lottieLoaderPromise = null;
   let successAnimationInstance = null;
+  let turnstileRenderPromise = null;
 
   const state = {
     config: DEFAULT_CONFIG,
@@ -172,6 +178,12 @@
     availabilityRequestId: 0,
     submitLoading: false,
     submitError: '',
+    turnstileToken: '',
+    turnstileError: '',
+    turnstileWidgetId: '',
+    turnstilePendingSubmit: false,
+    turnstileLoading: false,
+    turnstileInteractive: false,
     details: {
       name: '',
       whatsapp: createEmptyWhatsappSegments(),
@@ -228,6 +240,229 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+
+  const clearTurnstileState = () => {
+    state.turnstileToken = '';
+    state.turnstileError = '';
+    state.turnstileWidgetId = '';
+    state.turnstilePendingSubmit = false;
+    state.turnstileLoading = false;
+    state.turnstileInteractive = false;
+  };
+
+  const ensureTurnstileApi = () => {
+    if (!TURNSTILE_ENABLED) {
+      return Promise.resolve(null);
+    }
+
+    if (window.turnstile && typeof window.turnstile.render === 'function') {
+      return Promise.resolve(window.turnstile);
+    }
+
+    if (turnstileRenderPromise) {
+      return turnstileRenderPromise;
+    }
+
+    turnstileRenderPromise = new Promise((resolve, reject) => {
+      let attempts = 0;
+
+      const tick = () => {
+        if (window.turnstile && typeof window.turnstile.render === 'function') {
+          resolve(window.turnstile);
+          return;
+        }
+
+        attempts += 1;
+        if (attempts > 80) {
+          turnstileRenderPromise = null;
+          reject(new Error('Failed to load Turnstile'));
+          return;
+        }
+
+        window.setTimeout(tick, 125);
+      };
+
+      tick();
+    });
+
+    return turnstileRenderPromise;
+  };
+
+  const resetTurnstileWidget = (options = {}) => {
+    if (!TURNSTILE_ENABLED) {
+      clearTurnstileState();
+      return;
+    }
+
+    const preserveError = options.preserveError === true;
+    state.turnstileToken = '';
+    state.turnstilePendingSubmit = false;
+    state.turnstileLoading = false;
+    state.turnstileInteractive = false;
+    if (!preserveError) {
+      state.turnstileError = '';
+    }
+
+    if (!state.turnstileWidgetId || !(window.turnstile && typeof window.turnstile.reset === 'function')) {
+      state.turnstileWidgetId = '';
+      return;
+    }
+
+    try {
+      window.turnstile.reset(state.turnstileWidgetId);
+    } catch (_error) {
+      state.turnstileWidgetId = '';
+    }
+  };
+
+  const removeTurnstileWidget = () => {
+    if (
+      state.turnstileWidgetId &&
+      state.turnstileWidgetId !== 'unavailable' &&
+      window.turnstile &&
+      typeof window.turnstile.remove === 'function'
+    ) {
+      try {
+        window.turnstile.remove(state.turnstileWidgetId);
+      } catch (_error) {
+        // Ignore stale widget cleanup errors while re-rendering the details step.
+      }
+    }
+
+    state.turnstileWidgetId = '';
+  };
+
+  const getTurnstileStatusLabel = () => {
+    if (state.turnstileToken) {
+      return 'Protección lista.';
+    }
+
+    if (state.turnstileLoading || state.submitLoading) {
+      return 'Comprobando seguridad...';
+    }
+
+    return 'Protegido por Cloudflare.';
+  };
+
+  const syncTurnstileUi = () => {
+    if (!TURNSTILE_ENABLED || state.step !== 'details' || state.submitted) {
+      return;
+    }
+
+    const shell = cardsHost.querySelector('[data-reservas-turnstile-shell]');
+    const challenge = cardsHost.querySelector('[data-reservas-turnstile-challenge]');
+    const status = cardsHost.querySelector('[data-reservas-turnstile-status]');
+    const error = cardsHost.querySelector('[data-reservas-turnstile-error]');
+
+    const shouldRevealChallenge = Boolean(state.turnstileInteractive || state.turnstileError);
+
+    if (shell instanceof HTMLElement) {
+      shell.classList.toggle('is-loading', state.turnstileLoading || state.submitLoading);
+      shell.classList.toggle('is-complete', Boolean(state.turnstileToken));
+    }
+
+    if (challenge instanceof HTMLElement) {
+      challenge.classList.toggle('is-visible', shouldRevealChallenge);
+    }
+
+    if (status instanceof HTMLElement) {
+      status.textContent = getTurnstileStatusLabel();
+    }
+
+    if (error instanceof HTMLElement) {
+      error.textContent = state.turnstileError || '';
+      error.hidden = !state.turnstileError;
+    }
+  };
+
+  const mountTurnstileWidget = async () => {
+    if (!TURNSTILE_ENABLED || state.submitted || state.step !== 'details') {
+      return;
+    }
+
+    const mountNode = cardsHost.querySelector('[data-reservas-turnstile-widget]');
+    if (!(mountNode instanceof HTMLElement) || state.turnstileWidgetId) {
+      return;
+    }
+
+    mountNode.innerHTML = '';
+
+    try {
+      const turnstileApi = await ensureTurnstileApi();
+      if (!turnstileApi || state.submitted || state.step !== 'details') {
+        return;
+      }
+
+      state.turnstileWidgetId = turnstileApi.render(mountNode, {
+        sitekey: TURNSTILE_SITE_KEY,
+        theme: 'dark',
+        size: 'flexible',
+        execution: 'execute',
+        appearance: 'interaction-only',
+        callback: (token) => {
+          state.turnstileToken = String(token || '').trim();
+          state.turnstileError = '';
+          state.turnstileLoading = false;
+          state.turnstileInteractive = false;
+          syncTurnstileUi();
+          renderFooter();
+
+          if (state.turnstilePendingSubmit) {
+            state.turnstilePendingSubmit = false;
+            window.setTimeout(() => {
+              submitReservation({ skipTurnstileChallenge: true });
+            }, 0);
+          }
+        },
+        'before-interactive-callback': () => {
+          state.turnstileInteractive = true;
+          syncTurnstileUi();
+        },
+        'after-interactive-callback': () => {
+          state.turnstileInteractive = false;
+          syncTurnstileUi();
+        },
+        'expired-callback': () => {
+          state.turnstileToken = '';
+          state.turnstileLoading = false;
+          state.turnstilePendingSubmit = false;
+          state.turnstileInteractive = false;
+          state.turnstileError = 'La verificación expiró. Intenta de nuevo.';
+          syncTurnstileUi();
+          renderFooter();
+        },
+        'timeout-callback': () => {
+          state.turnstileToken = '';
+          state.turnstileLoading = false;
+          state.turnstilePendingSubmit = false;
+          state.turnstileInteractive = false;
+          state.turnstileError = 'La verificación expiró. Intenta de nuevo.';
+          syncTurnstileUi();
+          renderFooter();
+        },
+        'error-callback': () => {
+          state.turnstileToken = '';
+          state.turnstileLoading = false;
+          state.turnstilePendingSubmit = false;
+          state.turnstileInteractive = false;
+          state.turnstileError = 'No pudimos completar la verificación. Intenta de nuevo.';
+          syncTurnstileUi();
+          renderFooter();
+          return true;
+        },
+      });
+      syncTurnstileUi();
+    } catch (_error) {
+      state.turnstileToken = '';
+      state.turnstileLoading = false;
+      state.turnstilePendingSubmit = false;
+      state.turnstileInteractive = false;
+      state.turnstileError = 'No pudimos cargar la verificación de seguridad.';
+      state.turnstileWidgetId = 'unavailable';
+      syncTurnstileUi();
+      renderFooter();
+    }
+  };
 
   const toIsoDate = (value) => {
     const year = value.getFullYear();
@@ -596,9 +831,72 @@
     }
   };
 
-  const submitReservation = async () => {
+  const requestTurnstileToken = async () => {
+    if (!TURNSTILE_ENABLED) {
+      return true;
+    }
+
+    if (state.turnstileToken) {
+      return true;
+    }
+
+    if (state.turnstileWidgetId === 'unavailable') {
+      state.turnstileError = 'No pudimos cargar la protección anti-spam ahora mismo.';
+      syncTurnstileUi();
+      renderFooter();
+      return false;
+    }
+
+    if (!state.turnstileWidgetId) {
+      await mountTurnstileWidget();
+    }
+
+    if (
+      !state.turnstileWidgetId ||
+      state.turnstileWidgetId === 'unavailable' ||
+      !(window.turnstile && typeof window.turnstile.execute === 'function')
+    ) {
+      state.turnstileError = 'No pudimos iniciar la protección anti-spam ahora mismo.';
+      syncTurnstileUi();
+      renderFooter();
+      return false;
+    }
+
+    state.turnstileError = '';
+    state.turnstilePendingSubmit = true;
+    state.turnstileLoading = true;
+    syncTurnstileUi();
+    renderFooter();
+
+    try {
+      window.turnstile.execute(state.turnstileWidgetId);
+    } catch (_error) {
+      state.turnstileLoading = false;
+      state.turnstilePendingSubmit = false;
+      state.turnstileError = 'No pudimos iniciar la protección anti-spam. Intenta de nuevo.';
+      syncTurnstileUi();
+      renderFooter();
+    }
+
+    return false;
+  };
+
+  const submitReservation = async (options = {}) => {
+    const skipTurnstileChallenge = options.skipTurnstileChallenge === true;
+
+    if (TURNSTILE_ENABLED && !skipTurnstileChallenge) {
+      const hasToken = await requestTurnstileToken();
+      if (!hasToken) {
+        return;
+      }
+    }
+
     state.submitLoading = true;
     state.submitError = '';
+    state.turnstileError = '';
+    state.turnstilePendingSubmit = false;
+    state.turnstileLoading = false;
+    syncTurnstileUi();
     renderFooter();
 
     try {
@@ -618,6 +916,7 @@
           zone_id: state.zone,
           notes: state.details.notes.trim(),
           source: 'website',
+          turnstile_token: state.turnstileToken,
         }),
       });
       const payload = await response.json().catch(() => ({}));
@@ -637,6 +936,11 @@
       requestAnimationFrame(scrollStageIntoView);
     } catch (error) {
       state.submitLoading = false;
+      if (TURNSTILE_ENABLED) {
+        state.turnstileToken = '';
+        state.turnstileError = 'Vuelve a completar la verificación para enviar la reserva.';
+        resetTurnstileWidget({ preserveError: true });
+      }
       if (error?.availability) {
         state.submitError = '';
         state.availability = error.availability;
@@ -775,7 +1079,10 @@
       case 'zone':
         return Boolean(state.zone);
       case 'details':
-        return Boolean(state.details.name.trim() && hasCompleteWhatsapp());
+        return Boolean(
+          state.details.name.trim() &&
+          hasCompleteWhatsapp()
+        );
       default:
         return false;
     }
@@ -1148,6 +1455,20 @@
               name="notes"
               data-detail-field="notes">${escapeHtml(state.details.notes)}</textarea>
           </label>
+          ${TURNSTILE_ENABLED ? `
+          <div class="reservas-turnstile ${state.turnstileToken ? 'is-complete' : ''}" data-reservas-turnstile-shell>
+            <div class="reservas-turnstile__meta">
+              <span class="reservas-turnstile__badge" aria-hidden="true">Protegido</span>
+              <p class="reservas-turnstile__status" data-reservas-turnstile-status>${escapeHtml(getTurnstileStatusLabel())}</p>
+            </div>
+            <div class="reservas-turnstile__challenge ${state.turnstileInteractive || state.turnstileError ? 'is-visible' : ''}" data-reservas-turnstile-challenge>
+              <div class="reservas-turnstile__shell">
+                <div class="reservas-turnstile__widget" data-reservas-turnstile-widget></div>
+              </div>
+            </div>
+            <p class="reservas-turnstile__error" data-reservas-turnstile-error ${state.turnstileError ? '' : 'hidden'}>${escapeHtml(state.turnstileError)}</p>
+          </div>
+          ` : ''}
         </div>
       `
     );
@@ -1225,10 +1546,28 @@
   };
 
   const renderCards = () => {
+    removeTurnstileWidget();
     destroySuccessAnimation();
     cardsHost.innerHTML = state.submitted ? renderConfirmation() : renderActiveStep(state.step);
     if (state.submitted) {
       mountSuccessAnimation();
+      return;
+    }
+
+    if (state.step === 'details') {
+      const mountNode = cardsHost.querySelector('[data-reservas-turnstile-widget]');
+      if (mountNode instanceof HTMLElement && state.turnstileWidgetId === 'unavailable') {
+        syncTurnstileUi();
+        return;
+      }
+      if (!(mountNode instanceof HTMLElement)) {
+        state.turnstileWidgetId = '';
+      }
+      if (!state.turnstileToken) {
+        mountTurnstileWidget();
+      } else {
+        syncTurnstileUi();
+      }
     }
   };
 
@@ -1265,18 +1604,23 @@
     const isLast = currentIndex === STEP_ORDER.length - 1;
     const hasTimeAvailability = state.step === 'time' ? getAvailableHourValues().length > 0 : false;
     const canAdvanceFromZone = state.availabilityLoading ? false : isStepComplete('zone');
+    const isTurnstileBusy = TURNSTILE_ENABLED && state.turnstileLoading;
 
     nextButton.hidden = false;
     backButton.hidden = false;
-    backButton.disabled = currentIndex === 0 || state.submitLoading;
-    nextButton.disabled = state.submitLoading || (
+    backButton.disabled = currentIndex === 0 || state.submitLoading || isTurnstileBusy;
+    nextButton.disabled = state.submitLoading || isTurnstileBusy || (
       state.step === 'time'
         ? (state.timeMode === 'hour' ? !hasTimeAvailability : !Boolean(state.time))
         : state.step === 'zone'
           ? !canAdvanceFromZone
           : !isStepComplete(state.step)
     );
-    nextButton.textContent = state.submitLoading ? 'Reservando...' : (isLast ? 'Reservar' : 'Siguiente');
+    nextButton.textContent = state.submitLoading
+      ? 'Reservando...'
+      : isTurnstileBusy
+        ? 'Verificando...'
+        : (isLast ? 'Reservar' : 'Siguiente');
   };
 
   const renderStepView = () => {
@@ -1558,6 +1902,10 @@
       return;
     }
 
+    if (state.step === 'details' && step !== 'details') {
+      clearTurnstileState();
+    }
+
     state.step = step;
     state.submitted = false;
     if (step === 'time') {
@@ -1597,6 +1945,7 @@
     state.availabilityError = '';
     state.submitLoading = false;
     state.submitError = '';
+    clearTurnstileState();
     state.details = {
       name: '',
       whatsapp: createEmptyWhatsappSegments(),
@@ -1896,7 +2245,7 @@
       return;
     }
 
-    if (event.key.length === 1 && /\D/.test(event.key)) {
+    if (typeof event.key === 'string' && event.key.length === 1 && /\D/.test(event.key)) {
       event.preventDefault();
     }
   });

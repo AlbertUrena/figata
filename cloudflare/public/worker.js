@@ -1,5 +1,6 @@
 const analyticsContract = require('../../shared/analytics-contract.js');
 const reservationsService = require('../common/reservations-service.js');
+const turnstile = require('../common/turnstile.js');
 const http = require('../common/http.js');
 const r2Storage = require('../common/r2-storage.js');
 const { normalizeText } = require('../common/pathing.js');
@@ -146,6 +147,17 @@ async function handleCreateReservation(request, env) {
   }
 
   try {
+    const turnstileResult = await turnstile.validateTurnstileToken(
+      env,
+      payload && payload.turnstile_token,
+      request
+    );
+    if (!turnstileResult.ok) {
+      return http.jsonResponse(turnstileResult.statusCode || 400, turnstileResult.payload || {
+        error: 'No pudimos validar la verificación de seguridad.',
+      });
+    }
+
     const deps = await buildReservationsDeps(env, request);
     const result = await reservationsService.createReservation(
       deps.config,

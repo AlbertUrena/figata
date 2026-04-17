@@ -40,11 +40,11 @@ async function ensureSchema(db) {
       '  updated_at TEXT NOT NULL,',
       '  status_updated_at TEXT NOT NULL,',
       '  status_updated_by TEXT NOT NULL DEFAULT \'\'',
-      ')',
+      ');',
     ].join('\n'),
-    'CREATE INDEX IF NOT EXISTS idx_reservations_slot ON reservations (reservation_date, reservation_time, zone_id)',
-    'CREATE INDEX IF NOT EXISTS idx_reservations_status ON reservations (status)',
-    'CREATE INDEX IF NOT EXISTS idx_reservations_created_at ON reservations (created_at DESC)',
+    'CREATE INDEX IF NOT EXISTS idx_reservations_slot ON reservations (reservation_date, reservation_time, zone_id);',
+    'CREATE INDEX IF NOT EXISTS idx_reservations_status ON reservations (status);',
+    'CREATE INDEX IF NOT EXISTS idx_reservations_created_at ON reservations (created_at DESC);',
     [
       'CREATE TABLE IF NOT EXISTS reservation_blocks (',
       '  id TEXT PRIMARY KEY,',
@@ -56,9 +56,9 @@ async function ensureSchema(db) {
       '  created_by TEXT NOT NULL DEFAULT \'\',',
       '  updated_at TEXT NOT NULL,',
       '  UNIQUE (reservation_date, reservation_time, zone_id)',
-      ')',
+      ');',
     ].join('\n'),
-    'CREATE INDEX IF NOT EXISTS idx_reservation_blocks_slot ON reservation_blocks (reservation_date, reservation_time, zone_id)',
+    'CREATE INDEX IF NOT EXISTS idx_reservation_blocks_slot ON reservation_blocks (reservation_date, reservation_time, zone_id);',
     [
       'CREATE TABLE IF NOT EXISTS notification_log (',
       '  id TEXT PRIMARY KEY,',
@@ -70,14 +70,14 @@ async function ensureSchema(db) {
       '  provider_message_id TEXT NOT NULL DEFAULT \'\',',
       '  detail TEXT NOT NULL DEFAULT \'\',',
       '  created_at TEXT NOT NULL',
-      ')',
+      ');',
     ].join('\n'),
-    'CREATE INDEX IF NOT EXISTS idx_notification_log_reservation ON notification_log (reservation_id, created_at DESC)',
+    'CREATE INDEX IF NOT EXISTS idx_notification_log_reservation ON notification_log (reservation_id, created_at DESC);',
   ];
 
   const promise = (async function () {
     for (const statement of statements) {
-      await database.exec(statement);
+      await database.prepare(statement).run();
     }
   })();
 
