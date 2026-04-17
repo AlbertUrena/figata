@@ -9,6 +9,8 @@ const analyticsQuality = require("../shared/analytics-quality.js");
 const analyticsKpiCatalog = require("../shared/analytics-kpi-catalog.js");
 const analyticsCohorts = require("../shared/analytics-cohorts.js");
 const analyticsAiAnalyst = require("../shared/analytics-ai-analyst.js");
+const reservationsService = require("../cloudflare/common/reservations-service.js");
+const reservationsRuntime = require("../shared/reservations-runtime.js");
 
 const host = process.env.HOST || "127.0.0.1";
 const port = Number(process.env.PORT) || 5173;
@@ -23,7 +25,13 @@ const CLOUDFLARE_PUBLISH_ENDPOINT = "/api/publish";
 const CLOUDFLARE_ANALYTICS_COLLECT_ENDPOINT = "/api/analytics/collect";
 const CLOUDFLARE_ANALYTICS_SNAPSHOT_ENDPOINT = "/api/analytics/snapshot";
 const CLOUDFLARE_ANALYTICS_AI_ANALYST_ENDPOINT = "/api/analytics/ai-analyst";
+const CLOUDFLARE_RESERVATIONS_AVAILABILITY_ENDPOINT = "/api/reservations/availability";
+const CLOUDFLARE_RESERVATIONS_ENDPOINT = "/api/reservations";
+const CLOUDFLARE_RESERVATIONS_ADMIN_LIST_ENDPOINT = "/api/reservations/admin/list";
+const CLOUDFLARE_RESERVATIONS_ADMIN_BLOCKS_ENDPOINT = "/api/reservations/admin/blocks";
 const ANALYTICS_LOG_PATH = path.join(os.tmpdir(), "figata-analytics-dev.ndjson");
+const RESERVATIONS_STORE_PATH = path.join(os.tmpdir(), "figata-reservations-dev.json");
+const RESERVATIONS_CONFIG_PATH = path.join(rootDir, "data", "reservations-config.json");
 const MENU_MEDIA_ROOT_DIR = path.join(rootDir, "assets", "menu");
 const MENU_ROUTE_SHELL_PATH = path.join(rootDir, "menu", "index.html");
 const MAX_BODY_SIZE_BYTES = 5 * 1024 * 1024;
@@ -124,6 +132,224 @@ function writeJsonFile(relativePath, payload) {
     throw new Error("Forbidden path");
   }
   fs.writeFileSync(absolutePath, JSON.stringify(payload, null, 2) + "\n", "utf8");
+}
+
+function readReservationsConfig() {
+  const raw = fs.readFileSync(RESERVATIONS_CONFIG_PATH, "utf8");
+  return reservationsService.loadReservationsConfigFromObject(JSON.parse(raw));
+}
+
+function readReservationsStore() {
+  try {
+    const payload = JSON.parse(fs.readFileSync(RESERVATIONS_STORE_PATH, "utf8"));
+    return {
+      reservations: Array.isArray(payload && payload.reservations) ? payload.reservations : [],
+      blocks: Array.isArray(payload && payload.blocks) ? payload.blocks : [],
+      notification_log: Array.isArray(payload && payload.notification_log) ? payload.notification_log : [],
+    };
+  } catch {
+    return {
+      reservations: [],
+      blocks: [],
+      notification_log: [],
+    };
+  }
+}
+
+function writeReservationsStore(store) {
+  fs.writeFileSync(RESERVATIONS_STORE_PATH, JSON.stringify(store, null, 2) + "\n", "utf8");
+}
+
+const DEV_RESERVATION_LOCKS = new Map();
+
+function createLocalReservationLockEnv() {
+  return {
+    RESERVATION_COORDINATOR: {
+      getByName(name) {
+        const slotKey = String(name || "unknown");
+        return {
+          async fetch(url, options) {
+            const now = Date.now();
+            const pathname = new URL(url).pathname;
+            const payload = options && options.body ? JSON.parse(options.body) : {};
+            const current = DEV_RESERVATION_LOCKS.get(slotKey);
+
+            if (current && Number(current.expires_at) <= now) {
+              DEV_RESERVATION_LOCKS.delete(slotKey);
+            }
+
+            if (pathname === "/acquire") {
+              const live = DEV_RESERVATION_LOCKS.get(slotKey);
+              if (live && Number(live.expires_at) > now) {
+                return {
+                  ok: false,
+                  status: 409,
+                  async json() {
+                    return {
+                      error: "This reservation slot is busy right now. Try again in a moment.",
+                      locked_by: live.actor || "unknown",
+                      action: live.action || "unknown",
+                      retry_after_ms: Math.max(0, Number(live.expires_at) - now),
+                    };
+                  },
+                };
+              }
+
+              const lease = {
+                lease_id: "lease_" + Math.random().toString(36).slice(2, 12),
+                actor: payload.actor || "local-dev",
+                action: payload.action || "unknown",
+                acquired_at: new Date(now).toISOString(),
+                expires_at: now + (20 * 1000),
+              };
+              DEV_RESERVATION_LOCKS.set(slotKey, lease);
+              return {
+                ok: true,
+                status: 200,
+                async json() {
+                  return lease;
+                },
+              };
+            }
+
+            if (pathname === "/release") {
+              const live = DEV_RESERVATION_LOCKS.get(slotKey);
+              const released = Boolean(live && live.lease_id === payload.lease_id);
+              if (released) {
+                DEV_RESERVATION_LOCKS.delete(slotKey);
+              }
+              return {
+                ok: true,
+                status: 200,
+                async json() {
+                  return {
+                    released,
+                    lease_id: payload.lease_id || "",
+                  };
+                },
+              };
+            }
+
+            return {
+              ok: false,
+              status: 404,
+              async json() {
+                return { error: "Not found" };
+              },
+            };
+          },
+        };
+      },
+    },
+  };
+}
+
+function createLocalReservationsRepo() {
+  return {
+    async getOccupancyForSlot(slot) {
+      const store = readReservationsStore();
+      const activeStatuses = ["pending", "confirmed"];
+      const matching = store.reservations.filter((entry) =>
+        entry &&
+        entry.reservation_date === slot.date &&
+        entry.reservation_time === slot.time &&
+        entry.zone_id === slot.zone_id &&
+        activeStatuses.includes(entry.status)
+      );
+      return {
+        reservations_count: matching.length,
+        covers_count: matching.reduce((sum, entry) => sum + Number(entry.party_size || 0), 0),
+      };
+    },
+    async getBlockForSlot(slot) {
+      const store = readReservationsStore();
+      return store.blocks.find((entry) =>
+        entry &&
+        entry.reservation_date === slot.date &&
+        entry.reservation_time === slot.time &&
+        entry.zone_id === slot.zone_id
+      ) || null;
+    },
+    async createReservation(payload) {
+      const store = readReservationsStore();
+      store.reservations.unshift(payload);
+      writeReservationsStore(store);
+      return payload;
+    },
+    async listReservations(filters) {
+      const store = readReservationsStore();
+      return store.reservations
+        .filter((entry) => {
+          if (filters && filters.status && entry.status !== filters.status) return false;
+          if (filters && filters.zone_id && entry.zone_id !== filters.zone_id) return false;
+          if (filters && filters.date && entry.reservation_date !== filters.date) return false;
+          return true;
+        })
+        .slice(0, Math.max(1, Math.min(200, Number(filters && filters.limit || 80))));
+    },
+    async getReservationById(reservationId) {
+      const store = readReservationsStore();
+      return store.reservations.find((entry) => entry && entry.id === reservationId) || null;
+    },
+    async updateReservationStatus(reservationId, payload) {
+      const store = readReservationsStore();
+      const index = store.reservations.findIndex((entry) => entry && entry.id === reservationId);
+      if (index === -1) {
+        return null;
+      }
+      store.reservations[index] = Object.assign({}, store.reservations[index], {
+        status: payload.status,
+        internal_note: payload.internal_note,
+        updated_at: payload.updated_at,
+        status_updated_at: payload.status_updated_at,
+        status_updated_by: payload.status_updated_by,
+      });
+      writeReservationsStore(store);
+      return store.reservations[index];
+    },
+    async listBlocks(filters) {
+      const store = readReservationsStore();
+      return store.blocks
+        .filter((entry) => {
+          if (filters && filters.zone_id && entry.zone_id !== filters.zone_id) return false;
+          if (filters && filters.date && entry.reservation_date !== filters.date) return false;
+          return true;
+        })
+        .slice(0, Math.max(1, Math.min(200, Number(filters && filters.limit || 80))));
+    },
+    async upsertBlock(payload) {
+      const store = readReservationsStore();
+      const index = store.blocks.findIndex((entry) =>
+        entry &&
+        entry.reservation_date === payload.reservation_date &&
+        entry.reservation_time === payload.reservation_time &&
+        entry.zone_id === payload.zone_id
+      );
+      if (index === -1) {
+        store.blocks.unshift(payload);
+      } else {
+        store.blocks[index] = Object.assign({}, store.blocks[index], payload);
+      }
+      writeReservationsStore(store);
+      return store.blocks[index === -1 ? 0 : index];
+    },
+    async deleteBlock(blockId) {
+      const store = readReservationsStore();
+      const index = store.blocks.findIndex((entry) => entry && entry.id === blockId);
+      if (index === -1) {
+        return null;
+      }
+      const removed = store.blocks.splice(index, 1)[0];
+      writeReservationsStore(store);
+      return removed;
+    },
+    async insertNotificationLog(payload) {
+      const store = readReservationsStore();
+      store.notification_log.unshift(payload);
+      writeReservationsStore(store);
+      return payload;
+    },
+  };
 }
 
 function syncDerivedHomeFeatured() {
@@ -1202,6 +1428,158 @@ async function handleAnalyticsAiAnalyst(req, res) {
   }
 }
 
+async function handleReservationsAvailability(req, res) {
+  try {
+    const parsedUrl = new URL(req.url || "/", `http://${host}:${port}`);
+    const payload = await reservationsService.getAvailability(
+      readReservationsConfig(),
+      createLocalReservationsRepo(),
+      {
+        date: normalizeText(parsedUrl.searchParams.get("date")),
+        time: normalizeText(parsedUrl.searchParams.get("time")),
+        party_size: Number(parsedUrl.searchParams.get("party_size") || 0),
+      }
+    );
+    return sendJson(res, 200, payload);
+  } catch (error) {
+    const response = reservationsService.jsonErrorResponse(error);
+    return sendJson(res, response.status, JSON.parse(await response.text()));
+  }
+}
+
+async function handleReservationsCreate(req, res) {
+  let payload;
+  try {
+    const raw = await readRequestBody(req, MAX_BODY_SIZE_BYTES);
+    payload = raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    if (error && error.message === "Payload too large") {
+      return sendJson(res, 413, { error: "Payload too large" });
+    }
+    return sendJson(res, 400, { error: "Invalid JSON payload" });
+  }
+
+  try {
+    const result = await reservationsService.createReservation(
+      readReservationsConfig(),
+      createLocalReservationsRepo(),
+      createLocalReservationLockEnv(),
+      payload || {},
+      { actor: "local-dev-web" }
+    );
+    return sendJson(res, 201, result);
+  } catch (error) {
+    const response = reservationsService.jsonErrorResponse(error);
+    return sendJson(res, response.status, JSON.parse(await response.text()));
+  }
+}
+
+async function handleReservationsAdminList(req, res) {
+  try {
+    const parsedUrl = new URL(req.url || "/", `http://${host}:${port}`);
+    const payload = await reservationsService.listReservations(
+      readReservationsConfig(),
+      createLocalReservationsRepo(),
+      {
+        status: normalizeText(parsedUrl.searchParams.get("status")),
+        zone_id: normalizeText(parsedUrl.searchParams.get("zone_id") || parsedUrl.searchParams.get("zone")),
+        date: normalizeText(parsedUrl.searchParams.get("date")),
+        limit: Number(parsedUrl.searchParams.get("limit") || 80),
+      }
+    );
+    return sendJson(res, 200, payload);
+  } catch (error) {
+    const response = reservationsService.jsonErrorResponse(error);
+    return sendJson(res, response.status, JSON.parse(await response.text()));
+  }
+}
+
+async function handleReservationsAdminBlocks(req, res) {
+  if ((req.method || "GET") === "GET") {
+    try {
+      const parsedUrl = new URL(req.url || "/", `http://${host}:${port}`);
+      const payload = await reservationsService.listBlocks(
+        readReservationsConfig(),
+        createLocalReservationsRepo(),
+        {
+          zone_id: normalizeText(parsedUrl.searchParams.get("zone_id") || parsedUrl.searchParams.get("zone")),
+          date: normalizeText(parsedUrl.searchParams.get("date")),
+          limit: Number(parsedUrl.searchParams.get("limit") || 80),
+        }
+      );
+      return sendJson(res, 200, payload);
+    } catch (error) {
+      const response = reservationsService.jsonErrorResponse(error);
+      return sendJson(res, response.status, JSON.parse(await response.text()));
+    }
+  }
+
+  let payload;
+  try {
+    const raw = await readRequestBody(req, MAX_BODY_SIZE_BYTES);
+    payload = raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    if (error && error.message === "Payload too large") {
+      return sendJson(res, 413, { error: "Payload too large" });
+    }
+    return sendJson(res, 400, { error: "Invalid JSON payload" });
+  }
+
+  try {
+    const result = await reservationsService.createBlock(
+      readReservationsConfig(),
+      createLocalReservationsRepo(),
+      createLocalReservationLockEnv(),
+      payload || {},
+      { actor: "local-dev-admin" }
+    );
+    return sendJson(res, 201, result);
+  } catch (error) {
+    const response = reservationsService.jsonErrorResponse(error);
+    return sendJson(res, response.status, JSON.parse(await response.text()));
+  }
+}
+
+async function handleReservationsAdminBlockDelete(res, blockId) {
+  try {
+    const payload = await reservationsService.deleteBlock(
+      createLocalReservationsRepo(),
+      decodeURIComponent(blockId || "")
+    );
+    return sendJson(res, 200, payload);
+  } catch (error) {
+    const response = reservationsService.jsonErrorResponse(error);
+    return sendJson(res, response.status, JSON.parse(await response.text()));
+  }
+}
+
+async function handleReservationsAdminStatus(req, res, reservationId) {
+  let payload;
+  try {
+    const raw = await readRequestBody(req, MAX_BODY_SIZE_BYTES);
+    payload = raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    if (error && error.message === "Payload too large") {
+      return sendJson(res, 413, { error: "Payload too large" });
+    }
+    return sendJson(res, 400, { error: "Invalid JSON payload" });
+  }
+
+  try {
+    const result = await reservationsService.updateReservationStatus(
+      readReservationsConfig(),
+      createLocalReservationsRepo(),
+      decodeURIComponent(reservationId || ""),
+      payload || {},
+      { actor: "local-dev-admin" }
+    );
+    return sendJson(res, 200, result);
+  } catch (error) {
+    const response = reservationsService.jsonErrorResponse(error);
+    return sendJson(res, response.status, JSON.parse(await response.text()));
+  }
+}
+
 const server = http.createServer(async (req, res) => {
   const method = req.method || "GET";
   let requestPathname = "/";
@@ -1361,6 +1739,64 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 501, {
       error: "Local dev no publica a GitHub. Usa preview/prod en Cloudflare para publish real.",
     });
+  }
+
+  if (requestPathname === CLOUDFLARE_RESERVATIONS_AVAILABILITY_ENDPOINT) {
+    if (method !== "GET" && method !== "HEAD") {
+      return sendJson(res, 405, { error: "Method Not Allowed" });
+    }
+    if (method === "HEAD") {
+      return sendJson(res, 200, {});
+    }
+    return handleReservationsAvailability(req, res);
+  }
+
+  if (requestPathname === CLOUDFLARE_RESERVATIONS_ENDPOINT) {
+    if (method !== "POST") {
+      return sendJson(res, 405, { error: "Method Not Allowed" });
+    }
+    return handleReservationsCreate(req, res);
+  }
+
+  if (requestPathname === CLOUDFLARE_RESERVATIONS_ADMIN_LIST_ENDPOINT) {
+    if (method !== "GET" && method !== "HEAD") {
+      return sendJson(res, 405, { error: "Method Not Allowed" });
+    }
+    if (method === "HEAD") {
+      return sendJson(res, 200, {});
+    }
+    return handleReservationsAdminList(req, res);
+  }
+
+  if (requestPathname === CLOUDFLARE_RESERVATIONS_ADMIN_BLOCKS_ENDPOINT) {
+    if (!["GET", "POST", "HEAD"].includes(method)) {
+      return sendJson(res, 405, { error: "Method Not Allowed" });
+    }
+    if (method === "HEAD") {
+      return sendJson(res, 200, {});
+    }
+    return handleReservationsAdminBlocks(req, res);
+  }
+
+  if (requestPathname.startsWith(CLOUDFLARE_RESERVATIONS_ADMIN_BLOCKS_ENDPOINT + "/")) {
+    if (method !== "DELETE") {
+      return sendJson(res, 405, { error: "Method Not Allowed" });
+    }
+    return handleReservationsAdminBlockDelete(
+      res,
+      requestPathname.slice((CLOUDFLARE_RESERVATIONS_ADMIN_BLOCKS_ENDPOINT + "/").length)
+    );
+  }
+
+  if (requestPathname.startsWith("/api/reservations/admin/")) {
+    if (method !== "PATCH") {
+      return sendJson(res, 405, { error: "Method Not Allowed" });
+    }
+    return handleReservationsAdminStatus(
+      req,
+      res,
+      requestPathname.slice("/api/reservations/admin/".length)
+    );
   }
 
   if (requestPathname === "/data/home-featured.json") {

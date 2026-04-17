@@ -11,13 +11,13 @@ The public site is a static multi-route surface served by Cloudflare Pages. It c
 - Full menu page: `menu/index.html` (`/menu/`)
 - Events landing page: `eventos/index.html` (`/eventos/`)
 - Nosotros landing page: `nosotros/index.html` (`/nosotros/`)
-- Reservations prototype: `reservas/index.html` (`/reservas/`)
+- Reservations flow: `reservas/index.html` (`/reservas/`)
 
 There is no build step — the HTML, CSS, and JavaScript are deployed directly.
 
 | Aspect | Details |
 |--------|---------|
-| Entry points | `index.html` (homepage), `menu/index.html` (full menu page), `eventos/index.html` (Pizza Party editorial landing), `nosotros/index.html` (brand/about landing), `reservas/index.html` (UI-only reservations prototype) |
+| Entry points | `index.html` (homepage), `menu/index.html` (full menu page), `eventos/index.html` (Pizza Party editorial landing), `nosotros/index.html` (brand/about landing), `reservas/index.html` (live reservations flow) |
 | Styles | `styles.css` (~2,600 lines, 75KB) |
 | Scripts | 20 files in `js/` + shared runtime modules/assets in `shared/` + data loaders in `src/data/` |
 | Data | Fetches from `data/*.json` at runtime |
@@ -88,9 +88,10 @@ The page is structured as a single scrollable document. Major sections in `index
 |------|------|---------|
 | Head bootstrap | `shared/public-navbar-bootstrap.js` | Seeds the compact mobile navbar state before route CSS paints so `/reservas/` inherits the shared public navbar behavior from first paint |
 | Shared navbar runtime | `shared/public-navbar.js` | Mounts the canonical public navbar on `/reservas/` using the same route shell as other public pages |
-| Route HTML | `reservas/index.html` | Standalone reservations shell for the Child 1 prototype, now wrapped in the homepage hero/nav treatment |
-| Route styles | `reservas/reservas.css` | Dark mobile-first reservations styling that reuses the homepage hero language while keeping one active Airbnb-style step card at a time |
-| Route script | `js/reservas-page.js` | UI-only reservation stepper with mock data for group size, date, time, zone, details, and a Lottie-backed success confirmation |
+| Shared reservations runtime | `shared/reservations-runtime.js` | Shared date/time/slot helper used by the public route, dev server, and Cloudflare reservations APIs |
+| Route HTML | `reservas/index.html` | Standalone reservations shell now connected to live availability and submit endpoints |
+| Route styles | `reservas/reservas.css` | Dark mobile-first reservations styling that reuses the homepage hero language while keeping one active step card at a time |
+| Route script | `js/reservas-page.js` | Reservation stepper with live availability by zone, real submit, and a Lottie-backed success confirmation |
 
 ---
 
@@ -229,7 +230,8 @@ head. shared/public-navbar-bootstrap.js
 1. shared/public-paths.js
 2. shared/public-navbar.js
 3. js/navbar-collapse.js
-4. js/reservas-page.js
+4. shared/reservations-runtime.js
+5. js/reservas-page.js
 ```
 
 ### GitHub Pages Notes
@@ -444,11 +446,12 @@ Temporary `/nosotros/` animation helper:
 - Keeps progressive enhancement lightweight so the transition test remains the focus
 
 #### `js/reservas-page.js`
-`/reservas/` UI-only route controller:
-- Owns the standalone Child 1 reservation stepper on top of the shared public navbar + homepage-inspired hero shell
+`/reservas/` live route controller:
+- Owns the standalone reservation stepper on top of the shared public navbar + homepage-inspired hero shell
 - Keeps exactly one active step card visible at a time instead of rendering collapsed summaries for the other steps
-- Manages mock state for party size, date, time, zone, guest details, direct submit, and a Lottie-backed success confirmation state
-- Keeps the current V1 flow focused on zone selection, leaving table-level selection for a future backlog item
+- Loads `data/reservations-config.json`, computes valid slots through `shared/reservations-runtime.js`, and asks `/api/reservations/availability` for zone availability
+- Submits real reservations to `/api/reservations`, then renders the success confirmation with server-returned code/status
+- Keeps the V1 flow focused on zone selection, leaving table-level selection for a future backlog item
 
 #### `js/home-lazy-images.js` (1KB, ~40 lines)
 Homepage image deferral helper. Uses `IntersectionObserver` + `data-home-lazy-src` to keep below-the-fold mobile media out of the initial request burst.
@@ -552,7 +555,7 @@ js/menu-page.js fetches grouped category items for the 5 visible menu tabs
 | Change full menu page layout/navigation | `menu/index.html`, `menu/menu-page.css`, `js/menu-page.js` | Keep category/item order driven by `src/data/menu.js` APIs |
 | Change events landing layout/content | `eventos/index.html`, `eventos/eventos.css`, `js/eventos-page.js` | Keep one-service narrative focused on Pizza Party by Figata |
 | Change nosotros landing layout/content | `nosotros/index.html`, `nosotros/nosotros.css`, `js/nosotros-page.js` | Entry transition behavior lives in `js/nosotros-entry-loader.js` + source interception in `js/nosotros-route-transition.js` |
-| Change reservations prototype flow/layout | `reservas/index.html`, `reservas/reservas.css`, `js/reservas-page.js` | Keep it UI-only unless the task explicitly includes backend/contracts |
+| Change reservations flow/layout | `reservas/index.html`, `reservas/reservas.css`, `js/reservas-page.js` | The route already talks to the reservations API for availability + submit |
 | Modify navbar links | `data/home.json` (navbar.links) + `shared/public-navbar.js` | `home-config` sets labels/URLs; shared module mounts canonical navbar on secondary routes |
 | Change testimonials | `data/home.json` (testimonials.items) | Carousel in `js/testimonials.js` |
 | Add new section | `index.html` (add HTML), `styles.css` (add styles) | May need new JS file in `js/` |

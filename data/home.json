@@ -11,7 +11,7 @@
     },
     "ctaSecondary": {
       "label": "Nuestra selección de maridajes",
-      "url": "#reservar"
+      "url": "/reservas/"
     }
   },
   "popular": {
@@ -121,8 +121,8 @@
   },
   "reservation": {
     "enabled": true,
-    "title": "WhatsApp",
-    "url": "#reservar",
+    "title": "Reservas",
+    "url": "/reservas/",
     "ctaLabel": "Reservar"
   },
   "announcements": {
@@ -146,9 +146,9 @@
   "navbar": {
     "cta": {
       "label": "Reservar",
-      "url": "#reservar",
-      "icon": "assets/svg-icons/whatsapp.svg",
-      "title": "WhatsApp"
+      "url": "/reservas/",
+      "icon": "assets/svg-icons/reservar-icon.svg",
+      "title": "Reserva tu mesa"
     },
     "links": [
       {

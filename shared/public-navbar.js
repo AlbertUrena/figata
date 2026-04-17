@@ -268,7 +268,7 @@
       navbarConfig?.cta?.title || navbarConfig?.cta?.label
     );
     const ctaIcon = normalizeText(navbarConfig?.cta?.icon);
-    const ctaUrl = toNavbarHref(navbarConfig?.cta?.url || '#reservar');
+    const ctaUrl = toNavbarHref(navbarConfig?.cta?.url || '/reservas/');
 
     if (ctaLabelNode) {
       ctaLabelNode.textContent = ctaLabel;

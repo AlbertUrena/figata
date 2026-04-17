@@ -27,7 +27,7 @@
     currency: 'DOP',
     phone: '+1 (809) 524-5117',
     whatsapp: 'https://wa.me/18095245117',
-    reservationUrl: '#reservar',
+    reservationUrl: '/reservas/',
     googleMapsUrl:
       'https://maps.google.com/?q=Calle+Costa+Rica+142%2C+Alma+Rosa+1%2C+Santo+Domingo+Este',
     address: {
@@ -276,7 +276,7 @@
     }
 
     if (!isValidLink(normalized.reservationUrl)) {
-      warnings.push('reservationUrl invalido. Se usa fallback #reservar.');
+      warnings.push('reservationUrl invalido. Se usa fallback /reservas/.');
       normalized.reservationUrl = DEFAULT_RESTAURANT.reservationUrl;
     }
 

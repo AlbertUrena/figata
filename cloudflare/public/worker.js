@@ -1,4 +1,5 @@
 const analyticsContract = require('../../shared/analytics-contract.js');
+const reservationsService = require('../common/reservations-service.js');
 const http = require('../common/http.js');
 const r2Storage = require('../common/r2-storage.js');
 const { normalizeText } = require('../common/pathing.js');
@@ -99,11 +100,77 @@ async function handleAnalyticsCollect(request, env) {
   });
 }
 
+function getRequestPartySize(url) {
+  return Number(url.searchParams.get('party_size') || 0);
+}
+
+async function buildReservationsDeps(env, request) {
+  const config = await reservationsService.loadReservationsConfigFromAssets(env, request.url);
+  return {
+    config: config,
+    repo: reservationsService.createD1Repository(env && env.RESERVATIONS_DB),
+  };
+}
+
+async function handleReservationsAvailability(request, env) {
+  if (request.method !== 'GET') {
+    return http.jsonResponse(405, { error: 'Method not allowed' });
+  }
+
+  try {
+    const deps = await buildReservationsDeps(env, request);
+    const url = new URL(request.url);
+    const payload = await reservationsService.getAvailability(deps.config, deps.repo, {
+      date: normalizeText(url.searchParams.get('date')),
+      time: normalizeText(url.searchParams.get('time')),
+      party_size: getRequestPartySize(url),
+    });
+    return http.jsonResponse(200, payload);
+  } catch (error) {
+    return reservationsService.jsonErrorResponse(error);
+  }
+}
+
+async function handleCreateReservation(request, env) {
+  if (request.method !== 'POST') {
+    return http.jsonResponse(405, { error: 'Method not allowed' });
+  }
+
+  let payload;
+  try {
+    payload = await http.readJsonBody(request, { maxBytes: MAX_BODY_SIZE_BYTES });
+  } catch (error) {
+    return http.jsonResponse(error && error.message === 'Payload too large' ? 413 : 400, {
+      error: error && error.message ? error.message : 'Invalid reservation payload',
+    });
+  }
+
+  try {
+    const deps = await buildReservationsDeps(env, request);
+    const result = await reservationsService.createReservation(
+      deps.config,
+      deps.repo,
+      env,
+      payload || {},
+      { actor: 'public-web' }
+    );
+    return http.jsonResponse(201, result);
+  } catch (error) {
+    return reservationsService.jsonErrorResponse(error);
+  }
+}
+
 async function handleRequest(request, env) {
   const url = new URL(request.url);
 
   if (url.pathname === '/api/analytics/collect') {
     return handleAnalyticsCollect(request, env);
+  }
+  if (url.pathname === '/api/reservations/availability') {
+    return handleReservationsAvailability(request, env);
+  }
+  if (url.pathname === '/api/reservations') {
+    return handleCreateReservation(request, env);
   }
 
   return env.ASSETS.fetch(request);
@@ -114,5 +181,7 @@ module.exports = {
     fetch: handleRequest,
   },
   handleAnalyticsCollect,
+  handleCreateReservation,
+  handleReservationsAvailability,
   handleRequest,
 };

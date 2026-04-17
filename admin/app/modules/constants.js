@@ -41,6 +41,8 @@
     CLOUDFLARE_PUBLISH_ENDPOINT: "/api/publish",
     CLOUDFLARE_ANALYTICS_SNAPSHOT_ENDPOINT: "/api/analytics/snapshot",
     CLOUDFLARE_AI_ANALYST_ENDPOINT: "/api/analytics/ai-analyst",
+    CLOUDFLARE_RESERVATIONS_ADMIN_LIST_ENDPOINT: "/api/reservations/admin/list",
+    CLOUDFLARE_RESERVATIONS_ADMIN_BLOCKS_ENDPOINT: "/api/reservations/admin/blocks",
     CLOUDFLARE_LOGOUT_PATH: "/cdn-cgi/access/logout",
 
     UX_TIMING: {

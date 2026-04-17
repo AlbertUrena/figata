@@ -4,6 +4,13 @@
   "pages_build_output_dir": "./dist-admin",
   "compatibility_date": "2026-04-16",
   "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "RESERVATIONS_DB",
+      "database_name": "figata-reservations",
+      "database_id": "040e667a-8c1c-480f-8d4b-bc4eca456aaa"
+    }
+  ],
   "r2_buckets": [
     {
       "binding": "ANALYTICS_BUCKET",
@@ -15,6 +22,11 @@
       {
         "name": "PUBLISH_COORDINATOR",
         "class_name": "PublishCoordinator",
+        "script_name": "figata-jobs"
+      },
+      {
+        "name": "RESERVATION_COORDINATOR",
+        "class_name": "ReservationCoordinator",
         "script_name": "figata-jobs"
       }
     ]
@@ -29,17 +41,30 @@
   },
   "env": {
     "preview": {
+      "d1_databases": [
+        {
+          "binding": "RESERVATIONS_DB",
+          "database_name": "figata-reservations-preview",
+          "database_id": "616bdf23-89ce-4a43-9e3f-ecf2d0a59e56"
+        }
+      ],
       "vars": {
         "FIGATA_ENV": "preview",
-        "FIGATA_ADMIN_HOST": "preview-admin.trattoriafigata.com",
-        "FIGATA_ACCESS_ALLOWED_AUDS": "<preview-admin-access-aud>"
+        "FIGATA_ADMIN_HOST": "preview-admin.trattoriafigata.com"
       }
     },
     "production": {
+      "d1_databases": [
+        {
+          "binding": "RESERVATIONS_DB",
+          "database_name": "figata-reservations",
+          "database_id": "040e667a-8c1c-480f-8d4b-bc4eca456aaa"
+        }
+      ],
       "vars": {
         "FIGATA_ENV": "production",
         "FIGATA_ADMIN_HOST": "admin.trattoriafigata.com",
-        "FIGATA_ACCESS_ALLOWED_AUDS": "<admin-access-aud>"
+        "FIGATA_ACCESS_ALLOWED_AUDS": "e4a39b975b28a23843665dc32bbdf26019cf56c2ab89f1cd2a163ec6b53edd81"
       }
     }
   }

@@ -1,6 +1,7 @@
 const analyticsReportService = require('../common/analytics-report-service.js');
 const http = require('../common/http.js');
 const publishLock = require('../common/publish-lock.js');
+const reservationLock = require('../common/reservation-lock.js');
 const { normalizeText } = require('../common/pathing.js');
 
 const WEEKLY_CRON = '0 11 * * 1';
@@ -102,6 +103,7 @@ module.exports = {
     scheduled: runScheduled,
   },
   PublishCoordinator: publishLock.PublishCoordinator,
+  ReservationCoordinator: reservationLock.ReservationCoordinator,
   handleRequest,
   runScheduled,
 };

@@ -9,7 +9,7 @@ function main() {
     path.posix.join(DIST_DIR, 'worker.mjs'),
     buildCommonJsWorkerBundle({
       entry: 'cloudflare/jobs/worker.js',
-      namedExports: ['PublishCoordinator'],
+      namedExports: ['PublishCoordinator', 'ReservationCoordinator'],
     })
   );
 

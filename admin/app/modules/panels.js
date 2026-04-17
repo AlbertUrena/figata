@@ -114,7 +114,8 @@
       ctx.views.ingredientsEditorPanel,
       ctx.views.categoriesEditorPanel,
       ctx.views.restaurantEditorPanel,
-      ctx.views.mediaEditorPanel
+      ctx.views.mediaEditorPanel,
+      ctx.views.reservationsEditorPanel
     ].forEach(function (panelElement) {
       if (!panelElement) return;
       panelElement.classList.add("is-hidden");
@@ -138,6 +139,8 @@
       if (ctx.views.restaurantEditorPanel) ctx.views.restaurantEditorPanel.classList.remove("is-hidden");
     } else if (panel === "media-editor") {
       if (ctx.views.mediaEditorPanel) ctx.views.mediaEditorPanel.classList.remove("is-hidden");
+    } else if (panel === "reservations-editor") {
+      if (ctx.views.reservationsEditorPanel) ctx.views.reservationsEditorPanel.classList.remove("is-hidden");
     } else {
       if (ctx.views.dashboardPanel) ctx.views.dashboardPanel.classList.remove("is-hidden");
     }
@@ -150,8 +153,9 @@
     var isCategoriesPanel = panel === "categories-editor";
     var isRestaurantPanel = panel === "restaurant-editor";
     var isMediaPanel = panel === "media-editor";
+    var isReservationsPanel = panel === "reservations-editor";
     if (ctx.elements.topbar) {
-      ctx.elements.topbar.classList.toggle("is-hidden", isMenuPanel || isHomePanel || isPagesPanel || isModalPanel || isIngredientsPanel || isCategoriesPanel || isRestaurantPanel || isMediaPanel);
+      ctx.elements.topbar.classList.toggle("is-hidden", isMenuPanel || isHomePanel || isPagesPanel || isModalPanel || isIngredientsPanel || isCategoriesPanel || isRestaurantPanel || isMediaPanel || isReservationsPanel);
     }
 
     ctx.state.visiblePanel = panel;
@@ -172,6 +176,7 @@
     var isCategoriesPanel = panel === "categories-editor";
     var isRestaurantPanel = panel === "restaurant-editor";
     var isMediaPanel = panel === "media-editor";
+    var isReservationsPanel = panel === "reservations-editor";
     ctx.elements.sidebarNavDashboard.classList.toggle("is-active", panel === "dashboard");
     ctx.elements.sidebarNavMenu.classList.toggle("is-active", isMenuPanel);
     if (ctx.elements.sidebarNavHomepage) {
@@ -194,6 +199,9 @@
     }
     if (ctx.elements.sidebarNavMedia) {
       ctx.elements.sidebarNavMedia.classList.toggle("is-active", isMediaPanel);
+    }
+    if (ctx.elements.sidebarNavReservations) {
+      ctx.elements.sidebarNavReservations.classList.toggle("is-active", isReservationsPanel);
     }
     ctx.elements.sidebarHomeButton.classList.toggle("is-active", panel === "dashboard");
 

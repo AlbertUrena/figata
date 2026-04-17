@@ -40,7 +40,7 @@
       iconSize: 26,
     },
   };
-  const DEFAULT_NAVBAR_ICON = 'assets/svg-icons/whatsapp.svg';
+  const DEFAULT_NAVBAR_ICON = 'assets/svg-icons/reservar-icon.svg';
   const DEFAULT_NAVBAR_LINKS = [
     { label: 'Menú', url: '/menu/' },
     { label: 'Nosotros', url: '#nosotros' },
@@ -197,7 +197,7 @@
       },
       ctaSecondary: {
         label: 'Reservar',
-        url: '#reservar',
+        url: '/reservas/',
       },
     },
     popular: {
@@ -254,7 +254,7 @@
       links: DEFAULT_NAVBAR_LINKS.slice(),
       cta: {
         label: 'Reservar ahora',
-        url: '#reservar',
+        url: '/reservas/',
         icon: DEFAULT_NAVBAR_ICON,
         title: 'Reserva tu mesa',
       },
@@ -883,8 +883,8 @@
     }
 
     if (!isValidLink(normalized.hero.ctaSecondary.url)) {
-      warnings.push('hero.ctaSecondary.url invalida. Se uso fallback #reservar.');
-      normalized.hero.ctaSecondary.url = '#reservar';
+      warnings.push('hero.ctaSecondary.url invalida. Se uso fallback /reservas/.');
+      normalized.hero.ctaSecondary.url = '/reservas/';
     }
 
     normalized.popular.limit = normalizePositiveInt(
@@ -981,8 +981,8 @@
     }
 
     if (!isValidLink(normalized.navbar.cta.url)) {
-      warnings.push('navbar.cta.url invalida. Se uso fallback #reservar.');
-      normalized.navbar.cta.url = '#reservar';
+      warnings.push('navbar.cta.url invalida. Se uso fallback /reservas/.');
+      normalized.navbar.cta.url = '/reservas/';
     }
 
     normalized.navbar.cta.icon = normalizeAssetPath(

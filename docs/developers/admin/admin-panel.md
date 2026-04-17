@@ -19,6 +19,7 @@ It is now deployed as a **dedicated Cloudflare Pages admin surface** and protect
 | Publish API | `POST /api/publish` |
 | Analytics snapshot API | `GET /api/analytics/snapshot` |
 | AI analyst API | `POST /api/analytics/ai-analyst` |
+| Reservations ops API | `GET /api/reservations/admin/list`, `PATCH /api/reservations/admin/:id`, `GET/POST /api/reservations/admin/blocks`, `DELETE /api/reservations/admin/blocks/:id` |
 | Routes | Hash-based inside the SPA |
 
 ## Architecture
@@ -91,6 +92,7 @@ That bypass exists only on localhost.
 | `admin/app/modules/auth.js` | Cloudflare session fetch, local bypass, logout redirect |
 | `admin/app/modules/publish.js` | Publish UX + request to `/api/publish` |
 | `admin/app/modules/dashboard.js` | Dashboard KPIs, analytics filters, AI analyst chat |
+| `admin/app/modules/panels/reservations-panel.js` | Operational reservations panel (list, status changes, manual slot blocks) |
 | `cloudflare/admin/worker.js` | Admin API runtime |
 | `cloudflare/common/access.js` | Access JWT/session verification |
 
@@ -107,6 +109,7 @@ Common hash routes:
 - `#/categories`
 - `#/restaurant`
 - `#/media`
+- `#/reservations`
 - `#/media/item/:id`
 
 The external URL stays on the admin host. Internal panel navigation stays hash-based.
@@ -145,7 +148,7 @@ See `docs/developers/workflows/publish-pipeline.md` for the full publish contrac
 
 ## Module Loading Order
 
-`constants` -> `utils` -> `auth` -> `drafts` -> `publish` -> `navigation` -> `command-palette` -> `sidebar` -> `accordion` -> `panels` -> `render-utils` -> `menu-media` -> `dashboard` -> `panels/restaurant-panel` -> `panels/media-panel` -> `panels/pages-panel` -> `app.js`
+`constants` -> `utils` -> `auth` -> `drafts` -> `publish` -> `navigation` -> `command-palette` -> `sidebar` -> `accordion` -> `panels` -> `render-utils` -> `menu-media` -> `dashboard` -> `panels/restaurant-panel` -> `panels/media-panel` -> `panels/reservations-panel` -> `panels/pages-panel` -> `app.js`
 
 Keep that order stable because `app.js` delegates to globals already registered on `window.FigataAdmin`.
 

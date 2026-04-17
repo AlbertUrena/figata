@@ -88,6 +88,164 @@
       topCta: "Inspect intent profile"
     }
   };
+  var DUMMY_REFERRER = {
+    referrer: {
+      items: [
+        { label: "clarity.microsoft.com", value: "2,208", bar: 100 },
+        { label: "www.bing.com", value: "513", bar: 23.2 },
+        { label: "statics.teams.cdn.office.net", value: "184", bar: 8.3 },
+        { label: "www.google.com", value: "139", bar: 6.3 },
+        { label: "outlook.office.com", value: "73", bar: 3.3 }
+      ]
+    },
+    channel: {
+      items: [
+        { label: "Organic Search", value: "6,384", bar: 100 },
+        { label: "Direct", value: "4,112", bar: 64.4 },
+        { label: "Referral", value: "2,094", bar: 32.8 },
+        { label: "Email", value: "1,127", bar: 17.7 },
+        { label: "Social", value: "684", bar: 10.7 }
+      ]
+    },
+    campaign: {
+      items: [
+        { label: "spring-launch", value: "1,908", bar: 100 },
+        { label: "qr-menu", value: "1,346", bar: 70.5 },
+        { label: "newsletter-april", value: "982", bar: 51.5 },
+        { label: "pizza-party", value: "644", bar: 33.8 },
+        { label: "retargeting", value: "291", bar: 15.3 }
+      ]
+    },
+    source: {
+      items: [
+        { label: "google", value: "5,987", bar: 100 },
+        { label: "bing", value: "1,008", bar: 16.8 },
+        { label: "instagram", value: "744", bar: 12.4 },
+        { label: "email", value: "501", bar: 8.4 },
+        { label: "whatsapp", value: "266", bar: 4.4 }
+      ]
+    }
+  };
+  var DUMMY_BROWSERS = {
+    browsers: {
+      items: [
+        { label: "Chrome", value: "11,274", bar: 100 },
+        { label: "Safari", value: "2,948", bar: 26.1 },
+        { label: "Edge", value: "886", bar: 7.9 },
+        { label: "Firefox", value: "382", bar: 3.4 },
+        { label: "Samsung Internet", value: "148", bar: 1.3 }
+      ]
+    },
+    devices: {
+      items: [
+        { label: "Desktop", value: "9,622", bar: 100 },
+        { label: "Mobile", value: "4,447", bar: 46.2 },
+        { label: "Tablet", value: "659", bar: 6.8 },
+        { label: "TV", value: "0", bar: 0 },
+        { label: "Other", value: "0", bar: 0 }
+      ]
+    },
+    "operating-systems": {
+      items: [
+        { label: "Windows", value: "6,717", bar: 100 },
+        { label: "iOS", value: "3,102", bar: 46.2 },
+        { label: "Android", value: "2,188", bar: 32.6 },
+        { label: "macOS", value: "1,941", bar: 28.9 },
+        { label: "Linux", value: "780", bar: 11.6 }
+      ]
+    },
+    region: {
+      items: [
+        { label: "Dominican Republic", value: "4,324", bar: 100 },
+        { label: "United States", value: "3,808", bar: 88.1 },
+        { label: "Spain", value: "1,269", bar: 29.3 },
+        { label: "Mexico", value: "822", bar: 19.0 },
+        { label: "Canada", value: "411", bar: 9.5 }
+      ]
+    }
+  };
+  var DUMMY_PERFORMANCE = {
+    overview: {
+      score: "84",
+      scale: "/ 100",
+      title: "Performance score",
+      pageviews: "from 1,310 pageviews",
+      distribution: [
+        { label: "good", value: "72%", width: 72, tone: "good" },
+        { label: "needs improvement", value: "21%", width: 21, tone: "needs-improvement" },
+        { label: "poor", value: "7%", width: 7, tone: "poor" }
+      ],
+      metrics: [
+        { metric: "LCP", value: "1.8 s", detail: "Largest Contentful Paint", status: "good", tone: "good" },
+        { metric: "INP", value: "260 ms", detail: "Interaction to Next Paint", status: "needs improvement", tone: "needs-improvement" },
+        { metric: "CLS", value: "0.004", detail: "Cumulative Layout Shift", status: "good", tone: "good" }
+      ],
+      footer: "View all pages"
+    },
+    "url-performance": {
+      score: "79",
+      scale: "/ 100",
+      title: "URL performance",
+      pageviews: "from 412 pageviews",
+      distribution: [
+        { label: "good", value: "61%", width: 61, tone: "good" },
+        { label: "needs improvement", value: "30%", width: 30, tone: "needs-improvement" },
+        { label: "poor", value: "9%", width: 9, tone: "poor" }
+      ],
+      metrics: [
+        { metric: "/menu/", value: "2.0 s", detail: "Median LCP for menu landing", status: "good", tone: "good" },
+        { metric: "/eventos/", value: "288 ms", detail: "Median INP for Pizza Party", status: "needs improvement", tone: "needs-improvement" },
+        { metric: "/reservas/", value: "0.012", detail: "Median CLS for reservas", status: "good", tone: "good" }
+      ],
+      footer: "Open URL report"
+    }
+  };
+  var DUMMY_TOP_PAGES = {
+    "top-pages": {
+      sortLabel: "Most popular",
+      items: [
+        { label: "https://clarity.microsoft.com/", share: "100%", value: "16,612", bar: 100 },
+        { label: "https://clarity.microsoft.com/demo/projects/view/3t0wlogvdz/dashboard", share: "38.8%", value: "6,453", bar: 38.8 },
+        { label: "https://clarity.microsoft.com/demo/projects/view/3t0wlogvdz/recordings", share: "24.4%", value: "4,055", bar: 24.4 },
+        { label: "https://clarity.microsoft.com/demo/projects/view/3t0wlogvdz/heatmaps", share: "18.2%", value: "3,024", bar: 18.2 },
+        { label: "https://clarity.microsoft.com/settings", share: "7.9%", value: "1,312", bar: 7.9 }
+      ]
+    },
+    "inactive-pages": {
+      sortLabel: "Least active",
+      items: [
+        { label: "https://clarity.microsoft.com/changelog", share: "0.4%", value: "63", bar: 12 },
+        { label: "https://clarity.microsoft.com/docs/privacy", share: "0.3%", value: "47", bar: 9 },
+        { label: "https://clarity.microsoft.com/status", share: "0.2%", value: "31", bar: 6 },
+        { label: "https://clarity.microsoft.com/docs/api", share: "0.1%", value: "18", bar: 4 },
+        { label: "https://clarity.microsoft.com/company", share: "0.1%", value: "12", bar: 3 }
+      ]
+    },
+    "top-entry-pages": {
+      sortLabel: "Most popular",
+      items: [
+        { label: "https://clarity.microsoft.com/", share: "72.4%", value: "12,029", bar: 100 },
+        { label: "https://clarity.microsoft.com/demo/projects/view/3t0wlogvdz/dashboard", share: "11.8%", value: "1,961", bar: 16.3 },
+        { label: "https://clarity.microsoft.com/demo/projects/view/3t0wlogvdz/recordings", share: "8.3%", value: "1,378", bar: 11.5 },
+        { label: "https://clarity.microsoft.com/blog", share: "4.6%", value: "764", bar: 6.4 },
+        { label: "https://clarity.microsoft.com/pricing", share: "2.9%", value: "480", bar: 4.0 }
+      ]
+    }
+  };
+  var DUMMY_JS_ERRORS = {
+    toggleLabel: "Only show click errors",
+    toggleState: "Off",
+    summaryValue: "0.06%",
+    summaryLabel: "Recordings",
+    summaryMeta: "26 total JavaScript errors",
+    items: [
+      { share: "65.38%", message: "script error." },
+      { share: "19.23%", message: "resizeobserver loop completed with undelivered notifications." },
+      { share: "7.69%", message: "can't find variable: cordova" },
+      { share: "3.85%", message: "cannot read properties of undefined (reading 'removelistener')" },
+      { share: "3.85%", message: "maximum call stack size exceeded." }
+    ]
+  };
 
   function normalizeText(value, fallback) {
     if (typeof value !== "string") {
@@ -173,6 +331,210 @@
     ].join("");
   }
 
+  function buildDashboardMiniGlyph(type) {
+    if (type === "heatmap") {
+      return [
+        '<svg viewBox="0 0 20 20" focusable="false" aria-hidden="true">',
+        '<path d="M10.01 2.75c1.4 1.7 3.78 3.85 3.78 7.02 0 2.83-1.89 5.48-4.92 5.48-2.63 0-4.62-2.02-4.62-4.65 0-1.94 1.15-3.78 2.71-5.31.23.98.79 1.86 1.74 2.58.18-1.56.63-3.26 1.31-5.12Zm.08 6.15c-.43 1.14-1.13 1.92-1.95 2.74-.54.55-.89 1.23-.89 2 0 1.11.85 1.86 1.98 1.86 1.41 0 2.51-1.13 2.51-2.77 0-1.28-.72-2.36-1.65-3.83Z"></path>',
+        "</svg>"
+      ].join("");
+    }
+
+    return [
+      '<svg viewBox="0 0 20 20" focusable="false" aria-hidden="true">',
+      '<path d="M4.75 5.25A1.75 1.75 0 0 1 6.5 3.5h5.75A1.75 1.75 0 0 1 14 5.25v1.09l2.46-1.43A.75.75 0 0 1 17.5 5.56v8.88a.75.75 0 0 1-1.04.65L14 13.66v1.09a1.75 1.75 0 0 1-1.75 1.75H6.5a1.75 1.75 0 0 1-1.75-1.75v-9.5Zm1.5 0v9.5c0 .14.11.25.25.25h5.75a.25.25 0 0 0 .25-.25v-9.5a.25.25 0 0 0-.25-.25H6.5a.25.25 0 0 0-.25.25Z"></path>',
+      "</svg>"
+    ].join("");
+  }
+
+  function buildDashboardMiniActionsHtml() {
+    return [
+      '<span class="dashboard-chart-list__action" aria-hidden="true">', buildDashboardMiniGlyph("recording"), "</span>",
+      '<span class="dashboard-chart-list__action" aria-hidden="true">', buildDashboardMiniGlyph("heatmap"), "</span>"
+    ].join("");
+  }
+
+  function normalizeDashboardBarWidth(value) {
+    var numericValue = toNumber(value);
+    if (numericValue <= 0) {
+      return "0%";
+    }
+    if (numericValue < 4) {
+      numericValue = 4;
+    }
+    if (numericValue > 100) {
+      numericValue = 100;
+    }
+    return numericValue + "%";
+  }
+
+  function renderDashboardChartList(payload, options) {
+    var config = options || {};
+    var items = payload && Array.isArray(payload.items) ? payload.items : [];
+    var rowClassName = config.rowClassName ? (" " + config.rowClassName) : "";
+    var listClassName = config.listClassName ? (" " + config.listClassName) : "";
+
+    return [
+      '<div class="dashboard-chart-list', listClassName, '" role="list">',
+      items.map(function (item) {
+        var shareHtml = item && item.share
+          ? '<span class="dashboard-chart-list__metric dashboard-chart-list__metric--share">' + escapeHtml(item.share) + "</span>"
+          : "";
+        var valueHtml = item && item.value
+          ? '<span class="dashboard-chart-list__metric">' + escapeHtml(item.value) + "</span>"
+          : "";
+        return [
+          '<div class="dashboard-chart-list__row', rowClassName, '" role="listitem">',
+          '<div class="dashboard-chart-list__main">',
+          '<div class="dashboard-chart-list__header">',
+          '<span class="dashboard-chart-list__label">' + escapeHtml(item && item.label ? item.label : "") + "</span>",
+          '<span class="dashboard-chart-list__metrics">', shareHtml, valueHtml, "</span>",
+          "</div>",
+          '<div class="dashboard-chart-list__track">',
+          '<span class="dashboard-chart-list__fill" style="width: ' + normalizeDashboardBarWidth(item && item.bar) + ';"></span>',
+          "</div>",
+          "</div>",
+          buildDashboardMiniActionsHtml(),
+          "</div>"
+        ].join("");
+      }).join(""),
+      "</div>"
+    ].join("");
+  }
+
+  function renderDashboardPerformance(payload) {
+    var distribution = payload && Array.isArray(payload.distribution) ? payload.distribution : [];
+    var metrics = payload && Array.isArray(payload.metrics) ? payload.metrics : [];
+
+    return [
+      '<div class="dashboard-performance">',
+      '<section class="dashboard-performance__hero">',
+      '<div class="dashboard-performance__score">',
+      '<span class="dashboard-performance__score-value">' + escapeHtml(payload && payload.score ? payload.score : "0") + "</span>",
+      '<span class="dashboard-performance__score-scale">' + escapeHtml(payload && payload.scale ? payload.scale : "/ 100") + "</span>",
+      "</div>",
+      '<div class="dashboard-performance__hero-copy">',
+      '<p class="dashboard-performance__title">' + escapeHtml(payload && payload.title ? payload.title : "Performance score") + "</p>",
+      '<p class="dashboard-performance__meta">' + escapeHtml(payload && payload.pageviews ? payload.pageviews : "") + "</p>",
+      "</div>",
+      "</section>",
+      '<section class="dashboard-performance__distribution" aria-label="Performance distribution">',
+      '<div class="dashboard-performance__distribution-bar">',
+      distribution.map(function (item) {
+        return '<span class="dashboard-performance__distribution-fill is-' + escapeHtml(item.tone || "good") + '" style="width: ' + normalizeDashboardBarWidth(item.width) + ';"></span>';
+      }).join(""),
+      "</div>",
+      '<div class="dashboard-performance__distribution-legend">',
+      distribution.map(function (item) {
+        return [
+          '<div class="dashboard-performance__distribution-item">',
+          '<span class="dashboard-performance__distribution-dot is-' + escapeHtml(item.tone || "good") + '"></span>',
+          '<span class="dashboard-performance__distribution-label">' + escapeHtml(item.label || "") + "</span>",
+          '<span class="dashboard-performance__distribution-value">' + escapeHtml(item.value || "") + "</span>",
+          "</div>"
+        ].join("");
+      }).join(""),
+      "</div>",
+      "</section>",
+      '<section class="dashboard-performance__metrics">',
+      metrics.map(function (item) {
+        return [
+          '<article class="dashboard-performance__metric">',
+          '<div class="dashboard-performance__metric-main">',
+          '<span class="dashboard-performance__metric-value">' + escapeHtml(item.value || "") + "</span>",
+          '<span class="dashboard-performance__metric-code">' + escapeHtml(item.metric || "") + "</span>",
+          "</div>",
+          '<div class="dashboard-performance__metric-copy">' + escapeHtml(item.detail || "") + "</div>",
+          '<span class="dashboard-performance__status is-' + escapeHtml(item.tone || "good") + '">' + escapeHtml(item.status || "") + "</span>",
+          "</article>"
+        ].join("");
+      }).join(""),
+      "</section>",
+      '<button class="dashboard-performance__footer" type="button">' + escapeHtml(payload && payload.footer ? payload.footer : "View all pages") + "</button>",
+      "</div>"
+    ].join("");
+  }
+
+  function renderDashboardTopPages(payload) {
+    return [
+      '<div class="dashboard-top-pages">',
+      '<div class="dashboard-top-pages__controls">',
+      '<div class="dashboard-toggle" aria-hidden="true">',
+      '<span class="dashboard-toggle__label">URL parameters</span>',
+      '<span class="dashboard-toggle__switch"><span class="dashboard-toggle__thumb"></span></span>',
+      '<span class="dashboard-toggle__state">Off</span>',
+      "</div>",
+      '<button class="dashboard-top-pages__sort" type="button">',
+      'Sort by: ' + escapeHtml(payload && payload.sortLabel ? payload.sortLabel : "Most popular"),
+      '<svg viewBox="0 0 20 20" focusable="false" aria-hidden="true"><path d="M5.97 7.47a.75.75 0 0 1 1.06 0L10 10.44l2.97-2.97a.75.75 0 1 1 1.06 1.06l-3.5 3.5a.75.75 0 0 1-1.06 0l-3.5-3.5a.75.75 0 0 1 0-1.06Z"></path></svg>',
+      "</button>",
+      "</div>",
+      renderDashboardChartList(payload, { listClassName: "dashboard-chart-list--top-pages", rowClassName: "dashboard-chart-list__row--top-pages" }),
+      "</div>"
+    ].join("");
+  }
+
+  function renderDashboardErrors(payload) {
+    var items = payload && Array.isArray(payload.items) ? payload.items : [];
+
+    return [
+      '<div class="dashboard-errors">',
+      '<div class="dashboard-errors__toolbar">',
+      '<span class="dashboard-errors__toggle-label">' + escapeHtml(payload && payload.toggleLabel ? payload.toggleLabel : "Only show click errors") + "</span>",
+      '<div class="dashboard-toggle" aria-hidden="true">',
+      '<span class="dashboard-toggle__switch"><span class="dashboard-toggle__thumb"></span></span>',
+      '<span class="dashboard-toggle__state">' + escapeHtml(payload && payload.toggleState ? payload.toggleState : "Off") + "</span>",
+      "</div>",
+      "</div>",
+      '<div class="dashboard-errors__summary">',
+      '<div class="dashboard-errors__summary-value">' + escapeHtml(payload && payload.summaryValue ? payload.summaryValue : "0%") + "</div>",
+      '<div class="dashboard-errors__summary-copy">',
+      '<p class="dashboard-errors__summary-label">' + escapeHtml(payload && payload.summaryLabel ? payload.summaryLabel : "Recordings") + "</p>",
+      '<p class="dashboard-errors__summary-meta">' + escapeHtml(payload && payload.summaryMeta ? payload.summaryMeta : "") + "</p>",
+      "</div>",
+      "</div>",
+      '<div class="dashboard-errors__list" role="list">',
+      items.map(function (item) {
+        return [
+          '<div class="dashboard-errors__row" role="listitem">',
+          '<span class="dashboard-errors__row-share">' + escapeHtml(item && item.share ? item.share : "") + "</span>",
+          '<span class="dashboard-errors__row-message">' + escapeHtml(item && item.message ? item.message : "") + "</span>",
+          "</div>"
+        ].join("");
+      }).join(""),
+      "</div>",
+      "</div>"
+    ].join("");
+  }
+
+  function bindDummyDashboardGroup(panel, groupName, dataset, renderer, defaultKey) {
+    var tabs = Array.prototype.slice.call(panel.querySelectorAll('[data-dashboard-group="' + groupName + '"]'));
+    var target = panel.querySelector('[data-dashboard-render="' + groupName + '"]');
+    var initialKey = defaultKey || (tabs[0] ? tabs[0].getAttribute("data-dashboard-value") : "");
+
+    if (!tabs.length || !target) {
+      return;
+    }
+
+    function applyGroupTab(tabKey) {
+      var payload = dataset[tabKey] || dataset[initialKey] || dataset[Object.keys(dataset)[0]];
+      tabs.forEach(function (tab) {
+        var isActive = tab.getAttribute("data-dashboard-value") === tabKey;
+        tab.classList.toggle("is-active", isActive);
+        tab.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+      target.innerHTML = renderer(payload);
+    }
+
+    tabs.forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        applyGroupTab(tab.getAttribute("data-dashboard-value"));
+      });
+    });
+
+    applyGroupTab(initialKey);
+  }
+
   function bindDummyDashboardTabs(ctx) {
     if (dummyDashboardRuntime.isBound) {
       return;
@@ -248,6 +610,17 @@
     });
 
     applyDummyUsersTab("overview");
+
+    bindDummyDashboardGroup(panel, "referrer", DUMMY_REFERRER, renderDashboardChartList, "referrer");
+    bindDummyDashboardGroup(panel, "browsers", DUMMY_BROWSERS, renderDashboardChartList, "browsers");
+    bindDummyDashboardGroup(panel, "performance", DUMMY_PERFORMANCE, renderDashboardPerformance, "overview");
+    bindDummyDashboardGroup(panel, "top-pages", DUMMY_TOP_PAGES, renderDashboardTopPages, "top-pages");
+
+    var errorsTarget = panel.querySelector('[data-dashboard-render="errors"]');
+    if (errorsTarget) {
+      errorsTarget.innerHTML = renderDashboardErrors(DUMMY_JS_ERRORS);
+    }
+
     dummyDashboardRuntime.isBound = true;
   }
 

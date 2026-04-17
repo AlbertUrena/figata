@@ -1,8 +1,10 @@
 (() => {
   const READY_EVENT = 'figata:reservas-page-ready';
   const STEP_ORDER = ['who', 'date', 'time', 'zone', 'details'];
+  const RESERVATIONS_API_BASE = '/api/reservations';
   const REDUCED_MOTION_QUERY = window.matchMedia('(prefers-reduced-motion: reduce)');
   const MAX_CALENDAR_MONTHS = 8;
+  const reservationsRuntime = window.FigataReservationsRuntime || null;
   const TODAY = new Date();
   TODAY.setHours(0, 0, 0, 0);
 
@@ -25,39 +27,11 @@
   const SUCCESS_ANIMATION_PATH = 'assets/lottie/Calendar Success Add.json';
   const SUCCESS_PLAYER_SCRIPT_PATH = 'assets/lottie/lottie.min.js';
   const SUCCESS_PLAYER_SCRIPT_ID = 'figata-reservas-lottie-player';
-  const WHATSAPP_COUNTRY_CODE = '+1';
   const WHATSAPP_SEGMENTS = [
     { key: 'area', length: 3, autocomplete: 'tel-area-code', placeholder: '809' },
     { key: 'exchange', length: 3, autocomplete: 'off', placeholder: '555' },
     { key: 'line', length: 4, autocomplete: 'off', placeholder: '1234' },
   ];
-  const RESERVATION_STATUS_META = {
-    pending: {
-      label: 'Pendiente',
-      note: 'Esperando confirmación del equipo',
-      tone: 'pending',
-    },
-    confirmed: {
-      label: 'Confirmada',
-      note: 'La mesa quedó asegurada',
-      tone: 'confirmed',
-    },
-    cancelled: {
-      label: 'Cancelada',
-      note: 'La reserva fue cancelada',
-      tone: 'cancelled',
-    },
-  };
-  const OPENING_HOURS_BY_DAY = {
-    mon: null,
-    tue: null,
-    wed: '17:00-23:00',
-    thu: '17:00-23:00',
-    fri: '17:00-23:00',
-    sat: '17:00-23:00',
-    sun: '12:00-23:00',
-  };
-  const DAY_KEYS_BY_INDEX = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
   const DEFAULT_TIME_DRAFT = {
     hour12: 7,
     minute: 0,
@@ -95,25 +69,63 @@
   const TIME_OPTIONS = buildTimeOptions();
   const TIME_OPTIONS_BY_ID = new Map(TIME_OPTIONS.map((entry) => [entry.id, entry]));
 
-  const ZONE_OPTIONS = [
-    {
-      id: 'interior',
-      label: 'Interior',
-      icon: 'interior',
+  const DEFAULT_CONFIG = {
+    timezone: 'America/Santo_Domingo',
+    zones: [
+      { id: 'interior', label: 'Interior', enabled: true, sortOrder: 1, partySize: { min: 1, max: 12 } },
+      { id: 'terraza', label: 'Terraza', enabled: true, sortOrder: 2, partySize: { min: 1, max: 12 } },
+    ],
+    serviceWindows: {
+      mon: [],
+      tue: [],
+      wed: [{ start: '17:00', end: '23:00' }],
+      thu: [{ start: '17:00', end: '23:00' }],
+      fri: [{ start: '17:00', end: '23:00' }],
+      sat: [{ start: '17:00', end: '23:00' }],
+      sun: [{ start: '12:00', end: '23:00' }],
     },
-    {
-      id: 'terraza',
-      label: 'Terraza',
-      icon: 'terrace',
+    bookingRules: {
+      slotIntervalMinutes: 15,
+      defaultDurationMinutes: 120,
+      gracePeriodMinutes: 15,
+      minAdvanceMinutes: 120,
+      maxAdvanceDays: 30,
+      notesMaxLength: 300,
+      partySize: { min: 1, max: 12 },
+      confirmationMode: 'manual',
     },
-  ];
-
-  const STEP_META = {
-    who: { title: '¿Cuántos vienen?', placeholder: 'Añade comensales' },
-    date: { title: '¿Qué día prefieren?', placeholder: 'Elige una fecha' },
-    time: { title: '¿A qué hora?', placeholder: 'Elige un horario' },
-    zone: { title: '¿Qué zona prefieren?', placeholder: 'Elige una zona' },
-    details: { title: 'Tus datos', placeholder: 'Completa tus datos' },
+    statusCatalog: [
+      { id: 'pending', label: 'Pendiente', publicLabel: 'Pendiente', tone: 'pending' },
+      { id: 'confirmed', label: 'Confirmada', publicLabel: 'Confirmada', tone: 'confirmed' },
+      { id: 'cancelled', label: 'Cancelada', publicLabel: 'Cancelada', tone: 'cancelled' },
+      { id: 'rejected', label: 'Rechazada', publicLabel: 'Rechazada', tone: 'cancelled' },
+      { id: 'no_show', label: 'No show', publicLabel: 'No show', tone: 'cancelled' },
+    ],
+    uiCopy: {
+      hero: {
+        title: 'Reserva tu mesa',
+        subtitle: 'Elige cuántos vienen, cuándo prefieres visitarnos y el lugar ideal que mejor se adapte a tu visita.',
+      },
+      steps: {
+        partySize: '¿Cuántos vienen?',
+        date: '¿Qué día prefieren?',
+        time: '¿A qué hora?',
+        zone: '¿Qué zona prefieren?',
+        details: 'Tus datos',
+        confirmation: 'Reserva exitosa',
+      },
+      statusLabels: {
+        pending: 'Pendiente',
+        confirmed: 'Confirmada',
+        cancelled: 'Cancelada',
+        rejected: 'Rechazada',
+        no_show: 'No show',
+      },
+      details: {
+        whatsappCountryLabel: 'RD',
+        whatsappCountryCode: '+1',
+      },
+    },
   };
 
   const root = document.querySelector('[data-reservas-app]');
@@ -123,6 +135,10 @@
   const progressHost = root?.querySelector('[data-reservas-progress]') || null;
   const nextButton = root?.querySelector('[data-reservas-next]') || null;
   const backButton = root?.querySelector('[data-reservas-back]') || null;
+  const heroTitleNode = document.querySelector('[data-reservas-hero-title]') || null;
+  const heroSubtitleNode = document.querySelector('[data-reservas-hero-subtitle]') || null;
+  const heroMobileTitleNode = document.querySelector('[data-reservas-hero-mobile-title]') || null;
+  const heroMobileSubtitleNode = document.querySelector('[data-reservas-hero-mobile-subtitle]') || null;
 
   if (!(root instanceof HTMLElement) || !(cardsHost instanceof HTMLElement)) {
     return;
@@ -132,9 +148,12 @@
   let successAnimationInstance = null;
 
   const state = {
+    config: DEFAULT_CONFIG,
+    configError: '',
     step: 'who',
     submitted: false,
     reservationStatus: 'pending',
+    submittedReservation: null,
     visibleCalendarMonths: 2,
     guests: 0,
     date: '',
@@ -147,11 +166,59 @@
     timeDialPointerActive: false,
     timeDialPointerMode: 'hour',
     zone: '',
+    availability: null,
+    availabilityLoading: false,
+    availabilityError: '',
+    availabilityRequestId: 0,
+    submitLoading: false,
+    submitError: '',
     details: {
       name: '',
       whatsapp: createEmptyWhatsappSegments(),
       notes: '',
     },
+  };
+
+  const getConfig = () => state.config || DEFAULT_CONFIG;
+  const getUiCopy = () => getConfig().uiCopy || DEFAULT_CONFIG.uiCopy;
+  const getZoneOptions = () =>
+    (Array.isArray(getConfig().zones) ? getConfig().zones : DEFAULT_CONFIG.zones)
+      .filter((zone) => zone && zone.enabled !== false)
+      .slice()
+      .sort((left, right) => Number(left?.sortOrder || 0) - Number(right?.sortOrder || 0))
+      .map((zone) => ({
+        id: String(zone.id || ''),
+        label: String(zone.label || ''),
+        icon: zone.id === 'terraza' ? 'terrace' : 'interior',
+      }));
+  const getStepMeta = () => {
+    const copy = getUiCopy();
+    return {
+      who: { title: copy?.steps?.partySize || DEFAULT_CONFIG.uiCopy.steps.partySize, placeholder: 'Añade comensales' },
+      date: { title: copy?.steps?.date || DEFAULT_CONFIG.uiCopy.steps.date, placeholder: 'Elige una fecha' },
+      time: { title: copy?.steps?.time || DEFAULT_CONFIG.uiCopy.steps.time, placeholder: 'Elige un horario' },
+      zone: { title: copy?.steps?.zone || DEFAULT_CONFIG.uiCopy.steps.zone, placeholder: 'Elige una zona' },
+      details: { title: copy?.steps?.details || DEFAULT_CONFIG.uiCopy.steps.details, placeholder: 'Completa tus datos' },
+    };
+  };
+  const getWhatsappCountryCode = () =>
+    getUiCopy()?.details?.whatsappCountryCode || DEFAULT_CONFIG.uiCopy.details.whatsappCountryCode;
+  const getWhatsappCountryLabel = () =>
+    getUiCopy()?.details?.whatsappCountryLabel || DEFAULT_CONFIG.uiCopy.details.whatsappCountryLabel;
+  const getStatusMetaMap = () => {
+    const statuses = Array.isArray(getConfig().statusCatalog) ? getConfig().statusCatalog : DEFAULT_CONFIG.statusCatalog;
+    return statuses.reduce((map, entry) => {
+      if (!entry || !entry.id) {
+        return map;
+      }
+      map[entry.id] = {
+        label: entry.publicLabel || entry.label || entry.id,
+        tone: entry.id === 'confirmed'
+          ? 'confirmed'
+          : (entry.id === 'pending' ? 'pending' : 'cancelled'),
+      };
+      return map;
+    }, {});
   };
 
   const escapeHtml = (value) =>
@@ -200,41 +267,27 @@
 
   const parseTimeSelection = (value) => TIME_OPTIONS_BY_ID.get(value) || null;
 
-  const parseRangeToMinutes = (range) => {
-    if (typeof range !== 'string' || !/^\d{2}:\d{2}-\d{2}:\d{2}$/.test(range)) {
-      return null;
-    }
-
-    const [opensAt, closesAt] = range.split('-');
-    const [openHour, openMinute] = opensAt.split(':').map(Number);
-    const [closeHour, closeMinute] = closesAt.split(':').map(Number);
-
-    return {
-      openMinutes: openHour * 60 + openMinute,
-      closeMinutes: closeHour * 60 + closeMinute,
-    };
-  };
-
   const getDayKeyFromIsoDate = (isoDate) => {
+    if (reservationsRuntime?.getDayKeyFromIsoDate) {
+      return reservationsRuntime.getDayKeyFromIsoDate(isoDate) || null;
+    }
     if (!isoDate) {
       return null;
     }
-
     const date = new Date(`${isoDate}T12:00:00`);
-    if (Number.isNaN(date.getTime())) {
-      return null;
-    }
-
-    return DAY_KEYS_BY_INDEX[date.getDay()] || null;
+    return Number.isNaN(date.getTime()) ? null : ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][date.getDay()] || null;
   };
 
-  const getOpeningRangeForDate = (isoDate) => {
+  const getOpeningWindowsForDate = (isoDate) => {
+    if (reservationsRuntime?.getServiceWindowsForDate) {
+      return reservationsRuntime.getServiceWindowsForDate(getConfig(), isoDate);
+    }
     const dayKey = getDayKeyFromIsoDate(isoDate);
     if (!dayKey) {
-      return null;
+      return [];
     }
-
-    return parseRangeToMinutes(OPENING_HOURS_BY_DAY[dayKey]);
+    const windows = getConfig()?.serviceWindows?.[dayKey];
+    return Array.isArray(windows) ? windows : [];
   };
 
   const isTimeOptionAvailable = (option) => {
@@ -242,13 +295,28 @@
       return false;
     }
 
-    const range = getOpeningRangeForDate(state.date);
-    if (!range) {
+    const optionMinutes = option.hour24 * 60 + option.minute;
+    const insideWindow = getOpeningWindowsForDate(state.date).some((entry) => {
+      const openMinutes = reservationsRuntime?.timeToMinutes
+        ? reservationsRuntime.timeToMinutes(entry?.start)
+        : null;
+      const closeMinutes = reservationsRuntime?.timeToMinutes
+        ? reservationsRuntime.timeToMinutes(entry?.end)
+        : null;
+      return Number.isFinite(openMinutes) && Number.isFinite(closeMinutes) &&
+        optionMinutes >= openMinutes &&
+        optionMinutes < closeMinutes;
+    });
+
+    if (!insideWindow) {
       return false;
     }
 
-    const optionMinutes = option.hour24 * 60 + option.minute;
-    return optionMinutes >= range.openMinutes && optionMinutes < range.closeMinutes;
+    if (reservationsRuntime?.isInsideBookingWindow) {
+      return reservationsRuntime.isInsideBookingWindow(getConfig(), state.date, option.id);
+    }
+
+    return true;
   };
 
   const getAvailableTimeOptions = () => TIME_OPTIONS.filter((entry) => isTimeOptionAvailable(entry));
@@ -377,10 +445,12 @@
   const getPartySize = () => Math.max(0, Number(state.guests || 0));
   const getSelectedDate = () => calendarData.lookup.get(state.date) || null;
   const getSelectedTime = () => parseTimeSelection(state.time);
-  const getSelectedZone = () => ZONE_OPTIONS.find((entry) => entry.id === state.zone) || null;
+  const getSelectedZone = () => getZoneOptions().find((entry) => entry.id === state.zone) || null;
   const getCurrentStepIndex = () => STEP_ORDER.indexOf(state.step);
-  const getReservationStatusMeta = () =>
-    RESERVATION_STATUS_META[state.reservationStatus] || RESERVATION_STATUS_META.pending;
+  const getReservationStatusMeta = () => {
+    const statusMap = getStatusMetaMap();
+    return statusMap[state.reservationStatus] || statusMap.pending || DEFAULT_CONFIG.statusCatalog[0];
+  };
   const getWhatsappSegments = () => ({
     area: sanitizeDigits(state.details?.whatsapp?.area).slice(0, 3),
     exchange: sanitizeDigits(state.details?.whatsapp?.exchange).slice(0, 3),
@@ -404,11 +474,11 @@
   const formatWhatsappNumber = () => {
     const segments = getWhatsappSegments();
     if (!segments.area && !segments.exchange && !segments.line) {
-      return WHATSAPP_COUNTRY_CODE;
+      return getWhatsappCountryCode();
     }
 
     return [
-      WHATSAPP_COUNTRY_CODE,
+      getWhatsappCountryCode(),
       [segments.area, segments.exchange, segments.line].filter(Boolean).join('-'),
     ].filter(Boolean).join(' ');
   };
@@ -420,6 +490,167 @@
     }
 
     return new URL(value, document.baseURI || window.location.href).toString();
+  };
+
+  const syncHeroCopy = () => {
+    const heroCopy = getUiCopy()?.hero || DEFAULT_CONFIG.uiCopy.hero;
+    if (heroTitleNode) {
+      heroTitleNode.textContent = heroCopy.title || DEFAULT_CONFIG.uiCopy.hero.title;
+    }
+    if (heroSubtitleNode) {
+      heroSubtitleNode.textContent = heroCopy.subtitle || DEFAULT_CONFIG.uiCopy.hero.subtitle;
+    }
+    if (heroMobileTitleNode) {
+      heroMobileTitleNode.textContent = heroCopy.title || DEFAULT_CONFIG.uiCopy.hero.title;
+    }
+    if (heroMobileSubtitleNode) {
+      heroMobileSubtitleNode.textContent = heroCopy.subtitle || DEFAULT_CONFIG.uiCopy.hero.subtitle;
+    }
+  };
+
+  const getApiUrl = (path) => toAbsoluteUrl(path);
+
+  const clearAvailabilityState = (options = {}) => {
+    state.availability = null;
+    state.availabilityError = options.preserveError ? state.availabilityError : '';
+    state.availabilityLoading = false;
+    if (options.resetZone !== false) {
+      state.zone = '';
+    }
+  };
+
+  const maybeKeepSelectedZone = (availabilityPayload) => {
+    const zoneEntry = availabilityPayload?.zones?.find((entry) => entry.id === state.zone) || null;
+    if (!zoneEntry || !zoneEntry.available) {
+      state.zone = '';
+    }
+  };
+
+  const refreshAvailability = async () => {
+    clearAvailabilityState({ resetZone: false });
+
+    if (!state.date || !state.time || !getPartySize()) {
+      renderFooter();
+      return;
+    }
+
+    const requestId = state.availabilityRequestId + 1;
+    state.availabilityRequestId = requestId;
+    state.availabilityLoading = true;
+    renderStepView();
+
+    try {
+      const url = new URL(getApiUrl(RESERVATIONS_API_BASE + '/availability'));
+      url.searchParams.set('date', state.date);
+      url.searchParams.set('time', state.time);
+      url.searchParams.set('party_size', String(getPartySize()));
+      const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
+      const payload = await response.json().catch(() => ({}));
+
+      if (requestId !== state.availabilityRequestId) {
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(payload?.error || 'No pudimos revisar disponibilidad ahora mismo.');
+      }
+
+      state.availability = payload;
+      state.availabilityError = '';
+      state.availabilityLoading = false;
+      maybeKeepSelectedZone(payload);
+      renderStepView();
+    } catch (error) {
+      if (requestId !== state.availabilityRequestId) {
+        return;
+      }
+
+      state.availabilityLoading = false;
+      state.availabilityError = error?.message || 'No pudimos revisar disponibilidad ahora mismo.';
+      state.availability = null;
+      state.zone = '';
+      renderStepView();
+    }
+  };
+
+  const loadReservationsConfig = async () => {
+    try {
+      const response = await fetch(getApiUrl('data/reservations-config.json'), {
+        headers: { Accept: 'application/json' },
+      });
+      if (!response.ok) {
+        throw new Error('No pudimos cargar la configuración de reservas.');
+      }
+      state.config = await response.json();
+      state.configError = '';
+    } catch (error) {
+      state.config = DEFAULT_CONFIG;
+      state.configError = error?.message || 'No pudimos cargar la configuración de reservas.';
+    }
+
+    syncHeroCopy();
+    syncTimeAvailabilityState();
+    renderStepView();
+    if (state.step === 'zone' && state.date && state.time && getPartySize()) {
+      refreshAvailability();
+    }
+  };
+
+  const submitReservation = async () => {
+    state.submitLoading = true;
+    state.submitError = '';
+    renderFooter();
+
+    try {
+      const response = await fetch(getApiUrl(RESERVATIONS_API_BASE), {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customer_name: state.details.name.trim(),
+          whatsapp_country_code: getWhatsappCountryCode(),
+          whatsapp_number: getWhatsappNumber(),
+          party_size: getPartySize(),
+          date: state.date,
+          time: state.time,
+          zone_id: state.zone,
+          notes: state.details.notes.trim(),
+          source: 'website',
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const submissionError = new Error(payload?.error || 'No pudimos registrar la reserva.');
+        if (payload?.availability) {
+          submissionError.availability = payload.availability;
+        }
+        throw submissionError;
+      }
+
+      state.submitLoading = false;
+      state.submittedReservation = payload?.reservation || null;
+      state.reservationStatus = payload?.reservation?.status || 'pending';
+      state.submitted = true;
+      renderStepView();
+      requestAnimationFrame(scrollStageIntoView);
+    } catch (error) {
+      state.submitLoading = false;
+      if (error?.availability) {
+        state.submitError = '';
+        state.availability = error.availability;
+        state.availabilityLoading = false;
+        state.availabilityError = error?.message || 'Ese horario ya no está disponible en la zona seleccionada.';
+        maybeKeepSelectedZone(error.availability);
+        state.step = 'zone';
+        renderStepView();
+        requestAnimationFrame(scrollStageIntoView);
+        return;
+      }
+      state.submitError = error?.message || 'No pudimos registrar la reserva.';
+      renderStepView();
+    }
   };
 
   const ensureSuccessPlayer = () => {
@@ -551,6 +782,7 @@
   };
 
   const getStepSummary = (step) => {
+    const STEP_META = getStepMeta();
     switch (step) {
       case 'who': {
         const partySize = getPartySize();
@@ -586,16 +818,21 @@
     }
   };
 
-  const renderStepShell = (step, bodyMarkup) => `
-    <section class="reservas-step-card" data-step-card="${escapeHtml(step)}">
-      <header class="reservas-step-card__head">
-        <h2 class="reservas-step-card__title">${escapeHtml(STEP_META[step].title)}</h2>
-      </header>
-      <div class="reservas-step-card__body">
-        ${bodyMarkup}
-      </div>
-    </section>
-  `;
+  const renderStepShell = (step, bodyMarkup) => {
+    const STEP_META = getStepMeta();
+    return `
+      <section class="reservas-step-card" data-step-card="${escapeHtml(step)}">
+        <header class="reservas-step-card__head">
+          ${state.submitError && step === 'details' ? `<p class="reservas-step-card__error">${escapeHtml(state.submitError)}</p>` : ''}
+          ${state.availabilityError && step === 'zone' ? `<p class="reservas-step-card__error">${escapeHtml(state.availabilityError)}</p>` : ''}
+          <h2 class="reservas-step-card__title">${escapeHtml(STEP_META[step].title)}</h2>
+        </header>
+        <div class="reservas-step-card__body">
+          ${bodyMarkup}
+        </div>
+      </section>
+    `;
+  };
 
   const renderWhoStep = () =>
     renderStepShell(
@@ -720,11 +957,13 @@
     if (mode === 'minute') {
       state.timeDraftMinute = value;
       commitTimeDraft();
+      clearAvailabilityState();
     } else {
       const hourChanged = state.timeDraftHour !== value;
       state.timeDraftHour = value;
       if (hourChanged) {
         state.time = '';
+        clearAvailabilityState();
       }
     }
 
@@ -830,16 +1069,31 @@
       'zone',
       `
         <div class="reservas-choice-grid reservas-choice-grid--zones">
-          ${ZONE_OPTIONS.map((entry) => `
+          ${getZoneOptions().map((entry) => {
+            const availabilityEntry = state.availability?.zones?.find((zone) => zone.id === entry.id) || null;
+            const helperLabel = state.availabilityLoading
+              ? 'Buscando cupo...'
+              : (availabilityEntry
+                ? (availabilityEntry.available
+                    ? `Quedan ${availabilityEntry.covers_remaining} cupos`
+                    : availabilityEntry.reason === 'blocked'
+                      ? 'No disponible'
+                      : 'Sin cupo')
+                : 'Consulta disponibilidad');
+            const isDisabled = state.availabilityLoading || (availabilityEntry ? !availabilityEntry.available : true);
+            return `
             <button
               class="reservas-choice-card reservas-zone-card"
               type="button"
               data-select-zone="${escapeHtml(entry.id)}"
-              aria-pressed="${String(state.zone === entry.id)}">
+              aria-pressed="${String(state.zone === entry.id)}"
+              ${isDisabled ? 'disabled' : ''}>
               <span class="reservas-zone-card__icon" aria-hidden="true">${renderIcon(entry.icon)}</span>
               <span class="reservas-choice-card__title">${escapeHtml(entry.label)}</span>
+              <span class="reservas-choice-card__meta">${escapeHtml(helperLabel)}</span>
             </button>
-          `).join('')}
+          `;
+          }).join('')}
         </div>
       `
     );
@@ -864,9 +1118,9 @@
             <div class="reservas-whatsapp" role="group" aria-label="Número de Whatsapp">
               <span
                 class="reservas-whatsapp__country"
-                aria-label="Código de país República Dominicana ${escapeHtml(WHATSAPP_COUNTRY_CODE)}">
-                <span class="reservas-whatsapp__country-iso" aria-hidden="true">RD</span>
-                <span class="reservas-whatsapp__country-code" aria-hidden="true">${escapeHtml(WHATSAPP_COUNTRY_CODE)}</span>
+                aria-label="Código de país ${escapeHtml(getWhatsappCountryLabel())} ${escapeHtml(getWhatsappCountryCode())}">
+                <span class="reservas-whatsapp__country-iso" aria-hidden="true">${escapeHtml(getWhatsappCountryLabel())}</span>
+                <span class="reservas-whatsapp__country-code" aria-hidden="true">${escapeHtml(getWhatsappCountryCode())}</span>
               </span>
               <div class="reservas-whatsapp__segments">
                 ${WHATSAPP_SEGMENTS.map((segment, index) => `
@@ -899,28 +1153,31 @@
     );
 
   const renderConfirmation = () => {
-    const selectedDate = getSelectedDate();
-    const selectedTime = getSelectedTime();
-    const selectedZone = getSelectedZone();
+    const reservation = state.submittedReservation || null;
+    const selectedDate = reservation?.reservation_date ? calendarData.lookup.get(reservation.reservation_date) || getSelectedDate() : getSelectedDate();
+    const selectedTime = reservation?.reservation_time ? parseTimeSelection(reservation.reservation_time) || getSelectedTime() : getSelectedTime();
+    const selectedZone = reservation?.zone_id ? getZoneOptions().find((entry) => entry.id === reservation.zone_id) || getSelectedZone() : getSelectedZone();
     const statusMeta = getReservationStatusMeta();
+    const uiCopy = getUiCopy();
     const rows = [
+      { label: 'Código', value: reservation?.reservation_code || 'Pendiente' },
       { label: 'Fecha', value: selectedDate ? selectedDate.label : 'Por definir' },
       { label: 'Hora', value: selectedTime ? selectedTime.label : 'Por definir' },
-      { label: 'Comensales', value: getStepSummary('who') },
+      { label: 'Comensales', value: reservation?.party_size ? `${reservation.party_size} ${reservation.party_size === 1 ? 'persona' : 'personas'}` : getStepSummary('who') },
       { label: 'Zona', value: selectedZone ? selectedZone.label : 'Por definir' },
-      { label: 'Nombre', value: state.details.name.trim() || 'Por definir' },
-      { label: 'Whatsapp', value: formatWhatsappNumber() },
+      { label: 'Nombre', value: reservation?.customer_name || state.details.name.trim() || 'Por definir' },
+      { label: 'Whatsapp', value: reservation?.whatsapp_display || formatWhatsappNumber() },
     ];
 
-    if (state.details.notes.trim()) {
-      rows.push({ label: 'Notas', value: state.details.notes.trim() });
+    if ((reservation?.notes || state.details.notes).trim()) {
+      rows.push({ label: 'Notas', value: (reservation?.notes || state.details.notes).trim() });
     }
 
     return `
       <section class="reservas-confirmation" aria-labelledby="reservas-confirmation-title">
         <div class="reservas-confirmation__hero">
           <div class="reservas-confirmation__animation" data-reservas-success-animation aria-hidden="true"></div>
-          <h2 class="reservas-confirmation__title" id="reservas-confirmation-title">Reserva exitosa</h2>
+          <h2 class="reservas-confirmation__title" id="reservas-confirmation-title">${escapeHtml(uiCopy?.steps?.confirmation || 'Reserva exitosa')}</h2>
           <p class="reservas-confirmation__copy">
             Recibimos tu solicitud correctamente. Te estaremos confirmando por Whatsapp cuando el equipo la revise.
           </p>
@@ -1007,14 +1264,19 @@
     const currentIndex = getCurrentStepIndex();
     const isLast = currentIndex === STEP_ORDER.length - 1;
     const hasTimeAvailability = state.step === 'time' ? getAvailableHourValues().length > 0 : false;
+    const canAdvanceFromZone = state.availabilityLoading ? false : isStepComplete('zone');
 
     nextButton.hidden = false;
     backButton.hidden = false;
-    backButton.disabled = currentIndex === 0;
-    nextButton.disabled = state.step === 'time'
-      ? (state.timeMode === 'hour' ? !hasTimeAvailability : !Boolean(state.time))
-      : !isStepComplete(state.step);
-    nextButton.textContent = isLast ? 'Reservar' : 'Siguiente';
+    backButton.disabled = currentIndex === 0 || state.submitLoading;
+    nextButton.disabled = state.submitLoading || (
+      state.step === 'time'
+        ? (state.timeMode === 'hour' ? !hasTimeAvailability : !Boolean(state.time))
+        : state.step === 'zone'
+          ? !canAdvanceFromZone
+          : !isStepComplete(state.step)
+    );
+    nextButton.textContent = state.submitLoading ? 'Reservando...' : (isLast ? 'Reservar' : 'Siguiente');
   };
 
   const renderStepView = () => {
@@ -1303,7 +1565,13 @@
       syncTimeDraftFromSelection();
       syncTimeAvailabilityState();
     }
+    if (step !== 'zone') {
+      state.availabilityError = '';
+    }
     renderStepView();
+    if (step === 'zone') {
+      refreshAvailability();
+    }
     requestAnimationFrame(scrollStageIntoView);
   };
 
@@ -1311,6 +1579,7 @@
     state.step = 'who';
     state.submitted = false;
     state.reservationStatus = 'pending';
+    state.submittedReservation = null;
     state.visibleCalendarMonths = 2;
     state.guests = 0;
     state.date = '';
@@ -1323,6 +1592,11 @@
     state.timeDialPointerActive = false;
     state.timeDialPointerMode = 'hour';
     state.zone = '';
+    state.availability = null;
+    state.availabilityLoading = false;
+    state.availabilityError = '';
+    state.submitLoading = false;
+    state.submitError = '';
     state.details = {
       name: '',
       whatsapp: createEmptyWhatsappSegments(),
@@ -1334,6 +1608,10 @@
   };
 
   const goNext = () => {
+    if (state.submitLoading) {
+      return;
+    }
+
     if (!isStepComplete(state.step)) {
       if (state.step === 'time' && getAvailableHourValues().length && !state.time) {
         state.timeMode = 'minute';
@@ -1346,10 +1624,7 @@
 
     const currentIndex = getCurrentStepIndex();
     if (currentIndex === STEP_ORDER.length - 1) {
-      state.reservationStatus = 'pending';
-      state.submitted = true;
-      renderStepView();
-      requestAnimationFrame(scrollStageIntoView);
+      submitReservation();
       return;
     }
 
@@ -1399,6 +1674,8 @@
       event.preventDefault();
       const delta = guestButton.getAttribute('data-guest-action') === 'increment' ? 1 : -1;
       state.guests = Math.max(0, getPartySize() + delta);
+      clearAvailabilityState();
+      state.submitError = '';
       syncWhoUi();
       return;
     }
@@ -1408,6 +1685,8 @@
       event.preventDefault();
       const nextDate = dateButton.getAttribute('data-select-date') || '';
       state.date = state.date === nextDate ? '' : nextDate;
+      clearAvailabilityState();
+      state.submitError = '';
       syncDateUi();
       dateButton.blur();
       return;
@@ -1433,13 +1712,16 @@
       event.preventDefault();
       state.timePeriod = timePeriodButton.getAttribute('data-time-period') || 'PM';
       commitTimeDraft();
+      clearAvailabilityState();
+      state.submitError = '';
       syncTimeUi();
       return;
     }
 
     const zoneButton = event.target.closest('[data-select-zone]');
-    if (zoneButton instanceof HTMLButtonElement) {
+    if (zoneButton instanceof HTMLButtonElement && !zoneButton.disabled) {
       event.preventDefault();
+      state.submitError = '';
       state.zone = zoneButton.getAttribute('data-select-zone') || '';
       syncZoneUi();
       return;
@@ -1575,6 +1857,7 @@
     }
 
     state.details[field] = target.value;
+    state.submitError = '';
     renderFooter();
   });
 
@@ -1639,6 +1922,8 @@
     focusWhatsappSegment(nextFocusKey);
   });
 
+  syncHeroCopy();
   renderStepView();
+  loadReservationsConfig();
   document.dispatchEvent(new CustomEvent(READY_EVENT));
 })();

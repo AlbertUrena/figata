@@ -8,6 +8,8 @@
     "build-cloudflare-public": "node scripts/build-cloudflare-public.js",
     "build-cloudflare-admin": "node scripts/build-cloudflare-admin.js",
     "build-cloudflare-jobs": "node scripts/build-cloudflare-jobs.js",
+    "deploy-cloudflare-public": "node scripts/deploy-cloudflare-pages.js public",
+    "deploy-cloudflare-admin": "node scripts/deploy-cloudflare-pages.js admin",
     "build:cloudflare": "npm run build-cloudflare-public && npm run build-cloudflare-admin && npm run build-cloudflare-jobs",
     "generate:home-featured": "node scripts/generate-home-featured.js",
     "generate:menu-card-lqip": "node scripts/generate-menu-card-lqip.js",

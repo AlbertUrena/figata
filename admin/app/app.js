@@ -189,7 +189,8 @@
       "ingredients-editor": null,
       "categories-editor": null,
       "restaurant-editor": null,
-      "media-editor": null
+      "media-editor": null,
+      "reservations-editor": null
     },
     menuActiveAnchor: {
       categoryId: "",
@@ -214,6 +215,36 @@
     mediaActiveSectionId: "",
     mediaAnchorTargets: [],
     mediaScrollSpyFrame: 0,
+    reservationsEditor: {
+      filters: {
+        status: "",
+        date: "",
+        zoneId: ""
+      },
+      summary: {
+        total: 0,
+        pending: 0,
+        confirmed: 0,
+        cancelled: 0,
+        rejected: 0,
+        no_show: 0
+      },
+      reservations: [],
+      blocks: [],
+      loading: false,
+      loaded: false,
+      error: "",
+      actionReservationId: "",
+      actionStatus: "",
+      blockSubmitting: false,
+      blockDeletingId: "",
+      blockForm: {
+        date: "",
+        time: "",
+        zoneId: "",
+        note: ""
+      }
+    },
     modalEditor: {
       activeSubpanelId: "account",
       previewBridge: {
@@ -290,7 +321,8 @@
     ingredientsEditorPanel: document.getElementById("ingredients-editor-panel"),
     categoriesEditorPanel: document.getElementById("categories-editor-panel"),
     restaurantEditorPanel: document.getElementById("restaurant-editor-panel"),
-    mediaEditorPanel: document.getElementById("media-editor-panel")
+    mediaEditorPanel: document.getElementById("media-editor-panel"),
+    reservationsEditorPanel: document.getElementById("reservations-editor-panel")
   };
 
   var elements = {
@@ -309,6 +341,7 @@
     sidebarNavCategories: document.getElementById("sidebar-nav-categories"),
     sidebarNavRestaurant: document.getElementById("sidebar-nav-restaurant"),
     sidebarNavMedia: document.getElementById("sidebar-nav-media"),
+    sidebarNavReservations: document.getElementById("sidebar-nav-reservations"),
     sidebarMenuAccordion: document.getElementById("sidebar-menu-accordion"),
     sidebarHomepageAccordion: document.getElementById("sidebar-homepage-accordion"),
     sidebarPagesAccordion: document.getElementById("sidebar-pages-accordion"),
@@ -606,6 +639,12 @@
     statusElement.textContent = message || "";
   }
 
+  function setReservationsEditorStatus(message) {
+    var statusElement = document.getElementById("reservations-editor-status");
+    if (!statusElement) return;
+    statusElement.textContent = message || "";
+  }
+
   function setPagesEditorStatus(message) {
     var statusElement = document.getElementById("pages-editor-status");
     if (!statusElement) return;
@@ -637,6 +676,10 @@
     }
     if (state.currentPanel === "media-editor") {
       setMediaEditorStatus(message);
+      return;
+    }
+    if (state.currentPanel === "reservations-editor") {
+      setReservationsEditorStatus(message);
       return;
     }
     if (state.currentPanel === "pages-editor") {
@@ -1103,6 +1146,7 @@
         sidebarNavCategories: elements.sidebarNavCategories,
         sidebarNavRestaurant: elements.sidebarNavRestaurant,
         sidebarNavMedia: elements.sidebarNavMedia,
+        sidebarNavReservations: elements.sidebarNavReservations,
         sidebarHomeButton: elements.sidebarHomeButton,
         sidebarNavActiveIndicator: elements.sidebarNavActiveIndicator
       },
@@ -1229,6 +1273,33 @@
   function openMediaEditor(options) {
     if (!MEDIA) return;
     return MEDIA.open(_mediaCtx(), options);
+  }
+
+  // --- Reservations Operations Panel (delegated to modules/panels/reservations-panel.js) ---
+  var RESERVATIONS = window.FigataAdmin.reservationsPanel;
+  function _reservationsCtx() {
+    return {
+      state: state,
+      views: views,
+      ensureDataLoaded: ensureDataLoaded,
+      setActivePanel: setActivePanel,
+      navigateToRoute: navigateToRoute,
+      setMenuBrowserStatus: setMenuBrowserStatus,
+      setItemEditorStatus: setItemEditorStatus,
+      setHomeEditorStatus: setHomeEditorStatus,
+      setIngredientsEditorStatus: setIngredientsEditorStatus,
+      setCategoriesEditorStatus: setCategoriesEditorStatus,
+      setRestaurantEditorStatus: setRestaurantEditorStatus,
+      setMediaEditorStatus: setMediaEditorStatus,
+      setReservationsEditorStatus: setReservationsEditorStatus,
+      setPagesEditorStatus: setPagesEditorStatus,
+      setModalEditorStatus: setModalEditorStatus,
+      setDataStatus: setDataStatus
+    };
+  }
+  function openReservationsPanel(options) {
+    if (!RESERVATIONS) return;
+    return RESERVATIONS.open(_reservationsCtx(), options);
   }
 
   // --- Pages Editor (delegated to modules/panels/pages-panel.js) ---
@@ -2653,7 +2724,7 @@
     home.hero.ctaPrimary.label = String(home.hero.ctaPrimary.label || "Ver menu").trim();
     home.hero.ctaPrimary.url = String(home.hero.ctaPrimary.url || "#menu").trim();
     home.hero.ctaSecondary.label = String(home.hero.ctaSecondary.label || "Reservar").trim();
-    home.hero.ctaSecondary.url = String(home.hero.ctaSecondary.url || "#reservar").trim();
+    home.hero.ctaSecondary.url = String(home.hero.ctaSecondary.url || "/reservas/").trim();
 
     home.popular.title = String(home.popular.title || "Las mas pedidas").trim();
     home.popular.subtitle = String(home.popular.subtitle || "Favoritas de nuestros clientes").trim();
@@ -2776,7 +2847,7 @@
       home.navbar.cta.label || legacyReservation.ctaLabel || "Reservar ahora"
     ).trim();
     home.navbar.cta.url = String(
-      home.navbar.cta.url || legacyReservation.url || "#reservar"
+      home.navbar.cta.url || legacyReservation.url || "/reservas/"
     ).trim();
     home.navbar.cta.icon = String(
       home.navbar.cta.icon || HOME_DEFAULT_NAVBAR_ICON
@@ -7347,7 +7418,7 @@
       state.drafts.home.navbar.cta.label || "Reservar ahora"
     ).trim();
     state.drafts.home.navbar.cta.url = String(
-      state.drafts.home.navbar.cta.url || "#reservar"
+      state.drafts.home.navbar.cta.url || "/reservas/"
     ).trim();
     state.drafts.home.navbar.cta.icon = String(
       state.drafts.home.navbar.cta.icon || HOME_DEFAULT_NAVBAR_ICON
@@ -10887,6 +10958,10 @@
       return { name: "restaurant" };
     }
 
+    if (parts[0] === "reservations" || parts[0] === "reservas") {
+      return { name: "reservations" };
+    }
+
     if (parts[0] === "media" && parts[1] === "item" && parts[2]) {
       return {
         name: "media-item",
@@ -11077,6 +11152,15 @@
         return;
       }
       openRestaurantEditor({ skipRoute: true });
+      return;
+    }
+
+    if (route.name === "reservations") {
+      if (!state.hasDataLoaded) {
+        ensureDataLoaded(false);
+        return;
+      }
+      openReservationsPanel({ skipRoute: true });
       return;
     }
 
@@ -11310,6 +11394,13 @@
       elements.sidebarNavMedia.addEventListener("click", function () {
         clearPanelPostNavigationActions();
         navigateToRoute("/media");
+      });
+    }
+
+    if (elements.sidebarNavReservations) {
+      elements.sidebarNavReservations.addEventListener("click", function () {
+        clearPanelPostNavigationActions();
+        navigateToRoute("/reservations");
       });
     }
 

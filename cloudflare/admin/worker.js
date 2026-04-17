@@ -1,6 +1,7 @@
 const analyticsAiAnalyst = require('../../shared/analytics-ai-analyst.js');
 const access = require('../common/access.js');
 const analyticsReportService = require('../common/analytics-report-service.js');
+const reservationsService = require('../common/reservations-service.js');
 const snapshotService = require('../common/analytics-snapshot.js');
 const http = require('../common/http.js');
 const publishLock = require('../common/publish-lock.js');
@@ -167,6 +168,137 @@ async function handlePublish(request, env) {
   }
 }
 
+async function buildReservationsDeps(request, env) {
+  const config = await reservationsService.loadReservationsConfigFromAssets(env, request.url);
+  return {
+    config: config,
+    repo: reservationsService.createD1Repository(env && env.RESERVATIONS_DB),
+  };
+}
+
+function getActorFromSession(session) {
+  return normalizeText(session && (session.email || session.name), 'admin');
+}
+
+async function handleReservationsAdminList(request, env) {
+  const auth = await requireSessionOrResponse(request, env);
+  if (auth.response) {
+    return auth.response;
+  }
+  if (request.method !== 'GET') {
+    return http.jsonResponse(405, { error: 'Method not allowed' });
+  }
+
+  try {
+    const deps = await buildReservationsDeps(request, env);
+    const url = new URL(request.url);
+    const payload = await reservationsService.listReservations(deps.config, deps.repo, {
+      status: normalizeText(url.searchParams.get('status')),
+      zone_id: normalizeText(url.searchParams.get('zone_id') || url.searchParams.get('zone')),
+      date: normalizeText(url.searchParams.get('date')),
+      limit: Number(url.searchParams.get('limit') || 80),
+    });
+    return http.jsonResponse(200, payload);
+  } catch (error) {
+    return reservationsService.jsonErrorResponse(error);
+  }
+}
+
+async function handleReservationsAdminBlocks(request, env) {
+  const auth = await requireSessionOrResponse(request, env);
+  if (auth.response) {
+    return auth.response;
+  }
+
+  try {
+    const deps = await buildReservationsDeps(request, env);
+    const url = new URL(request.url);
+    if (request.method === 'GET') {
+      const payload = await reservationsService.listBlocks(deps.config, deps.repo, {
+        zone_id: normalizeText(url.searchParams.get('zone_id') || url.searchParams.get('zone')),
+        date: normalizeText(url.searchParams.get('date')),
+        limit: Number(url.searchParams.get('limit') || 80),
+      });
+      return http.jsonResponse(200, payload);
+    }
+
+    if (request.method === 'POST') {
+      let payload;
+      try {
+        payload = await http.readJsonBody(request, { maxBytes: MAX_BODY_SIZE_BYTES });
+      } catch (error) {
+        return http.jsonResponse(error && error.message === 'Payload too large' ? 413 : 400, {
+          error: error && error.message ? error.message : 'Invalid block payload',
+        });
+      }
+
+      const result = await reservationsService.createBlock(
+        deps.config,
+        deps.repo,
+        env,
+        payload || {},
+        { actor: getActorFromSession(auth.session) }
+      );
+      return http.jsonResponse(201, result);
+    }
+
+    return http.jsonResponse(405, { error: 'Method not allowed' });
+  } catch (error) {
+    return reservationsService.jsonErrorResponse(error);
+  }
+}
+
+async function handleReservationsAdminBlockDelete(request, env, blockId) {
+  const auth = await requireSessionOrResponse(request, env);
+  if (auth.response) {
+    return auth.response;
+  }
+  if (request.method !== 'DELETE') {
+    return http.jsonResponse(405, { error: 'Method not allowed' });
+  }
+
+  try {
+    const deps = await buildReservationsDeps(request, env);
+    const payload = await reservationsService.deleteBlock(deps.repo, blockId);
+    return http.jsonResponse(200, payload);
+  } catch (error) {
+    return reservationsService.jsonErrorResponse(error);
+  }
+}
+
+async function handleReservationsAdminStatus(request, env, reservationId) {
+  const auth = await requireSessionOrResponse(request, env);
+  if (auth.response) {
+    return auth.response;
+  }
+  if (request.method !== 'PATCH') {
+    return http.jsonResponse(405, { error: 'Method not allowed' });
+  }
+
+  let payload;
+  try {
+    payload = await http.readJsonBody(request, { maxBytes: MAX_BODY_SIZE_BYTES });
+  } catch (error) {
+    return http.jsonResponse(error && error.message === 'Payload too large' ? 413 : 400, {
+      error: error && error.message ? error.message : 'Invalid reservation update payload',
+    });
+  }
+
+  try {
+    const deps = await buildReservationsDeps(request, env);
+    const result = await reservationsService.updateReservationStatus(
+      deps.config,
+      deps.repo,
+      reservationId,
+      payload || {},
+      { actor: getActorFromSession(auth.session) }
+    );
+    return http.jsonResponse(200, result);
+  } catch (error) {
+    return reservationsService.jsonErrorResponse(error);
+  }
+}
+
 async function handleRequest(request, env) {
   const url = new URL(request.url);
 
@@ -185,6 +317,26 @@ async function handleRequest(request, env) {
   if (url.pathname === '/api/publish') {
     return handlePublish(request, env);
   }
+  if (url.pathname === '/api/reservations/admin/list') {
+    return handleReservationsAdminList(request, env);
+  }
+  if (url.pathname === '/api/reservations/admin/blocks') {
+    return handleReservationsAdminBlocks(request, env);
+  }
+  if (url.pathname.indexOf('/api/reservations/admin/blocks/') === 0) {
+    return handleReservationsAdminBlockDelete(
+      request,
+      env,
+      decodeURIComponent(url.pathname.slice('/api/reservations/admin/blocks/'.length))
+    );
+  }
+  if (url.pathname.indexOf('/api/reservations/admin/') === 0) {
+    return handleReservationsAdminStatus(
+      request,
+      env,
+      decodeURIComponent(url.pathname.slice('/api/reservations/admin/'.length))
+    );
+  }
 
   return env.ASSETS.fetch(request);
 }
@@ -196,6 +348,10 @@ module.exports = {
   handleAiAnalyst,
   handleAnalyticsSnapshot,
   handlePublish,
+  handleReservationsAdminBlockDelete,
+  handleReservationsAdminBlocks,
+  handleReservationsAdminList,
+  handleReservationsAdminStatus,
   handleRequest,
   handleSession,
 };

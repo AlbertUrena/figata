@@ -6,7 +6,7 @@
 
 **Figata** is a restaurant website for an Italian pizza & wine restaurant in Santo Domingo, Dominican Republic. The project has two main systems:
 
-1. **Public website** — A static HTML/CSS/JS site served in production and preview by Cloudflare Pages. Customers see the homepage, menu, events landing page, nosotros/about page, reservations prototype, and restaurant info.
+1. **Public website** — A static HTML/CSS/JS site served in production and preview by Cloudflare Pages. Customers see the homepage, menu, events landing page, nosotros/about page, the live reservations flow, and restaurant info.
 2. **Admin panel** — A custom single-page application at `/admin/app/` used by staff to manage menu items, ingredients, categories, homepage content, and publish changes.
 
 Both systems share a **data layer** (JSON files in `data/`) and are connected through a **Cloudflare-backed publish pipeline** that commits data changes via GitHub.
@@ -50,7 +50,7 @@ website-figata/
 │   ├── index.html             ← Public About/brand story landing (`/nosotros/`)
 │   └── nosotros.css           ← Nosotros route styles + entry loader visuals
 ├── reservas/
-│   ├── index.html             ← Public reservations flow prototype (`/reservas/`)
+│   ├── index.html             ← Public reservations flow (`/reservas/`)
 │   └── reservas.css           ← Reservations route styles (homepage hero + public navbar + dark single-step flow UI)
 ├── styles.css                 ← Public site styles (~2,600 lines)
 ├── js/                        ← Public site JavaScript (20 scripts)
@@ -66,7 +66,7 @@ website-figata/
 │   ├── eventos-page.js           `/eventos/` enhancer (cotizador Pizza Party + modal variedades, FAQ, hero video, media rail, route-local burger/menu mobile)
 │   ├── nosotros-entry-loader.js  `/nosotros/` hard-navigation entry loader fallback + self-hosted Lottie runtime bridge
 │   ├── nosotros-page.js          `/nosotros/` reveal/interaction enhancer
-│   ├── reservas-page.js          `/reservas/` UI-only single-step-at-a-time reservation flow prototype with mock party/date/time/zone/details steps plus Lottie-backed success confirmation
+│   ├── reservas-page.js          `/reservas/` single-step-at-a-time reservation flow with live availability by zone, real submit, and Lottie-backed success confirmation
 │   ├── restaurant-config.js      Restaurant info (hours, address, phone)
 │   ├── testimonials.js           Testimonials carousel
 │   ├── events-tabs.js            Events section tabs
@@ -243,7 +243,7 @@ Use this table to find the right starting point for common tasks:
 | Build/fix public full menu page | `menu/index.html`, `menu/menu-page.css`, `js/menu-page.js` | `js/menu-page-navbar.js`, `src/data/menu.js`, `src/data/media.js`, `data/categories.json` |
 | Build/fix public eventos landing page | `eventos/index.html`, `eventos/eventos.css`, `js/eventos-page.js` | `data/menu.json`, `shared/public-navbar.js`, `shared/public-paths.js` |
 | Build/fix public nosotros landing page | `nosotros/index.html`, `nosotros/nosotros.css`, `js/nosotros-page.js` | `js/nosotros-entry-loader.js`, `js/nosotros-route-transition.js`, `js/nosotros-lottie-runtime.js`, `assets/lottie/Prepare Food.json` |
-| Build/fix public reservas prototype | `reservas/index.html`, `reservas/reservas.css`, `js/reservas-page.js` | Keep it UI-only unless the task explicitly includes API/data wiring |
+| Build/fix public reservas flow | `reservas/index.html`, `reservas/reservas.css`, `js/reservas-page.js` | Reservations now use live API wiring for availability + submit |
 | Reuse/fix public navbar across routes | `shared/public-navbar.js` | `index.html`, `menu/index.html`, `js/navbar-collapse.js` |
 | Edit restaurant info | `js/restaurant-config.js` | `data/restaurant.json` |
 | Edit reservation rules/config | `docs/developers/data/data-layer.md` | `data/reservations-config.json`, `shared/reservations-contract.js` |
@@ -377,7 +377,7 @@ On `/nosotros/`, route scripts must load in this order:
 `shared/public-paths.js` → analytics foundation/runtime (`shared/analytics-config.js` → `shared/analytics-taxonomy.js` → `shared/analytics-governance.js` → `shared/analytics-contract.js` → `shared/analytics-identity.js` → `shared/analytics-attribution.js` → `shared/analytics-internal.js` → `shared/analytics-sdk.js` → `shared/analytics-performance.js` → `shared/analytics-replay.js` → `shared/public-analytics.js`) → `shared/public-entry-loader.js` → `shared/public-hybrid-route-transition.js` → `js/menu-route-transition.js` → `js/nosotros-entry-loader.js` → `shared/public-navbar.js` → `js/navbar-collapse.js` → `js/public-burger-menu.js` → `js/nosotros-page.js` → `shared/public-scroll-indicator.js`
 
 On `/reservas/`, route scripts must load in this order:
-`shared/public-paths.js` → `shared/public-navbar.js` → `js/navbar-collapse.js` → `js/reservas-page.js`
+`shared/public-paths.js` → `shared/public-navbar.js` → `js/navbar-collapse.js` → `shared/reservations-runtime.js` → `js/reservas-page.js`
 
 The shared public scroll indicator is optional and should be loaded after the route's primary public scripts so it can measure the final document scroll state without affecting route initialization:
 `shared/public-scroll-indicator.css` in the page `<head>` and `shared/public-scroll-indicator.js` near the end of the public script list.

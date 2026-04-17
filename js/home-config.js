@@ -49,11 +49,6 @@
   const HOME_LOCATION_WAZE_URL =
     'https://ul.waze.com/ul?ll=18.49227723%2C-69.86180305&navigate=yes&zoom=17&utm_campaign=default&utm_source=waze_website&utm_medium=lm_share_location';
   const HOME_LOCATION_GOOGLE_MAPS_URL = 'https://maps.app.goo.gl/Yg2cgWZvZxaHmWkMA';
-  const HERO_RESERVE_WHATSAPP_MESSAGE = `Hola, me gustaría reservar una mesa. ¿Me ayudan con la disponibilidad?
-
-Fecha:
-Hora:
-Personas:`;
   const HOME_MOBILE_MEDIA = window.matchMedia('(max-width: 1023px)');
   const HOURS_DAY_ORDER = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
   const HOURS_DAY_DISPLAY_ORDER = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
@@ -1424,7 +1419,7 @@ Personas:`;
       icon.setAttribute('aria-hidden', 'true');
     }
 
-    setLinkState(navCta, navbar?.cta?.url || '#reservar');
+    setLinkState(navCta, navbar?.cta?.url || '/reservas/');
   };
 
   const applyAnnouncements = (announcements) => {
@@ -1644,20 +1639,17 @@ Personas:`;
       return;
     }
 
-    const whatsappUrl = resolveWhatsappComposeUrl(
-      normalizeTextValue(restaurant?.whatsapp),
-      HERO_RESERVE_WHATSAPP_MESSAGE
-    );
+    const reservationUrl = normalizeTextValue(restaurant?.reservationUrl) || '/reservas/';
 
-    reserveButton.dataset.whatsappComposeUrl = whatsappUrl;
-    if (whatsappUrl) {
+    reserveButton.dataset.reservationUrl = reservationUrl;
+    if (reservationUrl) {
       reserveButton.removeAttribute('aria-disabled');
     } else {
       reserveButton.setAttribute('aria-disabled', 'true');
     }
-    reserveButton.classList.toggle('is-static', !whatsappUrl);
+    reserveButton.classList.toggle('is-static', !reservationUrl);
 
-    if (reserveButton.dataset.heroReserveWhatsappBound === 'true') {
+    if (reserveButton.dataset.heroReserveBound === 'true') {
       return;
     }
 
@@ -1669,15 +1661,15 @@ Personas:`;
         return;
       }
 
-      const composedUrl = normalizeTextValue(target.dataset.whatsappComposeUrl);
-      if (!composedUrl) {
+      const nextUrl = normalizeTextValue(target.dataset.reservationUrl);
+      if (!nextUrl) {
         return;
       }
 
-      window.open(composedUrl, '_blank', 'noopener');
+      window.location.assign(nextUrl);
     });
 
-    reserveButton.dataset.heroReserveWhatsappBound = 'true';
+    reserveButton.dataset.heroReserveBound = 'true';
   };
 
   const initMobileLocationCard = () => {

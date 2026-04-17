@@ -34,7 +34,7 @@
     "tripadvisor": "https://www.tripadvisor.es/Restaurant_Review-g13199011-d32990362-Reviews-Figata_Pizza_Wine-Santo_Domingo_Este_Santo_Domingo_Province_Dominican_Republic.html"
   },
   "links": {
-    "reservationUrl": "",
+    "reservationUrl": "/reservas/",
     "deliveryUrl": "",
     "menuPdf": ""
   },

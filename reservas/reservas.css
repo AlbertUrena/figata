@@ -211,6 +211,13 @@ body.reservas-page-body button {
   text-wrap: balance;
 }
 
+.reservas-step-card__error {
+  margin: 0 0 10px;
+  color: #f3d0aa;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
 .reservas-step-card__body {
   display: grid;
   gap: 24px;
@@ -706,11 +713,24 @@ body.reservas-page-body button {
   letter-spacing: -0.02em;
 }
 
+.reservas-choice-card__meta {
+  display: block;
+  margin-top: 8px;
+  color: rgba(240, 239, 237, 0.58);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
 .reservas-zone-card .reservas-choice-card__title {
   margin-top: 14px;
   width: 100%;
   text-align: center;
   font-size: 1.08rem;
+}
+
+.reservas-zone-card:disabled .reservas-choice-card__meta {
+  color: rgba(240, 239, 237, 0.42);
 }
 .reservas-confirmation__summary {
   padding: 20px;

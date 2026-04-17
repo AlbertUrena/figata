@@ -272,7 +272,7 @@
     if (normalizedTarget.indexOf('wa.me') !== -1 || normalizedLabel.indexOf('whatsapp') !== -1 || normalizedLabel.indexOf('escribenos') !== -1) {
       return 'whatsapp';
     }
-    if (normalizedLabel.indexOf('reserv') !== -1 || normalizedTarget.indexOf('#reservar') !== -1) {
+    if (normalizedLabel.indexOf('reserv') !== -1 || normalizedTarget.indexOf('#reservar') !== -1 || normalizedTarget.indexOf('/reservas') !== -1) {
       return 'reservation';
     }
     if (normalizedTarget.indexOf('/eventos') !== -1 || normalizedLabel.indexOf('pizza party') !== -1 || normalizedLabel.indexOf('evento') !== -1) {

@@ -15,6 +15,10 @@
       {
         "name": "PUBLISH_COORDINATOR",
         "class_name": "PublishCoordinator"
+      },
+      {
+        "name": "RESERVATION_COORDINATOR",
+        "class_name": "ReservationCoordinator"
       }
     ]
   },
@@ -22,6 +26,10 @@
     {
       "tag": "v1",
       "new_sqlite_classes": ["PublishCoordinator"]
+    },
+    {
+      "tag": "v2",
+      "new_sqlite_classes": ["ReservationCoordinator"]
     }
   ],
   "triggers": {
